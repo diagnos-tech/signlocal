@@ -12,7 +12,7 @@
       cng-rsa2048        RSA-2048 in the Microsoft Software KSP (CNG)
       cng-p256/-p384     ECDSA in the Microsoft Software KSP (CNG)
       capi-aes-rsa2048   RSA-2048 in the Enhanced RSA and AES CSP (CAPI, PROV_RSA_AES)
-      a1-pfx-rsa2048     an "A1": PFX imported into the Enhanced CSP v1.0
+      a1-rsa2048         an "A1": AT_KEYEXCHANGE key in the Enhanced CSP v1.0
                          (CAPI, PROV_RSA_FULL, AT_KEYEXCHANGE), as the import
                          wizard does with certificates bought as a file
       capi-base-rsa2048  RSA-2048 in the Base CSP v1.0 (PROV_RSA_FULL), when
@@ -91,31 +91,6 @@ function New-TestCertificate([string] $Name, [hashtable] $KeyParameters) {
 
 # The way certificate files usually end up in Windows: a PFX imported into
 # the default legacy CSP, which is PROV_RSA_FULL and predates SHA-2.
-function New-PfxImportedCertificate([string] $Name) {
-    $source = New-TestCertificate $Name @{
-        Provider = $Ksp; KeyAlgorithm = 'RSA'; KeyLength = 2048; KeyExportPolicy = 'Exportable'
-    }
-    $pfx = Join-Path ([IO.Path]::GetTempPath()) "websign-probe-$Name.pfx"
-    $password = [Guid]::NewGuid().ToString('N')
-    try {
-        $secure = ConvertTo-SecureString -String $password -AsPlainText -Force
-        # The certificate alone: nothing in the file may go to a root store,
-        # whose "install this certificate?" confirmation is a dialog.
-        Export-PfxCertificate -Cert $source -FilePath $pfx -Password $secure -ChainOption EndEntityCertOnly |
-            Out-Null
-        Remove-Item -LiteralPath "$Store\$($source.Thumbprint)" -DeleteKey
-        $certutil = Join-Path ([Environment]::SystemDirectory) 'certutil.exe'
-        $run = Invoke-Bounded -FilePath $certutil -TimeoutSeconds $StepTimeoutSeconds `
-            -Label "certutil -importpfx $Name into $EnhancedCsp" `
-            -Arguments @('-f', '-user', '-p', $password, '-csp', $EnhancedCsp, '-importpfx', 'My', $pfx, 'AT_KEYEXCHANGE')
-        if ($run.TimedOut) { throw "TIMEOUT in certutil -importpfx $Name after $StepTimeoutSeconds s" }
-        if ($run.ExitCode -ne 0) { throw "certutil -importpfx failed (exit code $($run.ExitCode))" }
-    } finally {
-        Remove-Item -LiteralPath $pfx -ErrorAction SilentlyContinue
-    }
-    Get-Item -LiteralPath "$Store\$($source.Thumbprint)"
-}
-
 function ConvertTo-Result($Certificate, [string] $Name, [string] $Api, [string] $Provider,
     [string] $Key, [string] $AllowApi) {
     [pscustomobject]@{
@@ -146,8 +121,19 @@ ConvertTo-Result (New-TestCertificate 'cng-p384' ($cng + @{ KeyAlgorithm = 'ECDS
     'cng-p384' 'CNG' $Ksp 'EC' 'NCryptSignHash'
 ConvertTo-Result (New-TestCertificate 'capi-aes-rsa2048' ($rsa + @{ Provider = $AesCsp; KeySpec = 'Signature' })) `
     'capi-aes-rsa2048' 'CAPI' $AesCsp 'RSA' 'CryptSignHash'
-ConvertTo-Result (New-PfxImportedCertificate 'a1-pfx-rsa2048') `
-    'a1-pfx-rsa2048' 'CAPI' $EnhancedCsp 'RSA' 'CryptSignHash (PROV_RSA_AES)'
+
+# An "A1": what importing a .pfx leaves behind is an AT_KEYEXCHANGE key in the
+# Enhanced CSP v1.0 (PROV_RSA_FULL). The key is created there directly:
+# `certutil -importpfx` waits on an invisible prompt on Windows Server 2025
+# runners. Like the Base CSP, this provider self-signs with SHA-1 only.
+try {
+    $a1 = New-TestCertificate 'a1-rsa2048' ($rsa + @{
+            Provider = $EnhancedCsp; KeySpec = 'KeyExchange'; HashAlgorithm = 'SHA1'
+        })
+    ConvertTo-Result $a1 'a1-rsa2048' 'CAPI' $EnhancedCsp 'RSA' 'CryptSignHash (PROV_RSA_AES)'
+} catch {
+    Write-Warning "Skipping a1-rsa2048 (optional): the Enhanced CSP key could not be made: $_"
+}
 
 # The Base CSP cannot hash with SHA-2, so its own certificate is self-signed
 # with SHA-1; only the key matters here.

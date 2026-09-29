@@ -102,7 +102,7 @@ Certificados criados por `windows/make-test-certs.ps1` (removidos no fim):
 | `cng-rsa2048` | Software KSP (CNG) | 6/6 OK via `NCryptSignHash` | idem |
 | `cng-p256`, `cng-p384` | Software KSP (CNG) | 3/3 ECDSA OK | idem |
 | `capi-aes-rsa2048` | Enhanced RSA and AES CSP, `AT_SIGNATURE` | PKCS#1 3/3 OK via `CryptSignHash`; PSS = `not supported` (**falha esperada**) | observado |
-| `a1-pfx-rsa2048` | `.pfx` importado no Enhanced CSP v1.0 (`PROV_RSA_FULL`, `AT_KEYEXCHANGE`) | PKCS#1 3/3 OK via `CryptSignHash (PROV_RSA_AES)`; PSS = `not supported` | observado |
+| `a1-rsa2048` | chave `AT_KEYEXCHANGE` criada no Enhanced CSP v1.0 (`PROV_RSA_FULL`), como fica um `.pfx` importado; o `certutil -importpfx` trava no runner | PKCS#1 3/3 OK via `CryptSignHash (PROV_RSA_AES)`; PSS = `not supported` | observado |
 | `capi-base-rsa2048` | Base CSP v1.0 (`PROV_RSA_FULL`), se o cmdlet aceitar | idem ao A1 | observado |
 
 "Observado" = registrado, sem reprovar o CI: é onde a ponte CAPI→CNG do Windows entra.
