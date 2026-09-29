@@ -29,6 +29,7 @@ Cada uma tem uma proposta; sem resposta, sigo a proposta.
 | D4 | Assinatura em lote (30 laudos/dia) | **Fora da v1**; a fila de pedidos já existe | Uma confirmação para N documentos muda o modelo de consentimento; melhor medir o uso antes |
 | D5 | PIN do PKCS#11 por sessão ou a cada assinatura | **Por sessão** (até o token sair ou a conexão ociosa fechar), exceto chaves com `CKA_ALWAYS_AUTHENTICATE` | Mesmo comportamento do CNG/CryptoTokenKit, que o médico já conhece |
 | D6 | Nome, domínio e IDs definitivos | Seguir com os provisórios do [`project.toml`](../project.toml) até a busca de marca | Trocar é editar um arquivo |
+| D8 | Leitor de certificados | **Leitor DER próprio, tolerante** (~1 000 linhas, só resume; **não valida cadeia**), com fuzzing contínuo no CI | A pilha `x509-cert`/`der` fazia certificados reais sumirem da lista (§3). Validar cadeia continua sendo do site |
 | D7 | Assinatura dos commits | Os commits têm você como autor e `Signed-off-by`. **A chave SSH configurada neste ambiente não é a sua** (é a do ambiente de execução) | Para commits assinados com a sua chave, reassine ao integrar (`git rebase --exec 'git commit --amend --no-edit -S'`) |
 
 Pendências menores de UX estão em [ux.md §17](ux.md#17-pendências).
@@ -113,9 +114,13 @@ cada crate tem uma responsabilidade e um `SPEC.md`; o `websign-core` continua pu
 3. **Revisão crítica** (Opus): junta, roda, decide cada divergência pela especificação e pelas normas,
    fixa a regra no `SPEC.md`, faz revisão de segurança e qualidade.
 
-Na Fase 0 o método já se pagou: 286 de 290 testes passaram de primeira, e as 4 divergências mostraram
-ambiguidades reais, como datas anteriores a 1970 e tipos raros de string. A implementação também achou
-uma maleabilidade no verificador PSS do crate `rsa`.
+Na Fase 0 o método já se pagou no `probe-core`:
+- 286 de 290 testes cegos passaram de primeira.
+- As 4 divergências mostraram que a pilha `x509-cert`/`der` **descartava certificados reais**: UTCTime anterior
+  a 1970, `UniversalString` e OIDs com arcos acima de 32 bits.
+- As 24 dúvidas levantadas pelos dois lados viraram regras explícitas no `SPEC.md`.
+- A implementação achou uma maleabilidade no verificador PSS do crate `rsa` (aceitava `s + n`).
+- Hoje: 391 testes, 460 mil entradas mutadas sem pânico, nenhum arquivo acima de ~210 linhas.
 
 Onde o TDD cego não cabe inteiro:
 
@@ -129,7 +134,8 @@ Onde o TDD cego não cabe inteiro:
 Portões de qualidade no CI (todos obrigatórios para integrar):
 
 - Rust: `fmt`, `clippy -D warnings`, testes, `cargo-deny` (licenças compatíveis com GPL-3.0, advisories,
-  duplicatas), `cargo-llvm-cov` (core e host ≥ 90%), `cargo-mutants` semanal no core.
+  duplicatas), `cargo-llvm-cov` (core e host ≥ 90%), `cargo-mutants` semanal no core, `cargo-fuzz` no leitor
+  DER, no framing de native messaging e no parser do protocolo.
 - TypeScript: `tsc` estrito, Biome, Vitest, limite de tamanho (SDK < 5 KB gzip, popup < 15 KB).
 - Protocolo: TS gerado atualizado. E2E: Chromium (Linux/SoftHSM e Windows/CNG) a cada PR; macOS diário.
 - Release: binário sem a feature de teste `auto-confirm` (checado no CI).
