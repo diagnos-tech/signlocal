@@ -1,0 +1,146 @@
+# Risk proofs: builds websign-probe on each OS and exercises every signing
+# path with software keys (SoftHSM2, CNG/CAPI software providers, a test
+# keychain). Real tokens are covered by the manual steps in docs/prototypes/.
+name: prototypes
+
+on:
+  push:
+    paths:
+      - "docs/prototypes/kit/**"
+      - ".github/workflows/prototypes.yml"
+      - "project.toml"
+  workflow_dispatch:
+
+concurrency:
+  group: prototypes-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: "1"
+
+defaults:
+  run:
+    working-directory: docs/prototypes/kit
+
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install PKCS#11 and PC/SC tooling
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends softhsm2 opensc p11-kit pcscd libpcsclite-dev
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: docs/prototypes/kit
+      - name: Format, lint, unit tests
+        run: |
+          cargo fmt --all --check
+          cargo clippy --all-targets -- -D warnings
+          cargo test --all
+      - name: Build probe
+        run: cargo build --release -p websign-probe
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Install Chromium for the native messaging test
+        working-directory: docs/prototypes/kit/nm-e2e
+        run: npm ci && npx playwright-core install --with-deps chromium
+      - name: PKCS#11 signing and native messaging end to end
+        env:
+          PROBE_EXE: ${{ github.workspace }}/docs/prototypes/kit/target/release/websign-probe
+          REPORT_PATH: ${{ runner.temp }}/report-linux.md
+        run: bash linux/ci-linux.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: report-linux
+          path: ${{ runner.temp }}/report-*.md
+          if-no-files-found: ignore
+
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: docs/prototypes/kit
+      - name: Lint and unit tests
+        run: |
+          cargo clippy --all-targets -- -D warnings
+          cargo test --all
+      - name: Build probe
+        run: cargo build --release -p websign-probe
+      - name: CNG and CAPI signing with software keys
+        shell: pwsh
+        env:
+          PROBE_EXE: ${{ github.workspace }}\docs\prototypes\kit\target\release\websign-probe.exe
+          REPORT_PATH: ${{ runner.temp }}\report-windows.md
+        run: ./windows/ci-windows.ps1
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Install Chromium for the native messaging test
+        working-directory: docs/prototypes/kit/nm-e2e
+        run: npm ci && npx playwright-core install chromium
+      - name: MSIX package, HKCU registration and native messaging through the alias
+        # Experimental: the outcome is evidence for docs/prototypes/1-windows.md
+        # either way, so it must not hide the results of the steps above.
+        continue-on-error: true
+        shell: pwsh
+        env:
+          PROBE_EXE: ${{ github.workspace }}\docs\prototypes\kit\target\release\websign-probe.exe
+        run: |
+          ./msix/build-msix.ps1
+          ./msix/test-msix.ps1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: report-windows
+          path: ${{ runner.temp }}/report-*.md
+          if-no-files-found: ignore
+
+  macos:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: docs/prototypes/kit
+      - name: Lint and unit tests
+        run: |
+          cargo clippy --all-targets -- -D warnings
+          cargo test --all
+      - name: Build probe
+        run: cargo build --release -p websign-probe
+      - name: Keychain signing with test identities
+        env:
+          PROBE_EXE: ${{ github.workspace }}/docs/prototypes/kit/target/release/websign-probe
+          REPORT_PATH: ${{ runner.temp }}/report-macos.md
+        run: bash macos/ci-macos.sh
+      - name: App Sandbox (manifests, keychain, PKCS#11 module loading)
+        continue-on-error: true
+        env:
+          PROBE_EXE: ${{ github.workspace }}/docs/prototypes/kit/target/release/websign-probe
+        run: bash macos/sandbox/sandbox-test.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: report-macos
+          path: ${{ runner.temp }}/report-*.md
+          if-no-files-found: ignore

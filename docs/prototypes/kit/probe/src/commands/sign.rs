@@ -49,22 +49,55 @@ pub fn run(args: &Args) -> anyhow::Result<ExitCode> {
         eprintln!("warning: {}: {}", failure.source, failure.error);
     }
     let selected = select(&inventory, args)?;
-    let mut pin: Option<SecretString> = None;
-    let mut failures = 0;
+    let results = run_cases(&mut inventory, &selected, args, |entry| {
+        println!("{}", view::describe(entry, true));
+    })?;
+    for result in &results {
+        println!("{}", result.line());
+    }
+    let failed = results.iter().any(|result| result.outcome.is_err());
+    Ok(if failed { ExitCode::FAILURE } else { ExitCode::SUCCESS })
+}
 
-    for index in selected {
+/// The outcome of one (key, hash, algorithm) signing attempt.
+#[derive(Debug)]
+pub struct CaseResult {
+    /// Index into `Inventory::entries`.
+    pub entry: usize,
+    pub hash: HashAlgorithm,
+    pub algorithm: SignatureAlgorithm,
+    /// Native API and milliseconds on success; the error chain on failure.
+    pub outcome: Result<(&'static str, u128), String>,
+}
+
+impl CaseResult {
+    pub fn line(&self) -> String {
+        match &self.outcome {
+            Ok((api, ms)) => format!("   OK    {} {} via {api} in {ms} ms", self.hash, self.algorithm),
+            Err(error) => format!("   FAIL  {} {}: {error}", self.hash, self.algorithm),
+        }
+    }
+}
+
+/// Signs a fresh random digest for every case of every selected entry and
+/// verifies each signature. `on_entry` runs before an entry's first case.
+pub fn run_cases(
+    inventory: &mut Inventory,
+    selected: &[usize],
+    args: &Args,
+    mut on_entry: impl FnMut(&Entry),
+) -> anyhow::Result<Vec<CaseResult>> {
+    let mut pin: Option<SecretString> = None;
+    let mut results = Vec::new();
+    for &index in selected {
         let entry = &inventory.entries[index];
         let Ok(info) = &entry.info else { continue };
-        println!("{}", view::describe(entry, true));
-        if matches!(
-            entry.key.pin,
-            PinPrompt::App {
-                protected_path: false
-            }
-        ) && pin.is_none()
-        {
+        on_entry(entry);
+        if matches!(entry.key.pin, PinPrompt::App { protected_path: false }) && pin.is_none() {
             pin = Some(read_pin(args.pin_env.as_deref())?);
         }
+        let key = entry.key.clone();
+        let store = entry.store;
         for (hash, algorithm) in cases(&info.key, args) {
             let digest = random_digest(hash)?;
             let request = SignRequest {
@@ -74,38 +107,23 @@ pub fn run(args: &Args) -> anyhow::Result<ExitCode> {
                 pin: pin.as_ref(),
                 parent_window: None,
             };
-            let key = entry.key.clone();
-            let store = &mut inventory.opened.keystores[entry.store];
-            let outcome = store
+            let outcome = inventory.opened.keystores[store]
                 .sign(&key, &request)
                 .map_err(anyhow::Error::from)
                 .and_then(|signature| {
                     probe_core::verify(&key.cert_der, hash, algorithm, &digest, &signature.bytes)
-                        .map(|()| signature)
-                        .context("signature does not verify")
-                });
-            match outcome {
-                Ok(signature) => println!(
-                    "   OK    {hash} {algorithm} via {} in {} ms",
-                    signature.api,
-                    signature.elapsed.as_millis()
-                ),
-                Err(error) => {
-                    failures += 1;
-                    println!("   FAIL  {hash} {algorithm}: {error:#}");
-                }
-            }
+                        .context("signature does not verify")?;
+                    Ok((signature.api, signature.elapsed.as_millis()))
+                })
+                .map_err(|error| format!("{error:#}"));
+            results.push(CaseResult { entry: index, hash, algorithm, outcome });
         }
     }
-    Ok(if failures == 0 {
-        ExitCode::SUCCESS
-    } else {
-        ExitCode::FAILURE
-    })
+    Ok(results)
 }
 
 /// Indices into `inventory.entries` to sign with.
-fn select(inventory: &Inventory, args: &Args) -> anyhow::Result<Vec<usize>> {
+pub fn select(inventory: &Inventory, args: &Args) -> anyhow::Result<Vec<usize>> {
     let position = |target: &Entry| {
         inventory
             .entries

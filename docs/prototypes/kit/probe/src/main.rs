@@ -10,6 +10,7 @@ mod config;
 mod devices;
 mod keystores;
 mod nm;
+mod platform;
 
 use std::process::ExitCode;
 

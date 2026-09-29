@@ -16,3 +16,9 @@ pub fn run(args: &Args) -> anyhow::Result<ExitCode> {
     let _ = args;
     todo!("devices command")
 }
+
+/// A Markdown section (starting at `###`) describing every device found, for
+/// `websign-probe report`. Must not contain serial numbers or card contents.
+pub fn markdown_section() -> String {
+    todo!("devices report section")
+}
