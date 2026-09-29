@@ -1,0 +1,42 @@
+[package]
+name = "websign-probe"
+version = "0.1.0"
+description = "Lists and signs with every certificate the OS and PKCS#11 modules expose, to prove each path works."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+probe-core.workspace = true
+thiserror.workspace = true
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+getrandom = "0.4"
+secrecy = "0.10"
+zeroize = "1"
+rpassword = "7"
+cryptoki = "0.12"
+nusb = "0.2"
+pcsc = "2.9"
+
+[target.'cfg(windows)'.dependencies]
+windows-registry = "0.100"
+windows = { version = "0.62", features = [
+  "Win32_Foundation",
+  "Win32_Security_Cryptography",
+  "Win32_System_Console",
+  "Win32_UI_WindowsAndMessaging",
+] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+security-framework = "3.7"
+core-foundation = "0.10"
+
+[build-dependencies]
+toml = "0.9"
+
+[lints]
+workspace = true
