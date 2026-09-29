@@ -113,4 +113,9 @@ pub struct Options {
     /// Windows only: how to acquire private keys.
     #[arg(long, value_enum, default_value_t)]
     pub ncrypt: NcryptPreference,
+    /// Windows only: never let a key provider show UI (PIN, consent, "insert
+    /// card"). A key that needs it fails with NTE_SILENT_CONTEXT instead of
+    /// waiting for a dialog; for unattended runs such as CI.
+    #[arg(long)]
+    pub silent: bool,
 }

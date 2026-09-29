@@ -26,7 +26,9 @@
 #>
 [CmdletBinding()]
 param(
-    [int] $E2eTimeoutSeconds = 300
+    [int] $E2eTimeoutSeconds = 300,
+    # Time limit for each run of the packaged probe.
+    [int] $ProbeTimeoutSeconds = 60
 )
 
 $ErrorActionPreference = 'Stop'
@@ -58,13 +60,11 @@ function Get-HostKey([string] $Vendor) {
     "HKCU\Software\$Vendor\NativeMessagingHosts\$($package.NativeHost)"
 }
 
-# Runs a program and returns its exit code and output lines.
+# Runs a program with a time limit and returns its exit code ($null when it
+# was killed) and output lines.
 function Invoke-Program([string] $Path, [string[]] $Arguments) {
-    Write-Host "> $Path $($Arguments -join ' ')"
-    $lines = @(& $Path @Arguments 2>&1 | ForEach-Object { "$_" })
-    $exitCode = $LASTEXITCODE
-    $lines | ForEach-Object { Write-Host "  $_" }
-    [pscustomobject]@{ ExitCode = $exitCode; Lines = $lines }
+    $run = Invoke-Bounded -FilePath $Path -Arguments $Arguments -TimeoutSeconds $ProbeTimeoutSeconds
+    [pscustomobject]@{ ExitCode = $run.ExitCode; Lines = $run.Lines }
 }
 
 # The default value of a key, read by reg.exe: a process outside the package

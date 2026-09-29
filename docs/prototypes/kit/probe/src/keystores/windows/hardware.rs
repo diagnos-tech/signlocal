@@ -13,6 +13,7 @@ use windows::core::{HSTRING, Owned, PCWSTR};
 
 use super::handles::CryptProv;
 use super::key_info::KeyLocation;
+use crate::trace::trace;
 
 /// Whether keys are in hardware, asked once per provider.
 #[derive(Debug, Default)]
@@ -42,6 +43,7 @@ impl HardwareProbe {
 }
 
 fn ksp_impl_type(provider: &str) -> Option<u32> {
+    trace!("NCryptOpenStorageProvider(\"{provider}\") + NCryptGetProperty(Impl Type, silent)");
     let name = HSTRING::from(provider);
     let mut handle = NCRYPT_PROV_HANDLE::default();
     // SAFETY: `name` is NUL-terminated and outlives the call. Opening a
@@ -66,6 +68,9 @@ fn ksp_impl_type(provider: &str) -> Option<u32> {
 }
 
 fn csp_impl_type(provider: &str, provider_type: u32) -> Option<u32> {
+    trace!(
+        "CryptAcquireContext(\"{provider}\", type {provider_type}, VERIFYCONTEXT | SILENT) + PP_IMPTYPE"
+    );
     let name = HSTRING::from(provider);
     let mut handle = 0usize;
     // SAFETY: `name` outlives the call. With no container and

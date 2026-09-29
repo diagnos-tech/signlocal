@@ -4,6 +4,7 @@
 use probe_core::{CertError, CertInfo, Deduped, Fingerprint, dedup_by_fingerprint};
 
 use super::{FoundKey, Opened, Options, SourceFailure, open_all};
+use crate::trace::trace;
 
 /// One key as found by one source.
 #[derive(Debug)]
@@ -32,7 +33,13 @@ impl Inventory {
         let mut entries = Vec::new();
         let mut failures = Vec::new();
         for (store, keystore) in opened.keystores.iter_mut().enumerate() {
-            match keystore.list() {
+            trace!("listing source {}", keystore.name());
+            let listed = keystore.list();
+            match &listed {
+                Ok(keys) => trace!("source {}: {} key(s)", keystore.name(), keys.len()),
+                Err(error) => trace!("source {} failed: {error}", keystore.name()),
+            }
+            match listed {
                 Ok(keys) => entries.extend(keys.into_iter().map(|key| Entry {
                     store,
                     info: CertInfo::from_der(&key.cert_der),

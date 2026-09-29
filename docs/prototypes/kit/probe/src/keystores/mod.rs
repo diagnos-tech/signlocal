@@ -13,8 +13,10 @@ pub mod macos;
 #[cfg(windows)]
 pub mod windows;
 
+use crate::trace::trace;
 #[cfg(windows)]
 pub use model::NcryptPreference;
+
 pub use model::{FoundKey, KeystoreError, Options, PinPrompt, SignRequest, Signature};
 
 /// A source of signing keys.
@@ -53,9 +55,21 @@ pub struct Opened {
 pub fn open_all(options: &Options) -> Opened {
     let mut opened = Opened::default();
     #[cfg(windows)]
-    windows::open(options, &mut opened);
+    {
+        trace!("opening source: Windows certificate store");
+        windows::open(options, &mut opened);
+    }
     #[cfg(target_os = "macos")]
-    macos::open(options, &mut opened);
+    {
+        trace!("opening source: macOS keychain");
+        macos::open(options, &mut opened);
+    }
+    trace!("opening source: PKCS#11 modules");
     pkcs11::open(options, &mut opened);
+    trace!(
+        "sources opened: {} ({} failed)",
+        opened.keystores.len(),
+        opened.failures.len()
+    );
     opened
 }

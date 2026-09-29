@@ -9,6 +9,8 @@ use std::time::Duration;
 use pcsc::{Context, Error, ReaderState, Scope, State};
 use serde::Serialize;
 
+use crate::trace::trace;
+
 /// What a reader holds.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -54,6 +56,7 @@ pub fn scan() -> ReaderScan {
 }
 
 fn read_readers() -> Result<Vec<Reader>, Error> {
+    trace!("PC/SC: SCardEstablishContext + SCardListReaders");
     let context = Context::establish(Scope::User)?;
     let names = match context.list_readers_owned() {
         Ok(names) => names,
@@ -67,6 +70,7 @@ fn read_readers() -> Result<Vec<Reader>, Error> {
     if states.is_empty() {
         return Ok(Vec::new());
     }
+    trace!("PC/SC: SCardGetStatusChange on {} reader(s)", states.len());
     context.get_status_change(Duration::from_millis(500), &mut states)?;
     Ok(states
         .iter()

@@ -34,6 +34,8 @@ use key_info::KeyLocation;
 use store::CertStore;
 use thumbprint::Thumbprint;
 
+use crate::trace::trace;
+
 const NAME: &str = "windows";
 
 /// Room for a 16384-bit RSA signature, the largest key CNG and CAPI create.
@@ -46,6 +48,7 @@ pub fn open(options: &Options, opened: &mut Opened) {
             keys: HashMap::new(),
             store,
             preference: options.ncrypt,
+            silent: options.silent,
         })),
         Err(error) => opened.failures.push(SourceFailure {
             source: NAME.to_owned(),
@@ -60,6 +63,8 @@ struct WindowsKeystore {
     keys: HashMap<String, AcquiredKey>,
     store: CertStore,
     preference: NcryptPreference,
+    /// Open and sign with `*_SILENT` flags: fail rather than show UI.
+    silent: bool,
 }
 
 impl Keystore for WindowsKeystore {
@@ -70,11 +75,17 @@ impl Keystore for WindowsKeystore {
     fn list(&mut self) -> Result<Vec<FoundKey>, KeystoreError> {
         let mut hardware = HardwareProbe::default();
         let mut found = Vec::new();
-        for cert in self.store.certificates() {
+        trace!("enumerating CurrentUser\\MY (key metadata only, no key is opened)");
+        for (index, cert) in self.store.certificates().enumerate() {
             let (Some(location), Some(thumbprint)) = (KeyLocation::of(&cert), cert.thumbprint())
             else {
+                trace!("certificate #{index}: no private key, skipped");
                 continue;
             };
+            trace!(
+                "certificate #{index}: key in {}; asking the provider whether it is hardware",
+                location.describe()
+            );
             found.push(FoundKey {
                 cert_der: cert.der().to_vec(),
                 keystore: NAME.to_owned(),
@@ -94,7 +105,12 @@ impl Keystore for WindowsKeystore {
         request: &SignRequest<'_>,
     ) -> Result<Signature, KeystoreError> {
         let started = Instant::now();
-        let owner = window::owner(request.parent_window);
+        // A silent run shows no dialog, so it needs no owner window.
+        let owner = if self.silent {
+            None
+        } else {
+            window::owner(request.parent_window)
+        };
         let result = self
             .opened_key(&key.locator, owner)
             .and_then(|opened| opened.sign(request, owner));
@@ -126,7 +142,7 @@ impl WindowsKeystore {
                     .store
                     .find(&thumbprint)
                     .ok_or(KeystoreError::NotFound)?;
-                let key = AcquiredKey::open(cert, self.preference, owner)?;
+                let key = AcquiredKey::open(cert, self.preference, owner, self.silent)?;
                 Ok(entry.insert(key))
             }
         }

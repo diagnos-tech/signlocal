@@ -70,6 +70,7 @@ pub struct UsbScan {
 
 /// Lists the USB devices; only smart card readers and tokens unless `all`.
 pub fn scan(all: bool) -> UsbScan {
+    crate::trace::trace!("USB: enumerating devices");
     match enumerate() {
         Ok(devices) => select(devices, all),
         Err(problem) => UsbScan {

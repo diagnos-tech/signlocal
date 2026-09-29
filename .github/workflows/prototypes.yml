@@ -72,7 +72,7 @@ jobs:
 
   windows:
     runs-on: windows-latest
-    timeout-minutes: 40
+    timeout-minutes: 50
     steps:
       - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
@@ -91,9 +91,10 @@ jobs:
       - name: Build probe
         run: cargo build --release -p websign-probe
       - name: CNG and CAPI signing with software keys
-        # A key that unexpectedly asks for a PIN or consent would wait for a
-        # click forever; fail the step instead of the whole job.
-        timeout-minutes: 10
+        # Every certificate creation and probe run has its own time limit
+        # and names what hung (the probe traces its native calls); this is
+        # only the backstop for the script as a whole.
+        timeout-minutes: 20
         shell: pwsh
         env:
           PROBE_EXE: ${{ github.workspace }}\docs\prototypes\kit\target\release\websign-probe.exe

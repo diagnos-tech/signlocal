@@ -24,6 +24,7 @@ use super::locator::Locator;
 use super::objects::{self, StoredCertificate};
 use super::provider::{self, KeyVisibility, PinState, TokenFacts};
 use crate::keystores::{FoundKey, KeystoreError, PinPrompt};
+use crate::trace::trace;
 
 /// Lists the keys of every slot with a token. A slot that fails is skipped;
 /// the failures are reported only when nothing at all could be listed.
@@ -32,11 +33,13 @@ pub fn list(
     keystore: &str,
     module_file: &str,
 ) -> Result<Vec<FoundKey>, KeystoreError> {
+    trace!("{module_file}: C_GetSlotList(token present)");
     let slots = pkcs11
         .get_slots_with_token()
         .map_err(errors::mapper(Context::default()))?;
     let (mut keys, mut problems) = (Vec::new(), Vec::new());
     for slot in slots {
+        trace!("{module_file}: reading slot {} without login", slot.id());
         match list_slot(pkcs11, slot, keystore, module_file) {
             Ok(found) => keys.extend(found),
             Err(error) => problems.push(format!(

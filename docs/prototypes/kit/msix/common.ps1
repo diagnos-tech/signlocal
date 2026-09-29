@@ -5,6 +5,10 @@ Set-StrictMode -Version Latest
 # Exit codes of native tools are checked by hand (Invoke-Tool, reg.exe), so a
 # non-zero one must not stop the script, whatever the PowerShell default is.
 $PSNativeCommandUseErrorActionPreference = $false
+# Invoke-Bounded: every external program runs with a time limit, so a step
+# that waits for something that never comes fails by name instead of
+# silently eating the job's time.
+. "$PSScriptRoot/../windows/invoke-bounded.ps1"
 
 # Flat "table.key" -> value map of the string entries in project.toml. Enough
 # for that file; not a general TOML parser.
@@ -61,17 +65,18 @@ function Find-SdkTool([string] $Name) {
 # always has them. Its stderr is kept apart: started with -EncodedCommand it
 # may write progress there as CLIXML, which must not reach callers that parse
 # the output (Get-InstalledProbePackage reads it as JSON).
-function Invoke-WindowsPowerShell([string] $Script) {
+function Invoke-WindowsPowerShell([string] $Script, [int] $TimeoutSeconds = 300) {
     $prelude = "`$ErrorActionPreference = 'Stop'; `$ProgressPreference = 'SilentlyContinue'; "
     $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($prelude + $Script))
-    $all = @(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand $encoded 2>&1)
-    $exitCode = $LASTEXITCODE
-    $stderr = @($all | Where-Object { $_ -is [Management.Automation.ErrorRecord] } | ForEach-Object { "$_" })
-    $stdout = @($all | Where-Object { $_ -isnot [Management.Automation.ErrorRecord] })
-    if ($exitCode -ne 0) {
-        throw "Windows PowerShell failed ($exitCode): $Script`n$(($stdout + $stderr) -join "`n")"
+    $firstLine = ($Script.Trim() -split "`n")[0].Trim()
+    $run = Invoke-Bounded -FilePath 'powershell.exe' -TimeoutSeconds $TimeoutSeconds -Quiet `
+        -Label "Windows PowerShell: $firstLine" `
+        -Arguments @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', $encoded)
+    if ($run.TimedOut) { throw "TIMEOUT in Windows PowerShell after $TimeoutSeconds s: $Script" }
+    if ($run.ExitCode -ne 0) {
+        throw "Windows PowerShell failed ($($run.ExitCode)): $Script`n$($run.Lines -join "`n")"
     }
-    $stdout
+    $run.Stdout
 }
 
 # The installed probe package (Name, PackageFamilyName, PackageFullName,

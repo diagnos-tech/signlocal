@@ -23,12 +23,21 @@
     software KSP. The outcome is evidence for docs/prototypes/1-windows.md.
 
     PKCS#11 discovery is switched off for these runs: they prove the Windows
-    store, and the runner has no PKCS#11 module anyway.
+    store, and the runner has no PKCS#11 module anyway. They also pass
+    --silent: software keys never need UI, so a provider that wants a dialog
+    fails at once (NTE_SILENT_CONTEXT) instead of waiting for a click.
+
+    Nothing can hang the job: every probe run has its own time limit
+    (-ProbeTimeoutSeconds) after which it is killed and reported as TIMEOUT,
+    with WEBSIGN_PROBE_TRACE=1 its last trace line on stderr names the native
+    call it was stuck in, and after $MaxTimeouts time-outs the remaining runs
+    are skipped so the summary still gets printed.
 #>
 [CmdletBinding()]
 param(
     [string] $Probe = $env:PROBE_EXE,
-    [string] $ReportPath = $env:REPORT_PATH
+    [string] $ReportPath = $env:REPORT_PATH,
+    [int] $ProbeTimeoutSeconds = 90
 )
 
 $ErrorActionPreference = 'Stop'
@@ -36,22 +45,34 @@ $ErrorActionPreference = 'Stop'
 # to stop the script, whatever the PowerShell version's default is.
 $PSNativeCommandUseErrorActionPreference = $false
 Set-StrictMode -Version Latest
+. "$PSScriptRoot/invoke-bounded.ps1"
 
 if (-not $Probe -or -not (Test-Path -LiteralPath $Probe)) {
     throw 'Set PROBE_EXE to the websign-probe binary.'
 }
-$Isolate = '--no-known-modules', '--no-p11-kit'
+# Each step the probe takes, on stderr (no personal data): a hang names its call.
+if (-not $env:WEBSIGN_PROBE_TRACE) { $env:WEBSIGN_PROBE_TRACE = '1' }
+$Isolate = '--no-known-modules', '--no-p11-kit', '--silent'
+$MaxTimeouts = 3
+$script:timeouts = 0
 $Modes = 'allow', 'prefer', 'only'
 $failures = [Collections.Generic.List[string]]::new()
 $rows = [Collections.Generic.List[object]]::new()
 
+# Runs the probe with a time limit. Lines holds stdout only: trace and
+# warnings go to stderr, which is echoed but never parsed.
 function Invoke-Probe([string[]] $Arguments) {
-    Write-Host "`n> websign-probe $($Arguments -join ' ')"
-    $lines = @(& $Probe @Arguments 2>&1 | ForEach-Object { "$_" })
-    $exitCode = $LASTEXITCODE
-    $lines | ForEach-Object { Write-Host "  $_" }
-    Write-Host "  (exit code $exitCode)"
-    [pscustomobject]@{ ExitCode = $exitCode; Lines = $lines }
+    $run = Invoke-Bounded -FilePath $Probe -Arguments $Arguments -TimeoutSeconds $ProbeTimeoutSeconds `
+        -Label "websign-probe $($Arguments -join ' ')"
+    if ($run.TimedOut) {
+        $script:timeouts++
+        $failures.Add("TIMEOUT in websign-probe $($Arguments -join ' ') (killed after $ProbeTimeoutSeconds s)")
+    }
+    [pscustomobject]@{ ExitCode = $run.ExitCode; TimedOut = $run.TimedOut; Lines = $run.Stdout }
+}
+
+function Test-TooManyTimeouts {
+    $script:timeouts -ge $MaxTimeouts
 }
 
 function Assert-That([bool] $Condition, [string] $Message) {
@@ -71,6 +92,7 @@ function Get-Expectation($Cert, [string] $Mode, [string] $Algorithm) {
 
 function Test-List($Certs) {
     $run = Invoke-Probe (@('list') + $Isolate)
+    if ($run.TimedOut) { return }
     Assert-That ($run.ExitCode -eq 0) "list exited with $($run.ExitCode)"
     foreach ($cert in $Certs) {
         $line = $run.Lines | Where-Object { $_.Contains($cert.Sha256.Substring(0, 16)) } |
@@ -84,9 +106,14 @@ function Test-List($Certs) {
 }
 
 function Test-Sign($Cert, [string] $Mode) {
+    if (Test-TooManyTimeouts) {
+        Write-Host "`n== skipped: sign $($Cert.Name) --ncrypt $Mode ($MaxTimeouts time-outs already)"
+        return
+    }
     $arguments = @('sign', '--cert', $Cert.Sha256.Substring(0, 16), '--hash', 'all', '--pss',
         '--ncrypt', $Mode) + $Isolate
     $run = Invoke-Probe $arguments
+    if ($run.TimedOut) { return }
     $cases = @($run.Lines | ForEach-Object {
             if ($_ -match '^\s+(OK|FAIL)\s+(SHA-\d+)\s+([A-Za-z0-9_.-]+):?\s*(.*)$') {
                 [pscustomobject]@{ Outcome = $Matches[1]; Hash = $Matches[2]; Algorithm = $Matches[3]; Rest = $Matches[4] }
@@ -127,16 +154,26 @@ function Write-Environment {
     $os = Get-CimInstance Win32_OperatingSystem
     Write-Host "OS: $($os.Caption) $($os.Version) (build $($os.BuildNumber))"
     Write-Host "PowerShell: $($PSVersionTable.PSVersion)"
-    Write-Host "Probe: $(& $Probe --version)"
+    Write-Host "Trace: WEBSIGN_PROBE_TRACE=$env:WEBSIGN_PROBE_TRACE"
+    $version = Invoke-Bounded -FilePath $Probe -Arguments '--version' -TimeoutSeconds 30 -Quiet
+    Write-Host "Probe: $($version.Stdout -join ' ')"
 }
 
 function Write-Report {
     if (-not $ReportPath) { return }
+    if (Test-TooManyTimeouts) {
+        Write-Host "`n== skipped: report ($MaxTimeouts time-outs already)"
+        return
+    }
     # Warning only: the report depends on sections owned by other commands,
     # and it exits non-zero whenever a case fails, including PSS on CAPI.
     try {
-        $run = Invoke-Probe @('report', '--run-signatures', '--all', '--hash', 'all', '--pss', '--out', $ReportPath)
-        if (-not (Test-Path -LiteralPath $ReportPath)) {
+        # PKCS#11 discovery stays on here: what it finds is part of the evidence.
+        $run = Invoke-Bounded -FilePath $Probe -TimeoutSeconds ($ProbeTimeoutSeconds * 2) -Arguments @(
+            'report', '--run-signatures', '--all', '--hash', 'all', '--pss', '--silent', '--out', $ReportPath)
+        if ($run.TimedOut) {
+            Write-Warning 'report timed out; see its last trace line above'
+        } elseif (-not (Test-Path -LiteralPath $ReportPath)) {
             Write-Warning "report did not write $ReportPath (exit code $($run.ExitCode))"
         }
     } catch {
@@ -145,13 +182,17 @@ function Write-Report {
 }
 
 Write-Environment
+Write-Host "`n== removing test certificates left by an earlier run"
 & "$PSScriptRoot/make-test-certs.ps1" -Remove
 try {
+    Write-Host "`n== creating test certificates"
     $certs = @(& "$PSScriptRoot/make-test-certs.ps1")
     $certs | Format-Table Name, Api, Provider, Thumbprint | Out-String | Write-Host
+    $certutil = Join-Path ([Environment]::SystemDirectory) 'certutil.exe'
     foreach ($cert in $certs | Where-Object Api -EQ 'CAPI') {
-        Write-Host "certutil view of $($cert.Name):"
-        certutil -user -store My $cert.Thumbprint | Select-String 'Provider|KeySpec' | ForEach-Object { Write-Host "  $_" }
+        $view = Invoke-Bounded -FilePath $certutil -Arguments '-user', '-store', 'My', $cert.Thumbprint `
+            -TimeoutSeconds 60 -Quiet -Label "certutil view of $($cert.Name)"
+        $view.Lines | Select-String 'Provider|KeySpec' | ForEach-Object { Write-Host "  $_" }
     }
     Test-List $certs
     foreach ($mode in $Modes) {
@@ -161,6 +202,7 @@ try {
     $rows | Format-Table -AutoSize | Out-String -Width 200 | Write-Host
     Write-Report
 } finally {
+    Write-Host "`n== removing test certificates"
     & "$PSScriptRoot/make-test-certs.ps1" -Remove
 }
 

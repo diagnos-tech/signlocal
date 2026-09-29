@@ -21,6 +21,7 @@ use super::locator::Locator;
 use super::mechanism::{self, SignPlan};
 use super::{always_authenticate, login};
 use crate::keystores::{FoundKey, KeystoreError, SignRequest, Signature};
+use crate::trace::trace;
 
 pub fn sign(
     pkcs11: &Pkcs11,
@@ -42,7 +43,9 @@ pub fn sign(
 
     let started = Instant::now();
     let protected_path = token.protected_authentication_path();
+    trace!("C_Login (protected path: {protected_path})");
     login::log_in(&located.session, &token, request.pin)?;
+    trace!("C_Sign({} {})", request.hash, request.algorithm);
     let signed = sign_logged_in(module, &located, &plan, request, protected_path);
     let elapsed = started.elapsed();
     // On failure too, so the login never outlives this call. Best effort:

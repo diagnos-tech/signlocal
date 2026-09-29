@@ -8,8 +8,9 @@ use windows::Win32::Foundation::HWND;
 use windows::Win32::Security::Cryptography::{
     CERT_KEY_SPEC, CERT_NCRYPT_KEY_SPEC, CRYPT_ACQUIRE_ALLOW_NCRYPT_KEY_FLAG,
     CRYPT_ACQUIRE_COMPARE_KEY_FLAG, CRYPT_ACQUIRE_FLAGS, CRYPT_ACQUIRE_ONLY_NCRYPT_KEY_FLAG,
-    CRYPT_ACQUIRE_PREFER_NCRYPT_KEY_FLAG, CRYPT_ACQUIRE_WINDOW_HANDLE_FLAG,
-    CryptAcquireCertificatePrivateKey, HCRYPTPROV_OR_NCRYPT_KEY_HANDLE, NCRYPT_KEY_HANDLE,
+    CRYPT_ACQUIRE_PREFER_NCRYPT_KEY_FLAG, CRYPT_ACQUIRE_SILENT_FLAG,
+    CRYPT_ACQUIRE_WINDOW_HANDLE_FLAG, CryptAcquireCertificatePrivateKey,
+    HCRYPTPROV_OR_NCRYPT_KEY_HANDLE, NCRYPT_KEY_HANDLE,
 };
 use windows::core::BOOL;
 
@@ -20,12 +21,15 @@ use super::key_info::KeyLocation;
 use super::ncrypt;
 use super::store::CertContext;
 use crate::keystores::{KeystoreError, NcryptPreference, SignRequest};
+use crate::trace::trace;
 
 /// A private key ready to sign, kept with its certificate.
 #[derive(Debug)]
 pub struct AcquiredKey {
     // Declared first so it is released before the certificate.
     key: Key,
+    /// Signing passes `NCRYPT_SILENT_FLAG`: fail rather than show UI.
+    silent: bool,
     /// A handle Windows caches on the certificate lives only as long as the
     /// certificate does, so the certificate is kept alive with it.
     _cert: CertContext,
@@ -39,15 +43,20 @@ enum Key {
 
 impl AcquiredKey {
     /// Opens the key. Only the key's own provider may show UI here (e.g.
-    /// "insert your card"), owned by `owner`; the PIN is asked when signing.
+    /// "insert your card"), owned by `owner`, and none at all when `silent`;
+    /// the PIN is asked when signing.
     pub fn open(
         cert: CertContext,
         preference: NcryptPreference,
         owner: Option<HWND>,
+        silent: bool,
     ) -> Result<Self, KeystoreError> {
         // The comparison catches a key-provider entry that points to the
         // wrong container (e.g. after a token was re-issued).
         let mut flags = CRYPT_ACQUIRE_COMPARE_KEY_FLAG | preference_flag(preference);
+        if silent {
+            flags |= CRYPT_ACQUIRE_SILENT_FLAG;
+        }
         if owner.is_some() {
             flags |= CRYPT_ACQUIRE_WINDOW_HANDLE_FLAG;
         }
@@ -57,6 +66,10 @@ impl AcquiredKey {
         let mut handle = HCRYPTPROV_OR_NCRYPT_KEY_HANDLE::default();
         let mut key_spec = CERT_KEY_SPEC(0);
         let mut caller_frees = BOOL(0);
+        trace!(
+            "CryptAcquireCertificatePrivateKey(--ncrypt {preference:?}, silent: {silent}, owner window: {})",
+            owner.is_some()
+        );
         // SAFETY: `cert` is a live context; the out-pointers are locals; with
         // CRYPT_ACQUIRE_WINDOW_HANDLE_FLAG, `parameters` points to an HWND
         // that outlives the call.
@@ -85,9 +98,21 @@ impl AcquiredKey {
                 context,
                 key_spec.0,
                 KeyLocation::of(&cert).as_ref(),
+                silent,
             )?)
         };
-        Ok(Self { key, _cert: cert })
+        trace!(
+            "key opened as {}",
+            match key {
+                Key::Ncrypt(_) => "CNG",
+                Key::Capi(_) => "CAPI",
+            }
+        );
+        Ok(Self {
+            key,
+            silent,
+            _cert: cert,
+        })
     }
 
     /// Signs and names the native call that did it.
@@ -97,7 +122,9 @@ impl AcquiredKey {
         owner: Option<HWND>,
     ) -> Result<(Vec<u8>, &'static str), KeystoreError> {
         match &self.key {
-            Key::Ncrypt(key) => ncrypt::sign(key, request, owner).map(|bytes| (bytes, ncrypt::API)),
+            Key::Ncrypt(key) => {
+                ncrypt::sign(key, request, owner, self.silent).map(|bytes| (bytes, ncrypt::API))
+            }
             Key::Capi(key) => capi::sign(key, request, owner).map(|bytes| (bytes, key.api())),
         }
     }

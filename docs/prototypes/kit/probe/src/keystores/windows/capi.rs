@@ -6,9 +6,9 @@ use std::ptr;
 use probe_core::{HashAlgorithm, SignatureAlgorithm};
 use windows::Win32::Foundation::{ERROR_MORE_DATA, HWND, NTE_BAD_ALGID};
 use windows::Win32::Security::Cryptography::{
-    ALG_ID, CALG_SHA_256, CALG_SHA_384, CALG_SHA_512, CRYPT_MACHINE_KEYSET, CryptAcquireContextW,
-    CryptSetHashParam, CryptSetProvParam, CryptSignHashW, HP_HASHVAL, MS_ENH_RSA_AES_PROV_W,
-    PP_CLIENT_HWND, PROV_RSA_AES, PROV_RSA_FULL,
+    ALG_ID, CALG_SHA_256, CALG_SHA_384, CALG_SHA_512, CRYPT_MACHINE_KEYSET, CRYPT_SILENT,
+    CryptAcquireContextW, CryptSetHashParam, CryptSetProvParam, CryptSignHashW, HP_HASHVAL,
+    MS_ENH_RSA_AES_PROV_W, PP_CLIENT_HWND, PROV_RSA_AES, PROV_RSA_FULL,
 };
 use windows::core::{HRESULT, HSTRING, PCWSTR};
 
@@ -17,6 +17,7 @@ use super::errors;
 use super::handles::{CryptHash, CryptProv};
 use super::key_info::KeyLocation;
 use crate::keystores::{KeystoreError, SignRequest};
+use crate::trace::trace;
 
 pub const API: &str = "CryptSignHash";
 /// [`API`] after reopening the container in the AES CSP.
@@ -42,16 +43,18 @@ pub struct CapiKey {
 impl CapiKey {
     /// Wraps a context from `CryptAcquireCertificatePrivateKey`. Keys in a
     /// SHA-1-only Microsoft CSP are reopened in the Enhanced RSA and AES CSP,
-    /// which reads the same key containers (what .NET does for SHA-2).
+    /// which reads the same key containers (what .NET does for SHA-2),
+    /// with `CRYPT_SILENT` when `silent`.
     pub fn new(
         context: CryptProv,
         key_spec: u32,
         location: Option<&KeyLocation>,
+        silent: bool,
     ) -> Result<Self, KeystoreError> {
         let provider = location.map_or_else(String::new, |at| at.provider.clone());
         match location.filter(|at| needs_aes_provider(at)) {
             Some(at) => Ok(Self {
-                context: open_in_aes_provider(at)?,
+                context: open_in_aes_provider(at, silent)?,
                 key_spec,
                 provider,
                 api: API_VIA_AES,
@@ -77,13 +80,17 @@ fn needs_aes_provider(location: &KeyLocation) -> bool {
             .any(|name| name.eq_ignore_ascii_case(&location.provider))
 }
 
-fn open_in_aes_provider(location: &KeyLocation) -> Result<CryptProv, KeystoreError> {
+fn open_in_aes_provider(location: &KeyLocation, silent: bool) -> Result<CryptProv, KeystoreError> {
     let container = HSTRING::from(location.container.as_str());
-    let flags = if location.machine_keyset {
+    let mut flags = if location.machine_keyset {
         CRYPT_MACHINE_KEYSET.0
     } else {
         0
     };
+    if silent {
+        flags |= CRYPT_SILENT;
+    }
+    trace!("CryptAcquireContext(same container, Enhanced RSA and AES CSP, silent: {silent})");
     let mut handle = 0usize;
     // SAFETY: container and provider names are NUL-terminated and outlive
     // the call; `handle` is a live out-pointer.
@@ -135,6 +142,10 @@ pub fn sign(
     unsafe { CryptSetHashParam(hash.raw(), HP_HASHVAL, request.digest.as_ptr(), 0) }
         .map_err(|error| errors::native("CryptSetHashParam", &error))?;
 
+    trace!(
+        "CryptSignHash({} {}, key spec {})",
+        request.hash, request.algorithm, key.key_spec
+    );
     let mut signature = vec![0u8; MAX_SIGNATURE_LEN];
     let mut len = signature.len() as u32;
     // SAFETY: `signature` has `len` writable bytes; the description must be null.

@@ -29,10 +29,19 @@ use std::path::Path;
 use keystore::Pkcs11Keystore;
 
 use super::{Opened, Options, SourceFailure};
+use crate::trace::trace;
 
 /// Loads every PKCS#11 module that can be found and adds one keystore per module.
 pub fn open(options: &Options, opened: &mut Opened) {
-    for candidate in discovery::discover(options) {
+    trace!(
+        "PKCS#11 discovery (p11-kit: {}, known paths: {}, --module: {})",
+        !options.no_p11_kit,
+        !options.no_known_modules,
+        options.extra_modules.len()
+    );
+    let candidates = discovery::discover(options);
+    trace!("PKCS#11 candidates: {}", candidates.len());
+    for candidate in candidates {
         let file_name = file_name(&candidate.path);
         if !candidate.path.exists() {
             if candidate.reportable {
@@ -43,6 +52,7 @@ pub fn open(options: &Options, opened: &mut Opened) {
             }
             continue;
         }
+        trace!("loading PKCS#11 module {file_name} (C_Initialize)");
         match module::load(&candidate.path) {
             Ok(pkcs11) => opened.keystores.push(Box::new(Pkcs11Keystore::new(
                 pkcs11,

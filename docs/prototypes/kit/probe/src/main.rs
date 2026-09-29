@@ -11,10 +11,17 @@ mod devices;
 mod keystores;
 mod nm;
 mod platform;
+mod trace;
 
 use std::process::ExitCode;
 
 fn main() -> ExitCode {
+    trace::trace!(
+        "websign-probe {} started on {} {}",
+        env!("CARGO_PKG_VERSION"),
+        std::env::consts::OS,
+        std::env::consts::ARCH
+    );
     // Browsers start the host with their own arguments, never ours, so this
     // check comes before any command-line parsing.
     if let Some(launch) = nm::detect_browser_launch() {

@@ -83,13 +83,15 @@ function New-Layout {
     Set-Content -LiteralPath (Join-Path $layout 'AppxManifest.xml') -Value $manifest -Encoding utf8NoBOM
 }
 
-function Invoke-Tool([string] $Tool, [string[]] $Arguments) {
+function Invoke-Tool([string] $Tool, [string[]] $Arguments, [int] $TimeoutSeconds = 300) {
     $shown = for ($i = 0; $i -lt $Arguments.Count; $i++) {
         if ($i -gt 0 -and $Arguments[$i - 1] -eq '/p' -and $Arguments[0] -eq 'sign') { '***' } else { $Arguments[$i] }
     }
-    Write-Host "> $(Split-Path -Leaf $Tool) $($shown -join ' ')"
-    & $Tool @Arguments
-    if ($LASTEXITCODE -ne 0) { throw "$(Split-Path -Leaf $Tool) failed with exit code $LASTEXITCODE" }
+    $name = Split-Path -Leaf $Tool
+    $run = Invoke-Bounded -FilePath $Tool -Arguments $Arguments -TimeoutSeconds $TimeoutSeconds `
+        -Label "$name $($shown -join ' ')"
+    if ($run.TimedOut) { throw "TIMEOUT in $name after $TimeoutSeconds s" }
+    if ($run.ExitCode -ne 0) { throw "$name failed with exit code $($run.ExitCode)" }
 }
 
 # Signs the package with a throwaway certificate and trusts that certificate.

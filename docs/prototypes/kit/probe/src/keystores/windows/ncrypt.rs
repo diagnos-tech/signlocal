@@ -8,7 +8,8 @@ use windows::Win32::Foundation::{HWND, NTE_BUFFER_TOO_SMALL};
 use windows::Win32::Security::Cryptography::{
     BCRYPT_PKCS1_PADDING_INFO, BCRYPT_PSS_PADDING_INFO, BCRYPT_SHA256_ALGORITHM,
     BCRYPT_SHA384_ALGORITHM, BCRYPT_SHA512_ALGORITHM, NCRYPT_FLAGS, NCRYPT_PAD_PKCS1_FLAG,
-    NCRYPT_PAD_PSS_FLAG, NCRYPT_WINDOW_HANDLE_PROPERTY, NCryptSetProperty, NCryptSignHash,
+    NCRYPT_PAD_PSS_FLAG, NCRYPT_SILENT_FLAG, NCRYPT_WINDOW_HANDLE_PROPERTY, NCryptSetProperty,
+    NCryptSignHash,
 };
 use windows::core::PCWSTR;
 
@@ -16,15 +17,18 @@ use super::MAX_SIGNATURE_LEN;
 use super::errors;
 use super::handles::NcryptKey;
 use crate::keystores::{KeystoreError, SignRequest};
+use crate::trace::trace;
 
 pub const API: &str = "NCryptSignHash";
 
 /// Signs the digest. ECDSA comes back as raw `r || s`, RSA as the
-/// big-endian signature block: both already in their final format.
+/// big-endian signature block: both already in their final format. With
+/// `silent`, a provider that would need UI fails instead of showing it.
 pub fn sign(
     key: &NcryptKey,
     request: &SignRequest<'_>,
     owner: Option<HWND>,
+    silent: bool,
 ) -> Result<Vec<u8>, KeystoreError> {
     if let Some(owner) = owner {
         set_owner(key, owner);
@@ -38,13 +42,21 @@ pub fn sign(
         // The salt length every PAdES/CMS verifier expects.
         cbSalt: request.hash.digest_len() as u32,
     };
-    let (padding, flags): (Option<*const c_void>, NCRYPT_FLAGS) = match request.algorithm {
+    let (padding, mut flags): (Option<*const c_void>, NCRYPT_FLAGS) = match request.algorithm {
         SignatureAlgorithm::Ecdsa => (None, NCRYPT_FLAGS(0)),
         SignatureAlgorithm::RsaPkcs1v15 => {
             (Some(ptr::from_ref(&pkcs1).cast()), NCRYPT_PAD_PKCS1_FLAG)
         }
         SignatureAlgorithm::RsaPss => (Some(ptr::from_ref(&pss).cast()), NCRYPT_PAD_PSS_FLAG),
     };
+
+    if silent {
+        flags |= NCRYPT_SILENT_FLAG;
+    }
+    trace!(
+        "NCryptSignHash({} {}, silent: {silent})",
+        request.hash, request.algorithm
+    );
 
     // One call with a buffer that fits any key, like .NET does: a size
     // query first would be a second round trip to the card, and some
