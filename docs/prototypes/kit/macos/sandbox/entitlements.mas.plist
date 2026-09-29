@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Entitlements of the Mac App Store build of the app: one binary that is the
+  app, the native messaging host started by Chrome/Edge/Brave/Firefox, and
+  the signer. It is started by browsers directly (not by a sandboxed parent),
+  so it carries its own sandbox instead of com.apple.security.inherit, like
+  Bitwarden's desktop_proxy (apps/desktop/resources/entitlements.desktop_proxy.plist).
+
+  TODO(gustavo): replace TEAMID with the Apple Team ID (project.toml, [ids]).
+  The identifier keys and the app group need a provisioning profile, so
+  sandbox-test.sh removes them for its ad hoc signed build.
+-->
+<plist version="1.0">
+<dict>
+	<key>com.apple.application-identifier</key>
+	<string>TEAMID.dev.websign.app</string>
+	<key>com.apple.developer.team-identifier</key>
+	<string>TEAMID</string>
+
+	<key>com.apple.security.app-sandbox</key>
+	<true/>
+
+	<!--
+	  TKSmartCardSlotManager and the PC/SC framework (readers and ATR in the
+	  diagnostics window, and vendor PKCS#11 modules, which talk to the card
+	  through CryptoTokenKit or PC/SC from inside our process). Keychain token
+	  items do not need it: kSecAttrAccessGroupToken is granted to every app.
+	-->
+	<key>com.apple.security.smartcard</key>
+	<true/>
+
+	<!-- USB device list (VID:PID) in the diagnostics window. -->
+	<key>com.apple.security.device.usb</key>
+	<true/>
+
+	<!--
+	  Shared with the Safari web extension (appex) and, if it ever exists, the
+	  PKCS#11 companion: the relay socket lives in this group's container.
+	-->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>TEAMID.dev.websign</string>
+	</array>
+
+	<!--
+	  Native messaging manifests. Only the NativeMessagingHosts folders, never
+	  the browser profiles. Paths are relative to the real home directory.
+	  Same list as probe/src/nm/register/macos.rs, minus Chrome for Testing
+	  (development only). Chrome, Edge and Firefox follow the vendors'
+	  documentation and Bitwarden's MAS build; Brave, Vivaldi and Opera
+	  follow KeePassXC and Chromium's DIR_USER_DATA/NativeMessagingHosts rule.
+	  Unverified candidate, left out until tested on a real Mac:
+	  Arc: /Library/Application Support/Arc/User Data/NativeMessagingHosts/
+	-->
+	<key>com.apple.security.temporary-exception.files.home-relative-path.read-write</key>
+	<array>
+		<string>/Library/Application Support/Google/Chrome/NativeMessagingHosts/</string>
+		<string>/Library/Application Support/Google/Chrome Beta/NativeMessagingHosts/</string>
+		<string>/Library/Application Support/Google/Chrome Dev/NativeMessagingHosts/</string>
+		<string>/Library/Application Support/Google/Chrome Canary/NativeMessagingHosts/</string>
+		<string>/Library/Application Support/Chromium/NativeMessagingHosts/</string>
+		<string>/Library/Application Support/Microsoft Edge/NativeMessagingHosts/</string>
+		<string>/Library/Application Support/Microsoft Edge Beta/NativeMessagingHosts/</string>
+		<string>/Library/Application Support/Microsoft Edge Dev/NativeMessagingHosts/</string>
+		<string>/Library/Application Support/Microsoft Edge Canary/NativeMessagingHosts/</string>
+		<string>/Library/Application Support/BraveSoftware/Brave-Browser/NativeMessagingHosts/</string>
+		<string>/Library/Application Support/BraveSoftware/Brave-Browser-Beta/NativeMessagingHosts/</string>
+		<string>/Library/Application Support/BraveSoftware/Brave-Browser-Nightly/NativeMessagingHosts/</string>
+		<string>/Library/Application Support/Vivaldi/NativeMessagingHosts/</string>
+		<string>/Library/Application Support/com.operasoftware.Opera/NativeMessagingHosts/</string>
+		<string>/Library/Application Support/com.operasoftware.OperaDeveloper/NativeMessagingHosts/</string>
+		<string>/Library/Application Support/Mozilla/NativeMessagingHosts/</string>
+	</array>
+</dict>
+</plist>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Minimal bundle for the sandbox experiment. The bundle identifier names the
+  sandbox container (~/Library/Containers/<id>) and must match
+  project.toml [ids].macos_bundle_id; sandbox-test.sh checks it.
+  LSUIElement keeps the command-line probe out of the Dock.
+-->
+<plist version="1.0">
+<dict>
+	<key>CFBundleIdentifier</key>
+	<string>dev.websign.app</string>
+	<key>CFBundleExecutable</key>
+	<string>websign-probe</string>
+	<key>CFBundleName</key>
+	<string>WebeSign</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>12.0</string>
+	<key>LSUIElement</key>
+	<true/>
+</dict>
+</plist>
