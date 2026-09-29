@@ -54,6 +54,7 @@ jobs:
         working-directory: docs/prototypes/kit/nm-e2e
         run: npm ci && npx playwright-core install --with-deps chromium
       - name: PKCS#11 signing and native messaging end to end
+        timeout-minutes: 10
         env:
           PROBE_EXE: ${{ github.workspace }}/docs/prototypes/kit/target/release/websign-probe
           REPORT_PATH: ${{ runner.temp }}/report-linux.md
@@ -81,12 +82,18 @@ jobs:
         with:
           workspaces: docs/prototypes/kit
       - name: Lint and unit tests
+        # bash stops at the first failing command; a multi-line pwsh step
+        # would only report the exit code of the last one.
+        shell: bash
         run: |
           cargo clippy --all-targets -- -D warnings
           cargo test --all
       - name: Build probe
         run: cargo build --release -p websign-probe
       - name: CNG and CAPI signing with software keys
+        # A key that unexpectedly asks for a PIN or consent would wait for a
+        # click forever; fail the step instead of the whole job.
+        timeout-minutes: 10
         shell: pwsh
         env:
           PROBE_EXE: ${{ github.workspace }}\docs\prototypes\kit\target\release\websign-probe.exe
@@ -102,6 +109,7 @@ jobs:
         # Experimental: the outcome is evidence for docs/prototypes/1-windows.md
         # either way, so it must not hide the results of the steps above.
         continue-on-error: true
+        timeout-minutes: 15
         shell: pwsh
         env:
           PROBE_EXE: ${{ github.workspace }}\docs\prototypes\kit\target\release\websign-probe.exe
@@ -144,12 +152,15 @@ jobs:
       - name: Build probe
         run: cargo build --release -p websign-probe
       - name: Keychain signing with test identities
+        timeout-minutes: 10
         env:
           PROBE_EXE: ${{ github.workspace }}/docs/prototypes/kit/target/release/websign-probe
           REPORT_PATH: ${{ runner.temp }}/report-macos.md
         run: bash macos/ci-macos.sh
       - name: App Sandbox (manifests, keychain, PKCS#11 module loading)
         continue-on-error: true
+        # Includes `brew install softhsm opensc`.
+        timeout-minutes: 15
         env:
           PROBE_EXE: ${{ github.workspace }}/docs/prototypes/kit/target/release/websign-probe
         run: bash macos/sandbox/sandbox-test.sh

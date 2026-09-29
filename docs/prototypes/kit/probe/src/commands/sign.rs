@@ -5,9 +5,10 @@ use std::process::ExitCode;
 use anyhow::{Context, bail};
 use probe_core::{HashAlgorithm, PublicKeyKind, SignatureAlgorithm};
 use secrecy::SecretString;
+use zeroize::Zeroize as _;
 
-use super::inventory::{Entry, Inventory};
 use super::view;
+use crate::keystores::inventory::{Entry, Inventory};
 use crate::keystores::{Options, PinPrompt, SignRequest};
 
 /// Arguments of `websign-probe sign`.
@@ -45,8 +46,8 @@ pub enum HashChoice {
 
 pub fn run(args: &Args) -> anyhow::Result<ExitCode> {
     let mut inventory = Inventory::collect(&args.options);
-    for failure in &inventory.opened.failures {
-        eprintln!("warning: {}: {}", failure.source, failure.error);
+    for warning in inventory.warnings() {
+        eprintln!("warning: {warning}");
     }
     let selected = select(&inventory, args)?;
     let results = run_cases(
@@ -147,15 +148,9 @@ pub fn run_cases(
 
 /// Indices into `inventory.entries` to sign with.
 pub fn select(inventory: &Inventory, args: &Args) -> anyhow::Result<Vec<usize>> {
-    let position = |target: &Entry| {
-        inventory
-            .entries
-            .iter()
-            .position(|entry| std::ptr::eq(entry, target))
-    };
     let mut chosen = Vec::new();
-    for group in inventory.deduped() {
-        let Ok(info) = &group.primary.info else {
+    for group in inventory.groups() {
+        let Ok(info) = &inventory.entries[group.primary].info else {
             continue;
         };
         let hex = info.fingerprint.to_hex();
@@ -169,9 +164,9 @@ pub fn select(inventory: &Inventory, args: &Args) -> anyhow::Result<Vec<usize>> 
         if !wanted {
             continue;
         }
-        chosen.extend(position(group.primary));
+        chosen.push(group.primary);
         if args.every_path {
-            chosen.extend(group.alternates.iter().filter_map(|entry| position(entry)));
+            chosen.extend(group.alternates);
         }
     }
     if chosen.is_empty() {
@@ -216,11 +211,15 @@ fn random_digest(hash: HashAlgorithm) -> anyhow::Result<Vec<u8>> {
 
 /// The PIN never touches logs or output; it lives in a zeroizing buffer.
 fn read_pin(from_env: Option<&str>) -> anyhow::Result<SecretString> {
-    let pin = match from_env {
+    let mut pin = match from_env {
         Some(var) => {
             std::env::var(var).with_context(|| format!("environment variable {var} is not set"))?
         }
         None => rpassword::prompt_password("PKCS#11 PIN: ").context("cannot read the PIN")?,
     };
-    Ok(SecretString::from(pin))
+    // `SecretString::from(String)` may move the text to an exact-size buffer
+    // and free the old one unwiped; copying and wiping leaves no PIN behind.
+    let secret = SecretString::from(pin.as_str());
+    pin.zeroize();
+    Ok(secret)
 }

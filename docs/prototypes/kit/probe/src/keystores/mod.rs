@@ -4,6 +4,7 @@
 //! (that is `probe-core`'s job) and never ask for a PIN themselves: OS keys
 //! let the OS prompt, PKCS#11 keys receive the PIN in the [`SignRequest`].
 
+pub mod inventory;
 mod model;
 pub mod pkcs11;
 

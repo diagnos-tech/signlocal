@@ -4,7 +4,7 @@
 //! mis-sized request must fail the same way whether or not a token is plugged
 //! in.
 //!
-//! Spike-only safety net: a panic while serving a request (a key source or
+//! Safety net of the probe: a panic while serving a request (a key source or
 //! library that is unfinished or crashes) becomes an `internal` error reply
 //! instead of ending the process, so one bad request cannot cut a whole proof
 //! session short.

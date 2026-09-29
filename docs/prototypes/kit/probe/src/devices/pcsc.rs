@@ -24,6 +24,7 @@ pub enum CardState {
 /// One reader.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Reader {
+    /// See [`anonymous_reader_name`].
     pub name: String,
     pub card: CardState,
     /// Another application holds the card exclusively.
@@ -90,11 +91,32 @@ fn reader(name: &str, state: State, atr: &[u8]) -> Reader {
         CardState::Unknown
     };
     Reader {
-        name: name.to_owned(),
+        name: anonymous_reader_name(name),
         card,
         in_use: state.intersects(State::INUSE | State::EXCLUSIVE),
         atr: (card == CardState::Present && !atr.is_empty()).then(|| super::format::hex_upper(atr)),
     }
+}
+
+/// A reader name without the parts that can identify the unit.
+///
+/// pcsc-lite names readers `<model> [<USB interface>] (<USB serial>) <n> <slot>`,
+/// and a device may carry its serial number in the interface string instead,
+/// so every bracketed part is dropped. What is left (model and position)
+/// still tells the readers of one machine apart. PKCS#11 modules that talk
+/// PC/SC use the same text as slot description.
+pub fn anonymous_reader_name(name: &str) -> String {
+    let mut kept = String::with_capacity(name.len());
+    let mut depth = 0usize;
+    for c in name.chars() {
+        match c {
+            '(' | '[' => depth += 1,
+            ')' | ']' if depth > 0 => depth -= 1,
+            _ if depth == 0 => kept.push(c),
+            _ => {}
+        }
+    }
+    kept.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
 /// A sentence for the person reading the output, not an error code.
@@ -139,6 +161,32 @@ mod tests {
         assert!(reader("r", State::PRESENT | State::INUSE, &[0x3B]).in_use);
         assert!(reader("r", State::PRESENT | State::EXCLUSIVE, &[0x3B]).in_use);
         assert_eq!(reader("r", State::UNAWARE, &[]).card, CardState::Unknown);
+    }
+
+    #[test]
+    fn reader_names_lose_the_usb_serial_and_interface() {
+        assert_eq!(
+            anonymous_reader_name("Gemalto PC Twin Reader (A5B0A38B) 00 00"),
+            "Gemalto PC Twin Reader 00 00"
+        );
+        assert_eq!(
+            anonymous_reader_name(
+                "SCM Microsystems Inc. SCR 3310 [CCID Interface] (21120508204208) 01 00"
+            ),
+            "SCM Microsystems Inc. SCR 3310 01 00"
+        );
+        assert_eq!(
+            anonymous_reader_name("Token [Token (0001234567)] 00 00"),
+            "Token 00 00"
+        );
+        assert_eq!(
+            anonymous_reader_name("Alcor Micro USB Smart Card Reader 0"),
+            "Alcor Micro USB Smart Card Reader 0"
+        );
+        assert_eq!(
+            reader("R (123456) 00 00", State::EMPTY, &[]).name,
+            "R 00 00"
+        );
     }
 
     #[test]

@@ -25,13 +25,14 @@ pela SignPath.
 
 | Arquivo | Papel |
 |---|---|
-| `store.rs` | Abre `CurrentUser\MY` só leitura, com `CERT_STORE_CTRL_AUTO_RESYNC` (tokens entram e saem sem reabrir); enumera; reencontra pela impressão digital SHA-1 (`CERT_FIND_HASH`) |
-| `key_info.rs` | Lê `CERT_KEY_PROV_INFO` (provedor, tipo, contêiner, keyspec) **sem abrir a chave** e decide se é hardware |
+| `store.rs`, `thumbprint.rs` | Abre `CurrentUser\MY` só leitura, com `CERT_STORE_CTRL_AUTO_RESYNC` (tokens entram e saem sem reabrir); enumera; reencontra pela impressão digital SHA-1 (`CERT_FIND_HASH`) |
+| `key_info.rs` | Lê `CERT_KEY_PROV_INFO` (provedor, tipo, contêiner, keyspec) **sem abrir a chave** |
+| `hardware.rs` | Decide se o provedor é hardware perguntando ao provedor, nunca à chave |
 | `acquire.rs` | `CryptAcquireCertificatePrivateKey` com `COMPARE_KEY`, `WINDOW_HANDLE` e `ALLOW`/`PREFER`/`ONLY_NCRYPT_KEY` conforme `--ncrypt` |
 | `ncrypt.rs` | `NCryptSignHash`: PKCS#1 v1.5, PSS (salt = tamanho do digest), ECDSA (já sai `r‖s`) |
 | `capi.rs` | `CryptCreateHash` + `HP_HASHVAL` + `CryptSignHashW`, bytes invertidos (CAPI devolve little-endian) |
 | `errors.rs` | Cancelamento → `Cancelled`; PIN errado → `WrongPin`; bloqueado → `PinLocked`; resto → código + mensagem do sistema |
-| `window.rs` | Dono do diálogo de PIN: janela do chamador (o Chrome passa `--parent-window=<HWND>` ao host) ou, sem ela, a do console |
+| `window.rs` | Dono do diálogo de PIN: janela do chamador (o Chrome passa `--parent-window=<HWND>` ao host, mas `0` quando o pedido vem do service worker de uma extensão MV3) ou, sem ela, a do console — que, para um host iniciado pelo navegador, é um console **oculto** (o Chromium inicia o host com `start_hidden`) |
 
 Decisões e porquês:
 
@@ -284,8 +285,9 @@ RDP e numa VM sem GPU, o tempo até a janela aparecer e se o fallback de softwar
 - **Handle em cache e cartão removido:** tratado descartando o handle após erro nativo; confirmar
   com os tokens que o erro é nativo (e não, por exemplo, um diálogo de "insira o cartão").
 - **Foco do diálogo:** mesmo com dono, o Windows pode negar o primeiro plano a um processo que não
-  recebeu entrada (o diálogo pisca na barra de tarefas). O host é filho do navegador, que tem o foco;
-  medir no passo 7.
+  recebeu entrada (o diálogo pisca na barra de tarefas). O host é filho do navegador, que tem o foco,
+  mas o dono que ele consegue é o console oculto (o `--parent-window` vem `0` de uma extensão MV3);
+  medir no passo 7. No app, o dono será a janela de Confirmação, que já está na frente.
 - **Desinstalar o MSIX deixa as chaves do HKCU e os manifestos** (sem virtualização o Windows não os
   limpa). O host some, o navegador reporta "host não encontrado" e a extensão mostra "falta o app".
   O app recria tudo a cada início.
@@ -294,9 +296,9 @@ RDP e numa VM sem GPU, o tempo até a janela aparecer e se o fallback de softwar
 - **`unvirtualizedResources` é capacidade restrita:** a Microsoft pode recusar na certificação.
   Precisa de justificativa no Partner Center (integração de native messaging, precedentes de apps
   que registram hosts). É o ponto que mais pode derrubar o MSIX e só se prova submetendo.
-- **Runtime do Visual C++:** o binário Rust MSVC depende de `vcruntime140.dll`; o runner tem, uma
-  máquina limpa pode não ter. O app deve compilar com `+crt-static` ou declarar a dependência
-  `Microsoft.VCLibs.140.00.UWPDesktop`.
+- **Runtime do Visual C++:** um binário Rust MSVC comum depende de `vcruntime140.dll`, que uma máquina
+  limpa pode não ter. O kit já compila com `+crt-static` (`kit/.cargo/config.toml`) e não depende dela;
+  o app deve manter isso (ou declarar `Microsoft.VCLibs.140.00.UWPDesktop` no MSIX).
 - **Ambientes corporativos** que bloqueiam apps da loja/aliases (AppLocker, políticas de Store) não
   terão o MSIX — o MSI continua necessário para eles no longo prazo, mesmo com o MSIX aprovado.
 - **Runner é Windows Server:** qualquer sucesso no CI precisa ser repetido em Windows 10/11 cliente.

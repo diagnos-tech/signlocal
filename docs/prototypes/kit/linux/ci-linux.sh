@@ -13,7 +13,7 @@
 #   5. the same certificate through two modules (SoftHSM directly and through
 #      p11-kit-proxy.so) is listed once, with "+1 other path";
 #   6. a key that demands the PIN on every signature (CKA_ALWAYS_AUTHENTICATE)
-#      either signs or is refused with a message that names the reason;
+#      signs every case (C_SignInit, context-specific C_Login, raw C_Sign);
 #   7. `devices` runs on a machine without readers;
 #   8. `report` writes a Markdown report with no token label and no PIN;
 #   9. the browser path works end to end (nm-e2e), when Node and Chromium exist.
@@ -104,7 +104,7 @@ restore_home() {
 # --------------------------------------------------------------- the token ---
 
 step "SoftHSM2 token"
-# shellcheck source=softhsm-setup.sh
+# shellcheck source-path=SCRIPTDIR source=softhsm-setup.sh
 source "$here/softhsm-setup.sh"
 softhsm_setup "$work/softhsm"
 echo "  module: $SOFTHSM_MODULE"
@@ -211,18 +211,8 @@ if [[ -z $aa_fingerprint ]]; then
   fail "always-authenticate: the key is not listed"
 else
   run_probe sign --cert "$aa_fingerprint" --hash all --pss --pin-env "$pin_var" "${isolate[@]}"
-  ok=$(grep -Ec '^   OK ' <<<"$last_output" || true)
-  refused=$(grep -Ec '^   FAIL .*CKA_ALWAYS_AUTHENTICATE' <<<"$last_output" || true)
-  # Two acceptable outcomes: the key signs every case (a single-part C_Sign
-  # after the context-specific login), or every case is refused with the
-  # reason spelled out. Anything else is a bug.
-  if ((ok == 6)); then
-    echo "  always-authenticate: signs (6 of 6)"
-  elif ((refused == 6)); then
-    echo "  always-authenticate: refused with an explanation (known limit of the PKCS#11 wrapper)"
-  else
-    fail "always-authenticate: $ok signed, $refused refused with the reason, 6 expected in one group"
-  fi
+  expect_status 0 "always-authenticate"
+  expect_count '^   OK ' 6 "always-authenticate (RSA: 3 hashes x 2 algorithms)"
 fi
 export SOFTHSM2_CONF=$main_conf SOFTHSM_DIR=$work/softhsm
 

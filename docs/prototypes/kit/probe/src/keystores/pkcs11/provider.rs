@@ -1,10 +1,13 @@
 //! How a token is described to people, and whether it counts as hardware.
 //!
-//! The token label is deliberately never used: on ICP-Brasil and eIDAS cards
-//! it usually carries the holder's name, and this text ends up in reports
-//! that are published.
+//! The token label and serial number are deliberately never used: on
+//! ICP-Brasil and eIDAS cards the label usually carries the holder's name,
+//! and this text ends up in reports that are published. The slot description
+//! is the reader name for most modules, so it loses the reader's USB serial.
 
 use std::fmt::Write as _;
+
+use crate::devices::anonymous_reader_name;
 
 /// Whether the token shows its private keys before the PIN is entered.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -60,8 +63,9 @@ pub fn describe(facts: &TokenFacts<'_>) -> String {
         "" => model,
         manufacturer => format!("{model} ({manufacturer})"),
     };
-    if !facts.slot_description.trim().is_empty() {
-        let _ = write!(text, "; slot \"{}\"", facts.slot_description.trim());
+    let slot = anonymous_reader_name(facts.slot_description);
+    if !slot.is_empty() {
+        let _ = write!(text, "; slot \"{slot}\"");
     }
     let _ = write!(text, "; {}", facts.module_file);
     text.push_str(match facts.keys {
@@ -121,6 +125,19 @@ mod tests {
         assert_eq!(
             describe(&facts()),
             "eToken (SafeNet, Inc.); slot \"Alcor Micro AU9540 00 00\"; libeTPkcs11.so; key hidden until login"
+        );
+    }
+
+    #[test]
+    fn the_readers_usb_serial_never_reaches_the_description() {
+        let text = describe(&TokenFacts {
+            slot_description: "Gemalto USB Shell Token V2 (29C2E3B5) 00 00",
+            ..facts()
+        });
+        assert!(!text.contains("29C2E3B5"), "{text}");
+        assert!(
+            text.contains("slot \"Gemalto USB Shell Token V2 00 00\""),
+            "{text}"
         );
     }
 

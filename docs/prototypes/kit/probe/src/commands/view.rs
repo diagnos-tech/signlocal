@@ -2,8 +2,8 @@
 
 use probe_core::{CertInfo, PublicKeyKind};
 
-use super::inventory::Entry;
 use crate::keystores::PinPrompt;
+use crate::keystores::inventory::Entry;
 
 /// One line per key, with personal data only when `show_names` is set.
 pub fn describe(entry: &Entry, show_names: bool) -> String {
@@ -74,6 +74,7 @@ pub fn certificate_kind(info: &CertInfo) -> String {
     }
 }
 
+/// `RSA-2048`, `EC P-256`: also the `key` field of the native messaging `list` reply.
 pub fn key_label(key: &PublicKeyKind) -> String {
     match key {
         PublicKeyKind::Rsa { bits } => format!("RSA-{bits}"),

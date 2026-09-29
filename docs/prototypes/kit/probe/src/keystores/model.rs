@@ -13,7 +13,9 @@ pub struct FoundKey {
     /// [`super::Keystore::name`] of the source that found it.
     pub keystore: String,
     pub kind: SourceKind,
-    /// Where the key lives, for people: KSP/CSP name, token label and model.
+    /// Where the key lives, for people: KSP/CSP name, token model and module,
+    /// or CryptoTokenKit driver. It ends up in published reports, so never a
+    /// token label, key container name or serial number.
     pub provider: String,
     /// `Some(true)` when the source says the key is in hardware.
     pub hardware: Option<bool>,

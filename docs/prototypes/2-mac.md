@@ -109,9 +109,10 @@ não verificado).
 `~/Library/Containers/<bundle id>/Data`. O Bitwarden resolve isso no Electron com
 `os.userInfo().homedir` e documenta no Rust (`desktop_native/core/src/ipc/mod.rs`): *"While running
 sandboxed, it's different: /Users/<user>/Library/Containers/com.bitwarden.desktop/Data"*. O
-`nm/register` do kit usa `std::env::home_dir()`, que lê `$HOME` → gravaria **dentro do contêiner**,
-onde nenhum navegador procura. Correção: no macOS, pegar o home do banco de usuários
-(`getpwuid_r(getuid())`). O `sandbox-test.sh` detecta e aponta esse caso explicitamente.
+`std::env::home_dir()` lê `$HOME` → gravaria **dentro do contêiner**, onde nenhum navegador procura.
+Por isso o `nm/register` do kit, no macOS, pega o home do banco de usuários
+(`getpwuid_r(getuid())`, em `probe/src/nm/register/home.rs`), que a sandbox não redireciona. O
+`sandbox-test.sh` detecta e aponta explicitamente o caso de o manifesto cair dentro do contêiner.
 
 ## 3. O experimento da sandbox (`sandbox-test.sh`)
 
@@ -366,7 +367,7 @@ pela appex com `activates = false` precisa trazer a janela para frente mesmo ass
 ## 6. O que falta
 
 - [ ] Log do CI (§4) — keychain e sandbox ad hoc.
-- [ ] Corrigir `register` para usar o home real no macOS (achado do §2) e reexecutar o CI.
+- [x] `register` usa o home real no macOS (`getpwuid_r`, achado do §2). Falta reexecutar o CI.
 - [ ] Chrome real iniciando o host sandboxed e assinando com A1 do keychain e com token CTK.
 - [ ] Firefox real (lê `~/Library/Application Support/Mozilla/NativeMessagingHosts/`).
 - [ ] Safari: projeto Xcode com a appex acima, extensão carregada, assinatura ponta a ponta,

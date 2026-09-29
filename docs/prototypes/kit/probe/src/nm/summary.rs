@@ -1,8 +1,9 @@
 //! Certificate to wire summary: what `list` tells the extension.
 
-use probe_core::{CertInfo, PublicKeyKind, SignatureAlgorithm};
+use probe_core::{CertInfo, SignatureAlgorithm};
 
 use super::backend::CertificateSummary;
+use crate::commands::view::key_label;
 use crate::keystores::{FoundKey, PinPrompt};
 
 /// Describes `info`, reached through `found`, for the extension.
@@ -48,12 +49,4 @@ fn classify(info: &CertInfo) -> (&'static str, Option<String>) {
         return ("eidas-qualified", None);
     }
     ("certificate", None)
-}
-
-fn key_label(key: &PublicKeyKind) -> String {
-    match key {
-        PublicKeyKind::Rsa { bits } => format!("RSA-{bits}"),
-        PublicKeyKind::Ec { curve } => format!("EC {}", curve.name()),
-        PublicKeyKind::Unsupported { oid } => format!("unsupported key {oid}"),
-    }
 }

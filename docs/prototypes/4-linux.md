@@ -49,7 +49,7 @@ libccid 1.5.5, pcscd 2.0.3 (sem leitores), Chromium 141 (Playwright 1194), Node 
 | 4 | Módulo registrado no p11-kit (diretório do usuário) é descoberto, e registro quebrado é só aviso? | **SIM** | §3.4 |
 | 5 | O mesmo certificado por dois módulos aparece uma vez, com "+1 other path"? | **SIM**, nas duas ordens de carga | §3.5 |
 | 6 | O `p11-kit-proxy.so` assina sozinho? | **SIM** — 15 de 15 | §3.5 |
-| 7 | Chave com `CKA_ALWAYS_AUTHENTICATE` assina? | **NÃO com o `cryptoki` 0.12**: recusada com a razão escrita. Com `cryptoki-sys` a chamada crua assina 6 de 6 | §3.6, §5 |
+| 7 | Chave com `CKA_ALWAYS_AUTHENTICATE` assina? | **SIM** — 6 de 6: `C_SignInit`, `C_Login(CKU_CONTEXT_SPECIFIC)` e `C_Sign` cru pela tabela de funções do módulo (`cryptoki-sys`) | §3.6 |
 | 8 | `devices` roda sem hardware, sem `pcscd` e sem `/sys/bus/usb`? | **SIM** — mensagens claras, código 0; com `pcscd` rodando e sem leitor: "none found" | §3.7 |
 | 9 | `report` não vaza rótulo do token nem PIN? | **SIM** (o script confere) | §3.8 |
 | 10 | Página → extensão → host → SoftHSM2 num Chromium real? | **SIM** — `NM-E2E: PASS`, assinatura verificada | §3.9 |
@@ -135,13 +135,18 @@ direto **e** pelo proxy no mesmo processo funciona: o segundo `C_Initialize` vol
 ### 3.6 Chave com `CKA_ALWAYS_AUTHENTICATE`
 
 ```text
-> websign-probe sign --cert 5cd32c5e4eb11896 --hash all --pss --pin-env WEBSIGN_PROBE_PIN …
-   FAIL  SHA-256 RSASSA-PKCS1-v1_5: not supported by this key: the key asks for the PIN on every signature (CKA_ALWAYS_AUTHENTICATE), and the PKCS#11 wrapper in use can only finish that signature with multi-part calls, which this module refuses
-   (… 6 linhas iguais, uma por hash e algoritmo)
+> websign-probe sign --cert ee8c71007793ea12 --hash all --pss --pin-env WEBSIGN_PROBE_PIN …
+   OK    SHA-256 RSASSA-PKCS1-v1_5 via C_Sign in 5 ms
+   OK    SHA-256 RSASSA-PSS via C_Sign in 5 ms
+   (… 6 de 6, uma linha por hash e algoritmo)
 ```
 
-O script aceita dois resultados: assina as 6 combinações, ou recusa as 6 com essa frase. Qualquer outra
-coisa reprova.
+O `cryptoki` 0.12 só oferece `C_Sign` junto com o próprio `C_SignInit`, e o PKCS#11 exige o
+`C_Login(CKU_CONTEXT_SPECIFIC)` **entre** os dois. Por isso o kit faz `C_SignInit` pelo `cryptoki`, o
+login de contexto e um `C_Sign` cru, obtido pelo `C_GetFunctionList` do módulo (o único símbolo que a
+especificação obriga a exportar). Uma chamada só, com buffer para qualquer chave: uma consulta de tamanho
+antes seria um segundo `C_Sign` depois do login de contexto, que alguns módulos contam como o uso único.
+O script exige as 6 combinações.
 
 ### 3.7 `devices`
 
@@ -156,7 +161,8 @@ PC/SC readers:
 ```
 
 Com `pcscd` rodando e sem leitor, a segunda seção diz `none found`. O `--json` traz os mesmos campos
-(`usb.devices`, `usb.hidden`, `readers.readers[].atr`, `problem`); número de série USB nunca é lido.
+(`usb.devices`, `usb.hidden`, `readers.readers[].atr`, `problem`); número de série USB nunca é lido, e o
+que o pcsc-lite acrescenta ao nome do leitor (`[interface] (número de série)`) é cortado.
 
 ### 3.8 `report` (trechos)
 
@@ -165,7 +171,7 @@ Com `pcscd` rodando e sem leitor, a segunda seção diz `none found`. O `--json`
 - `pkcs11:libsofthsm2.so`: opened
 ### Certificates
 | # | Holder | Type | Key | Valid until | Source | Other paths |
-| 1 | <hidden> | certificate | EC P-384 | 2036-09-26 | pkcs11:libsofthsm2.so (SoftHSM v2 (SoftHSM project); slot "SoftHSM slot ID 0x…"; …) | — |
+| 1 | _hidden_ | certificate | EC P-384 | 2036-09-26 | pkcs11:libsofthsm2.so (SoftHSM v2 (SoftHSM project); slot "SoftHSM slot ID 0x…"; …) | — |
 ### Devices
 _USB enumeration failed: /sys/bus/usb/devices/ not found (errno 2)_
 _the PC/SC service is not running (start pcscd on Linux, or the Smart Card service on Windows)_
@@ -192,9 +198,9 @@ recebe o PIN pelo navegador, esse teste usa a variável só porque não há jane
 | Decisão | Por quê |
 |---|---|
 | **`list` nunca pede PIN**; "tem chave" = existe `CKO_PRIVATE_KEY` com o mesmo `CKA_ID` visível sem login; se o token não lista **nenhuma** chave e exige login (`CKF_LOGIN_REQUIRED`), todo certificado conta; se não exige login, não há chave | O SoftHSM2 e muitos cartões escondem a chave privada até o PIN. A regra de duas etapas evita listar certificados de CA quando o token mostra as chaves; o `provider` diz qual regra valeu (`key visible` / `key hidden until login`) |
-| `provider` = modelo e fabricante do token + descrição do slot + arquivo do módulo; **sem rótulo** | Repositório público; o rótulo costuma ter o nome do titular |
+| `provider` = modelo e fabricante do token + descrição do slot + arquivo do módulo; **sem rótulo** e sem o número de série USB que o pcsc-lite põe entre parênteses no nome do leitor (a descrição do slot costuma ser esse nome; `devices` corta o mesmo trecho) | Repositório público; o rótulo costuma ter o nome do titular, e o número de série identifica o dispositivo |
 | `hardware` = `Some(false)` só se o nome (modelo, fabricante, descrição do slot) diz "softhsm"/"software"; senão `Some(true)` | `CKF_HW_SLOT` não decide: o SoftHSM2 o deixa desligado, mas módulos de cartão reais também |
-| Uma sessão somente leitura por assinatura, `C_Login(CKU_USER)` com o PIN direto do `SecretString` (sem cópia), logout e fechamento ao fim | Nenhum PIN em cache no probe. O app, pela [decisão D5](../plan.md), manterá a sessão aberta: isso muda o `Keystore`, não o `list`/`sign` daqui |
+| Uma sessão somente leitura por assinatura, `C_Login(CKU_USER)` com o PIN direto do `SecretString` (sem cópia), logout (também quando a assinatura falha) e fechamento ao fim | Nenhum PIN em cache no probe. O app, pela [decisão D5](../plan.md), manterá a sessão aberta: isso muda o `Keystore`, não o `list`/`sign` daqui |
 | Slot muda? Acha o certificado de novo pelo **DER** (locator só é o primeiro palpite) e a chave pelo `CKA_ID` | Numeração de slots muda com a ordem dos leitores |
 | Mecanismo: RSA v1.5 = `CKM_RSA_PKCS` sobre `DigestInfo`; PSS = `CKM_RSA_PKCS_PSS` com hash, MGF1 e `sLen` = tamanho do digest; ECDSA = `CKM_ECDSA` (aceita `r ‖ s`; converte DER; recusa qualquer outro tamanho). `C_GetMechanismInfo` antes: `Unsupported` se o token não assina com ele | Assinatura correta sobre o digest, nunca sobre o hash do hash |
 | Erros: `CKR_PIN_INCORRECT`/`PIN_INVALID`/`PIN_LEN_RANGE` → `WrongPin`; `PIN_LOCKED` → `PinLocked`; `FUNCTION_CANCELED`/`CANCEL`/`FUNCTION_REJECTED` → `Cancelled`; `USER_NOT_LOGGED_IN` sem PIN → `PinRequired`; o resto → `Native { api, code, message }` com o nome `CKR_*` | A interface reage aos tipos; suporte precisa do código |
@@ -206,7 +212,7 @@ recebe o PIN pelo navegador, esse teste usa a variável só porque não há jane
 | Item | Por que falta | Como provar |
 |---|---|---|
 | **Token real** por p11-kit ou caminho conhecido (SafeNet 5110, SafeSign, ePass2003, Watchdata, DXToken) | sem hardware | roteiro da §6 |
-| **`CKA_ALWAYS_AUTHENTICATE`** (Cartão de Cidadão, DNIe, cartão da Estônia) | o `cryptoki` 0.12 não tem `C_Sign` sem `C_SignInit`. O caminho multi-part é o único possível e o SoftHSM2 o recusa (`CKR_OPERATION_NOT_INITIALIZED` no `C_SignUpdate`); o OpenSC aceita por acumular o dado, mas não testei | adicionar `cryptoki-sys = "0.5"` a `probe/Cargo.toml` e trocar o multi-part por um `C_Sign` cru **depois** do `C_Login(CKU_CONTEXT_SPECIFIC)`: verificado em cópia do kit, 6 de 6 no SoftHSM2 com chave `--always-auth` (patch pronto) |
+| **`CKA_ALWAYS_AUTHENTICATE` com cartão real** (Cartão de Cidadão, DNIe, cartão da Estônia) | provado só no SoftHSM2 (§3.6); cartões reais podem abrir o próprio diálogo de PIN no login de contexto | Cartão de Cidadão/DNIe reais, roteiro da §6 |
 | **PIN pad** (`CKF_PROTECTED_AUTHENTICATION_PATH`) | o SoftHSM2 não tem; o código passa `NULL` ao `C_Login` e `pin: App { protected_path: true }` ao chamador | leitor com teclado (GemPCPinpad `08e6:3478`) |
 | Token com `CKF_CLOCK_ON_TOKEN` e hora inválida | o `cryptoki` recusa `C_GetTokenInfo` e o slot some da lista | token real; se ocorrer, ler o `CK_TOKEN_INFO` cru |
 | `pcscd` com leitor e cartão (ATR de verdade, `devices` com USB) | o contêiner não tem `/sys/bus/usb`; testei `pcscd` sem leitor | `websign-probe devices --all-usb` numa máquina com leitor |
@@ -268,7 +274,8 @@ recebe o PIN pelo navegador, esse teste usa a variável só porque não há jane
 
 - **PKCS#11 pelo p11-kit e por caminhos conhecidos: sim**, com chaves de software. A descoberta, a
   deduplicação por arquivo e por certificado e as assinaturas RSA/PSS/ECDSA estão provadas; o que resta é
-  token real (§6) e `CKA_ALWAYS_AUTHENTICATE` (§5).
-- **Dependência a decidir:** `cryptoki-sys = "0.5"` para o `C_Sign` cru das chaves de assinatura qualificada
-  (Cartão de Cidadão, DNIe). `TODO(gustavo)`.
+  token real (§6) e `CKA_ALWAYS_AUTHENTICATE` com cartão real (§5).
+- **Dependência adotada no kit:** `cryptoki-sys = "0.5"` (a mesma versão que o `cryptoki` 0.12 usa) para o
+  `C_Sign` cru das chaves de assinatura qualificada (§3.6). Sai quando o `cryptoki` oferecer `C_Sign` sem
+  `C_SignInit`.
 - **Pacote Linux:** `libpcsclite1` obrigatório (§5) e `p11-kit` recomendado.

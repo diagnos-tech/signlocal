@@ -22,7 +22,8 @@ pub struct CertificateSummary {
     pub key: String,
     /// Key source, e.g. `windows` or `pkcs11:libsofthsm2.so`.
     pub origin: String,
-    /// Where the key lives, for people: provider or token label.
+    /// Where the key lives, for people: KSP/CSP, token model or driver.
+    /// Never a token label, container name or serial number.
     pub provider: String,
     pub hardware: Option<bool>,
     /// Who asks for the PIN: `system`, `app` or `pin-pad`.

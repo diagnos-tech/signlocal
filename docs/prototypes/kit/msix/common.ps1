@@ -2,6 +2,9 @@
 # package's names, all derived from project.toml, and small Windows helpers.
 
 Set-StrictMode -Version Latest
+# Exit codes of native tools are checked by hand (Invoke-Tool, reg.exe), so a
+# non-zero one must not stop the script, whatever the PowerShell default is.
+$PSNativeCommandUseErrorActionPreference = $false
 
 # Flat "table.key" -> value map of the string entries in project.toml. Enough
 # for that file; not a general TOML parser.
@@ -53,17 +56,22 @@ function Find-SdkTool([string] $Name) {
     $tool
 }
 
-# Runs a script in Windows PowerShell 5.1 and returns its output. The Appx
-# cmdlets do not load in every PowerShell 7 build; Windows PowerShell always
-# has them.
+# Runs a script in Windows PowerShell 5.1 and returns its standard output.
+# The Appx cmdlets do not load in every PowerShell 7 build; Windows PowerShell
+# always has them. Its stderr is kept apart: started with -EncodedCommand it
+# may write progress there as CLIXML, which must not reach callers that parse
+# the output (Get-InstalledProbePackage reads it as JSON).
 function Invoke-WindowsPowerShell([string] $Script) {
     $prelude = "`$ErrorActionPreference = 'Stop'; `$ProgressPreference = 'SilentlyContinue'; "
     $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($prelude + $Script))
-    $output = & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand $encoded 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        throw "Windows PowerShell failed ($LASTEXITCODE): $Script`n$($output -join "`n")"
+    $all = @(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand $encoded 2>&1)
+    $exitCode = $LASTEXITCODE
+    $stderr = @($all | Where-Object { $_ -is [Management.Automation.ErrorRecord] } | ForEach-Object { "$_" })
+    $stdout = @($all | Where-Object { $_ -isnot [Management.Automation.ErrorRecord] })
+    if ($exitCode -ne 0) {
+        throw "Windows PowerShell failed ($exitCode): $Script`n$(($stdout + $stderr) -join "`n")"
     }
-    $output
+    $stdout
 }
 
 # The installed probe package (Name, PackageFamilyName, PackageFullName,

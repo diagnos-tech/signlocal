@@ -6,9 +6,9 @@ use std::process::ExitCode;
 
 use anyhow::Context;
 
-use super::inventory::{Entry, Inventory};
 use super::{sign, view};
 use crate::devices;
+use crate::keystores::inventory::{Entry, Inventory};
 
 /// Arguments of `websign-probe report`.
 #[derive(Debug, clap::Args)]
@@ -49,6 +49,7 @@ pub fn run(args: &Args) -> anyhow::Result<ExitCode> {
         report.push('\n');
     }
 
+    let report = without_home(&report, std::env::home_dir());
     match &args.out {
         Some(path) => std::fs::write(path, &report)
             .with_context(|| format!("cannot write {}", path.display()))?,
@@ -59,6 +60,17 @@ pub fn run(args: &Args) -> anyhow::Result<ExitCode> {
     } else {
         ExitCode::SUCCESS
     })
+}
+
+/// `text` with the home directory spelled `~`: module paths in source errors
+/// often sit under it, and the directory is named after the user.
+fn without_home(text: &str, home: Option<std::path::PathBuf>) -> String {
+    let home = home.as_deref().and_then(std::path::Path::to_str);
+    match home.map(|home| home.trim_end_matches(['/', '\\'])) {
+        // A home of "/" (or none) would turn every path into nonsense.
+        Some(home) if home.len() > 1 => text.replace(home, "~"),
+        _ => text.to_owned(),
+    }
 }
 
 fn header(report: &mut String) {
@@ -86,17 +98,18 @@ fn certificates(report: &mut String, inventory: &Inventory) {
     report.push_str("### Certificates\n\n");
     report.push_str("| # | Holder | Type | Key | Valid until | Source | Other paths |\n");
     report.push_str("|---|---|---|---|---|---|---|\n");
-    for group in inventory.deduped() {
-        let index = position(inventory, group.primary) + 1;
+    for group in inventory.groups() {
         let others: Vec<String> = group
             .alternates
             .iter()
-            .map(|entry| view::source_label(entry))
+            .map(|&alternate| view::source_label(&inventory.entries[alternate]))
             .collect();
+        // Numbered by entry, like the signature rows below.
         let _ = writeln!(
             report,
-            "| {index} | {} | {} |",
-            row(group.primary),
+            "| {} | {} | {} |",
+            group.primary + 1,
+            row(&inventory.entries[group.primary]),
             if others.is_empty() {
                 "—".to_owned()
             } else {
@@ -108,23 +121,39 @@ fn certificates(report: &mut String, inventory: &Inventory) {
 }
 
 /// Holder is always redacted here: reports end up in a public repository.
+/// (Italics, not `<hidden>`: Markdown renderers swallow unknown tags.)
 fn row(entry: &Entry) -> String {
     let source = view::source_label(entry);
     match &entry.info {
         Ok(info) => format!(
-            "<hidden> | {} | {} | {} | {source}",
+            "_hidden_ | {} | {} | {} | {source}",
             view::certificate_kind(info),
             view::key_label(&info.key),
             view::date(info.not_after),
         ),
-        Err(error) => format!("<unreadable: {error}> | | | | {source}"),
+        Err(error) => format!("_unreadable: {error}_ | | | | {source}"),
     }
 }
 
-fn position(inventory: &Inventory, target: &Entry) -> usize {
-    inventory
-        .entries
-        .iter()
-        .position(|entry| std::ptr::eq(entry, target))
-        .unwrap_or_default()
+#[cfg(test)]
+mod tests {
+    use std::path::PathBuf;
+
+    use super::without_home;
+
+    #[test]
+    fn the_home_directory_never_reaches_the_report() {
+        let home = Some(PathBuf::from("/home/ana/"));
+        assert_eq!(
+            without_home("module file not found: /home/ana/lib/x.so", home),
+            "module file not found: ~/lib/x.so"
+        );
+        let windows = Some(PathBuf::from(r"C:\Users\ana"));
+        assert_eq!(
+            without_home(r"cannot load C:\Users\ana\x.dll", windows),
+            r"cannot load ~\x.dll"
+        );
+        assert_eq!(without_home("/x", Some(PathBuf::from("/"))), "/x");
+        assert_eq!(without_home("/x", None), "/x");
+    }
 }

@@ -1,32 +1,27 @@
-//! Opening, listing and de-duplicating the key sources, once per process.
+//! The machine's key sources, opened and listed once per process.
 
 use std::any::Any;
 use std::panic::{AssertUnwindSafe, catch_unwind};
 
-use probe_core::{CertInfo, Deduped, Fingerprint, dedup_by_fingerprint};
+use probe_core::{CertInfo, Fingerprint};
 
-use crate::keystores::{self, FoundKey, Keystore, Opened, Options};
+use crate::keystores::inventory::{Entry, Inventory};
+use crate::keystores::{Opened, Options};
 use crate::nm::protocol::{ErrorCode, ProtocolError};
 
-/// One certificate and the ways to reach its key.
+/// One certificate the host offers.
 pub(super) struct Group {
-    pub(super) info: CertInfo,
-    /// Index into [`Loaded::keys`] of the preferred path (the OS first).
-    pub(super) primary: usize,
-    pub(super) paths: usize,
+    /// Index into [`Inventory::entries`] of the preferred path (the OS first).
+    entry: usize,
+    /// How many key sources expose the certificate.
+    paths: usize,
 }
 
-pub(super) struct Key {
-    /// Index into [`Loaded::keystores`].
-    pub(super) store: usize,
-    pub(super) found: FoundKey,
-}
-
+/// Every source, what it listed, and the certificates that can be offered
+/// (the ones whose DER could be read).
 pub(super) struct Loaded {
-    pub(super) keystores: Vec<Box<dyn Keystore>>,
-    pub(super) keys: Vec<Key>,
-    pub(super) groups: Vec<Group>,
-    pub(super) warnings: Vec<String>,
+    pub(super) inventory: Inventory,
+    groups: Vec<Group>,
 }
 
 pub(super) enum State {
@@ -41,7 +36,10 @@ pub(super) fn ensure_loaded<'a>(
     options: &Options,
 ) -> Result<&'a mut Loaded, ProtocolError> {
     if matches!(state, State::Unloaded) {
-        *state = match catch_unwind(AssertUnwindSafe(|| load(options))) {
+        let opened = catch_unwind(AssertUnwindSafe(|| {
+            Loaded::index(crate::keystores::open_all(options))
+        }));
+        *state = match opened {
             Ok(loaded) => State::Loaded(loaded),
             Err(payload) => State::Failed(ProtocolError::new(
                 ErrorCode::Internal,
@@ -56,55 +54,38 @@ pub(super) fn ensure_loaded<'a>(
     }
 }
 
-/// Opens every source, lists it and merges duplicates (the OS wins).
-fn load(options: &Options) -> Loaded {
-    Loaded::index(keystores::open_all(options))
-}
-
 impl Loaded {
     /// Lists every opened source and groups the keys by certificate.
     pub(super) fn index(opened: Opened) -> Loaded {
-        let mut warnings: Vec<String> = opened
-            .failures
-            .iter()
-            .map(|failure| format!("{}: {}", failure.source, failure.error))
+        let inventory = Inventory::list(opened);
+        let groups = inventory
+            .groups()
+            .into_iter()
+            .filter(|group| inventory.entries[group.primary].info.is_ok())
+            .map(|group| Group {
+                entry: group.primary,
+                paths: 1 + group.alternates.len(),
+            })
             .collect();
-        let mut keystores = opened.keystores;
-        let mut keys = Vec::new();
-        for (store, keystore) in keystores.iter_mut().enumerate() {
-            match keystore.list() {
-                Ok(found) => keys.extend(found.into_iter().map(|found| Key { store, found })),
-                Err(error) => warnings.push(format!("{}: {error}", keystore.name())),
-            }
-        }
+        Loaded { inventory, groups }
+    }
 
-        let parsed: Vec<(usize, CertInfo)> = keys
-            .iter()
-            .enumerate()
-            .filter_map(|(index, key)| Some((index, CertInfo::from_der(&key.found.cert_der).ok()?)))
-            .collect();
-        let groups = dedup_by_fingerprint(parsed, |(index, _)| {
-            let found = &keys[*index].found;
-            (Fingerprint::of(&found.cert_der), found.kind)
+    /// Each offered certificate, its preferred entry and its number of paths.
+    pub(super) fn certificates(&self) -> impl Iterator<Item = (&CertInfo, &Entry, usize)> {
+        self.groups.iter().filter_map(|group| {
+            let entry = &self.inventory.entries[group.entry];
+            Some((entry.info.as_ref().ok()?, entry, group.paths))
         })
-        .into_iter()
-        .map(
-            |Deduped {
-                 primary,
-                 alternates,
-             }| Group {
-                paths: 1 + alternates.len(),
-                primary: primary.0,
-                info: primary.1,
-            },
-        )
-        .collect();
-        Loaded {
-            keystores,
-            keys,
-            groups,
-            warnings,
-        }
+    }
+
+    /// Index into [`Inventory::entries`] of the preferred path to `fingerprint`.
+    pub(super) fn find(&self, fingerprint: &Fingerprint) -> Option<usize> {
+        self.groups.iter().map(|group| group.entry).find(|&entry| {
+            self.inventory.entries[entry]
+                .info
+                .as_ref()
+                .is_ok_and(|info| info.fingerprint == *fingerprint)
+        })
     }
 }
 

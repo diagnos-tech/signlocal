@@ -1,9 +1,9 @@
 //! The real [`Backend`]: the same key sources the CLI uses, opened once per
 //! process on first use.
 //!
-//! Spike shortcuts, on purpose:
-//! * the PKCS#11 PIN comes from `WEBSIGN_PROBE_PIN` (there is no PIN window
-//!   yet, and the value is never logged);
+//! Shortcuts of the probe, on purpose:
+//! * the PKCS#11 PIN comes from `WEBSIGN_PROBE_PIN` (the probe has no PIN
+//!   window, and the value is never logged);
 //! * extra PKCS#11 modules come from `WEBSIGN_PROBE_MODULES`, a list of paths
 //!   separated like `PATH` is, because a browser cannot pass `--module`;
 //! * a panic inside a key source is caught and reported as an `internal`
@@ -15,14 +15,15 @@ use std::panic::{AssertUnwindSafe, catch_unwind};
 
 use secrecy::SecretString;
 
-use super::backend::{Backend, CertificateList, CertificateSummary, SignJob, SignedDigest};
+use super::backend::{Backend, CertificateList, SignJob, SignedDigest};
 use super::protocol::{ErrorCode, ProtocolError};
 use super::summary;
+use crate::keystores::inventory::Inventory;
 use crate::keystores::{KeystoreError, Options, PinPrompt, SignRequest};
 
 mod sources;
 
-use sources::{Key, State, ensure_loaded, panic_message};
+use sources::{State, ensure_loaded, panic_message};
 
 /// Environment variable with the PKCS#11 PIN, for tests only.
 pub const PIN_ENV: &str = "WEBSIGN_PROBE_PIN";
@@ -31,7 +32,7 @@ pub const MODULES_ENV: &str = "WEBSIGN_PROBE_MODULES";
 
 pub struct KeystoreBackend {
     state: State,
-    /// Read once at startup: the spike has no PIN window yet.
+    /// Read once at startup: the probe has no PIN window.
     pin: Option<SecretString>,
     options: Options,
 }
@@ -52,16 +53,12 @@ impl KeystoreBackend {
 impl Backend for KeystoreBackend {
     fn certificates(&mut self) -> Result<CertificateList, ProtocolError> {
         let loaded = ensure_loaded(&mut self.state, &self.options)?;
-        let certificates = loaded
-            .groups
-            .iter()
-            .map(|group| {
-                summary::summarize(&group.info, &loaded.keys[group.primary].found, group.paths)
-            })
-            .collect::<Vec<CertificateSummary>>();
         Ok(CertificateList {
-            certificates,
-            warnings: loaded.warnings.clone(),
+            certificates: loaded
+                .certificates()
+                .map(|(info, entry, paths)| summary::summarize(info, &entry.key, paths))
+                .collect(),
+            warnings: loaded.inventory.warnings(),
         })
     }
 
@@ -72,21 +69,23 @@ impl Backend for KeystoreBackend {
             options,
         } = self;
         let loaded = ensure_loaded(state, options)?;
-        let group = loaded
-            .groups
-            .iter()
-            .find(|group| group.info.fingerprint == job.fingerprint)
-            .ok_or_else(|| {
-                ProtocolError::new(ErrorCode::NotFound, "no certificate has that fingerprint")
-            })?;
-        if !group.info.can_sign() || !group.info.key.supports(job.algorithm) {
+        let index = loaded.find(&job.fingerprint).ok_or_else(|| {
+            ProtocolError::new(ErrorCode::NotFound, "no certificate has that fingerprint")
+        })?;
+        let Inventory { opened, entries } = &mut loaded.inventory;
+        let entry = &entries[index];
+        let usable = entry
+            .info
+            .as_ref()
+            .is_ok_and(|info| info.can_sign() && info.key.supports(job.algorithm));
+        if !usable {
             return Err(ProtocolError::new(
                 ErrorCode::Unsupported,
                 format!("this certificate cannot sign with {}", job.algorithm),
             ));
         }
 
-        let Key { store, found } = &loaded.keys[group.primary];
+        let found = &entry.key;
         let pin = match found.pin {
             PinPrompt::App {
                 protected_path: false,
@@ -100,7 +99,7 @@ impl Backend for KeystoreBackend {
             pin,
             parent_window: job.parent_window,
         };
-        let keystore = &mut loaded.keystores[*store];
+        let keystore = &mut opened.keystores[entry.store];
         let signature = catch_unwind(AssertUnwindSafe(|| keystore.sign(found, &request)))
             .map_err(|payload| {
                 ProtocolError::new(
@@ -140,7 +139,7 @@ fn options_with_modules(list: Option<OsString>) -> Options {
 fn missing_pin() -> ProtocolError {
     ProtocolError::new(
         ErrorCode::PinRequired,
-        format!("this key needs a PIN; the spike reads it from {PIN_ENV}"),
+        format!("this key needs a PIN; the probe host reads it from {PIN_ENV}"),
     )
 }
 

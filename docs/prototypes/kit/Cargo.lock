@@ -1141,6 +1141,7 @@ dependencies = [
  "cryptoki",
  "cryptoki-sys",
  "getrandom",
+ "libc",
  "nusb",
  "pcsc",
  "probe-core",

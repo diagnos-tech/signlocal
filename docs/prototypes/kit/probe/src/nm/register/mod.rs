@@ -11,6 +11,7 @@
 //! invisible.
 
 mod browsers;
+mod home;
 mod linux;
 mod macos;
 mod manifest;
@@ -104,31 +105,13 @@ fn plan(args: &Args, browsers: &[Browser]) -> anyhow::Result<Vec<Target>> {
         )]);
     }
     if cfg!(target_os = "linux") {
-        Ok(linux::targets(browsers, &home()?))
+        Ok(linux::targets(browsers, &home::real_home()?))
     } else if cfg!(target_os = "macos") {
-        Ok(macos::targets(browsers, &home()?))
+        Ok(macos::targets(browsers, &home::real_home()?))
     } else if cfg!(windows) {
         Ok(windows::targets(browsers, &manifest_dir(args)?))
     } else {
         bail!("native messaging registration is not implemented for this operating system")
-    }
-}
-
-fn home() -> anyhow::Result<PathBuf> {
-    let home = std::env::home_dir().context("cannot determine the home directory")?;
-    Ok(real_home(home))
-}
-
-/// A sandboxed macOS process sees `$HOME` inside its container
-/// (`<home>/Library/Containers/<bundle id>/Data`), but manifests must go to
-/// the real home, which the sandbox's temporary-exception entitlements are
-/// relative to. The layout is fixed by the OS, so the real home is what
-/// precedes `/Library/Containers/`.
-fn real_home(home: PathBuf) -> PathBuf {
-    const CONTAINERS: &str = "/Library/Containers/";
-    match home.to_str().and_then(|text| text.split_once(CONTAINERS)) {
-        Some((real, _)) if !real.is_empty() => PathBuf::from(real),
-        _ => home,
     }
 }
 
@@ -166,32 +149,5 @@ fn describe(target: &Target, outcome: &Outcome) -> String {
         Outcome::NotPresent => format!("  absent   {label}"),
         Outcome::Skipped(reason) => format!("  skipped  {label}  ({reason})"),
         Outcome::Failed(reason) => format!("  FAILED   {label}  {path}  ({reason})"),
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn a_sandbox_container_home_maps_back_to_the_real_home() {
-        assert_eq!(
-            real_home(PathBuf::from(
-                "/Users/ana/Library/Containers/dev.websign.app/Data"
-            )),
-            PathBuf::from("/Users/ana")
-        );
-    }
-
-    #[test]
-    fn ordinary_homes_are_left_alone() {
-        for home in [
-            "/Users/ana",
-            "/home/ana",
-            "/Library/Containers/x/Data",
-            r"C:\Users\ana",
-        ] {
-            assert_eq!(real_home(PathBuf::from(home)), PathBuf::from(home));
-        }
     }
 }

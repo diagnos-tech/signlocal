@@ -1,8 +1,9 @@
-//! Everything every key source can see, parsed and de-duplicated.
+//! Everything every key source can see, parsed and grouped by certificate.
+//! The CLI commands and the native host read the machine through this.
 
 use probe_core::{CertError, CertInfo, Deduped, Fingerprint, dedup_by_fingerprint};
 
-use crate::keystores::{self, FoundKey, Opened, Options, SourceFailure};
+use super::{FoundKey, Opened, Options, SourceFailure, open_all};
 
 /// One key as found by one source.
 #[derive(Debug)]
@@ -20,10 +21,14 @@ pub struct Inventory {
 }
 
 impl Inventory {
-    /// Opens every source and lists it. Sources that fail to open or list
-    /// end up in `opened.failures`; they never abort the run.
+    /// Opens every source on this machine and lists it.
     pub fn collect(options: &Options) -> Inventory {
-        let mut opened = keystores::open_all(options);
+        Inventory::list(open_all(options))
+    }
+
+    /// Lists every opened source. Sources that fail to list join
+    /// `opened.failures`; they never abort the run.
+    pub fn list(mut opened: Opened) -> Inventory {
         let mut entries = Vec::new();
         let mut failures = Vec::new();
         for (store, keystore) in opened.keystores.iter_mut().enumerate() {
@@ -43,10 +48,21 @@ impl Inventory {
         Inventory { opened, entries }
     }
 
-    /// Entries merged by certificate, OS sources first.
-    pub fn deduped(&self) -> Vec<Deduped<&Entry>> {
-        dedup_by_fingerprint(self.entries.iter().collect(), |entry| {
-            (Fingerprint::of(&entry.key.cert_der), entry.key.kind)
+    /// Indices into [`Inventory::entries`], one group per certificate, with
+    /// OS sources as primary.
+    pub fn groups(&self) -> Vec<Deduped<usize>> {
+        dedup_by_fingerprint((0..self.entries.len()).collect(), |&index| {
+            let key = &self.entries[index].key;
+            (Fingerprint::of(&key.cert_der), key.kind)
         })
+    }
+
+    /// `"<source>: <error>"` for every source that could not be opened or listed.
+    pub fn warnings(&self) -> Vec<String> {
+        self.opened
+            .failures
+            .iter()
+            .map(|failure| format!("{}: {}", failure.source, failure.error))
+            .collect()
     }
 }

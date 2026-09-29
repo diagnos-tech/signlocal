@@ -10,9 +10,11 @@ mod acquire;
 mod capi;
 mod errors;
 mod handles;
+mod hardware;
 mod key_info;
 mod ncrypt;
 mod store;
+mod thumbprint;
 mod window;
 
 use std::collections::HashMap;
@@ -27,8 +29,10 @@ use super::{
     Signature, SourceFailure,
 };
 use acquire::AcquiredKey;
-use key_info::{HardwareProbe, KeyLocation};
-use store::{CertStore, Thumbprint};
+use hardware::HardwareProbe;
+use key_info::KeyLocation;
+use store::CertStore;
+use thumbprint::Thumbprint;
 
 const NAME: &str = "windows";
 

@@ -125,7 +125,9 @@ fn resolve(module: &str, module_dirs: &[PathBuf]) -> PathBuf {
         .unwrap_or_else(|| path.to_owned())
 }
 
-#[cfg(test)]
+// p11-kit exists on Unix only, and these tests use Unix paths ("/abs/x.so"
+// is not absolute on Windows).
+#[cfg(all(test, unix))]
 mod tests {
     use super::*;
 

@@ -32,6 +32,9 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+# A failing probe run is data here (its exit code is checked), never a reason
+# to stop the script, whatever the PowerShell version's default is.
+$PSNativeCommandUseErrorActionPreference = $false
 Set-StrictMode -Version Latest
 
 if (-not $Probe -or -not (Test-Path -LiteralPath $Probe)) {

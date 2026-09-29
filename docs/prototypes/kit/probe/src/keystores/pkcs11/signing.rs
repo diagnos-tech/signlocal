@@ -2,9 +2,9 @@
 //!
 //! The flow is: find the certificate again (its slot may have moved), check
 //! that the token can do the mechanism, log in with the PIN, find the private
-//! key, sign, log out. Nothing is cached between signatures: the PIN is used
-//! for one `C_Login` and the session is closed afterwards, so the token asks
-//! for it again next time.
+//! key, sign, log out (whatever happened after the login). Nothing is cached
+//! between signatures: the PIN is used for one `C_Login` and the session is
+//! closed afterwards, so the token asks for it again next time.
 
 use std::time::Instant;
 
@@ -12,13 +12,11 @@ use cryptoki::context::Pkcs11;
 use cryptoki::error::{Error, RvError};
 use cryptoki::mechanism::MechanismType;
 use cryptoki::object::KeyType;
-use cryptoki::session::Session;
 use cryptoki::slot::Slot;
 use probe_core::{CertInfo, PublicKeyKind, SignatureAlgorithm};
-use secrecy::SecretString;
 
 use super::errors::{self, Context};
-use super::finder::{self, PrivateKey};
+use super::finder::{self, Located, PrivateKey};
 use super::locator::Locator;
 use super::mechanism::{self, SignPlan};
 use super::{always_authenticate, login};
@@ -45,23 +43,16 @@ pub fn sign(
     let started = Instant::now();
     let protected_path = token.protected_authentication_path();
     login::log_in(&located.session, &token, request.pin)?;
-    let private_key = finder::find_private_key(&located.session, &located.id)?;
-    check_key_type(&private_key, request.algorithm)?;
-    let raw = sign_with(
-        module,
-        &located.session,
-        &plan,
-        &private_key,
-        request.pin,
-        protected_path,
-    )?;
+    let signed = sign_logged_in(module, &located, &plan, request, protected_path);
+    let elapsed = started.elapsed();
+    // On failure too, so the login never outlives this call. Best effort:
+    // closing the last session of the token logs out as well.
+    let _ = located.session.logout();
+    let raw = signed?;
     let bytes = match curve {
         Some(curve) => mechanism::ecdsa_signature(raw, curve)?,
         None => raw,
     };
-    let elapsed = started.elapsed();
-    // Best effort: closing the session logs out anyway when it is the last one.
-    let _ = located.session.logout();
     Ok(Signature {
         bytes,
         api: "C_Sign",
@@ -120,21 +111,32 @@ fn check_key_type(key: &PrivateKey, algorithm: SignatureAlgorithm) -> Result<(),
     }
 }
 
-/// Single-part `C_Sign`, or the re-authenticating variant for keys that demand it.
-fn sign_with(
+/// Finds the private key (visible now that the session is logged in) and
+/// signs: single-part `C_Sign`, or the re-authenticating variant for keys
+/// that demand it.
+fn sign_logged_in(
     module: &std::path::Path,
-    session: &Session,
+    located: &Located,
     plan: &SignPlan,
-    key: &PrivateKey,
-    pin: Option<&SecretString>,
+    request: &SignRequest<'_>,
     protected_path: bool,
 ) -> Result<Vec<u8>, KeystoreError> {
+    let key = finder::find_private_key(&located.session, &located.id)?;
+    check_key_type(&key, request.algorithm)?;
     if key.always_authenticate {
-        return always_authenticate::sign(module, session, plan, key.handle, protected_path, pin);
+        return always_authenticate::sign(
+            module,
+            &located.session,
+            plan,
+            key.handle,
+            protected_path,
+            request.pin,
+        );
     }
-    session
+    located
+        .session
         .sign(&plan.mechanism, key.handle, &plan.input)
         .map_err(errors::mapper(Context {
-            without_pin: pin.is_none(),
+            without_pin: request.pin.is_none(),
         }))
 }

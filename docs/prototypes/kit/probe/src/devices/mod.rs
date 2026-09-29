@@ -1,12 +1,15 @@
 //! Hardware that might hold a certificate: USB devices and smart card readers.
 //!
 //! Only descriptive data (IDs, names, ATR); nothing here talks to a card.
-//! USB serial numbers are never read, and the reports built from this data
-//! are published, so nothing that identifies a person or a unit may enter.
+//! USB serial numbers are never read (and are cut out of reader names), and
+//! the reports built from this data are published, so nothing that
+//! identifies a person or a unit may enter.
 
 mod format;
 mod pcsc;
 mod usb;
+
+pub use pcsc::anonymous_reader_name;
 
 use std::process::ExitCode;
 

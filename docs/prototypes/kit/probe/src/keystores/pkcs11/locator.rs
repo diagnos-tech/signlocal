@@ -33,7 +33,8 @@ impl Locator {
 }
 
 fn decode_hex(text: &str) -> Option<Vec<u8>> {
-    if !text.len().is_multiple_of(2) || !text.is_ascii() {
+    // `from_str_radix` alone would also take a sign (`+f`).
+    if !text.len().is_multiple_of(2) || !text.bytes().all(|byte| byte.is_ascii_hexdigit()) {
         return None;
     }
     (0..text.len())
@@ -76,6 +77,7 @@ mod tests {
             "slot=1;id=zz",
             "id=00;slot=1",
             "slot=1;id=é0",
+            "slot=1;id=+f",
         ] {
             assert_eq!(Locator::parse(text), None, "{text:?}");
         }
