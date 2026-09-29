@@ -126,7 +126,7 @@ Onde o TDD cego não cabe inteiro:
 
 - **Adaptadores de SO** (Win32, Security.framework, PKCS#11): uma **suíte de contrato** única contra
   o trait `Keystore`, escrita antes, que roda no CI de cada SO com chaves de software (KSP de software,
-  keychain de teste, SoftHSM2). Tokens reais entram na matriz manual [`docs/compatibility.md`].
+  keychain de teste, SoftHSM2). Tokens reais entram na matriz manual [`docs/compatibility.md`](compatibility.md).
 - **Interface:** a máquina de estados da Confirmação é pura (TDD cego normal). As telas são testadas com
   `egui_kittest` (consultas pela árvore do AccessKit: "botão Assinar desabilitado nos primeiros 600 ms")
   mais snapshots visuais revisados pelo revisor.
