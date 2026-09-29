@@ -17,10 +17,8 @@ fn main() {
         ("WEBSIGN_PRODUCT_NAME", "product", "name"),
         ("WEBSIGN_SLUG", "product", "slug"),
         ("WEBSIGN_NATIVE_HOST", "ids", "native_host"),
-        ("WEBSIGN_URL_SCHEME", "ids", "url_scheme"),
         ("WEBSIGN_FIREFOX_ID", "extension", "firefox_id"),
         ("WEBSIGN_EXTENSION_DEV_ID", "extension", "dev_id"),
-        ("WEBSIGN_EXTENSION_DEV_KEY", "extension", "dev_key"),
         (
             "WEBSIGN_CHROME_WEB_STORE_ID",
             "extension",

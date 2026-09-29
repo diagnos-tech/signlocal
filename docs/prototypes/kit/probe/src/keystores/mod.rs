@@ -12,9 +12,9 @@ pub mod macos;
 #[cfg(windows)]
 pub mod windows;
 
-pub use model::{
-    FoundKey, KeystoreError, NcryptPreference, Options, PinPrompt, SignRequest, Signature,
-};
+#[cfg(windows)]
+pub use model::NcryptPreference;
+pub use model::{FoundKey, KeystoreError, Options, PinPrompt, SignRequest, Signature};
 
 /// A source of signing keys.
 pub trait Keystore {

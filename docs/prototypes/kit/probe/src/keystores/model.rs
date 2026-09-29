@@ -26,6 +26,8 @@ pub struct FoundKey {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PinPrompt {
     /// The OS or the vendor middleware shows its own dialog.
+    // Linux has no OS key store; only PKCS#11 keys exist there.
+    #[cfg_attr(not(any(windows, target_os = "macos")), allow(dead_code))]
     System,
     /// The app must collect it. `protected_path` means a PIN pad on the reader.
     App { protected_path: bool },
@@ -42,6 +44,7 @@ pub struct SignRequest<'a> {
     pub pin: Option<&'a SecretString>,
     /// Native window handle that should own OS PIN dialogs (HWND on Windows),
     /// so they open in front of the browser instead of behind it.
+    #[cfg_attr(not(windows), allow(dead_code))]
     pub parent_window: Option<isize>,
 }
 

@@ -19,6 +19,8 @@ secrecy = "0.10"
 zeroize = "1"
 rpassword = "7"
 cryptoki = "0.12"
+# Raw `C_Sign` for keys that re-authenticate per signature; same version cryptoki uses.
+cryptoki-sys = "0.5"
 nusb = "0.2"
 pcsc = "2.9"
 
