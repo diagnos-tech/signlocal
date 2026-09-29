@@ -1,6 +1,6 @@
 # Prova 3 — Tokens no Mac: CryptoTokenKit ou PKCS#11?
 
-**Status:** em andamento (rascunho) · **Resultado:** _a preencher com tokens reais_ ·
+**Status:** falta token real · **Resultado parcial:** PKCS#11 **não** carrega dentro da sandbox (CI) → token só-PKCS#11 exige o complemento ·
 **Decisão:** _depende da matriz abaixo_ — o critério está em [§1](#1-critério-o-complemento-dmg-existe)
 
 ## Objetivo
@@ -92,11 +92,24 @@ O SoftHSM prova as regras da sandbox para arquivos e código, mas não PC/SC: m�
 ainda fala com o leitor (via `com.apple.security.smartcard`), grava logs e lê configuração em
 lugares próprios. Só o roteiro §4 com o token real fecha a questão.
 
-Resultados do CI (colar):
+Resultado no CI (run [36629289998](https://github.com/diagnos-tech/web-esign/actions/runs/36629289998),
+macOS 26.6.2 arm64):
 
-```
-(tabela RESULT do sandbox-test.sh, linhas pkcs11-*, e as negações "Sandbox: websign-probe(…) deny(…)")
-```
+| ID | Resultado | Evidência |
+|---|---|---|
+| `pkcs11-setup` | SIM | token SoftHSM2 criado dentro do contêiner |
+| `pkcs11-load:store` | **NÃO** | `dlopen(/opt/homebrew/opt/softhsm/lib/softhsm/libsofthsm2.so)`: `file system sandbox blocked open()` |
+| `pkcs11-sign:store` | **NÃO** | consequência do anterior |
+| `pkcs11-load:hardened` / `pkcs11-sign:hardened` | **NÃO** | mesma negação |
+
+Log do kernel: `Sandbox: websign-probe(…) deny(1) file-read-data /opt/homebrew/Cellar/softhsm/2.7.0/lib/softhsm/libsofthsm2.so`.
+
+**Leitura:** o app da loja **não consegue sequer abrir** um módulo PKCS#11 instalado fora do próprio
+pacote. A única saída dentro da loja seria uma exceção `temporary-exception.files.absolute-path.read-only`
+para cada pasta de fabricante (`/usr/local/lib`, `/Library/…`), que a App Review tende a recusar pela
+diretriz 2.5.2 (executar código que não veio no pacote). Então **todo token que só funciona por PKCS#11
+no Mac precisa do complemento** (§1). Com o que já se sabe da matriz (§2), isso inclui o **DNIe**.
+A pergunta que falta responder com tokens reais é quais middlewares **não** passam pelo CryptoTokenKit.
 
 ## 4. Roteiro de teste para o Gustavo
 

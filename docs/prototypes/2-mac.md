@@ -1,6 +1,6 @@
 # Prova 2 — Mac: sandbox da Mac App Store, native messaging, CryptoTokenKit e Safari
 
-**Status:** em andamento (rascunho) · **Resultado:** _a preencher com o CI e o Mac real_ ·
+**Status:** provado em CI com chaves de software; falta Mac real com Chrome, Safari e token · **Resultado parcial:** SIM para sandbox + manifestos + host + Keychain; Safari só desenhado ·
 **Decisão proposta:** ver [§8](#8-decisão-proposta)
 
 ## Objetivo
@@ -19,9 +19,9 @@ Se a sandbox barrar o PKCS#11, a resposta vem da [prova 3](3-tokens-mac.md) (com
 
 | # | Pergunta | Resposta | Evidência | Falta |
 |---|---|---|---|---|
-| 1 | Sandbox grava os manifestos? | **Provável SIM**, com `temporary-exception.files.home-relative-path.read-write` só nas pastas `NativeMessagingHosts` — **desde que o app use o home real, não o `$HOME` da sandbox** | Bitwarden publica assim na Mac App Store; `sandbox-test.sh` (a) no CI | Log do CI; App Review aceitar as exceções |
-| 2a | Navegador inicia o host sandboxed? | **Provável SIM**: um binário com `app-sandbox` próprio (sem `inherit`) roda sandboxed mesmo iniciado por um processo fora da sandbox | `desktop_proxy` do Bitwarden (MAS); `sandbox-test.sh` (a) simula o Chrome (origem + stdio) | Chrome real (roteiro §7) |
-| 2b | Assina via Keychain/CTK dentro da sandbox? | Keychain: **CI testa** (b). Token CTK: **provável SIM** — o grupo `kSecAttrAccessGroupToken` é concedido a todo app, sem entitlement | Documentação da Apple (abaixo); `sandbox-test.sh` (b) | Token real (roteiro §7, prova 3) |
+| 1 | Sandbox grava os manifestos? | **SIM (CI)**, com `temporary-exception.files.home-relative-path.read-write` só nas pastas `NativeMessagingHosts` e o home real via `getpwuid_r` | §4: Chrome, Edge, Brave e Firefox gravados de dentro da sandbox | App Review aceitar as exceções (precedente: Bitwarden) |
+| 2a | Navegador inicia o host sandboxed? | **SIM (simulado no CI)**: iniciado com a origem e o stdio do Chrome, o host sandboxed respondeu `ping` e `list` | §4; precedente `desktop_proxy` do Bitwarden | Chrome real (roteiro §7) |
+| 2b | Assina via Keychain/CTK dentro da sandbox? | Keychain: **SIM (CI)**, PKCS#1 v1.5, PSS e ECDSA. Token CTK: **provável SIM**, a consulta roda na sandbox sem entitlement extra | §4 | Token real (roteiro §7, prova 3) |
 | 3 | Safari assina? | **Arquitetura proposta** (§5): appex só repassa; o app mostra a confirmação e assina | web-eid-app (`src/mac/`), Bitwarden (socket no app group) | Tudo: exige projeto Xcode e Mac real |
 | 4 | `SFSafariExtensionManager`? | API disponível ao app que contém a extensão; em Rust via `objc2-safari-services` (0.3.2) | web-eid-app `main.mm` usa `getStateOfSafariExtension` e `showPreferencesForExtension` | Prova no Mac real |
 
@@ -144,25 +144,41 @@ contêiner se foi ele que o criou.
 
 ## 4. O que foi provado em CI
 
-_A preencher com o log do job `macos` do workflow `prototypes` (artefato `report-macos` e resumo do
-job)._
+Run [36629289998](https://github.com/diagnos-tech/web-esign/actions/runs/36629289998), job `macos`,
+em 29/09/2026: **macOS 26.6.2 (25G83), arm64**, binário assinado ad hoc.
+
+**Keychain** (`ci-macos.sh`, keychain descartável com 3 identidades de teste; todas as assinaturas
+conferidas com `probe-core::verify`):
 
 ```
-(colar aqui a tabela "macOS keychain" do ci-macos.sh)
+RSA-2048   SHA-256/384/512 × RSASSA-PKCS1-v1_5 e RSASSA-PSS   6 × OK via SecKeyCreateSignature (9–14 ms)
+EC P-256   SHA-256/384/512 × ECDSA (DER → r‖s)                 3 × OK (5–7 ms)
+EC P-384   SHA-256/384/512 × ECDSA (DER → r‖s)                 3 × OK (8–14 ms)
+All required checks passed.
 ```
 
-```
-(colar aqui a tabela "macOS App Sandbox (ad hoc signature)" do sandbox-test.sh e as negações do log)
-```
+**Sandbox** (`sandbox/sandbox-test.sh`: `.app` com os entitlements da loja, assinado ad hoc):
+
+| Experimento | Resultado | Detalhe |
+|---|---|---|
+| sandbox aplicada | **SIM** | o macOS criou o contêiner `~/Library/Containers/dev.websign.app/Data` |
+| `register` grava no home real (Chrome, Edge, Brave, Firefox) | **SIM** | os quatro manifestos em `~/Library/Application Support/<navegador>/NativeMessagingHosts/` apontam para o binário sandboxed; navegadores sem pasta são ignorados |
+| host sandboxed iniciado como o Chrome inicia (origem + stdio) | **SIM** | respondeu `pong` e `certificates`; log do host dentro do contêiner |
+| keychain listado dentro da sandbox | **SIM** | as duas identidades de teste |
+| assinatura dentro da sandbox (PKCS#1 v1.5, PSS, ECDSA) | **SIM** | três OK, conferidas |
+| consulta CryptoTokenKit (`kSecAttrAccessGroupToken`) dentro da sandbox | **SIM** (sem token no runner) | a consulta roda sem entitlement extra |
+| PKCS#11 (`dlopen` do SoftHSM2 em `/opt/homebrew`) | **NÃO** | `file system sandbox blocked open()`; o kernel registra `deny(1) file-read-data /opt/homebrew/Cellar/softhsm/…` |
+| idem com *hardened runtime* | **NÃO** | mesma negação (a sandbox barra antes da validação de biblioteca) |
 
 | Item | Resultado | Versão do macOS / runner |
 |---|---|---|
-| Keychain: RSA-2048 PKCS#1 v1.5 + PSS × SHA-256/384/512 | | |
-| Keychain: P-256 e P-384 ECDSA × SHA-256/384/512 (DER → `r‖s`) | | |
-| Sandbox aplicada | | |
-| Manifestos gravados pela sandbox (Chrome, Edge, Brave, Firefox) | | |
-| Host sandboxed responde por stdio | | |
-| Keychain lido e usado dentro da sandbox | | |
+| Keychain: RSA-2048 PKCS#1 v1.5 + PSS × SHA-256/384/512 | ✅ | 26.6.2 arm64 |
+| Keychain: P-256 e P-384 ECDSA × SHA-256/384/512 (DER → `r‖s`) | ✅ | 26.6.2 arm64 |
+| Sandbox aplicada | ✅ | 26.6.2 arm64 |
+| Manifestos gravados pela sandbox (Chrome, Edge, Brave, Firefox) | ✅ | 26.6.2 arm64 |
+| Host sandboxed responde por stdio | ✅ | 26.6.2 arm64 |
+| Keychain lido e usado dentro da sandbox | ✅ | 26.6.2 arm64 |
+| Módulo PKCS#11 fora do pacote carregado dentro da sandbox | ❌ | 26.6.2 arm64 |
 
 ## 5. Safari: arquitetura da ponte
 

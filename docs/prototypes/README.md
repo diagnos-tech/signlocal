@@ -6,10 +6,10 @@ documento com **sim/não, evidência e decisão**.
 
 | # | Prova | Documento | Status |
 |---|---|---|---|
-| 1 | Windows: CNG/CAPI com tokens reais, PIN em primeiro plano, MSIX grava HKCU e o navegador inicia o host pelo alias | [1-windows.md](1-windows.md) | em andamento |
-| 2 | Mac: app na sandbox grava manifestos, Chrome inicia o host e assina via CryptoTokenKit, ponte do Safari | [2-mac.md](2-mac.md) | em andamento |
-| 3 | Tokens no Mac: quais middlewares expõem o token ao CryptoTokenKit; PKCS#11 dentro da sandbox | [3-tokens-mac.md](3-tokens-mac.md) | em andamento |
-| 4 | Linux: assinatura via p11-kit, native messaging (inclusive Firefox Snap) | [4-linux.md](4-linux.md) | em andamento |
+| 1 | Windows: CNG/CAPI com tokens reais, PIN em primeiro plano, MSIX grava HKCU e o navegador inicia o host pelo alias | [1-windows.md](1-windows.md) | CI em depuração (travamento no runner); falta tokens e MSIX |
+| 2 | Mac: app na sandbox grava manifestos, Chrome inicia o host e assina via CryptoTokenKit, ponte do Safari | [2-mac.md](2-mac.md) | CI ✅ (sandbox, manifestos, host, Keychain); falta Mac real e Safari |
+| 3 | Tokens no Mac: quais middlewares expõem o token ao CryptoTokenKit; PKCS#11 dentro da sandbox | [3-tokens-mac.md](3-tokens-mac.md) | CI: PKCS#11 ❌ na sandbox → complemento para tokens só-PKCS#11; falta matriz com tokens |
+| 4 | Linux: assinatura via p11-kit, native messaging (inclusive Firefox Snap) | [4-linux.md](4-linux.md) | ✅ SoftHSM2/p11-kit + Chromium ponta a ponta (local e CI); falta token real e Firefox Snap |
 
 ## O kit
 
