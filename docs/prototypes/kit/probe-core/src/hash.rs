@@ -3,6 +3,8 @@
 use std::fmt;
 use std::str::FromStr;
 
+use sha2::{Digest, Sha256, Sha384, Sha512};
+
 use crate::algorithm::UnknownAlgorithmError;
 
 /// Hash algorithm the caller used to produce the digest.
@@ -22,17 +24,38 @@ impl HashAlgorithm {
 
     /// Digest size in bytes: 32, 48 or 64.
     pub const fn digest_len(self) -> usize {
-        todo!()
+        match self {
+            Self::Sha256 => 32,
+            Self::Sha384 => 48,
+            Self::Sha512 => 64,
+        }
     }
 
     /// WebCrypto name: `"SHA-256"`, `"SHA-384"`, `"SHA-512"`.
     pub const fn name(self) -> &'static str {
-        todo!()
+        match self {
+            Self::Sha256 => "SHA-256",
+            Self::Sha384 => "SHA-384",
+            Self::Sha512 => "SHA-512",
+        }
+    }
+
+    /// Name without the hyphen, as some callers spell it (`SHA256`).
+    const fn compact_name(self) -> &'static str {
+        match self {
+            Self::Sha256 => "SHA256",
+            Self::Sha384 => "SHA384",
+            Self::Sha512 => "SHA512",
+        }
     }
 
     /// Hashes `data`. Used by tests and by the probe to make sample digests.
     pub fn digest(self, data: &[u8]) -> Vec<u8> {
-        todo!()
+        match self {
+            Self::Sha256 => Sha256::digest(data).to_vec(),
+            Self::Sha384 => Sha384::digest(data).to_vec(),
+            Self::Sha512 => Sha512::digest(data).to_vec(),
+        }
     }
 
     /// Rejects any digest whose length is not exactly [`Self::digest_len`].
@@ -40,13 +63,22 @@ impl HashAlgorithm {
     /// A signer must never sign bytes of the wrong size: that is how a
     /// truncated or forged "digest" would slip through.
     pub fn check_digest(self, digest: &[u8]) -> Result<(), DigestLengthError> {
-        todo!()
+        let expected = self.digest_len();
+        if digest.len() == expected {
+            Ok(())
+        } else {
+            Err(DigestLengthError {
+                algorithm: self,
+                expected,
+                actual: digest.len(),
+            })
+        }
     }
 }
 
 impl fmt::Display for HashAlgorithm {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        todo!()
+        f.write_str(self.name())
     }
 }
 
@@ -56,7 +88,14 @@ impl FromStr for HashAlgorithm {
     /// Accepts `SHA-256`/`SHA256`, `SHA-384`/`SHA384`, `SHA-512`/`SHA512`,
     /// case-insensitively and without trimming.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        todo!()
+        // ASCII-only comparison on purpose: Unicode case folding would let
+        // look-alike characters (such as the long s) spell an algorithm.
+        Self::ALL
+            .into_iter()
+            .find(|alg| {
+                s.eq_ignore_ascii_case(alg.name()) || s.eq_ignore_ascii_case(alg.compact_name())
+            })
+            .ok_or_else(|| UnknownAlgorithmError { name: s.to_owned() })
     }
 }
 
@@ -67,4 +106,94 @@ pub struct DigestLengthError {
     pub algorithm: HashAlgorithm,
     pub expected: usize,
     pub actual: usize,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn lengths_and_names_follow_the_spec() {
+        let table = [
+            (HashAlgorithm::Sha256, 32, "SHA-256"),
+            (HashAlgorithm::Sha384, 48, "SHA-384"),
+            (HashAlgorithm::Sha512, 64, "SHA-512"),
+        ];
+        for (alg, len, name) in table {
+            assert_eq!(alg.digest_len(), len);
+            assert_eq!(alg.name(), name);
+            assert_eq!(alg.to_string(), name);
+            assert_eq!(alg.digest(b"abc").len(), len);
+        }
+    }
+
+    #[test]
+    fn digests_of_abc_match_the_fips_180_vectors() {
+        let vectors = [
+            (
+                HashAlgorithm::Sha256,
+                "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+            ),
+            (
+                HashAlgorithm::Sha384,
+                "cb00753f45a35e8bb5a03d699ac65007272c32ab0eded1631a8b605a43ff5bed\
+                 8086072ba1e7cc2358baeca134c825a7",
+            ),
+            (
+                HashAlgorithm::Sha512,
+                "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a\
+                 2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f",
+            ),
+        ];
+        for (hash, expected) in vectors {
+            assert_eq!(crate::hex::lower(&hash.digest(b"abc")), expected, "{hash}");
+        }
+    }
+
+    #[test]
+    fn check_digest_reports_expected_and_actual() {
+        assert_eq!(HashAlgorithm::Sha256.check_digest(&[0; 32]), Ok(()));
+        let err = HashAlgorithm::Sha256.check_digest(&[0; 31]).unwrap_err();
+        assert_eq!(
+            err,
+            DigestLengthError {
+                algorithm: HashAlgorithm::Sha256,
+                expected: 32,
+                actual: 31,
+            }
+        );
+        assert_eq!(
+            err.to_string(),
+            "digest for SHA-256 must be 32 bytes, got 31"
+        );
+    }
+
+    #[test]
+    fn parses_names_case_insensitively_with_or_without_hyphen() {
+        for (text, alg) in [
+            ("SHA-256", HashAlgorithm::Sha256),
+            ("sha256", HashAlgorithm::Sha256),
+            ("Sha-384", HashAlgorithm::Sha384),
+            ("SHA384", HashAlgorithm::Sha384),
+            ("sha-512", HashAlgorithm::Sha512),
+            ("SHA512", HashAlgorithm::Sha512),
+        ] {
+            assert_eq!(text.parse::<HashAlgorithm>(), Ok(alg), "{text}");
+        }
+    }
+
+    #[test]
+    fn rejects_everything_else_keeping_the_original_text() {
+        for text in [
+            " SHA-256", "SHA-256 ", "SHA-1", "SHA-224", "SHA3-256", "", "SHA_256", "ſha-256",
+        ] {
+            assert_eq!(
+                text.parse::<HashAlgorithm>(),
+                Err(UnknownAlgorithmError {
+                    name: text.to_owned()
+                }),
+                "{text:?}"
+            );
+        }
+    }
 }

@@ -15,6 +15,8 @@ pub mod hash;
 pub mod pkcs1;
 pub mod verify;
 
+mod hex;
+
 pub use algorithm::{SignatureAlgorithm, UnknownAlgorithmError};
 pub use cert::{
     CertError, CertInfo, DistinguishedName, IcpBrasil, IcpLevel, KeyUsage, PublicKeyKind, QcType,

@@ -4,11 +4,27 @@
 //! a certificate the way a doctor recognizes it — holder name, ICP-Brasil
 //! level, eIDAS qualification, validity — without platform APIs.
 
+mod asn1;
+mod extensions;
+#[cfg(test)]
+mod fixtures;
 mod icp_brasil;
+mod key;
+mod names;
+mod parse;
 mod qualified;
+mod san;
+mod strings;
+#[cfg(test)]
+mod testkit;
+#[cfg(test)]
+mod tests;
 
 pub use icp_brasil::{IcpBrasil, IcpLevel};
 pub use qualified::{QcType, Qualified};
+
+pub(crate) use key::{RsaComponents, ec_point, rsa_components};
+pub(crate) use parse::decode_certificate;
 
 use crate::algorithm::SignatureAlgorithm;
 use crate::ecdsa::Curve;
@@ -41,12 +57,13 @@ pub struct CertInfo {
 impl CertInfo {
     /// Parses a DER certificate.
     pub fn from_der(der: &[u8]) -> Result<CertInfo, CertError> {
-        todo!()
+        let certificate = decode_certificate(der)?;
+        Self::from_certificate(der, &certificate)
     }
 
     /// Whether `unix_secs` falls inside the validity period (inclusive).
     pub fn is_valid_at(&self, unix_secs: i64) -> bool {
-        todo!()
+        self.not_before <= unix_secs && unix_secs <= self.not_after
     }
 
     /// Whether the key may produce signatures (not a CA, usage allows it).
@@ -54,13 +71,21 @@ impl CertInfo {
     /// Extended key usage is deliberately ignored: which usages a document
     /// signature needs is the relying site's decision.
     pub fn can_sign(&self) -> bool {
-        todo!()
+        !self.is_ca
+            && self
+                .key_usage
+                .is_none_or(|usage| usage.digital_signature || usage.non_repudiation)
     }
 
     /// The name a person recognizes: ICP-Brasil holder, CN, O, or a
     /// fingerprint prefix as the last resort.
     pub fn display_name(&self) -> String {
-        todo!()
+        self.icp_brasil
+            .as_ref()
+            .and_then(|icp| icp.holder_name.clone())
+            .or_else(|| self.subject.common_name.clone())
+            .or_else(|| self.subject.organization.clone())
+            .unwrap_or_else(|| self.fingerprint.to_hex().chars().take(16).collect())
     }
 }
 
@@ -98,7 +123,11 @@ pub enum PublicKeyKind {
 impl PublicKeyKind {
     /// Whether `algorithm` can be used with this key.
     pub fn supports(&self, algorithm: SignatureAlgorithm) -> bool {
-        todo!()
+        match self {
+            Self::Rsa { .. } => algorithm.is_rsa(),
+            Self::Ec { .. } => algorithm == SignatureAlgorithm::Ecdsa,
+            Self::Unsupported { .. } => false,
+        }
     }
 }
 
