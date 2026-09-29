@@ -57,7 +57,11 @@ pub fn run(args: &Args) -> anyhow::Result<ExitCode> {
         |result| println!("{}", result.line()),
     )?;
     let failed = results.iter().any(|result| result.outcome.is_err());
-    Ok(if failed { ExitCode::FAILURE } else { ExitCode::SUCCESS })
+    Ok(if failed {
+        ExitCode::FAILURE
+    } else {
+        ExitCode::SUCCESS
+    })
 }
 
 /// The outcome of one (key, hash, algorithm) signing attempt.
@@ -74,7 +78,10 @@ pub struct CaseResult {
 impl CaseResult {
     pub fn line(&self) -> String {
         match &self.outcome {
-            Ok((api, ms)) => format!("   OK    {} {} via {api} in {ms} ms", self.hash, self.algorithm),
+            Ok((api, ms)) => format!(
+                "   OK    {} {} via {api} in {ms} ms",
+                self.hash, self.algorithm
+            ),
             Err(error) => format!("   FAIL  {} {}: {error}", self.hash, self.algorithm),
         }
     }
@@ -96,7 +103,13 @@ pub fn run_cases(
         let entry = &inventory.entries[index];
         let Ok(info) = &entry.info else { continue };
         on_entry(entry);
-        if matches!(entry.key.pin, PinPrompt::App { protected_path: false }) && pin.is_none() {
+        if matches!(
+            entry.key.pin,
+            PinPrompt::App {
+                protected_path: false
+            }
+        ) && pin.is_none()
+        {
             pin = Some(read_pin(args.pin_env.as_deref())?);
         }
         let key = entry.key.clone();
@@ -119,7 +132,12 @@ pub fn run_cases(
                     Ok((signature.api, signature.elapsed.as_millis()))
                 })
                 .map_err(|error| format!("{error:#}"));
-            let result = CaseResult { entry: index, hash, algorithm, outcome };
+            let result = CaseResult {
+                entry: index,
+                hash,
+                algorithm,
+                outcome,
+            };
             on_result(&result);
             results.push(result);
         }

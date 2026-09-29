@@ -39,7 +39,12 @@ pub fn run(args: &Args) -> anyhow::Result<ExitCode> {
         failed = results.iter().any(|result| result.outcome.is_err());
         report.push_str("### Signatures\n\n| # | Result |\n|---|---|\n");
         for result in &results {
-            let _ = writeln!(report, "| {} | `{}` |", result.entry + 1, result.line().trim());
+            let _ = writeln!(
+                report,
+                "| {} | `{}` |",
+                result.entry + 1,
+                result.line().trim()
+            );
         }
         report.push('\n');
     }
@@ -49,7 +54,11 @@ pub fn run(args: &Args) -> anyhow::Result<ExitCode> {
             .with_context(|| format!("cannot write {}", path.display()))?,
         None => print!("{report}"),
     }
-    Ok(if failed { ExitCode::FAILURE } else { ExitCode::SUCCESS })
+    Ok(if failed {
+        ExitCode::FAILURE
+    } else {
+        ExitCode::SUCCESS
+    })
 }
 
 fn header(report: &mut String) {
@@ -79,12 +88,20 @@ fn certificates(report: &mut String, inventory: &Inventory) {
     report.push_str("|---|---|---|---|---|---|---|\n");
     for group in inventory.deduped() {
         let index = position(inventory, group.primary) + 1;
-        let others: Vec<String> = group.alternates.iter().map(|entry| view::source_label(entry)).collect();
+        let others: Vec<String> = group
+            .alternates
+            .iter()
+            .map(|entry| view::source_label(entry))
+            .collect();
         let _ = writeln!(
             report,
             "| {index} | {} | {} |",
             row(group.primary),
-            if others.is_empty() { "—".to_owned() } else { others.join("<br>") },
+            if others.is_empty() {
+                "—".to_owned()
+            } else {
+                others.join("<br>")
+            },
         );
     }
     report.push('\n');
@@ -105,5 +122,9 @@ fn row(entry: &Entry) -> String {
 }
 
 fn position(inventory: &Inventory, target: &Entry) -> usize {
-    inventory.entries.iter().position(|entry| std::ptr::eq(entry, target)).unwrap_or_default()
+    inventory
+        .entries
+        .iter()
+        .position(|entry| std::ptr::eq(entry, target))
+        .unwrap_or_default()
 }
