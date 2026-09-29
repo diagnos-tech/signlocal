@@ -237,11 +237,32 @@ recebe o PIN pelo navegador, esse teste usa a variável só porque não há jane
 
 ## 7. Native messaging
 
-<!-- NATIVE-MESSAGING: o orquestrador preenche esta seção com o resultado da trilha de native messaging
-     (Chromium, Firefox, Firefox Snap do Ubuntu, portal). O teste ponta a ponta no Chromium com o host
-     assinando pelo SoftHSM2 já está em §3.9. -->
+| Navegador | Resultado | Evidência | Falta |
+|---|---|---|---|
+| Chromium (deb/Playwright) | **SIM**: ping, validação de digest e assinatura pelo SoftHSM2 conferida pelo host (`verified=true`) | `NM-E2E: PASS` no `ci-linux.sh` (neste container); log do host em §3.9 | — |
+| Google Chrome, Edge, Brave, Vivaldi (deb) | **Provável SIM**: mesmo mecanismo do Chromium; o `register` grava em cada `~/.config/<navegador>/NativeMessagingHosts/` | [research/native-messaging.md](../research/native-messaging.md) §3 | Rodar o roteiro abaixo com o navegador instalado |
+| Chromium Snap | **Provável SIM**: o Snap lê `~/snap/chromium/common/chromium/NativeMessagingHosts/` (o `register` grava lá) | idem, §3.3 | Ubuntu com Snap |
+| Firefox (deb/rpm) | **Provável SIM**: manifesto em `~/.mozilla/native-messaging-hosts/`, `allowed_extensions` com o ID fixo | idem, §3.1 | Rodar o roteiro abaixo (o Playwright não carrega extensão no Firefox) |
+| **Firefox Snap (Ubuntu)** | **Sem prova ainda.** O Firefox confinado não lê manifestos: pede ao portal `org.freedesktop.portal.WebExtensions` (patch do Ubuntu), que inicia o host **fora** do Snap com o ambiente do portal | idem, §3.4 | Ubuntu 24.04 com interface gráfica: a janela egui abre com o ambiente do portal? O diálogo "permitir" do portal aparece uma vez? |
 
-_A preencher._
+**Consequências para o produto** (já no [plano](../plan.md)):
+
+- O pacote `.deb`/`.rpm` instala os manifestos **de sistema** (`/etc/opt/chrome/native-messaging-hosts/`,
+  `/etc/chromium/native-messaging-hosts/`, `/usr/lib/mozilla/native-messaging-hosts/` …), com `path` absoluto.
+  É o que o portal do Firefox Snap consulta.
+- A janela de Confirmação não pode depender de variáveis herdadas do navegador. Quando o host é iniciado
+  pelo portal, o ambiente gráfico vem da sessão.
+- O substituto do portal (`org.freedesktop.NativeMessagingProxy`, Firefox 157+) não exige mudança no host;
+  acompanhar quando o Ubuntu o ligar no Snap estável.
+
+**Roteiro (Ubuntu 24.04 com interface gráfica, Firefox Snap padrão):**
+
+1. `./websign-probe register --browser firefox` e, para o portal, também o manifesto de sistema:
+   `sudo install -Dm644 ~/.mozilla/native-messaging-hosts/dev.websign.host.json /usr/lib/mozilla/native-messaging-hosts/dev.websign.host.json`.
+2. `about:debugging` → "Carregar extensão temporária" → `kit/extension/manifest.json`.
+3. Abrir `kit/nm-e2e/page.html` servido em `http://localhost:8000` (`python3 -m http.server` na pasta).
+4. Anotar: o diálogo do portal apareceu? A página mostrou `pong`? O log `/tmp/websign-probe-host.log`
+   tem `family=firefox`? Com o token, o `sign` devolve `verified=true`?
 
 ## 8. Decisão
 
