@@ -1,0 +1,1147 @@
+<title>Telas do WebeSign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: palco neutro; janelas desktop em tamanho real (px lógicos), reduzidas só quando a tela é menor.
+   Os tokens --ws-* são exatamente os de docs/ux.md §11. Os tokens --page-* existem só nesta página. */
+:root{
+  --ws-bg-canvas:#F5F6F9; --ws-bg-surface:#FFFFFF; --ws-bg-sunken:#EDEFF4; --ws-bg-hover:#F1F3F8; --ws-accent-soft:#EEF0FD;
+  --ws-border:#DCE0E8; --ws-border-strong:#848D9F;
+  --ws-fg:#141722; --ws-fg-muted:#545C6D; --ws-fg-subtle:#636B7D;
+  --ws-accent:#3346D1; --ws-accent-hover:#2A3BB8; --ws-accent-pressed:#2332A0; --ws-accent-fg:#3346D1; --ws-on-accent:#FFFFFF; --ws-focus:#3346D1;
+  --ws-success:#127A41; --ws-success-soft:#E6F5EC; --ws-success-border:#A8DCBE;
+  --ws-warning:#935300; --ws-warning-soft:#FFF2D9; --ws-warning-border:#EFCB8A;
+  --ws-danger:#BE242B; --ws-danger-soft:#FDEBEC; --ws-danger-border:#F2B3B6;
+  --ws-shadow-color:#1417221F;
+  --ws-id-0:#D6453A; --ws-id-1:#C4610A; --ws-id-2:#3B8A3B; --ws-id-3:#12857B; --ws-id-4:#2D78D2; --ws-id-5:#5A55D6; --ws-id-6:#9549C4; --ws-id-7:#C63E7B;
+  --ws-font-ui:"Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ws-font-mono:"JetBrains Mono", ui-monospace, "SF Mono", Consolas, monospace;
+  --ws-font-popup:system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --ws-space-1:4px; --ws-space-2:8px; --ws-space-3:12px; --ws-space-4:16px; --ws-space-5:20px; --ws-space-6:24px; --ws-space-8:32px;
+  --ws-radius-sm:4px; --ws-radius-md:6px; --ws-radius-lg:10px;
+  --ws-control-sm:28px; --ws-control-md:32px; --ws-control-lg:36px;
+  --ws-motion-fast:120ms; --ws-motion-base:180ms; --ws-motion-slow:260ms; --ws-easing:cubic-bezier(0.33, 1, 0.68, 1);
+  --ws-shadow-popover:0 4px 16px 0 var(--ws-shadow-color);
+  --page-bg:#E6E9EF; --page-panel:#EEF0F4; --page-frame:#E1E4EA; --page-frame-fg:#4A5162; --page-frame-border:#C3C8D2;
+  --page-window-shadow:0 1px 2px #1417221A, 0 14px 36px -10px #14172240;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ws-bg-canvas:#0E1016; --ws-bg-surface:#161922; --ws-bg-sunken:#0B0D12; --ws-bg-hover:#1E222D; --ws-accent-soft:#1C2242;
+    --ws-border:#2A2F3C; --ws-border-strong:#6B7488;
+    --ws-fg:#E7E9EF; --ws-fg-muted:#A3AAB9; --ws-fg-subtle:#8C94A6;
+    --ws-accent:#4E5EE4; --ws-accent-hover:#4555DA; --ws-accent-pressed:#3E4ECC; --ws-accent-fg:#9DA8FF; --ws-on-accent:#FFFFFF; --ws-focus:#9DA8FF;
+    --ws-success:#5BCB8D; --ws-success-soft:#10281B; --ws-success-border:#1F5C3B;
+    --ws-warning:#EFB35E; --ws-warning-soft:#2A1F0E; --ws-warning-border:#5C4418;
+    --ws-danger:#FF868B; --ws-danger-soft:#321519; --ws-danger-border:#6B2429;
+    --ws-shadow-color:#0000008C;
+    --page-bg:#07080C; --page-panel:#0C0E13; --page-frame:#1F232C; --page-frame-fg:#B4BAC6; --page-frame-border:#323846;
+    --page-window-shadow:0 1px 2px #00000066, 0 18px 44px -10px #000000CC;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ws-bg-canvas:#0E1016; --ws-bg-surface:#161922; --ws-bg-sunken:#0B0D12; --ws-bg-hover:#1E222D; --ws-accent-soft:#1C2242;
+  --ws-border:#2A2F3C; --ws-border-strong:#6B7488;
+  --ws-fg:#E7E9EF; --ws-fg-muted:#A3AAB9; --ws-fg-subtle:#8C94A6;
+  --ws-accent:#4E5EE4; --ws-accent-hover:#4555DA; --ws-accent-pressed:#3E4ECC; --ws-accent-fg:#9DA8FF; --ws-on-accent:#FFFFFF; --ws-focus:#9DA8FF;
+  --ws-success:#5BCB8D; --ws-success-soft:#10281B; --ws-success-border:#1F5C3B;
+  --ws-warning:#EFB35E; --ws-warning-soft:#2A1F0E; --ws-warning-border:#5C4418;
+  --ws-danger:#FF868B; --ws-danger-soft:#321519; --ws-danger-border:#6B2429;
+  --ws-shadow-color:#0000008C;
+  --page-bg:#07080C; --page-panel:#0C0E13; --page-frame:#1F232C; --page-frame-fg:#B4BAC6; --page-frame-border:#323846;
+  --page-window-shadow:0 1px 2px #00000066, 0 18px 44px -10px #000000CC;
+  color-scheme:dark;
+}
+:root[data-theme="light"]{color-scheme:light}
+
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--page-bg);color:var(--ws-fg);font:400 14px/20px var(--ws-font-ui);-webkit-font-smoothing:antialiased;padding-inline:16px;padding-block:0 80px}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--ws-focus);outline-offset:2px}
+.ic{width:16px;height:16px;fill:currentColor;flex:none;display:inline-block;vertical-align:middle}
+.ic-20{width:20px;height:20px}
+.ic-32{width:32px;height:32px}
+.mono{font-family:var(--ws-font-mono)}
+
+/* ---------- página ---------- */
+.page{max-width:1112px;margin:0 auto}
+.page-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 24px;padding-block:32px 16px}
+.ph-brand{display:flex;gap:14px;align-items:center;min-width:0}
+.ph-brand h1{margin:0;font-size:24px;line-height:30px;font-weight:600;letter-spacing:-0.01em;text-wrap:balance}
+.ph-brand p{margin:2px 0 0;color:var(--ws-fg-muted)}
+.page-nav{display:flex;flex-wrap:wrap;gap:4px 20px;padding-block:8px 8px;border-bottom:1px solid var(--page-frame-border);margin-bottom:8px}
+.page-nav a{color:var(--ws-fg-muted);text-decoration:none;font-weight:500;padding-block:6px}
+.page-nav a:hover{color:var(--ws-fg)}
+.seg{display:inline-flex;padding:2px;border-radius:8px;background:var(--ws-bg-sunken);border:1px solid var(--ws-border);gap:2px}
+.seg button{border:0;background:transparent;border-radius:6px;height:28px;padding:0 10px;display:inline-flex;align-items:center;gap:6px;font-weight:500;font-size:13px;color:var(--ws-fg-muted);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ws-bg-surface);color:var(--ws-fg);box-shadow:0 1px 2px var(--ws-shadow-color)}
+.sec{padding-block:40px 8px}
+.sec-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;margin-bottom:24px}
+.sec h2{margin:0 0 6px;font-size:22px;line-height:28px;font-weight:600;letter-spacing:-0.01em;text-wrap:balance}
+.sec-head p{margin:0;color:var(--ws-fg-muted);max-width:66ch}
+.sec-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.sub{margin:48px 0 16px;font-size:16px;line-height:22px;font-weight:600}
+.sub + p{margin:-8px 0 16px;color:var(--ws-fg-muted);max-width:66ch}
+.shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,480px),1fr));gap:40px 40px;align-items:start}
+.shot{margin:0;min-width:0}
+.shot-cap{margin:0 0 12px;display:flex;flex-direction:column;gap:2px}
+.shot-cap b{font-weight:600}
+.shot-cap span{color:var(--ws-fg-muted);font-size:13px;line-height:18px;max-width:60ch}
+.stage{position:relative;width:100%;overflow-x:auto}
+.stage.fitted{overflow:hidden}
+.page-btn{height:32px;padding:0 12px;border-radius:6px;border:1px solid var(--ws-border-strong);background:var(--ws-bg-surface);display:inline-flex;align-items:center;gap:8px;font-weight:500;cursor:pointer}
+.page-btn:hover{background:var(--ws-bg-hover)}
+.note{font-size:13px;line-height:18px;color:var(--ws-fg-muted)}
+
+/* ---------- moldura neutra de janela desktop ---------- */
+.win{position:relative;background:var(--ws-bg-canvas);border:1px solid var(--page-frame-border);border-radius:8px;overflow:hidden;box-shadow:var(--page-window-shadow);display:flex;flex-direction:column;transform-origin:top left;color:var(--ws-fg);font:400 14px/20px var(--ws-font-ui);text-align:left}
+.titlebar{height:32px;flex:none;display:flex;align-items:center;justify-content:center;background:var(--page-frame);color:var(--page-frame-fg);font-size:12px;line-height:16px;border-bottom:1px solid var(--page-frame-border);position:relative;padding:0 40px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.titlebar .tb-x{position:absolute;right:10px;top:8px;width:16px;height:16px;fill:currentColor;opacity:.8}
+
+/* ---------- componentes do app (egui) ---------- */
+.chip{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 9px 0 7px;border-radius:11px;font:500 12px/16px var(--ws-font-ui);border:1px solid;white-space:nowrap;flex:none}
+.chip .ic{width:14px;height:14px}
+.chip-success{background:var(--ws-success-soft);color:var(--ws-success);border-color:var(--ws-success-border)}
+.chip-warning{background:var(--ws-warning-soft);color:var(--ws-warning);border-color:var(--ws-warning-border)}
+.chip-danger{background:var(--ws-danger-soft);color:var(--ws-danger);border-color:var(--ws-danger-border)}
+.chip-neutral{background:var(--ws-bg-sunken);color:var(--ws-fg-muted);border-color:var(--ws-border)}
+.badge{font:500 12px/16px var(--ws-font-ui);padding:2px 6px;border-radius:var(--ws-radius-sm);background:var(--ws-bg-sunken);color:var(--ws-fg-muted);white-space:nowrap;flex:none}
+.btn{height:var(--ws-control-lg);padding:0 16px;border-radius:var(--ws-radius-md);font:500 14px/20px var(--ws-font-ui);border:1px solid var(--ws-border-strong);background:var(--ws-bg-surface);color:var(--ws-fg);display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;white-space:nowrap;transition:background-color var(--ws-motion-fast) var(--ws-easing),opacity var(--ws-motion-base) var(--ws-easing)}
+.btn:hover{background:var(--ws-bg-hover)}
+.btn.primary{background:var(--ws-accent);border-color:var(--ws-accent);color:var(--ws-on-accent);min-width:112px}
+.btn.primary:hover{background:var(--ws-accent-hover);border-color:var(--ws-accent-hover)}
+.btn.primary:active{background:var(--ws-accent-pressed)}
+.btn.md{height:var(--ws-control-md);padding:0 12px}
+.btn.sm{height:var(--ws-control-sm);padding:0 10px;font-size:13px}
+.btn.block{width:100%}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--ws-accent-fg);padding:0 8px}
+.btn.ghost:hover{background:var(--ws-bg-hover)}
+.btn.is-disabled,.btn.arming{opacity:.42;cursor:not-allowed;pointer-events:none}
+.link{color:var(--ws-accent-fg);font-weight:500;text-decoration:none;cursor:pointer;white-space:nowrap}
+.link:hover{text-decoration:underline}
+.spin{width:16px;height:16px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:spin .8s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.card{background:var(--ws-bg-surface);border:1px solid var(--ws-border);border-radius:var(--ws-radius-lg)}
+.callout{display:flex;gap:10px;padding:10px 12px;border-radius:var(--ws-radius-lg);border:1px solid;font-size:12px;line-height:16px}
+.callout .ic{width:16px;height:16px;margin-top:0}
+.callout b{display:block;font-size:14px;line-height:20px;font-weight:600}
+.callout-info{background:var(--ws-bg-surface);border-color:var(--ws-border);color:var(--ws-fg-muted)}
+.callout-info .ic{color:var(--ws-accent-fg)}
+.callout-warning{background:var(--ws-warning-soft);border-color:var(--ws-warning-border);color:var(--ws-fg)}
+.callout-warning .ic{color:var(--ws-warning)}
+.callout-danger{background:var(--ws-danger-soft);border-color:var(--ws-danger-border);color:var(--ws-fg)}
+.callout-danger .ic{color:var(--ws-danger)}
+.t-muted{color:var(--ws-fg-muted)}
+.t-subtle{color:var(--ws-fg-subtle)}
+.t-success{color:var(--ws-success)}
+.t-warn{color:var(--ws-warning)}
+.t-danger{color:var(--ws-danger)}
+.mark{width:24px;height:24px;border-radius:var(--ws-radius-md);background:var(--ws-accent);color:var(--ws-on-accent);display:inline-grid;place-items:center;flex:none}
+.mark .ic{width:16px;height:16px}
+.mark.lg{width:40px;height:40px;border-radius:10px}
+.mark.lg .ic{width:26px;height:26px}
+.mark.sm{width:20px;height:20px;border-radius:5px}
+.mark.sm .ic{width:14px;height:14px}
+
+/* Confirmação */
+.confirm{width:480px;height:632px}
+.c-head{flex:none;background:var(--ws-bg-surface);border-bottom:1px solid var(--ws-border);padding:20px 24px 16px;display:flex;flex-direction:column}
+.c-eyebrow{display:flex;align-items:center;gap:8px;min-height:22px;font:500 12px/16px var(--ws-font-ui);color:var(--ws-fg-muted)}
+.c-eyebrow .lead{display:flex;align-items:center;gap:6px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c-eyebrow .chip{margin-left:auto}
+.c-origin{margin-top:4px;font:600 20px/26px var(--ws-font-ui);letter-spacing:-0.005em;overflow-wrap:anywhere}
+.c-origin.long{font-size:16px;line-height:22px}
+.o-dim{color:var(--ws-fg-subtle);font-weight:400}
+.c-asks{margin:2px 0 0;color:var(--ws-fg-muted)}
+.c-alert{margin-top:10px;display:flex;align-items:flex-start;gap:8px;padding:6px 10px;border-radius:var(--ws-radius-md);background:var(--ws-warning-soft);border:1px solid var(--ws-warning-border);color:var(--ws-fg);font-size:12px;line-height:16px}
+.c-alert .ic{color:var(--ws-warning)}
+.c-alert.danger{background:var(--ws-danger-soft);border-color:var(--ws-danger-border)}
+.c-alert.danger .ic{color:var(--ws-danger)}
+.c-alert small{display:block;color:var(--ws-fg-muted);font-size:12px}
+.c-body{flex:1;min-height:0;overflow:hidden;padding:16px 24px;display:flex;flex-direction:column;gap:16px}
+.c-foot{flex:none;height:64px;background:var(--ws-bg-surface);border-top:1px solid var(--ws-border);display:flex;align-items:center;gap:12px;padding:0 24px}
+.c-foot .hint{flex:1;min-width:0;font-size:12px;line-height:16px;color:var(--ws-fg-muted)}
+.c-foot .hint .ic{margin-right:6px;vertical-align:-3px}
+.btns{display:flex;gap:8px;flex:none}
+[data-os="windows"] .btns .primary{order:-1}
+.code-card{display:flex;gap:16px;padding:12px 16px;align-items:center}
+.idc{width:40px;height:40px;flex:none}
+.idc svg{display:block;width:40px;height:40px}
+.code-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.code-label{display:flex;align-items:center;gap:8px;font:500 12px/16px var(--ws-font-ui);color:var(--ws-fg-muted)}
+.code-label .badge{margin-left:auto}
+.code{font:500 18px/24px var(--ws-font-mono);letter-spacing:.5px;color:var(--ws-fg);transition:opacity var(--ws-motion-base) var(--ws-easing)}
+.code-help{font-size:12px;line-height:16px;color:var(--ws-fg-subtle)}
+.group{display:flex;flex-direction:column;gap:8px;min-height:0}
+.list-label{font:500 12px/16px var(--ws-font-ui);color:var(--ws-fg-muted)}
+.list{background:var(--ws-bg-surface);border:1px solid var(--ws-border);border-radius:var(--ws-radius-lg);overflow:hidden}
+.row{display:flex;gap:12px;padding:10px 16px;min-height:72px;border-top:1px solid var(--ws-border);cursor:pointer;transition:background-color var(--ws-motion-fast) var(--ws-easing)}
+.row:first-child{border-top:0}
+.row:hover{background:var(--ws-bg-hover)}
+.row.sel{background:var(--ws-accent-soft)}
+.row.dis{cursor:default}
+.row.dis:hover{background:transparent}
+.row.dis .name,.row.dis .r2{color:var(--ws-fg-subtle)}
+.row.static{cursor:default}
+.radio{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--ws-border-strong);background:var(--ws-bg-surface);margin-top:2px;flex:none}
+.radio.on{border:5px solid var(--ws-accent);background:var(--ws-on-accent)}
+.radio.none{border:0;background:transparent}
+.row-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:0}
+.r1{display:flex;align-items:center;gap:8px;min-width:0}
+.name{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.r2,.r3{font-size:12px;line-height:16px;color:var(--ws-fg-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r3{display:flex;align-items:center;gap:6px}
+.r3 .sep{color:var(--ws-fg-subtle)}
+.r3 .v{display:inline-flex;align-items:center;gap:4px;flex:none}
+.r3 .loc{display:inline-flex;align-items:center;gap:6px;min-width:0;overflow:hidden}
+.r3 .loc span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.r3 .ic{width:14px;height:14px}
+.r3 .link{margin-left:auto;flex:none;padding-left:8px}
+.row-compact{height:40px;display:flex;align-items:center;gap:8px;padding:0 16px;border-top:1px solid var(--ws-border);font:500 12px/16px var(--ws-font-ui);color:var(--ws-fg-muted)}
+.row-compact .link{margin-left:auto;font-size:12px}
+.pin{display:flex;flex-direction:column;gap:6px}
+.pin-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.pin-top label{font:500 12px/16px var(--ws-font-ui);color:var(--ws-fg-muted)}
+.pin-top span{font-size:12px;line-height:16px;color:var(--ws-fg-subtle)}
+.field{height:var(--ws-control-md);display:flex;align-items:center;gap:8px;padding:0 4px 0 10px;border-radius:var(--ws-radius-md);background:var(--ws-bg-sunken);border:1px solid var(--ws-border-strong)}
+.field.focus{box-shadow:0 0 0 2px var(--ws-bg-canvas),0 0 0 4px var(--ws-focus)}
+.field.err{border-color:var(--ws-danger)}
+.field .dots{letter-spacing:3px;font-size:16px;color:var(--ws-fg)}
+.field .caret{width:1.5px;height:18px;background:var(--ws-accent-fg);margin-left:-6px}
+.field .icon-btn{margin-left:auto}
+.icon-btn{width:28px;height:28px;border-radius:var(--ws-radius-md);display:inline-grid;place-items:center;color:var(--ws-fg-muted);border:0;background:transparent;cursor:pointer}
+.icon-btn:hover{background:var(--ws-bg-hover);color:var(--ws-fg)}
+.msg{display:flex;align-items:flex-start;gap:6px;font-size:12px;line-height:16px}
+.msg.danger{color:var(--ws-danger);font-weight:600}
+.msg.subtle{color:var(--ws-fg-subtle)}
+.empty{padding:20px 16px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px}
+.empty .ic{width:28px;height:28px;color:var(--ws-fg-subtle);margin-bottom:4px}
+.empty b{font-weight:600}
+.empty p{margin:0;font-size:12px;line-height:16px;color:var(--ws-fg-muted);max-width:36ch}
+.possible{padding:14px 16px;display:flex;gap:12px}
+.possible .bubble{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--ws-warning-soft);color:var(--ws-warning);flex:none}
+.possible .bubble .ic{width:18px;height:18px}
+.possible b{display:block;font-weight:600}
+.possible p{margin:2px 0 10px;font-size:12px;line-height:16px;color:var(--ws-fg-muted)}
+.possible .acts{display:flex;flex-wrap:wrap;gap:8px}
+.consent{display:flex;gap:10px;align-items:flex-start}
+.check{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--ws-border-strong);background:var(--ws-bg-surface);margin-top:2px;flex:none}
+.consent b{font-weight:500;display:block}
+.consent span{display:block;font-size:12px;line-height:16px;color:var(--ws-fg-subtle)}
+
+/* Variações de origem e estados de rodapé (componentes fluidos) */
+.minis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px}
+.minis.wide{grid-template-columns:repeat(auto-fit,minmax(min(100%,480px),1fr))}
+.mini{background:var(--ws-bg-surface);border:1px solid var(--page-frame-border);border-radius:8px;overflow:hidden;min-width:0}
+.mini-tag{display:block;padding:8px 16px;background:var(--page-panel);border-bottom:1px solid var(--page-frame-border);font:500 12px/16px var(--ws-font-ui);color:var(--ws-fg-muted)}
+.mini .c-head{border-bottom:0}
+.mini .c-foot{border-top:0}
+.mini-success{padding:24px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;background:var(--ws-bg-canvas)}
+.mini-success .ic{width:48px;height:48px;color:var(--ws-success);margin-bottom:6px}
+.mini-success b{font-size:16px;line-height:22px;font-weight:600}
+.mini-success span{color:var(--ws-fg-muted);font-size:13px}
+
+/* Diagnóstico */
+.diag{width:760px;height:572px}
+.d-wrap{flex:1;min-height:0;display:flex}
+.d-side{width:200px;flex:none;background:var(--ws-bg-surface);border-right:1px solid var(--ws-border);padding:16px 12px;display:flex;flex-direction:column;gap:14px}
+.d-brand{display:flex;gap:10px;align-items:center;padding:0 4px}
+.d-brand b{display:block;font-size:16px;line-height:22px;font-weight:600}
+.d-brand div span{display:block;font-size:12px;line-height:16px;color:var(--ws-fg-subtle)}
+.d-side>.chip{align-self:flex-start;margin-left:4px}
+.d-nav{display:flex;flex-direction:column;gap:2px;margin-top:2px}
+.d-tab{height:36px;border:0;background:transparent;border-radius:var(--ws-radius-md);display:flex;align-items:center;gap:10px;padding:0 10px;cursor:pointer;color:var(--ws-fg);font-weight:500;text-align:left}
+.d-tab:hover{background:var(--ws-bg-hover)}
+.d-tab[aria-selected="true"]{background:var(--ws-accent-soft);color:var(--ws-accent-fg)}
+.d-tab .ic{width:20px;height:20px}
+.d-tab .st{margin-left:auto;width:16px;height:16px}
+.st.ok{color:var(--ws-success)} .st.warn{color:var(--ws-warning)} .st.bad{color:var(--ws-danger)} .st.na{color:var(--ws-fg-subtle)}
+.d-side .spacer{flex:1}
+.d-main{flex:1;min-width:0;overflow:auto;padding:22px 24px 24px}
+.d-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:4px}
+.d-head h3{margin:0;font-size:20px;line-height:26px;font-weight:600}
+.d-head p{margin:2px 0 0;color:var(--ws-fg-muted)}
+.d-sec{margin:20px 0 8px;font:500 12px/16px var(--ws-font-ui);color:var(--ws-fg-muted);display:flex;align-items:center;gap:6px}
+.d-list{background:var(--ws-bg-surface);border:1px solid var(--ws-border);border-radius:var(--ws-radius-lg);overflow:hidden}
+.d-row{display:flex;gap:12px;align-items:center;padding:12px 16px;min-height:56px;border-top:1px solid var(--ws-border)}
+.d-row:first-child{border-top:0}
+.d-row>.ic{width:20px;height:20px;color:var(--ws-fg-muted);align-self:flex-start;margin-top:2px}
+.d-row .main{flex:1;min-width:0}
+.d-row .t{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:8px;font-weight:600;min-width:0}
+.d-row .t .mono{font-weight:400;font-size:12px;color:var(--ws-fg-subtle)}
+.d-row .s{display:flex;align-items:center;gap:6px;font-size:12px;line-height:16px;margin-top:2px;color:var(--ws-fg-muted);min-width:0}
+.d-row .s .ic{width:14px;height:14px}
+.d-row .s.wrap{white-space:normal}
+.d-row .x{font-size:12px;line-height:16px;color:var(--ws-fg-subtle);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.d-row .x.mono{font-family:var(--ws-font-mono)}
+.d-row.dis .t{color:var(--ws-fg-subtle)}
+.d-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:12px}
+.d-actions .note{font-size:12px;line-height:16px;color:var(--ws-fg-subtle)}
+.faq{background:var(--ws-bg-surface);border:1px solid var(--ws-border);border-radius:var(--ws-radius-lg);overflow:hidden}
+.faq details{border-top:1px solid var(--ws-border)}
+.faq details:first-child{border-top:0}
+.faq summary{list-style:none;display:flex;align-items:center;gap:8px;padding:0 16px;height:44px;cursor:pointer;font-weight:500}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .ic{color:var(--ws-fg-muted);transition:transform var(--ws-motion-base) var(--ws-easing)}
+.faq details[open] summary .ic{transform:rotate(90deg)}
+.faq details p{margin:0;padding:0 16px 14px 40px;color:var(--ws-fg-muted);font-size:13px;line-height:19px}
+.diag-pre{margin:0;font:400 12px/16px var(--ws-font-mono);background:var(--ws-bg-sunken);border:1px solid var(--ws-border);border-radius:var(--ws-radius-md);padding:10px 12px;max-height:150px;overflow:auto;white-space:pre;color:var(--ws-fg)}
+.kbd{display:inline-block;font:500 11px/16px var(--ws-font-mono);padding:0 5px;border-radius:4px;border:1px solid var(--ws-border-strong);background:var(--ws-bg-surface);color:var(--ws-fg-muted)}
+.onb{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 14px;border-radius:var(--ws-radius-lg);background:var(--ws-bg-surface);border:1px solid var(--ws-border);margin:14px 0 4px;font-size:12px;line-height:16px}
+.onb b{display:flex;align-items:center;gap:6px;font-weight:600;font-size:12px}
+.onb span{display:inline-flex;align-items:center;gap:4px;color:var(--ws-fg-muted)}
+.onb .btn{margin-left:auto}
+
+/* Popup da extensão */
+.popups{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),320px));gap:32px 32px;align-items:start;max-width:704px}
+.popups .shot{width:320px;max-width:100%}
+.popup{width:320px;max-width:100%;background:var(--ws-bg-surface);border:1px solid var(--ws-border);border-radius:var(--ws-radius-lg);box-shadow:var(--ws-shadow-popover),var(--page-window-shadow);padding:16px;display:flex;flex-direction:column;gap:16px;font:400 14px/20px var(--ws-font-popup);color:var(--ws-fg)}
+.pp-head{display:flex;align-items:center;gap:8px;font-weight:600}
+.pp-state{display:flex;gap:12px;align-items:flex-start}
+.pp-state .ic{width:32px;height:32px}
+.pp-state b{display:block;font-size:16px;line-height:22px;font-weight:600}
+.pp-state p{margin:2px 0 0;color:var(--ws-fg-muted)}
+.pp-state code{display:inline-block;margin-top:6px;font:400 12px/16px var(--ws-font-mono);color:var(--ws-fg-subtle)}
+.popup .btn{font-family:var(--ws-font-popup)}
+.pp-actions{display:flex;flex-direction:column;gap:6px}
+.pp-actions .btn.ghost{align-self:center}
+.pp-foot{display:flex;justify-content:space-between;gap:8px;padding-top:12px;border-top:1px solid var(--ws-border);font-size:12px;line-height:16px;color:var(--ws-fg-subtle)}
+
+/* Tokens */
+.tok-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,500px),1fr));gap:24px}
+.tok-table{background:var(--ws-bg-surface);border:1px solid var(--ws-border);border-radius:var(--ws-radius-lg);overflow:hidden}
+.tok-row{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:center;padding:8px 14px;border-top:1px solid var(--ws-border);font-size:12px;line-height:16px}
+.tok-row:first-child{border-top:0}
+.tok-row.head{font-weight:500;color:var(--ws-fg-muted);background:var(--ws-bg-sunken)}
+.tok-row code{font-family:var(--ws-font-mono);font-size:12px;overflow-wrap:anywhere}
+.sw{display:inline-flex;align-items:center;gap:8px;font-family:var(--ws-font-mono);color:var(--ws-fg-muted)}
+.sw i{width:22px;height:22px;border-radius:5px;border:1px solid var(--ws-border);flex:none}
+.type-row{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 16px;padding:12px 14px;border-top:1px solid var(--ws-border)}
+.type-row:first-child{border-top:0}
+.type-row code{font:400 12px/16px var(--ws-font-mono);color:var(--ws-fg-subtle)}
+.bars{display:flex;flex-direction:column;gap:8px;padding:14px}
+.bar{display:flex;align-items:center;gap:12px;font-size:12px}
+.bar code{width:88px;font-family:var(--ws-font-mono);color:var(--ws-fg-muted);flex:none}
+.bar i{height:12px;border-radius:3px;background:var(--ws-accent);opacity:.85}
+.radii{display:flex;flex-wrap:wrap;gap:16px;padding:14px}
+.radii div{display:flex;flex-direction:column;gap:6px;align-items:center;font:400 12px/16px var(--ws-font-mono);color:var(--ws-fg-muted)}
+.radii i{width:56px;height:40px;border:1.5px solid var(--ws-border-strong);background:var(--ws-bg-sunken)}
+.idc-pal{display:flex;flex-wrap:wrap;gap:8px;padding:14px}
+.idc-pal i{width:28px;height:28px;border-radius:6px}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important}
+}
+@media (max-width:560px){
+  .tok-row{grid-template-columns:1fr 1fr}
+  .tok-row>:first-child{grid-column:1 / -1}
+}
+</style>
+
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<symbol id="f-check-circle" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm45.66,85.66-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z"/></symbol>
+<symbol id="f-info" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm-4,48a12,12,0,1,1-12,12A12,12,0,0,1,124,72Zm12,112a16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40a8,8,0,0,1,0,16Z"/></symbol>
+<symbol id="f-seal-check" viewBox="0 0 256 256"><path d="M225.86,102.82c-3.77-3.94-7.67-8-9.14-11.57-1.36-3.27-1.44-8.69-1.52-13.94-.15-9.76-.31-20.82-8-28.51s-18.75-7.85-28.51-8c-5.25-.08-10.67-.16-13.94-1.52-3.56-1.47-7.63-5.37-11.57-9.14C146.28,23.51,138.44,16,128,16s-18.27,7.51-25.18,14.14c-3.94,3.77-8,7.67-11.57,9.14C88,40.64,82.56,40.72,77.31,40.8c-9.76.15-20.82.31-28.51,8S41,67.55,40.8,77.31c-.08,5.25-.16,10.67-1.52,13.94-1.47,3.56-5.37,7.63-9.14,11.57C23.51,109.72,16,117.56,16,128s7.51,18.27,14.14,25.18c3.77,3.94,7.67,8,9.14,11.57,1.36,3.27,1.44,8.69,1.52,13.94.15,9.76.31,20.82,8,28.51s18.75,7.85,28.51,8c5.25.08,10.67.16,13.94,1.52,3.56,1.47,7.63,5.37,11.57,9.14C109.72,232.49,117.56,240,128,240s18.27-7.51,25.18-14.14c3.94-3.77,8-7.67,11.57-9.14,3.27-1.36,8.69-1.44,13.94-1.52,9.76-.15,20.82-.31,28.51-8s7.85-18.75,8-28.51c.08-5.25.16-10.67,1.52-13.94,1.47-3.56,5.37-7.63,9.14-11.57C232.49,146.28,240,138.44,240,128S232.49,109.73,225.86,102.82Zm-52.2,6.84-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z"/></symbol>
+<symbol id="f-warning" viewBox="0 0 256 256"><path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM120,104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm8,88a12,12,0,1,1,12-12A12,12,0,0,1,128,192Z"/></symbol>
+<symbol id="f-x-circle" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm37.66,130.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></symbol>
+<symbol id="r-arrow-clockwise" viewBox="0 0 256 256"><path d="M240,56v48a8,8,0,0,1-8,8H184a8,8,0,0,1,0-16H211.4L184.81,71.64l-.25-.24a80,80,0,1,0-1.67,114.78,8,8,0,0,1,11,11.63A95.44,95.44,0,0,1,128,224h-1.32A96,96,0,1,1,195.75,60L224,85.8V56a8,8,0,1,1,16,0Z"/></symbol>
+<symbol id="r-arrow-square-out" viewBox="0 0 256 256"><path d="M224,104a8,8,0,0,1-16,0V59.32l-66.33,66.34a8,8,0,0,1-11.32-11.32L196.68,48H152a8,8,0,0,1,0-16h64a8,8,0,0,1,8,8Zm-40,24a8,8,0,0,0-8,8v72H48V80h72a8,8,0,0,0,0-16H48A16,16,0,0,0,32,80V208a16,16,0,0,0,16,16H176a16,16,0,0,0,16-16V136A8,8,0,0,0,184,128Z"/></symbol>
+<symbol id="r-browser" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,16V88H40V56Zm0,144H40V104H216v96Z"/></symbol>
+<symbol id="r-browsers" viewBox="0 0 256 256"><path d="M216,40H72A16,16,0,0,0,56,56V72H40A16,16,0,0,0,24,88V200a16,16,0,0,0,16,16H184a16,16,0,0,0,16-16V184h16a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM184,88v16H40V88Zm0,112H40V120H184v80Zm32-32H200V88a16,16,0,0,0-16-16H72V56H216Z"/></symbol>
+<symbol id="r-caret-down" viewBox="0 0 256 256"><path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"/></symbol>
+<symbol id="r-caret-right" viewBox="0 0 256 256"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></symbol>
+<symbol id="r-certificate" viewBox="0 0 256 256"><path d="M128,136a8,8,0,0,1-8,8H72a8,8,0,0,1,0-16h48A8,8,0,0,1,128,136Zm-8-40H72a8,8,0,0,0,0,16h48a8,8,0,0,0,0-16Zm112,65.47V224A8,8,0,0,1,220,231l-24-13.74L172,231A8,8,0,0,1,160,224V200H40a16,16,0,0,1-16-16V56A16,16,0,0,1,40,40H216a16,16,0,0,1,16,16V86.53a51.88,51.88,0,0,1,0,74.94ZM160,184V161.47A52,52,0,0,1,216,76V56H40V184Zm56-12a51.88,51.88,0,0,1-40,0v38.22l16-9.16a8,8,0,0,1,7.94,0l16,9.16Zm16-48a36,36,0,1,0-36,36A36,36,0,0,0,232,124Z"/></symbol>
+<symbol id="r-circle-dashed" viewBox="0 0 256 256"><path d="M96.26,37.05A8,8,0,0,1,102,27.29a104.11,104.11,0,0,1,52,0,8,8,0,0,1-2,15.75,8.15,8.15,0,0,1-2-.26,88.09,88.09,0,0,0-44,0A8,8,0,0,1,96.26,37.05ZM53.79,55.14a104.05,104.05,0,0,0-26,45,8,8,0,0,0,15.42,4.27,88,88,0,0,1,22-38.09A8,8,0,0,0,53.79,55.14ZM43.21,151.55a8,8,0,1,0-15.42,4.28,104.12,104.12,0,0,0,26,45,8,8,0,0,0,11.41-11.22A88.14,88.14,0,0,1,43.21,151.55ZM150,213.22a88,88,0,0,1-44,0,8,8,0,1,0-4,15.49,104.11,104.11,0,0,0,52,0,8,8,0,0,0-4-15.49ZM222.65,146a8,8,0,0,0-9.85,5.58,87.91,87.91,0,0,1-22,38.08,8,8,0,1,0,11.42,11.21,104,104,0,0,0,26-45A8,8,0,0,0,222.65,146Zm-9.86-41.54a8,8,0,0,0,15.42-4.28,104,104,0,0,0-26-45,8,8,0,1,0-11.41,11.22A88,88,0,0,1,212.79,104.45Z"/></symbol>
+<symbol id="r-clock" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z"/></symbol>
+<symbol id="r-copy" viewBox="0 0 256 256"><path d="M216,32H88a8,8,0,0,0-8,8V80H40a8,8,0,0,0-8,8V216a8,8,0,0,0,8,8H168a8,8,0,0,0,8-8V176h40a8,8,0,0,0,8-8V40A8,8,0,0,0,216,32ZM160,208H48V96H160Zm48-48H176V88a8,8,0,0,0-8-8H96V48H208Z"/></symbol>
+<symbol id="r-desktop" viewBox="0 0 256 256"><path d="M208,40H48A24,24,0,0,0,24,64V176a24,24,0,0,0,24,24h72v16H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H136V200h72a24,24,0,0,0,24-24V64A24,24,0,0,0,208,40ZM48,56H208a8,8,0,0,1,8,8v80H40V64A8,8,0,0,1,48,56ZM208,184H48a8,8,0,0,1-8-8V160H216v16A8,8,0,0,1,208,184Z"/></symbol>
+<symbol id="r-dots-nine" viewBox="0 0 256 256"><path d="M72,60A12,12,0,1,1,60,48,12,12,0,0,1,72,60Zm56-12a12,12,0,1,0,12,12A12,12,0,0,0,128,48Zm68,24a12,12,0,1,0-12-12A12,12,0,0,0,196,72ZM60,116a12,12,0,1,0,12,12A12,12,0,0,0,60,116Zm68,0a12,12,0,1,0,12,12A12,12,0,0,0,128,116Zm68,0a12,12,0,1,0,12,12A12,12,0,0,0,196,116ZM60,184a12,12,0,1,0,12,12A12,12,0,0,0,60,184Zm68,0a12,12,0,1,0,12,12A12,12,0,0,0,128,184Zm68,0a12,12,0,1,0,12,12A12,12,0,0,0,196,184Z"/></symbol>
+<symbol id="r-download-simple" viewBox="0 0 256 256"><path d="M224,144v64a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V144a8,8,0,0,1,16,0v56H208V144a8,8,0,0,1,16,0Zm-101.66,5.66a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,124.69V32a8,8,0,0,0-16,0v92.69L93.66,98.34a8,8,0,0,0-11.32,11.32Z"/></symbol>
+<symbol id="r-eye" viewBox="0 0 256 256"><path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.47,133.47,0,0,1,25,128,133.33,133.33,0,0,1,48.07,97.25C70.33,75.19,97.22,64,128,64s57.67,11.19,79.93,33.25A133.46,133.46,0,0,1,231.05,128C223.84,141.46,192.43,192,128,192Zm0-112a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Z"/></symbol>
+<symbol id="r-file-plus" viewBox="0 0 256 256"><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Zm-40-64a8,8,0,0,1-8,8H136v16a8,8,0,0,1-16,0V160H104a8,8,0,0,1,0-16h16V128a8,8,0,0,1,16,0v16h16A8,8,0,0,1,160,152Z"/></symbol>
+<symbol id="r-globe" viewBox="0 0 256 256"><path d="M128,24h0A104,104,0,1,0,232,128,104.12,104.12,0,0,0,128,24Zm88,104a87.61,87.61,0,0,1-3.33,24H174.16a157.44,157.44,0,0,0,0-48h38.51A87.61,87.61,0,0,1,216,128ZM102,168H154a115.11,115.11,0,0,1-26,45A115.27,115.27,0,0,1,102,168Zm-3.9-16a140.84,140.84,0,0,1,0-48h59.88a140.84,140.84,0,0,1,0,48ZM40,128a87.61,87.61,0,0,1,3.33-24H81.84a157.44,157.44,0,0,0,0,48H43.33A87.61,87.61,0,0,1,40,128ZM154,88H102a115.11,115.11,0,0,1,26-45A115.27,115.27,0,0,1,154,88Zm52.33,0H170.71a135.28,135.28,0,0,0-22.3-45.6A88.29,88.29,0,0,1,206.37,88ZM107.59,42.4A135.28,135.28,0,0,0,85.29,88H49.63A88.29,88.29,0,0,1,107.59,42.4ZM49.63,168H85.29a135.28,135.28,0,0,0,22.3,45.6A88.29,88.29,0,0,1,49.63,168Zm98.78,45.6a135.28,135.28,0,0,0,22.3-45.6h35.66A88.29,88.29,0,0,1,148.41,213.6Z"/></symbol>
+<symbol id="r-identification-card" viewBox="0 0 256 256"><path d="M200,112a8,8,0,0,1-8,8H152a8,8,0,0,1,0-16h40A8,8,0,0,1,200,112Zm-8,24H152a8,8,0,0,0,0,16h40a8,8,0,0,0,0-16Zm40-80V200a16,16,0,0,1-16,16H40a16,16,0,0,1-16-16V56A16,16,0,0,1,40,40H216A16,16,0,0,1,232,56ZM216,200V56H40V200H216Zm-80.26-34a8,8,0,1,1-15.5,4c-2.63-10.26-13.06-18-24.25-18s-21.61,7.74-24.25,18a8,8,0,1,1-15.5-4,39.84,39.84,0,0,1,17.19-23.34,32,32,0,1,1,45.12,0A39.76,39.76,0,0,1,135.75,166ZM96,136a16,16,0,1,0-16-16A16,16,0,0,0,96,136Z"/></symbol>
+<symbol id="r-list-checks" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H128a8,8,0,0,1,0-16h88A8,8,0,0,1,224,128ZM128,72h88a8,8,0,0,0,0-16H128a8,8,0,0,0,0,16Zm88,112H128a8,8,0,0,0,0,16h88a8,8,0,0,0,0-16ZM82.34,42.34,56,68.69,45.66,58.34A8,8,0,0,0,34.34,69.66l16,16a8,8,0,0,0,11.32,0l32-32A8,8,0,0,0,82.34,42.34Zm0,64L56,132.69,45.66,122.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32,0l32-32a8,8,0,0,0-11.32-11.32Zm0,64L56,196.69,45.66,186.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32,0l32-32a8,8,0,0,0-11.32-11.32Z"/></symbol>
+<symbol id="r-monitor" viewBox="0 0 256 256"><path d="M208,40H48A24,24,0,0,0,24,64V176a24,24,0,0,0,24,24H208a24,24,0,0,0,24-24V64A24,24,0,0,0,208,40Zm8,136a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V64a8,8,0,0,1,8-8H208a8,8,0,0,1,8,8Zm-48,48a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,224Z"/></symbol>
+<symbol id="r-moon" viewBox="0 0 256 256"><path d="M233.54,142.23a8,8,0,0,0-8-2,88.08,88.08,0,0,1-109.8-109.8,8,8,0,0,0-10-10,104.84,104.84,0,0,0-52.91,37A104,104,0,0,0,136,224a103.09,103.09,0,0,0,62.52-20.88,104.84,104.84,0,0,0,37-52.91A8,8,0,0,0,233.54,142.23ZM188.9,190.34A88,88,0,0,1,65.66,67.11a89,89,0,0,1,31.4-26A106,106,0,0,0,96,56,104.11,104.11,0,0,0,200,160a106,106,0,0,0,14.92-1.06A89,89,0,0,1,188.9,190.34Z"/></symbol>
+<symbol id="r-password" viewBox="0 0 256 256"><path d="M48,56V200a8,8,0,0,1-16,0V56a8,8,0,0,1,16,0Zm92,54.5L120,117V96a8,8,0,0,0-16,0v21L84,110.5a8,8,0,0,0-5,15.22l20,6.49-12.34,17a8,8,0,1,0,12.94,9.4l12.34-17,12.34,17a8,8,0,1,0,12.94-9.4l-12.34-17,20-6.49A8,8,0,0,0,140,110.5ZM246,115.64A8,8,0,0,0,236,110.5L216,117V96a8,8,0,0,0-16,0v21l-20-6.49a8,8,0,0,0-4.95,15.22l20,6.49-12.34,17a8,8,0,1,0,12.94,9.4l12.34-17,12.34,17a8,8,0,1,0,12.94-9.4l-12.34-17,20-6.49A8,8,0,0,0,246,115.64Z"/></symbol>
+<symbol id="r-plug" viewBox="0 0 256 256"><path d="M237.66,66.34a8,8,0,0,0-11.32,0L192,100.69,155.31,64l34.35-34.34a8,8,0,1,0-11.32-11.32L144,52.69,117.66,26.34a8,8,0,0,0-11.32,11.32L112.69,44l-53,53a40,40,0,0,0,0,56.57l15.71,15.71L26.34,218.34a8,8,0,0,0,11.32,11.32l49.09-49.09,15.71,15.71a40,40,0,0,0,56.57,0l53-53,6.34,6.35a8,8,0,0,0,11.32-11.32L203.31,112l34.35-34.34A8,8,0,0,0,237.66,66.34ZM147.72,185a24,24,0,0,1-33.95,0L71,142.23a24,24,0,0,1,0-33.95l53-53L200.69,132Z"/></symbol>
+<symbol id="r-plus" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/></symbol>
+<symbol id="r-puzzle-piece" viewBox="0 0 256 256"><path d="M220.27,158.54a8,8,0,0,0-7.7-.46,20,20,0,1,1,0-36.16A8,8,0,0,0,224,114.69V72a16,16,0,0,0-16-16H171.78a35.36,35.36,0,0,0,.22-4,36.11,36.11,0,0,0-11.36-26.24,36,36,0,0,0-60.55,23.62,36.56,36.56,0,0,0,.14,6.62H64A16,16,0,0,0,48,72v32.22a35.36,35.36,0,0,0-4-.22,36.12,36.12,0,0,0-26.24,11.36,35.7,35.7,0,0,0-9.69,27,36.08,36.08,0,0,0,33.31,33.6,35.68,35.68,0,0,0,6.62-.14V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V165.31A8,8,0,0,0,220.27,158.54ZM208,208H64V165.31a8,8,0,0,0-11.43-7.23,20,20,0,1,1,0-36.16A8,8,0,0,0,64,114.69V72h46.69a8,8,0,0,0,7.23-11.43,20,20,0,1,1,36.16,0A8,8,0,0,0,161.31,72H208v32.23a35.68,35.68,0,0,0-6.62-.14A36,36,0,0,0,204,176a35.36,35.36,0,0,0,4-.22Z"/></symbol>
+<symbol id="r-question" viewBox="0 0 256 256"><path d="M140,180a12,12,0,1,1-12-12A12,12,0,0,1,140,180ZM128,72c-22.06,0-40,16.15-40,36v4a8,8,0,0,0,16,0v-4c0-11,10.77-20,24-20s24,9,24,20-10.77,20-24,20a8,8,0,0,0-8,8v8a8,8,0,0,0,16,0v-.72c18.24-3.35,32-17.9,32-35.28C168,88.15,150.06,72,128,72Zm104,56A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></symbol>
+<symbol id="r-signature" viewBox="0 0 256 256"><path d="M232,168H63.86c2.66-5.24,5.33-10.63,8-16.11,15,1.65,32.58-8.78,52.66-31.14,5,13.46,14.45,30.93,30.58,31.25,9.06.18,18.11-5.2,27.42-16.37C189.31,143.75,203.3,152,232,152a8,8,0,0,0,0-16c-30.43,0-39.43-10.45-40-16.11a7.67,7.67,0,0,0-5.46-7.75,8.14,8.14,0,0,0-9.25,3.49c-12.07,18.54-19.38,20.43-21.92,20.37-8.26-.16-16.66-19.52-19.54-33.42a8,8,0,0,0-14.09-3.37C101.54,124.55,88,133.08,79.57,135.29,88.06,116.42,94.4,99.85,98.46,85.9c6.82-23.44,7.32-39.83,1.51-50.1-3-5.38-9.34-11.8-22.06-11.8C61.85,24,49.18,39.18,43.14,65.65c-3.59,15.71-4.18,33.21-1.62,48s7.87,25.55,15.59,31.94c-3.73,7.72-7.53,15.26-11.23,22.41H24a8,8,0,0,0,0,16H37.41c-11.32,21-20.12,35.64-20.26,35.88a8,8,0,1,0,13.71,8.24c.15-.26,11.27-18.79,24.7-44.12H232a8,8,0,0,0,0-16ZM58.74,69.21C62.72,51.74,70.43,40,77.91,40c5.33,0,7.1,1.86,8.13,3.67,3,5.33,6.52,24.19-21.66,86.39C56.12,118.78,53.31,93,58.74,69.21Z"/></symbol>
+<symbol id="r-stethoscope" viewBox="0 0 256 256"><path d="M220,160a12,12,0,1,1-12-12A12,12,0,0,1,220,160Zm-4.55,39.29A48.08,48.08,0,0,1,168,240H144a48.05,48.05,0,0,1-48-48V151.49A64,64,0,0,1,40,88V40a8,8,0,0,1,8-8H72a8,8,0,0,1,0,16H56V88a48,48,0,0,0,48.64,48c26.11-.34,47.36-22.25,47.36-48.83V48H136a8,8,0,0,1,0-16h24a8,8,0,0,1,8,8V87.17c0,32.84-24.53,60.29-56,64.31V192a32,32,0,0,0,32,32h24a32.06,32.06,0,0,0,31.22-25,40,40,0,1,1,16.23.27ZM232,160a24,24,0,1,0-24,24A24,24,0,0,0,232,160Z"/></symbol>
+<symbol id="r-sun" viewBox="0 0 256 256"><path d="M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm72,88a64,64,0,1,1-64-64A64.07,64.07,0,0,1,192,128Zm-16,0a48,48,0,1,0-48,48A48.05,48.05,0,0,0,176,128ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm80,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V216A8,8,0,0,0,128,208Zm112-88H216a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Z"/></symbol>
+<symbol id="r-terminal-window" viewBox="0 0 256 256"><path d="M128,128a8,8,0,0,1-3,6.25l-40,32a8,8,0,1,1-10-12.5L107.19,128,75,102.25a8,8,0,1,1,10-12.5l40,32A8,8,0,0,1,128,128Zm48,24H136a8,8,0,0,0,0,16h40a8,8,0,0,0,0-16Zm56-96V200a16,16,0,0,1-16,16H40a16,16,0,0,1-16-16V56A16,16,0,0,1,40,40H216A16,16,0,0,1,232,56ZM216,200V56H40V200H216Z"/></symbol>
+<symbol id="r-usb" viewBox="0 0 256 256"><path d="M252.44,121.34l-48-32A8,8,0,0,0,192,96v24H72V72h33a32,32,0,1,0,0-16H72A16,16,0,0,0,56,72v48H8a8,8,0,0,0,0,16H56v48a16,16,0,0,0,16,16h32v8a16,16,0,0,0,16,16h32a16,16,0,0,0,16-16V176a16,16,0,0,0-16-16H120a16,16,0,0,0-16,16v8H72V136H192v24a8,8,0,0,0,12.44,6.66l48-32a8,8,0,0,0,0-13.32ZM136,48a16,16,0,1,1-16,16A16,16,0,0,1,136,48ZM120,176h32v32H120Zm88-30.95V111l25.58,17Z"/></symbol>
+<symbol id="r-x" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></symbol>
+</svg>
+
+<div class="page">
+  <header class="page-head">
+    <div class="ph-brand">
+      <span class="mark lg" aria-hidden="true"><svg class="ic"><use href="#f-seal-check"/></svg></span>
+      <div>
+        <h1>Telas do WebeSign</h1>
+        <p>Mockups da especificação <span class="mono">docs/ux.md</span> para aprovação. Dados fictícios.</p>
+      </div>
+    </div>
+    <div class="seg" role="group" aria-label="Tema" id="theme-seg">
+      <button type="button" data-theme-set="system" aria-pressed="true"><svg class="ic"><use href="#r-monitor"/></svg>Sistema</button>
+      <button type="button" data-theme-set="light" aria-pressed="false"><svg class="ic"><use href="#r-sun"/></svg>Claro</button>
+      <button type="button" data-theme-set="dark" aria-pressed="false"><svg class="ic"><use href="#r-moon"/></svg>Escuro</button>
+    </div>
+  </header>
+  <nav class="page-nav" aria-label="Seções">
+    <a href="#confirmacao">Janela de Confirmação</a>
+    <a href="#diagnostico">Janela de Diagnóstico</a>
+    <a href="#popup">Popup da extensão</a>
+    <a href="#tokens">Tokens</a>
+  </nav>
+
+  <!-- ===================== CONFIRMAÇÃO ===================== -->
+  <section class="sec" id="confirmacao" data-os="windows">
+    <div class="sec-head">
+      <div>
+        <h2>Janela de Confirmação</h2>
+        <p>480 × 600 px lógicos, fixa, no topo, centralizada no monitor do ponteiro. Aparece a cada assinatura. O site vem do navegador; o código de conferência vem do digest; nenhum texto do site entra aqui.</p>
+      </div>
+      <div class="sec-tools">
+        <div class="seg" role="group" aria-label="Ordem dos botões" id="os-seg">
+          <button type="button" data-os-set="windows" aria-pressed="true">Windows</button>
+          <button type="button" data-os-set="mac" aria-pressed="false">macOS e Linux</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="shots">
+      <!-- A: principal -->
+      <figure class="shot">
+        <figcaption class="shot-cap">
+          <b>Estado principal · site lembrado</b>
+          <span>Dra. Ana Beatriz Souza assinando um laudo. O último certificado usado no site vem selecionado. Clique noutra linha: o código muda (novo digest) e o botão re-arma.</span>
+        </figcaption>
+        <div class="stage" data-w="480" data-h="632">
+          <div class="win confirm" id="mock-main">
+            <div class="titlebar">Assinar para app.diagnos.health — WebeSign<svg class="tb-x"><use href="#r-x"/></svg></div>
+            <div class="c-head">
+              <div class="c-eyebrow">
+                <span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Pedido de assinatura · pelo Chrome</span>
+                <span class="chip chip-success"><svg class="ic"><use href="#f-check-circle"/></svg>Site com permissão</span>
+              </div>
+              <div class="c-origin"><span class="o-dim">https://app.</span>diagnos.health</div>
+              <p class="c-asks">quer que você assine um documento.</p>
+            </div>
+            <div class="c-body">
+              <div class="card code-card">
+                <div class="idc" data-code="7F3A9C21E0B455D8" id="main-idc"></div>
+                <div class="code-main">
+                  <div class="code-label">Código de conferência <span class="badge">SHA-256</span></div>
+                  <div class="code" id="main-code">7F3A 9C21 E0B4 55D8</div>
+                  <div class="code-help">Confira se o site mostra o mesmo código.</div>
+                </div>
+              </div>
+              <div class="group">
+                <div class="list-label" id="lbl-main">Assinar com</div>
+                <div class="list" role="radiogroup" aria-labelledby="lbl-main" id="main-list">
+                  <div class="row sel" role="radio" aria-checked="true" tabindex="0" data-code="7F3A9C21E0B455D8">
+                    <span class="radio on"></span>
+                    <div class="row-main">
+                      <div class="r1"><span class="name">Ana Beatriz Souza</span><span class="badge">ICP-Brasil A3</span></div>
+                      <div class="r2">CPF •••.456.789-•• · AC SOLUTI Multipla v5</div>
+                      <div class="r3"><span class="loc"><svg class="ic"><use href="#r-identification-card"/></svg><span>Cartão no leitor</span></span><span class="sep">·</span><span class="v t-warn"><svg class="ic"><use href="#r-clock"/></svg>Vence em 23 dias</span><a class="link">Detalhes</a></div>
+                    </div>
+                  </div>
+                  <div class="row" role="radio" aria-checked="false" tabindex="-1" data-code="C41E07B2956AF3D0">
+                    <span class="radio"></span>
+                    <div class="row-main">
+                      <div class="r1"><span class="name">Ana Beatriz Souza</span><span class="badge">ICP-Brasil A1</span></div>
+                      <div class="r2">CPF •••.456.789-•• · AC Certisign RFB G5</div>
+                      <div class="r3"><span class="loc"><svg class="ic"><use href="#r-desktop"/></svg><span>Neste computador</span></span><span class="sep">·</span><span class="v">Válido até 14/03/2027</span></div>
+                    </div>
+                  </div>
+                  <div class="row" role="radio" aria-checked="false" tabindex="-1" data-code="2B90E6D17A4C38F5">
+                    <span class="radio"></span>
+                    <div class="row-main">
+                      <div class="r1"><span class="name">Clinica Souza Imagem Ltda</span><span class="badge">ICP-Brasil A1</span></div>
+                      <div class="r2">CNPJ 12.345.678/0001-90 · AC Certisign RFB G5</div>
+                      <div class="r3"><span class="loc"><svg class="ic"><use href="#r-desktop"/></svg><span>Neste computador</span></span><span class="sep">·</span><span class="v t-danger"><svg class="ic"><use href="#r-clock"/></svg>Vence em 5 dias</span></div>
+                    </div>
+                  </div>
+                  <div class="row-compact"><svg class="ic"><use href="#r-caret-right"/></svg>Não podem assinar (1)</div>
+                </div>
+              </div>
+            </div>
+            <div class="c-foot">
+              <span class="hint">O <span class="os-name">Windows</span> vai pedir o PIN numa janela própria.</span>
+              <div class="btns"><button type="button" class="btn">Cancelar</button><button type="button" class="btn primary" id="main-sign">Assinar</button></div>
+            </div>
+          </div>
+        </div>
+        <p class="note" style="margin:12px 0 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><button type="button" class="page-btn" id="replay"><svg class="ic"><use href="#r-arrow-clockwise"/></svg>Reproduzir abertura</button>O botão Assinar só arma 600 ms depois de a janela estar visível e focada.</p>
+      </figure>
+
+      <!-- B: PIN PKCS#11 -->
+      <figure class="shot">
+        <figcaption class="shot-cap">
+          <b>PIN pelo driver do token · última tentativa</b>
+          <span>Chave acessada pelo driver (PKCS#11): o PIN é digitado aqui, não numa janela do sistema. O padrão não informa quantas tentativas restam, só “poucas” e “última”.</span>
+        </figcaption>
+        <div class="stage" data-w="480" data-h="632">
+          <div class="win confirm">
+            <div class="titlebar">Assinar para app.diagnos.health — WebeSign<svg class="tb-x"><use href="#r-x"/></svg></div>
+            <div class="c-head">
+              <div class="c-eyebrow">
+                <span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Pedido de assinatura · pelo Firefox</span>
+                <span class="chip chip-success"><svg class="ic"><use href="#f-check-circle"/></svg>Site com permissão</span>
+              </div>
+              <div class="c-origin"><span class="o-dim">https://app.</span>diagnos.health</div>
+              <p class="c-asks">quer que você assine um documento.</p>
+            </div>
+            <div class="c-body">
+              <div class="card code-card">
+                <div class="idc" data-code="E3B0C44298FC1C14"></div>
+                <div class="code-main">
+                  <div class="code-label">Código de conferência <span class="badge">SHA-256</span></div>
+                  <div class="code">E3B0 C442 98FC 1C14</div>
+                  <div class="code-help">Confira se o site mostra o mesmo código.</div>
+                </div>
+              </div>
+              <div class="group">
+                <div class="list-label">Assinar com</div>
+                <div class="list">
+                  <div class="row sel">
+                    <span class="radio on"></span>
+                    <div class="row-main">
+                      <div class="r1"><span class="name">Ana Beatriz Souza</span><span class="badge">ICP-Brasil A3</span></div>
+                      <div class="r2">CPF •••.456.789-•• · AC Certisign RFB G5</div>
+                      <div class="r3"><span class="loc"><svg class="ic"><use href="#r-usb"/></svg><span>Token SafeNet eToken 5110 · pelo driver</span></span><span class="sep">·</span><span class="v">Válido até 22/10/2029</span></div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <span class="radio"></span>
+                    <div class="row-main">
+                      <div class="r1"><span class="name">Ana Beatriz Souza</span><span class="badge">ICP-Brasil A1</span></div>
+                      <div class="r2">CPF •••.456.789-•• · AC Certisign RFB G5</div>
+                      <div class="r3"><span class="loc"><svg class="ic"><use href="#r-desktop"/></svg><span>Neste computador</span></span><span class="sep">·</span><span class="v">Válido até 14/03/2027</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="pin">
+                <div class="pin-top"><label>PIN do token</label><span>4 a 16 caracteres</span></div>
+                <div class="field err focus"><span class="dots">••••</span><span class="caret"></span><button type="button" class="icon-btn" aria-label="Mostrar PIN"><svg class="ic"><use href="#r-eye"/></svg></button></div>
+                <div class="msg danger"><svg class="ic"><use href="#f-x-circle"/></svg>PIN incorreto. Última tentativa: se errar de novo, o token bloqueia.</div>
+              </div>
+            </div>
+            <div class="c-foot">
+              <span class="hint"></span>
+              <div class="btns"><button type="button" class="btn">Cancelar</button><button type="button" class="btn primary">Assinar</button></div>
+            </div>
+          </div>
+        </div>
+      </figure>
+
+      <!-- C: nenhum certificado + possível -->
+      <figure class="shot">
+        <figcaption class="shot-cap">
+          <b>Nenhum certificado · possível certificado</b>
+          <span>O token foi detectado pelo USB (VID:PID 0529:0620 no devices.json), mas o driver não está instalado. A dica diz o que instalar e oferece o link do sistema atual.</span>
+        </figcaption>
+        <div class="stage" data-w="480" data-h="632">
+          <div class="win confirm">
+            <div class="titlebar">Assinar para app.diagnos.health — WebeSign<svg class="tb-x"><use href="#r-x"/></svg></div>
+            <div class="c-head">
+              <div class="c-eyebrow">
+                <span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Pedido de assinatura · pelo Edge</span>
+                <span class="chip chip-success"><svg class="ic"><use href="#f-check-circle"/></svg>Site com permissão</span>
+              </div>
+              <div class="c-origin"><span class="o-dim">https://app.</span>diagnos.health</div>
+              <p class="c-asks">quer que você assine um documento.</p>
+            </div>
+            <div class="c-body">
+              <div class="group">
+                <div class="list-label">Assinar com</div>
+                <div class="list">
+                  <div class="empty">
+                    <svg class="ic"><use href="#r-certificate"/></svg>
+                    <b>Nenhum certificado encontrado</b>
+                    <p>Conecte o token ou insira o cartão no leitor. A lista atualiza sozinha.</p>
+                  </div>
+                  <div class="possible" style="border-top:1px solid var(--ws-border)">
+                    <span class="bubble"><svg class="ic"><use href="#r-usb"/></svg></span>
+                    <div>
+                      <b>SafeNet eToken 5110 conectado</b>
+                      <p>Nenhum certificado apareceu neste token. Para usá-lo, instale o SafeNet Authentication Client.</p>
+                      <div class="acts">
+                        <button type="button" class="btn md"><svg class="ic"><use href="#r-download-simple"/></svg>Baixar para <span class="os-name">Windows</span><svg class="ic"><use href="#r-arrow-square-out"/></svg></button>
+                        <button type="button" class="btn md ghost"><svg class="ic"><use href="#r-arrow-clockwise"/></svg>Já instalei, procurar de novo</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="c-foot">
+              <span class="hint"><a class="link" style="display:inline-flex;align-items:center;gap:6px"><svg class="ic"><use href="#r-stethoscope"/></svg>Abrir diagnóstico</a></span>
+              <div class="btns"><button type="button" class="btn">Cancelar</button><button type="button" class="btn primary is-disabled" aria-disabled="true">Assinar</button></div>
+            </div>
+          </div>
+        </div>
+      </figure>
+
+      <!-- D: site novo, modo Escolher, Cartão de Cidadão -->
+      <figure class="shot">
+        <figcaption class="shot-cap">
+          <b>Site novo · modo Escolher · Cartão de Cidadão</b>
+          <span>O site chamou <span class="mono">certificates()</span> pela primeira vez neste computador. Só o certificado escolhido vai para o site; “Lembrar este site” começa desmarcado.</span>
+        </figcaption>
+        <div class="stage" data-w="480" data-h="632">
+          <div class="win confirm">
+            <div class="titlebar">Escolher certificado para app.diagnos.health — WebeSign<svg class="tb-x"><use href="#r-x"/></svg></div>
+            <div class="c-head">
+              <div class="c-eyebrow">
+                <span class="lead"><svg class="ic"><use href="#r-certificate"/></svg>Pedido de certificado · pelo Chrome</span>
+                <span class="chip chip-neutral" title="Primeira vez que este site pede algo neste computador"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#f-info"/></svg>Site novo</span>
+              </div>
+              <div class="c-origin"><span class="o-dim">https://app.</span>diagnos.health</div>
+              <p class="c-asks">quer saber com qual certificado você vai assinar.</p>
+            </div>
+            <div class="c-body">
+              <div class="callout callout-info"><svg class="ic"><use href="#f-info"/></svg><span>O site vai receber nome, tipo, emissor e validade do certificado escolhido. Nada é assinado agora.</span></div>
+              <div class="group">
+                <div class="list-label">Escolha o certificado</div>
+                <div class="list">
+                  <div class="row sel">
+                    <span class="radio on"></span>
+                    <div class="row-main">
+                      <div class="r1"><span class="name">Marta Sofia Carvalho</span><span class="badge">Cartão de Cidadão</span></div>
+                      <div class="r2">Documento •••••123 · EC de Assinatura Digital Qualificada do Cartão de Cidadão 0017</div>
+                      <div class="r3"><span class="loc"><svg class="ic"><use href="#r-identification-card"/></svg><span>Cartão no leitor</span></span><span class="sep">·</span><span class="v">Válido até 22/06/2030</span><a class="link">Detalhes</a></div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <span class="radio"></span>
+                    <div class="row-main">
+                      <div class="r1"><span class="name">Marta Sofia Carvalho</span><span class="badge">Qualificado eIDAS</span></div>
+                      <div class="r2">Multicert CA Qualificada 005</div>
+                      <div class="r3"><span class="loc"><svg class="ic"><use href="#r-usb"/></svg><span>Token ou cartão</span></span><span class="sep">·</span><span class="v t-warn"><svg class="ic"><use href="#r-clock"/></svg>Vence em 12 dias</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="consent">
+                <span class="check" role="checkbox" aria-checked="false"></span>
+                <div><b>Lembrar este site neste computador</b><span>Ele poderá saber qual certificado você usa sem perguntar. Cada assinatura continua pedindo sua confirmação.</span></div>
+              </div>
+            </div>
+            <div class="c-foot">
+              <span class="hint"></span>
+              <div class="btns"><button type="button" class="btn">Cancelar</button><button type="button" class="btn primary">Usar este certificado</button></div>
+            </div>
+          </div>
+        </div>
+      </figure>
+    </div>
+
+    <h3 class="sub">Variações da origem</h3>
+    <p>O domínio registrável fica em destaque; o resto fica apagado. Alertas não bloqueiam (exceto http), mas impedem “Lembrar este site” para IP e punycode.</p>
+    <div class="minis">
+      <div class="mini">
+        <span class="mini-tag">Subdomínio enganoso · host longo usa 16 px</span>
+        <div class="c-head">
+          <div class="c-eyebrow"><span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Pedido de assinatura · pelo Chrome</span><span class="chip chip-neutral"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#f-info"/></svg>Site novo</span></div>
+          <div class="c-origin long"><span class="o-dim">https://diagnos.health.</span>cadastro-medico.com</div>
+          <p class="c-asks">quer que você assine um documento.</p>
+        </div>
+      </div>
+      <div class="mini">
+        <span class="mini-tag">Punycode (letra cirílica no lugar do “a”)</span>
+        <div class="c-head">
+          <div class="c-eyebrow"><span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Pedido de assinatura · pelo Chrome</span><span class="chip chip-neutral"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#f-info"/></svg>Site novo</span></div>
+          <div class="c-origin"><span class="o-dim">https://</span>xn--dignos-4nf.health</div>
+          <p class="c-asks">quer que você assine um documento.</p>
+          <div class="c-alert"><svg class="ic"><use href="#f-warning"/></svg><div>Endereço com caracteres especiais. Confira letra por letra.<small>Aparece como diаgnos.health</small></div></div>
+        </div>
+      </div>
+      <div class="mini">
+        <span class="mini-tag">IP da rede local · porta visível</span>
+        <div class="c-head">
+          <div class="c-eyebrow"><span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Pedido de assinatura · pelo Edge</span><span class="chip chip-neutral"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#f-info"/></svg>Site novo</span></div>
+          <div class="c-origin"><span class="o-dim">https://</span>192.168.0.20<span class="o-dim">:8443</span></div>
+          <p class="c-asks">quer que você assine um documento.</p>
+          <div class="c-alert"><svg class="ic"><use href="#f-warning"/></svg><div>Endereço numérico da rede local</div></div>
+        </div>
+      </div>
+      <div class="mini">
+        <span class="mini-tag">Site local de desenvolvimento</span>
+        <div class="c-head">
+          <div class="c-eyebrow"><span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Pedido de assinatura · pelo Chrome</span><span class="chip chip-success"><svg class="ic"><use href="#f-check-circle"/></svg>Site com permissão</span></div>
+          <div class="c-origin"><span class="o-dim">http://</span>localhost<span class="o-dim">:5173</span></div>
+          <p class="c-asks">quer que você assine um documento.</p>
+          <div class="c-alert"><svg class="ic"><use href="#r-terminal-window"/></svg><div>Site local de desenvolvimento</div></div>
+        </div>
+      </div>
+      <div class="mini">
+        <span class="mini-tag">http não local · bloqueado (nunca deveria chegar à janela)</span>
+        <div class="c-head">
+          <div class="c-eyebrow"><span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Pedido de assinatura · pelo Chrome</span></div>
+          <div class="c-origin"><span class="o-dim">http://laudos.</span>exemplo.com</div>
+          <div class="c-alert danger"><svg class="ic"><use href="#f-x-circle"/></svg><div>Este site não usa conexão segura (https). Por segurança, o WebeSign não assina para ele.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="sub">Rodapé ao longo da assinatura</h3>
+    <p>Do armamento ao sucesso. No sucesso a janela fecha sozinha após 900 ms; o resultado já foi enviado ao site antes da animação.</p>
+    <div class="minis wide">
+      <div class="mini">
+        <span class="mini-tag">0–600 ms · armando (cliques e teclas ignorados, exceto Esc)</span>
+        <div class="c-foot">
+          <span class="hint">O <span class="os-name">Windows</span> vai pedir o PIN numa janela própria.</span>
+          <div class="btns"><button type="button" class="btn">Cancelar</button><button type="button" class="btn primary is-disabled" aria-disabled="true">Assinar</button></div>
+        </div>
+      </div>
+      <div class="mini">
+        <span class="mini-tag">Assinando pela chave do sistema</span>
+        <div class="c-foot">
+          <span class="hint"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#r-password"/></svg>Digite o PIN na janela do <span class="os-name">Windows</span>.</span>
+          <div class="btns"><button type="button" class="btn is-disabled" aria-disabled="true">Aguarde…</button><button type="button" class="btn primary"><span class="spin"></span>Assinando…</button></div>
+        </div>
+      </div>
+      <div class="mini">
+        <span class="mini-tag">Sucesso · fecha sozinha</span>
+        <div class="mini-success">
+          <svg class="ic"><use href="#f-check-circle"/></svg>
+          <b>Assinado</b>
+          <span>A assinatura foi enviada para app.diagnos.health.</span>
+        </div>
+      </div>
+      <div class="mini">
+        <span class="mini-tag">Teclado do leitor (PIN pad)</span>
+        <div class="c-foot">
+          <span class="hint"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#r-dots-nine"/></svg>Digite o PIN no teclado do leitor.</span>
+          <div class="btns"><button type="button" class="btn is-disabled" aria-disabled="true">Aguarde…</button><button type="button" class="btn primary"><span class="spin"></span>Assinando…</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== DIAGNÓSTICO ===================== -->
+  <section class="sec" id="diagnostico">
+    <div class="sec-head">
+      <div>
+        <h2>Janela de Diagnóstico</h2>
+        <p>760 × 540 px lógicos. Abre pelo ícone do app, pelo popup e pelos erros. As abas trocam de verdade; cada uma tem semáforo com cor, forma e texto. Cenário: Windows, token novo sem driver, certificados vencendo.</p>
+      </div>
+    </div>
+    <figure class="shot" style="max-width:760px">
+      <div class="stage" data-w="760" data-h="572">
+        <div class="win diag" id="mock-diag">
+          <div class="titlebar">Diagnóstico — WebeSign<svg class="tb-x"><use href="#r-x"/></svg></div>
+          <div class="d-wrap">
+            <aside class="d-side">
+              <div class="d-brand"><span class="mark"><svg class="ic"><use href="#f-seal-check"/></svg></span><div><b>WebeSign</b><span>1.4.0</span></div></div>
+              <span class="chip chip-warning"><svg class="ic"><use href="#f-warning"/></svg>Precisa de atenção</span>
+              <nav class="d-nav" role="tablist" aria-orientation="vertical" aria-label="Diagnóstico">
+                <button type="button" class="d-tab" role="tab" aria-selected="true" aria-controls="tab-nav" id="t-nav"><svg class="ic"><use href="#r-browsers"/></svg>Navegadores<svg class="ic st warn" aria-label="Precisa de atenção"><use href="#f-warning"/></svg></button>
+                <button type="button" class="d-tab" role="tab" aria-selected="false" aria-controls="tab-dev" id="t-dev"><svg class="ic"><use href="#r-usb"/></svg>Dispositivos<svg class="ic st warn" aria-label="Precisa de atenção"><use href="#f-warning"/></svg></button>
+                <button type="button" class="d-tab" role="tab" aria-selected="false" aria-controls="tab-cert" id="t-cert"><svg class="ic"><use href="#r-certificate"/></svg>Certificados<svg class="ic st warn" aria-label="Precisa de atenção"><use href="#f-warning"/></svg></button>
+                <button type="button" class="d-tab" role="tab" aria-selected="false" aria-controls="tab-help" id="t-help"><svg class="ic"><use href="#r-question"/></svg>Ajuda</button>
+              </nav>
+              <div class="spacer"></div>
+              <button type="button" class="btn md block"><svg class="ic"><use href="#r-copy"/></svg>Copiar diagnóstico</button>
+            </aside>
+            <div class="d-main">
+              <!-- Navegadores -->
+              <div role="tabpanel" id="tab-nav" aria-labelledby="t-nav">
+                <div class="d-head"><div><h3>Navegadores</h3><p>Onde a extensão está instalada e conectada ao app.</p></div><button type="button" class="btn md"><svg class="ic"><use href="#r-arrow-clockwise"/></svg>Procurar de novo</button></div>
+                <div class="d-sec">Navegadores neste computador</div>
+                <div class="d-list">
+                  <div class="d-row"><svg class="ic"><use href="#r-browser"/></svg><div class="main"><div class="t">Google Chrome <span class="mono">129</span></div><div class="s"><svg class="ic t-success"><use href="#f-check-circle"/></svg>Extensão 1.4.2 conectada · há 3 min</div></div></div>
+                  <div class="d-row"><svg class="ic"><use href="#r-browser"/></svg><div class="main"><div class="t">Mozilla Firefox <span class="mono">131</span></div><div class="s"><svg class="ic t-success"><use href="#f-check-circle"/></svg>Extensão 1.4.2 conectada · ontem, 17:40</div></div></div>
+                  <div class="d-row"><svg class="ic"><use href="#r-browser"/></svg><div class="main"><div class="t">Microsoft Edge <span class="mono">129</span></div><div class="s"><svg class="ic t-warn"><use href="#f-warning"/></svg>Extensão não detectada</div><div class="x">Se o Edge mostrar “Nova extensão adicionada”, clique em Ativar.</div></div><button type="button" class="btn sm">Instalar extensão<svg class="ic"><use href="#r-arrow-square-out"/></svg></button></div>
+                </div>
+                <div class="d-sec"><svg class="ic"><use href="#r-globe"/></svg>Sites com permissão</div>
+                <div class="d-list">
+                  <div class="d-row"><div class="main"><div class="t"><span><span class="o-dim">https://app.</span>diagnos.health</span></div><div class="s">Lembrado em 12/09/2026 · último uso hoje, 14:02</div></div><button type="button" class="btn sm">Revogar</button></div>
+                  <div class="d-row"><div class="main"><div class="t"><span><span class="o-dim">https://laudos.</span>clinicasaolucas.med.br</span></div><div class="s">Lembrado em 03/07/2026 · último uso 28/08/2026</div></div><button type="button" class="btn sm">Revogar</button></div>
+                </div>
+              </div>
+              <!-- Dispositivos -->
+              <div role="tabpanel" id="tab-dev" aria-labelledby="t-dev" hidden>
+                <div class="d-head"><div><h3>Dispositivos</h3><p>Tokens, cartões e drivers que o WebeSign enxerga agora.</p></div><button type="button" class="btn md"><svg class="ic"><use href="#r-arrow-clockwise"/></svg>Procurar de novo</button></div>
+                <div class="d-sec">Tokens e cartões</div>
+                <div class="d-list">
+                  <div class="d-row"><svg class="ic"><use href="#r-usb"/></svg><div class="main"><div class="t">SafeNet eToken 5110 <span class="mono">USB 0529:0620</span></div><div class="s"><svg class="ic t-warn"><use href="#f-warning"/></svg>Sem certificados · instale o SafeNet Authentication Client</div></div><button type="button" class="btn sm"><svg class="ic"><use href="#r-download-simple"/></svg>Baixar para Windows</button></div>
+                </div>
+                <div class="d-sec">Leitores de cartão</div>
+                <div class="d-list">
+                  <div class="d-row"><svg class="ic"><use href="#r-identification-card"/></svg><div class="main"><div class="t">Identiv uTrust 2700 R <span class="mono">USB 04E6:5810</span></div><div class="s"><svg class="ic t-success"><use href="#f-check-circle"/></svg>Cartão: G&amp;D StarSign · 1 certificado</div><div class="x mono">ATR 3B:D5:18:FF:81:91:FE:1F:C3:80:73:C8:21:10:0A</div></div><button type="button" class="icon-btn" aria-label="Copiar ATR"><svg class="ic"><use href="#r-copy"/></svg></button></div>
+                </div>
+                <div class="d-sec">Drivers de token</div>
+                <div class="d-list">
+                  <div class="d-row"><svg class="ic"><use href="#r-plug"/></svg><div class="main"><div class="t">OpenSC PKCS#11</div><div class="s"><svg class="ic t-success"><use href="#f-check-circle"/></svg>Carregado · 1 token · Encontrado automaticamente</div><div class="x mono">%ProgramFiles%\OpenSC Project\OpenSC\pkcs11\opensc-pkcs11.dll</div></div></div>
+                  <div class="d-row"><svg class="ic"><use href="#r-plug"/></svg><div class="main"><div class="t">wdpkcs_icp.dll</div><div class="s"><svg class="ic t-danger"><use href="#f-x-circle"/></svg>Não carregou: arquivo não encontrado · Adicionado por você</div><div class="x mono">%USERPROFILE%\Downloads\wdpkcs_icp.dll</div></div><button type="button" class="btn sm">Remover</button></div>
+                </div>
+                <div class="d-actions"><button type="button" class="btn md"><svg class="ic"><use href="#r-plus"/></svg>Adicionar driver…</button><span class="note">Use só se o fabricante do token pedir.</span></div>
+              </div>
+              <!-- Certificados -->
+              <div role="tabpanel" id="tab-cert" aria-labelledby="t-cert" hidden>
+                <div class="d-head"><div><h3>Certificados</h3><p>Todos os certificados que este computador oferece, inclusive os que não servem para assinar.</p></div></div>
+                <div class="d-actions" style="margin-top:14px"><button type="button" class="btn md"><svg class="ic"><use href="#r-file-plus"/></svg>Importar arquivo .pfx…</button><span class="note" style="flex:1;min-width:200px">O Windows importa o arquivo e guarda o certificado com segurança. Você vai precisar da senha do arquivo.</span></div>
+                <div class="d-sec">No Windows (3)</div>
+                <div class="d-list">
+                  <div class="d-row"><svg class="ic"><use href="#r-identification-card"/></svg><div class="main"><div class="t">Ana Beatriz Souza <span class="badge">ICP-Brasil A3</span></div><div class="s">CPF •••.456.789-•• · AC SOLUTI Multipla v5</div><div class="s"><span class="t-warn" style="display:inline-flex;align-items:center;gap:4px"><svg class="ic"><use href="#r-clock"/></svg>Vence em 23 dias</span>· Cartão no leitor · também pelo driver</div></div><a class="link" style="font-size:12px">Detalhes</a></div>
+                  <div class="d-row"><svg class="ic"><use href="#r-desktop"/></svg><div class="main"><div class="t">Ana Beatriz Souza <span class="badge">ICP-Brasil A1</span></div><div class="s">CPF •••.456.789-•• · AC Certisign RFB G5</div><div class="s">Válido até 14/03/2027 · Neste computador</div></div><a class="link" style="font-size:12px">Detalhes</a></div>
+                  <div class="d-row"><svg class="ic"><use href="#r-desktop"/></svg><div class="main"><div class="t">Clinica Souza Imagem Ltda <span class="badge">ICP-Brasil A1</span></div><div class="s">CNPJ 12.345.678/0001-90 · AC Certisign RFB G5</div><div class="s"><span class="t-danger" style="display:inline-flex;align-items:center;gap:4px"><svg class="ic"><use href="#r-clock"/></svg>Vence em 5 dias</span>· Neste computador</div></div><a class="link" style="font-size:12px">Detalhes</a></div>
+                </div>
+                <div class="d-sec"><svg class="ic"><use href="#r-caret-down"/></svg>Não servem para assinar (2)</div>
+                <div class="d-list">
+                  <div class="d-row dis"><svg class="ic"><use href="#r-identification-card"/></svg><div class="main"><div class="t">Ana Beatriz Souza <span class="badge">ICP-Brasil A3</span></div><div class="s"><svg class="ic t-danger"><use href="#f-x-circle"/></svg>Venceu em 10/05/2026 · AC SOLUTI Multipla v5</div></div></div>
+                  <div class="d-row dis"><svg class="ic"><use href="#r-desktop"/></svg><div class="main"><div class="t">Ana B. Souza — VPN Clínica <span class="badge">Certificado</span></div><div class="s"><svg class="ic t-subtle"><use href="#r-circle-dashed"/></svg>Feito para login, não para assinatura · AC Interna Clinica Souza</div></div></div>
+                </div>
+              </div>
+              <!-- Ajuda -->
+              <div role="tabpanel" id="tab-help" aria-labelledby="t-help" hidden>
+                <div class="d-head"><div><h3>Ajuda</h3><p>Respostas rápidas e como relatar um problema.</p></div></div>
+                <div class="d-sec">Perguntas comuns</div>
+                <div class="faq">
+                  <details open><summary><svg class="ic"><use href="#r-caret-right"/></svg>Meu certificado não aparece</summary><p>Confira: o token está conectado? O driver do fabricante está instalado (veja Dispositivos)? O certificado venceu (veja Certificados)? Se é um arquivo .pfx, ele foi importado?</p></details>
+                  <details><summary><svg class="ic"><use href="#r-caret-right"/></svg>Errei o PIN / o token bloqueou</summary><p>Depois de algumas tentativas erradas, o token bloqueia para proteger você. Para desbloquear, use o PUK (código de desbloqueio que veio com o token) no programa do fabricante. Sem o PUK, procure a autoridade certificadora.</p></details>
+                  <details><summary><svg class="ic"><use href="#r-caret-right"/></svg>O que o WebeSign envia para os sites?</summary><p>Só o certificado que você escolheu e a assinatura do código de conferência. Nunca o PIN, nunca o documento.</p></details>
+                  <details><summary><svg class="ic"><use href="#r-caret-right"/></svg>Atalhos de teclado</summary><p><span class="kbd">Esc</span> cancela · <span class="kbd">↑</span> <span class="kbd">↓</span> trocam o certificado · <span class="kbd">Enter</span> no PIN assina · <span class="kbd">Ctrl</span>+<span class="kbd">1</span>…<span class="kbd">4</span> trocam de aba · <span class="kbd">F5</span> procura de novo</p></details>
+                </div>
+                <div class="d-sec">Relatar um problema</div>
+<pre class="diag-pre" tabindex="0" aria-label="Pré-visualização do diagnóstico">WebeSign diagnostics v1
+app: 1.4.0 (msix, x86_64) · protocol 1 · locale pt-BR · scale 125%
+os: Windows 11 23H2 (10.0.22631)
+render: wgpu/dx12
+browsers:
+  chrome 129.0 · extension 1.4.2 · host registered · last ping 2026-09-29T14:02Z
+  edge 129.0 · extension not seen · host registered
+  firefox 131.0 · extension 1.4.2 · host registered · last ping 2026-09-28T20:40Z
+devices:
+  usb 0529:0620 safenet-etoken-5110 · certs 0
+  reader "Identiv uTrust 2700 R" · atr 3B:D5:18:FF:81:91:FE:1F:C3:80:73:C8:21:10:0A · certs 1
+pkcs11:
+  %ProgramFiles%\OpenSC Project\OpenSC\pkcs11\opensc-pkcs11.dll · loaded · slots 1 · tokens 1
+  %USERPROFILE%\Downloads\wdpkcs_icp.dll · failed: file not found (user-added)
+certificates:
+  usable 3 (os 3, pkcs11 0, deduplicated 1) · hidden 2 (expired 1, login-only 1)
+  kinds: icp-brasil-a3 1, icp-brasil-a1 2 · keys: rsa-2048 3
+  expiring&lt;=30d 2
+complement: n/a
+recent errors (last 20):
+  2026-09-29T14:05Z sign PinIncorrect pkcs11 CKR_PIN_INCORRECT</pre>
+                <p class="note" style="margin:8px 0 0">Isto é exatamente o que será copiado. Não inclui nomes, CPF, sites nem números de série.</p>
+                <div class="d-actions"><button type="button" class="btn md"><svg class="ic"><use href="#r-copy"/></svg>Copiar diagnóstico</button><button type="button" class="btn md ghost">Abrir página de suporte<svg class="ic"><use href="#r-arrow-square-out"/></svg></button></div>
+                <div class="d-sec">Sobre</div>
+                <p class="note" style="margin:0">WebeSign 1.4.0 · protocolo 1 · GPL-3.0-or-later · <a class="link">Código-fonte</a> · <a class="link">Privacidade</a></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </figure>
+
+    <h3 class="sub">Primeiros passos (faixa no topo do conteúdo, só na primeira execução)</h3>
+    <p>Some quando tudo fica verde e o primeiro teste de assinatura passa, ou quando o usuário oculta.</p>
+    <div class="onb" style="max-width:712px">
+      <b><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#r-list-checks"/></svg>Primeiros passos</b>
+      <span><svg class="ic t-success"><use href="#f-check-circle"/></svg>App instalado</span>
+      <span><svg class="ic t-warn"><use href="#f-warning"/></svg>Extensão no navegador</span>
+      <span><svg class="ic t-success"><use href="#f-check-circle"/></svg>Certificado encontrado</span>
+      <span><svg class="ic t-subtle"><use href="#r-circle-dashed"/></svg>Teste de assinatura</span>
+      <button type="button" class="btn sm primary" style="min-width:0">Testar assinatura</button>
+    </div>
+
+    <h3 class="sub">Complemento no Mac (aba Dispositivos, só no build da App Store)</h3>
+    <p>Linguagem leiga: explica a causa, diz que é do mesmo projeto e que só roda quando o WebeSign pede.</p>
+    <div class="minis">
+      <div class="mini">
+        <span class="mini-tag">Necessário e ausente</span>
+        <div style="padding:14px 16px;background:var(--ws-bg-canvas)">
+          <div class="callout callout-warning"><svg class="ic"><use href="#r-puzzle-piece"/></svg><div><b>Este token precisa do Complemento para Mac</b>Apps da App Store não podem usar alguns drivers de token. O Complemento WebeSign, gratuito e do mesmo projeto, faz essa ponte. Ele só funciona quando o WebeSign pede.<div style="margin-top:10px"><button type="button" class="btn md"><svg class="ic"><use href="#r-download-simple"/></svg>Baixar Complemento</button></div></div></div>
+        </div>
+      </div>
+      <div class="mini">
+        <span class="mini-tag">Desatualizado</span>
+        <div style="padding:14px 16px;background:var(--ws-bg-canvas)">
+          <div class="callout callout-warning"><svg class="ic"><use href="#f-warning"/></svg><div><b>Atualize o Complemento</b>1.1.0 instalado, precisa da 1.2.0.<div style="margin-top:10px"><button type="button" class="btn md">Atualizar Complemento</button></div></div></div>
+        </div>
+      </div>
+      <div class="mini">
+        <span class="mini-tag">Instalado e atual</span>
+        <div class="d-list" style="border:0;border-radius:0">
+          <div class="d-row"><svg class="ic"><use href="#r-puzzle-piece"/></svg><div class="main"><div class="t">Complemento WebeSign</div><div class="s"><svg class="ic t-success"><use href="#f-check-circle"/></svg>Complemento ativo · versão 1.2.0</div></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== POPUP ===================== -->
+  <section class="sec" id="popup">
+    <div class="sec-head">
+      <div>
+        <h2>Popup da extensão</h2>
+        <p>320 px de largura, TS puro + CSS, abaixo de 15 KB. Fonte do sistema para parecer parte do navegador. “App instalado mas nunca aberto” cai em “Falta instalar” e se resolve com “Já instalei? Ativar o app”, que abre a página /ativar e chama o esquema <span class="mono">websign:</span>.</p>
+      </div>
+    </div>
+    <div class="popups">
+      <figure class="shot">
+        <figcaption class="shot-cap"><b>Tudo certo</b><span>Host respondeu com versão aceita.</span></figcaption>
+        <div class="popup">
+          <div class="pp-head"><span class="mark sm"><svg class="ic"><use href="#f-seal-check"/></svg></span>WebeSign</div>
+          <div class="pp-state" role="status"><svg class="ic t-success"><use href="#f-check-circle"/></svg><div><b>Tudo pronto para assinar</b><p>O app WebeSign 1.4.0 está conectado a este navegador.</p></div></div>
+          <div class="pp-actions"><button type="button" class="btn primary block"><svg class="ic"><use href="#r-stethoscope"/></svg>Abrir diagnóstico</button></div>
+          <div class="pp-foot"><span>Extensão 1.4.2 · App 1.4.0</span><a class="link">Privacidade</a></div>
+        </div>
+      </figure>
+      <figure class="shot">
+        <figcaption class="shot-cap"><b>Falta o app (ou nunca foi aberto)</b><span>O link de download segue o SO detectado.</span></figcaption>
+        <div class="popup">
+          <div class="pp-head"><span class="mark sm"><svg class="ic"><use href="#f-seal-check"/></svg></span>WebeSign</div>
+          <div class="pp-state" role="status"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#r-download-simple"/></svg><div><b>Falta instalar o app WebeSign</b><p>A extensão precisa do app no computador para assinar.</p></div></div>
+          <div class="pp-actions"><button type="button" class="btn primary block">Baixar para Windows<svg class="ic"><use href="#r-arrow-square-out"/></svg></button><button type="button" class="btn ghost md">Já instalei? Ativar o app</button></div>
+          <div class="pp-foot"><span>Extensão 1.4.2</span><a class="link">Privacidade</a></div>
+        </div>
+      </figure>
+      <figure class="shot">
+        <figcaption class="shot-cap"><b>App desatualizado</b><span>Versão abaixo do MIN_APP_VERSION da extensão.</span></figcaption>
+        <div class="popup">
+          <div class="pp-head"><span class="mark sm"><svg class="ic"><use href="#f-seal-check"/></svg></span>WebeSign</div>
+          <div class="pp-state" role="status"><svg class="ic t-warn"><use href="#f-warning"/></svg><div><b>Atualize o app WebeSign</b><p>Você tem a versão 1.1.0. Este navegador precisa da 1.3.0 ou mais nova.</p></div></div>
+          <div class="pp-actions"><button type="button" class="btn primary block">Atualizar na Microsoft Store<svg class="ic"><use href="#r-arrow-square-out"/></svg></button></div>
+          <div class="pp-foot"><span>Extensão 1.4.2 · App 1.1.0</span><a class="link">Privacidade</a></div>
+        </div>
+      </figure>
+      <figure class="shot">
+        <figcaption class="shot-cap"><b>App não respondeu</b><span>Host iniciou, mas não respondeu em 3 s.</span></figcaption>
+        <div class="popup">
+          <div class="pp-head"><span class="mark sm"><svg class="ic"><use href="#f-seal-check"/></svg></span>WebeSign</div>
+          <div class="pp-state" role="status"><svg class="ic t-danger"><use href="#f-x-circle"/></svg><div><b>O app não respondeu</b><p>Tente de novo. Se continuar, reinicie o computador.</p><code>native host exited (code 1)</code></div></div>
+          <div class="pp-actions"><button type="button" class="btn primary block"><svg class="ic"><use href="#r-arrow-clockwise"/></svg>Tentar de novo</button><button type="button" class="btn ghost md">Baixar de novo</button></div>
+          <div class="pp-foot"><span>Extensão 1.4.2</span><a class="link">Privacidade</a></div>
+        </div>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ===================== TOKENS ===================== -->
+  <section class="sec" id="tokens">
+    <div class="sec-head">
+      <div>
+        <h2>Tokens</h2>
+        <p>Os mesmos valores de <span class="mono">docs/ux.md §11</span>, que viram o <span class="mono">theme.rs</span> e o <span class="mono">design/tokens.css</span>. Um único acento “azul-tinta”; verde, âmbar e vermelho só para estado.</p>
+      </div>
+    </div>
+    <div class="tok-grid">
+      <div class="tok-table" id="tok-colors" aria-label="Cores"></div>
+      <div style="display:flex;flex-direction:column;gap:24px;min-width:0">
+        <div class="tok-table">
+          <div class="type-row"><span style="font:600 20px/26px var(--ws-font-ui)">diagnos.health</span><code>text-headline 20/26 600</code></div>
+          <div class="type-row"><span style="font:600 16px/22px var(--ws-font-ui)">Tudo pronto para assinar</span><code>text-title 16/22 600</code></div>
+          <div class="type-row"><span style="font:600 14px/20px var(--ws-font-ui)">Ana Beatriz Souza</span><code>text-body-strong 14/20 600</code></div>
+          <div class="type-row"><span style="font:500 14px/20px var(--ws-font-ui)">Assinar</span><code>text-button 14/20 500</code></div>
+          <div class="type-row"><span style="font:400 14px/20px var(--ws-font-ui)">quer que você assine um documento.</span><code>text-body 14/20 400</code></div>
+          <div class="type-row"><span style="font:500 12px/16px var(--ws-font-ui)" class="t-muted">Assinar com</span><code>text-caption 12/16 500</code></div>
+          <div class="type-row"><span style="font:400 12px/16px var(--ws-font-ui)" class="t-muted">AC SOLUTI Multipla v5</span><code>text-small 12/16 400</code></div>
+          <div class="type-row"><span style="font:500 18px/24px var(--ws-font-mono);letter-spacing:.5px">7F3A 9C21 E0B4 55D8</span><code>text-code 18/24 500 mono</code></div>
+          <div class="type-row"><span style="font:400 12px/16px var(--ws-font-mono)" class="t-muted">USB 0529:0620</span><code>text-mono 12/16 400 mono</code></div>
+        </div>
+        <div class="tok-table">
+          <div class="bars">
+            <div class="bar"><code>space-1</code><i style="width:4px"></i>4</div>
+            <div class="bar"><code>space-2</code><i style="width:8px"></i>8</div>
+            <div class="bar"><code>space-3</code><i style="width:12px"></i>12</div>
+            <div class="bar"><code>space-4</code><i style="width:16px"></i>16</div>
+            <div class="bar"><code>space-5</code><i style="width:20px"></i>20</div>
+            <div class="bar"><code>space-6</code><i style="width:24px"></i>24</div>
+            <div class="bar"><code>space-8</code><i style="width:32px"></i>32</div>
+          </div>
+        </div>
+        <div class="tok-table">
+          <div class="radii">
+            <div><i style="border-radius:4px"></i>radius-sm 4</div>
+            <div><i style="border-radius:6px"></i>radius-md 6</div>
+            <div><i style="border-radius:10px"></i>radius-lg 10</div>
+            <div><i style="border-radius:20px;height:40px"></i>radius-full</div>
+          </div>
+          <div class="type-row"><span class="t-muted" style="font-size:12px">Paleta do identicon (igual nos dois temas)</span><code>id-0 … id-7</code></div>
+          <div class="idc-pal" id="idc-pal"></div>
+          <div class="type-row"><span class="t-muted" style="font-size:12px">motion-fast 120 · motion-base 180 · motion-slow 260 ms · cubic-out · armamento 600 ms · sucesso 900 ms</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var root = document.documentElement;
+
+  // Tema: Sistema / Claro / Escuro (preferência só deste navegador).
+  function applyTheme(mode){
+    if (mode === "light" || mode === "dark") root.setAttribute("data-theme", mode);
+    else root.removeAttribute("data-theme");
+    document.querySelectorAll("#theme-seg button").forEach(function(b){
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-theme-set") === mode));
+    });
+  }
+  var saved = "system";
+  try { saved = localStorage.getItem("ws-mock-theme") || "system"; } catch (e) {}
+  applyTheme(saved);
+  document.querySelectorAll("#theme-seg button").forEach(function(b){
+    b.addEventListener("click", function(){
+      var m = b.getAttribute("data-theme-set");
+      applyTheme(m);
+      try { localStorage.setItem("ws-mock-theme", m); } catch (e) {}
+    });
+  });
+
+  // Ordem dos botões por plataforma.
+  var confirmSec = document.getElementById("confirmacao");
+  document.querySelectorAll("#os-seg button").forEach(function(b){
+    b.addEventListener("click", function(){
+      var os = b.getAttribute("data-os-set");
+      confirmSec.setAttribute("data-os", os);
+      document.querySelectorAll("#os-seg button").forEach(function(x){ x.setAttribute("aria-pressed", String(x === b)); });
+      document.querySelectorAll(".os-name").forEach(function(s){ s.textContent = os === "windows" ? "Windows" : "macOS"; });
+    });
+  });
+
+  // Identicon: mesmo algoritmo de docs/ux.md §4.4.
+  function identiconSvg(hex){
+    var b = [];
+    for (var i = 0; i < 8; i++) b.push(parseInt(hex.substr(i * 2, 2), 16));
+    var ci = b[0] >> 5;
+    var bits = ((b[1] << 8) | b[2]) & 0x7fff;
+    var cells = "";
+    for (var r = 0; r < 5; r++) {
+      for (var c = 0; c < 5; c++) {
+        var cc = c < 3 ? c : 4 - c;
+        if ((bits >> (r * 3 + cc)) & 1) {
+          cells += '<rect x="' + (3.5 + c * 6.8) + '" y="' + (3.5 + r * 6.8) + '" width="5.8" height="5.8" rx="1" style="fill:var(--ws-id-' + ci + ')"/>';
+        }
+      }
+    }
+    return '<svg viewBox="0 0 40 40" aria-hidden="true"><rect x=".5" y=".5" width="39" height="39" rx="4" style="fill:var(--ws-bg-sunken);stroke:var(--ws-border)"/>' + cells + "</svg>";
+  }
+  function paintIdc(el, hex){ el.innerHTML = identiconSvg(hex); }
+  document.querySelectorAll(".idc[data-code]").forEach(function(el){ paintIdc(el, el.getAttribute("data-code")); });
+
+  // Paleta do identicon.
+  var pal = document.getElementById("idc-pal");
+  if (pal) for (var k = 0; k < 8; k++) { var i2 = document.createElement("i"); i2.style.background = "var(--ws-id-" + k + ")"; i2.title = "id-" + k; pal.appendChild(i2); }
+
+  // Armamento do botão Assinar (600 ms) e troca de certificado no mockup principal.
+  var sign = document.getElementById("main-sign");
+  var armTimer = null;
+  function arm(){
+    if (!sign) return;
+    clearTimeout(armTimer);
+    sign.classList.add("arming");
+    armTimer = setTimeout(function(){ sign.classList.remove("arming"); }, 600);
+  }
+  var replay = document.getElementById("replay");
+  if (replay) replay.addEventListener("click", arm);
+  var list = document.getElementById("main-list");
+  if (list) {
+    var rows = list.querySelectorAll(".row[data-code]");
+    var details = '<a class="link">Detalhes</a>';
+    function select(row){
+      rows.forEach(function(r){
+        var on = r === row;
+        r.classList.toggle("sel", on);
+        r.setAttribute("aria-checked", String(on));
+        r.setAttribute("tabindex", on ? "0" : "-1");
+        r.querySelector(".radio").classList.toggle("on", on);
+        var link = r.querySelector(".r3 .link");
+        if (on && !link) r.querySelector(".r3").insertAdjacentHTML("beforeend", details);
+        if (!on && link) link.remove();
+      });
+      var hex = row.getAttribute("data-code");
+      document.getElementById("main-code").textContent = hex.match(/.{4}/g).join(" ");
+      paintIdc(document.getElementById("main-idc"), hex);
+      arm();
+    }
+    rows.forEach(function(r, idx){
+      r.addEventListener("click", function(){ select(r); });
+      r.addEventListener("keydown", function(e){
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+          e.preventDefault();
+          var next = rows[(idx + (e.key === "ArrowDown" ? 1 : rows.length - 1)) % rows.length];
+          select(next); next.focus();
+        }
+      });
+    });
+  }
+
+  // Abas do Diagnóstico.
+  var tabs = document.querySelectorAll("#mock-diag .d-tab");
+  tabs.forEach(function(t, idx){
+    t.addEventListener("click", function(){ showTab(t); });
+    t.addEventListener("keydown", function(e){
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        var n = tabs[(idx + (e.key === "ArrowDown" ? 1 : tabs.length - 1)) % tabs.length];
+        showTab(n); n.focus();
+      }
+    });
+  });
+  function showTab(t){
+    tabs.forEach(function(x){
+      var on = x === t;
+      x.setAttribute("aria-selected", String(on));
+      x.setAttribute("tabindex", on ? "0" : "-1");
+      document.getElementById(x.getAttribute("aria-controls")).hidden = !on;
+    });
+    var main = document.querySelector("#mock-diag .d-main");
+    if (main) main.scrollTop = 0;
+  }
+  tabs.forEach(function(x){ x.setAttribute("tabindex", x.getAttribute("aria-selected") === "true" ? "0" : "-1"); });
+
+  // Tabela de cores.
+  var colors = [
+    ["bg-canvas","#F5F6F9","#0E1016"],["bg-surface","#FFFFFF","#161922"],["bg-sunken","#EDEFF4","#0B0D12"],["bg-hover","#F1F3F8","#1E222D"],
+    ["accent-soft","#EEF0FD","#1C2242"],["border","#DCE0E8","#2A2F3C"],["border-strong","#848D9F","#6B7488"],
+    ["fg","#141722","#E7E9EF"],["fg-muted","#545C6D","#A3AAB9"],["fg-subtle","#636B7D","#8C94A6"],
+    ["accent","#3346D1","#4E5EE4"],["accent-hover","#2A3BB8","#4555DA"],["accent-pressed","#2332A0","#3E4ECC"],["accent-fg","#3346D1","#9DA8FF"],
+    ["on-accent","#FFFFFF","#FFFFFF"],["focus","#3346D1","#9DA8FF"],
+    ["success","#127A41","#5BCB8D"],["success-soft","#E6F5EC","#10281B"],["success-border","#A8DCBE","#1F5C3B"],
+    ["warning","#935300","#EFB35E"],["warning-soft","#FFF2D9","#2A1F0E"],["warning-border","#EFCB8A","#5C4418"],
+    ["danger","#BE242B","#FF868B"],["danger-soft","#FDEBEC","#321519"],["danger-border","#F2B3B6","#6B2429"],
+    ["shadow-color","#1417221F","#0000008C"]
+  ];
+  var tbl = document.getElementById("tok-colors");
+  if (tbl) {
+    var html = '<div class="tok-row head"><span>Token</span><span>Claro</span><span>Escuro</span></div>';
+    colors.forEach(function(c){
+      html += '<div class="tok-row"><code>' + c[0] + '</code><span class="sw"><i style="background:' + c[1] + '"></i>' + c[1] + '</span><span class="sw"><i style="background:' + c[2] + '"></i>' + c[2] + "</span></div>";
+    });
+    tbl.innerHTML = html;
+  }
+
+  // Janelas em tamanho real; reduz proporcionalmente só quando a coluna é menor.
+  function fit(stage){
+    var w = +stage.getAttribute("data-w"), h = +stage.getAttribute("data-h");
+    var win = stage.firstElementChild;
+    var s = Math.min(1, stage.clientWidth / w);
+    win.style.transform = s < 1 ? "scale(" + s + ")" : "";
+    stage.style.height = Math.ceil(h * s + 2) + "px";
+    stage.classList.add("fitted");
+  }
+  var stages = document.querySelectorAll(".stage[data-w]");
+  if ("ResizeObserver" in window) {
+    var ro = new ResizeObserver(function(entries){ entries.forEach(function(e){ fit(e.target); }); });
+    stages.forEach(function(s){ ro.observe(s); });
+  } else {
+    stages.forEach(fit);
+    window.addEventListener("resize", function(){ stages.forEach(fit); });
+  }
+})();
+</script>
