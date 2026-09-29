@@ -1,5 +1,6 @@
-# Rust
-target/
+# Rust (anchored: a module folder may legitimately be called `target`)
+/target/
+/docs/prototypes/kit/target/
 **/*.rs.bk
 *.pdb
 **/mutants.out*/

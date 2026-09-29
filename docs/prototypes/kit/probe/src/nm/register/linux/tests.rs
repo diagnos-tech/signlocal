@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
 use super::*;
+use crate::nm::register::destination::Location;
 use crate::nm::register::manifest;
-use crate::nm::register::target::Location;
 
 fn manifests(browsers: &[Browser]) -> Vec<(String, PathBuf, Option<PathBuf>)> {
     targets(browsers, Path::new("/home/u"))

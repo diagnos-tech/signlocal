@@ -11,11 +11,11 @@
 //! invisible.
 
 mod browsers;
+mod destination;
 mod home;
 mod linux;
 mod macos;
 mod manifest;
-mod target;
 mod windows;
 
 use std::path::PathBuf;
@@ -24,7 +24,7 @@ use std::process::ExitCode;
 use anyhow::{Context, bail, ensure};
 
 use browsers::{Browser, BrowserChoice, Family};
-use target::{Action, Context as ApplyContext, Outcome, Target, apply};
+use destination::{Action, Context as ApplyContext, Outcome, Target, apply};
 
 use super::log::log_path;
 

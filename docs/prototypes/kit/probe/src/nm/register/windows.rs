@@ -9,7 +9,7 @@
 use std::path::Path;
 
 use super::browsers::{Browser, Family};
-use super::target::{Location, Target};
+use super::destination::{Location, Target};
 use crate::config::NATIVE_HOST;
 
 /// The `HKCU\Software\...` folder holding a browser's `NativeMessagingHosts`.

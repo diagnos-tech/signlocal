@@ -4,7 +4,7 @@
 use std::path::Path;
 
 use super::browsers::Browser;
-use super::target::Target;
+use super::destination::Target;
 
 /// `(label, folder under ~/Library/Application Support)` per channel.
 fn support_dirs(browser: Browser) -> &'static [(&'static str, &'static str)] {
@@ -62,8 +62,8 @@ mod tests {
 
     use super::*;
     use crate::nm::register::browsers::Family;
+    use crate::nm::register::destination::Location;
     use crate::nm::register::manifest;
-    use crate::nm::register::target::Location;
 
     fn manifest_of(label: &str) -> (Family, PathBuf) {
         let target = targets(&Browser::ALL, Path::new("/Users/u"))

@@ -8,7 +8,7 @@
 use std::path::Path;
 
 use super::browsers::{Browser, Family};
-use super::target::Target;
+use super::destination::Target;
 use crate::config::SLUG;
 
 /// `(label, folder under ~/.config)` for each channel of a Chromium browser.
