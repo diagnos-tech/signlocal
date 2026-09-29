@@ -1,24 +1,27 @@
 //! Native messaging: running as the browser's host and registering with browsers.
+//!
+//! Layout: [`launch`] recognizes a browser start, [`framing`] and
+//! [`protocol`] speak the wire format, [`handler`] applies the protocol's
+//! rules on top of a [`backend::Backend`], and [`host`] runs the loop.
+//! [`register`] writes the manifests that make browsers find all this.
 
+mod backend;
+mod base64;
+mod framing;
+mod handler;
 pub mod host;
+mod keystore_backend;
+mod launch;
+mod log;
+mod protocol;
 pub mod register;
+mod summary;
 
 use std::process::ExitCode;
 
-/// How a browser started this process.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BrowserLaunch {
-    /// The calling extension's origin as the browser reported it.
-    pub origin: String,
-}
-
-/// Recognizes the arguments browsers pass when they start a native host.
-pub fn detect_browser_launch() -> Option<BrowserLaunch> {
-    None
-}
+pub use launch::{BrowserLaunch, detect_browser_launch, is_chromium_extension_id};
 
 /// Serves native messaging on stdin/stdout until the browser disconnects.
 pub fn run_host(launch: BrowserLaunch) -> ExitCode {
-    let _ = launch;
-    todo!("native messaging host")
+    host::serve_stdio(&launch)
 }

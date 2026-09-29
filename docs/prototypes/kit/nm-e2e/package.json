@@ -1,0 +1,19 @@
+{
+  "name": "websign-nm-e2e",
+  "version": "0.0.0",
+  "private": true,
+  "description": "End-to-end check: page -> extension -> native host (websign-probe) -> keystore, in a real Chromium.",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "e2e": "node run.mjs",
+    "test": "node --test",
+    "selftest": "node run.mjs --probe selftest/fake-probe.mjs --expect-sign"
+  },
+  "dependencies": {
+    "playwright-core": "1.56.1"
+  }
+}
