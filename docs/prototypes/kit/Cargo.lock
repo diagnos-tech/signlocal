@@ -1191,6 +1191,7 @@ dependencies = [
  "rpassword",
  "secrecy",
  "security-framework",
+ "security-framework-sys",
  "serde",
  "serde_json",
  "thiserror",

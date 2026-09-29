@@ -35,7 +35,7 @@ pub fn run(args: &Args) -> anyhow::Result<ExitCode> {
     let mut failed = false;
     if args.run_signatures {
         let selected = sign::select(&inventory, &args.sign)?;
-        let results = sign::run_cases(&mut inventory, &selected, &args.sign, |_| {})?;
+        let results = sign::run_cases(&mut inventory, &selected, &args.sign, |_| {}, |_| {})?;
         failed = results.iter().any(|result| result.outcome.is_err());
         report.push_str("### Signatures\n\n| # | Result |\n|---|---|\n");
         for result in &results {

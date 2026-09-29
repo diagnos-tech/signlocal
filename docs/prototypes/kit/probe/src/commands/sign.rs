@@ -49,12 +49,13 @@ pub fn run(args: &Args) -> anyhow::Result<ExitCode> {
         eprintln!("warning: {}: {}", failure.source, failure.error);
     }
     let selected = select(&inventory, args)?;
-    let results = run_cases(&mut inventory, &selected, args, |entry| {
-        println!("{}", view::describe(entry, true));
-    })?;
-    for result in &results {
-        println!("{}", result.line());
-    }
+    let results = run_cases(
+        &mut inventory,
+        &selected,
+        args,
+        |entry| println!("{}", view::describe(entry, true)),
+        |result| println!("{}", result.line()),
+    )?;
     let failed = results.iter().any(|result| result.outcome.is_err());
     Ok(if failed { ExitCode::FAILURE } else { ExitCode::SUCCESS })
 }
@@ -80,12 +81,14 @@ impl CaseResult {
 }
 
 /// Signs a fresh random digest for every case of every selected entry and
-/// verifies each signature. `on_entry` runs before an entry's first case.
+/// verifies each signature. `on_entry` runs before an entry's first case and
+/// `on_result` after each case, so progress shows while tokens are slow.
 pub fn run_cases(
     inventory: &mut Inventory,
     selected: &[usize],
     args: &Args,
     mut on_entry: impl FnMut(&Entry),
+    mut on_result: impl FnMut(&CaseResult),
 ) -> anyhow::Result<Vec<CaseResult>> {
     let mut pin: Option<SecretString> = None;
     let mut results = Vec::new();
@@ -116,7 +119,9 @@ pub fn run_cases(
                     Ok((signature.api, signature.elapsed.as_millis()))
                 })
                 .map_err(|error| format!("{error:#}"));
-            results.push(CaseResult { entry: index, hash, algorithm, outcome });
+            let result = CaseResult { entry: index, hash, algorithm, outcome };
+            on_result(&result);
+            results.push(result);
         }
     }
     Ok(results)
