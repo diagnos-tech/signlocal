@@ -1,41 +1,37 @@
 //! Distinguished-name extraction.
 
-use const_oid::db::rfc4519::{
-    COMMON_NAME, COUNTRY_NAME, ORGANIZATION_NAME, ORGANIZATIONAL_UNIT_NAME,
-};
-use der::Tagged;
-use x509_cert::name::Name;
-
 use super::DistinguishedName;
+use super::der::{self, DerError, OBJECT_IDENTIFIER, Reader, SEQUENCE, SET};
+use super::oid::{COMMON_NAME, COUNTRY_NAME, ORGANIZATION_NAME, ORGANIZATIONAL_UNIT_NAME};
 use super::strings;
 
 impl DistinguishedName {
-    /// Reads CN, O, OU and C from `name`.
+    /// Reads CN, O, OU and C from the contents of a `Name`.
     ///
-    /// A single-valued attribute that appears more than once keeps its first
-    /// readable value; attributes whose string type is not supported are
-    /// skipped as if absent.
-    ///
-    /// SPEC: "the first one wins" is read as the first *readable* one, so an
-    /// unsupported first occurrence does not hide a later supported one.
-    pub(super) fn from_name(name: &Name) -> Self {
+    /// Attributes whose string type is not supported, or whose bytes are not
+    /// valid for it, are skipped as if absent, so a single-valued attribute
+    /// that appears more than once keeps its first *readable* value. The
+    /// structure itself (SETs of type-value pairs) must be well formed.
+    pub(super) fn from_name(name: &[u8]) -> Result<Self, DerError> {
         let mut dn = Self::default();
-        for attribute in name.iter() {
-            let value = &attribute.value;
-            let Some(text) = strings::decode(value.tag(), value.value()) else {
-                continue;
-            };
-            let oid = attribute.oid;
-            if oid == COMMON_NAME {
-                dn.common_name.get_or_insert(text);
-            } else if oid == ORGANIZATION_NAME {
-                dn.organization.get_or_insert(text);
-            } else if oid == ORGANIZATIONAL_UNIT_NAME {
-                dn.organizational_units.push(text);
-            } else if oid == COUNTRY_NAME {
-                dn.country.get_or_insert(text);
+        for rdn in der::elements(name, SET) {
+            for attribute in der::elements(rdn?, SEQUENCE) {
+                let mut fields = Reader::new(attribute?);
+                let kind = fields.read(OBJECT_IDENTIFIER)?;
+                let value = fields.read_any()?;
+                fields.finish()?;
+                let Some(text) = strings::decode(value.tag, value.content) else {
+                    continue;
+                };
+                match kind {
+                    COMMON_NAME => _ = dn.common_name.get_or_insert(text),
+                    ORGANIZATION_NAME => _ = dn.organization.get_or_insert(text),
+                    ORGANIZATIONAL_UNIT_NAME => dn.organizational_units.push(text),
+                    COUNTRY_NAME => _ = dn.country.get_or_insert(text),
+                    _ => {}
+                }
             }
         }
-        dn
+        Ok(dn)
     }
 }

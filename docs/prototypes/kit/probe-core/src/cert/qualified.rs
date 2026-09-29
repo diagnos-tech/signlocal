@@ -1,17 +1,7 @@
 //! EU qualified certificate statements (RFC 3739, ETSI EN 319 412-5).
 
-use der::Decode;
-use der::Reader;
-use der::asn1::{AnyRef, ObjectIdentifier};
-
-use super::asn1::oid_with_optional_info;
-
-const QC_COMPLIANCE: ObjectIdentifier = ObjectIdentifier::new_unwrap("0.4.0.1862.1.1");
-const QC_SSCD: ObjectIdentifier = ObjectIdentifier::new_unwrap("0.4.0.1862.1.4");
-const QC_TYPE: ObjectIdentifier = ObjectIdentifier::new_unwrap("0.4.0.1862.1.6");
-const QC_TYPE_ESIGN: ObjectIdentifier = ObjectIdentifier::new_unwrap("0.4.0.1862.1.6.1");
-const QC_TYPE_ESEAL: ObjectIdentifier = ObjectIdentifier::new_unwrap("0.4.0.1862.1.6.2");
-const QC_TYPE_WEB: ObjectIdentifier = ObjectIdentifier::new_unwrap("0.4.0.1862.1.6.3");
+use super::der::{self, DerError, OBJECT_IDENTIFIER, SEQUENCE, Tlv};
+use super::oid::{QC_COMPLIANCE, QC_SSCD, QC_TYPE, QC_TYPE_ESEAL, QC_TYPE_ESIGN, QC_TYPE_WEB};
 
 /// What the qcStatements extension declares.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -37,22 +27,17 @@ impl Qualified {
     /// `SEQUENCE OF SEQUENCE { statementId OID, statementInfo ANY OPTIONAL }`.
     ///
     /// Statements this crate does not know are ignored, so new eIDAS
-    /// statements never make a certificate unreadable.
-    ///
-    /// SPEC: an extension with no statements at all still yields a
-    /// `Qualified` (all false, no types), because the extension exists.
-    pub(super) fn from_extension(extension_value: &[u8]) -> der::Result<Self> {
+    /// statements never make a certificate unreadable. The types of every
+    /// QcType statement are collected in certificate order; one without
+    /// statementInfo contributes none.
+    pub(super) fn from_extension(extension_value: &[u8]) -> Result<Self, DerError> {
         let mut qualified = Self::default();
-        for statement in Vec::<AnyRef>::from_der(extension_value)? {
-            let (id, info) = oid_with_optional_info(statement)?;
-            if id == QC_COMPLIANCE {
-                qualified.compliance = true;
-            } else if id == QC_SSCD {
-                qualified.sscd = true;
-            } else if id == QC_TYPE
-                && let Some(info) = info
-            {
-                qualified.types.extend(qc_types(info)?);
+        for statement in der::elements(der::single(extension_value, SEQUENCE)?, SEQUENCE) {
+            match der::oid_and_optional(statement?)? {
+                (QC_COMPLIANCE, _) => qualified.compliance = true,
+                (QC_SSCD, _) => qualified.sscd = true,
+                (QC_TYPE, Some(info)) => qualified.types.extend(qc_types(info)?),
+                _ => {}
             }
         }
         Ok(qualified)
@@ -60,23 +45,23 @@ impl Qualified {
 }
 
 /// The recognised entries of a QcType `SEQUENCE OF OBJECT IDENTIFIER`.
-fn qc_types(info: AnyRef<'_>) -> der::Result<Vec<QcType>> {
-    let oids = info.sequence(|reader| {
-        let mut oids = Vec::new();
-        while !reader.is_finished() {
-            oids.push(ObjectIdentifier::decode(reader)?);
+fn qc_types(info: Tlv<'_>) -> Result<Vec<QcType>, DerError> {
+    if info.tag != SEQUENCE {
+        return Err(DerError::UnexpectedTag {
+            expected: SEQUENCE,
+            found: info.tag,
+        });
+    }
+    let mut types = Vec::new();
+    for oid in der::elements(info.content, OBJECT_IDENTIFIER) {
+        match oid? {
+            QC_TYPE_ESIGN => types.push(QcType::ESign),
+            QC_TYPE_ESEAL => types.push(QcType::ESeal),
+            QC_TYPE_WEB => types.push(QcType::Web),
+            _ => {}
         }
-        Ok::<_, der::Error>(oids)
-    })?;
-    Ok(oids
-        .into_iter()
-        .filter_map(|oid| match oid {
-            QC_TYPE_ESIGN => Some(QcType::ESign),
-            QC_TYPE_ESEAL => Some(QcType::ESeal),
-            QC_TYPE_WEB => Some(QcType::Web),
-            _ => None,
-        })
-        .collect())
+    }
+    Ok(types)
 }
 
 #[cfg(test)]
@@ -84,83 +69,64 @@ mod tests {
     use super::*;
 
     fn tlv(tag: u8, content: &[u8]) -> Vec<u8> {
-        let mut out = vec![tag, content.len() as u8];
+        let mut out = vec![tag, u8::try_from(content.len()).unwrap()];
         out.extend_from_slice(content);
         out
     }
 
-    /// OID `0.4.0.1862.1.<last>` (and optionally one more arc) as a TLV.
+    /// OID `0.4.0.1862.1.<arcs>` as a TLV.
     fn qc_oid(arcs: &[u8]) -> Vec<u8> {
-        // 0.4 -> 0x04, 0 -> 0x00, 1862 -> 0x8e 0x46, then the given arcs.
-        let mut content = vec![0x04, 0x00, 0x8e, 0x46, 0x01];
-        content.extend_from_slice(arcs);
-        tlv(0x06, &content)
+        tlv(0x06, &[&[0x04, 0x00, 0x8e, 0x46, 0x01], arcs].concat())
     }
 
     fn statement(id: &[u8], info: Option<Vec<u8>>) -> Vec<u8> {
-        let mut body = qc_oid(id);
-        body.extend(info.unwrap_or_default());
-        tlv(0x30, &body)
+        tlv(0x30, &[qc_oid(id), info.unwrap_or_default()].concat())
     }
 
     fn extension(statements: &[Vec<u8>]) -> Vec<u8> {
         tlv(0x30, &statements.concat())
     }
 
-    #[test]
-    fn empty_extension_is_all_false() {
-        assert_eq!(
-            Qualified::from_extension(&extension(&[])).unwrap(),
-            Qualified::default()
-        );
+    fn types(oids: &[Vec<u8>]) -> Option<Vec<u8>> {
+        Some(tlv(0x30, &oids.concat()))
     }
 
     #[test]
-    fn compliance_and_sscd_are_flags() {
-        let ext = extension(&[statement(&[0x01], None), statement(&[0x04], None)]);
+    fn types_of_every_qc_type_statement_are_collected_in_order() {
+        let ext = extension(&[
+            statement(
+                &[0x06],
+                types(&[qc_oid(&[0x06, 0x03]), qc_oid(&[0x06, 0x09])]),
+            ),
+            statement(&[0x01], None),
+            statement(&[0x06], None),
+            statement(
+                &[0x06],
+                types(&[qc_oid(&[0x06, 0x01]), qc_oid(&[0x06, 0x03])]),
+            ),
+        ]);
         let q = Qualified::from_extension(&ext).unwrap();
         assert!(q.compliance);
-        assert!(q.sscd);
-        assert!(q.types.is_empty());
+        assert_eq!(q.types, [QcType::Web, QcType::ESign, QcType::Web]);
     }
 
     #[test]
-    fn types_keep_certificate_order_and_skip_unknown_oids() {
-        let types = tlv(
-            0x30,
-            &[
-                qc_oid(&[0x06, 0x03]),
-                qc_oid(&[0x06, 0x09]),
-                qc_oid(&[0x06, 0x01]),
-                qc_oid(&[0x06, 0x02]),
-            ]
-            .concat(),
-        );
-        let ext = extension(&[statement(&[0x06], Some(types))]);
-        let q = Qualified::from_extension(&ext).unwrap();
-        assert_eq!(q.types, vec![QcType::Web, QcType::ESign, QcType::ESeal]);
-    }
-
-    #[test]
-    fn unknown_statements_and_missing_type_info_are_ignored() {
+    fn info_of_other_statements_is_not_inspected() {
         let ext = extension(&[
+            statement(&[0x01], Some(tlv(0x04, &[1]))),
             statement(&[0x63], Some(tlv(0x05, &[]))),
-            statement(&[0x06], None),
         ]);
-        assert_eq!(
-            Qualified::from_extension(&ext).unwrap(),
-            Qualified::default()
-        );
+        assert!(Qualified::from_extension(&ext).unwrap().compliance);
     }
 
     #[test]
     fn malformed_structures_are_errors() {
-        // QcType info that is not a SEQUENCE.
-        let ext = extension(&[statement(&[0x06], Some(tlv(0x04, &[1])))]);
-        assert!(Qualified::from_extension(&ext).is_err());
-        // Statement that is not a SEQUENCE starting with an OID.
-        assert!(Qualified::from_extension(&extension(&[tlv(0x30, &tlv(0x02, &[1]))])).is_err());
-        // Not a SEQUENCE OF.
+        let not_a_sequence = extension(&[statement(&[0x06], Some(tlv(0x04, &[1])))]);
+        let not_oids = extension(&[statement(&[0x06], types(&[tlv(0x02, &[1])]))]);
+        let no_oid_first = extension(&[tlv(0x30, &tlv(0x02, &[1]))]);
+        for bad in [not_a_sequence, not_oids, no_oid_first] {
+            assert!(Qualified::from_extension(&bad).is_err(), "{bad:02x?}");
+        }
         assert!(Qualified::from_extension(&tlv(0x04, &[])).is_err());
         assert!(Qualified::from_extension(&[]).is_err());
     }

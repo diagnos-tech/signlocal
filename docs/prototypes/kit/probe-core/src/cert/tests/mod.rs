@@ -1,15 +1,16 @@
-//! Unit tests for `CertInfo`, grouped by what they exercise. Certificates come from
-//! `testkit` (hand-built DER) except for one real OpenSSL-issued sample.
+//! Unit tests for `CertInfo` over hand-built DER (`testkit`), grouped by what
+//! they exercise. They cover the encodings OpenSSL will not produce; the
+//! OpenSSL-made fixtures are exercised by the integration tests.
 
 mod basics;
 mod extensions;
 mod keys;
 mod names;
 mod profiles;
+mod tolerance;
 
-use super::fixtures::ICP_LIKE_CERT;
-use super::testkit::*;
 use super::*;
+use crate::testkit::*;
 
 pub(super) const JAN_1_2024: i64 = 1_704_067_200;
 pub(super) const JAN_1_2025: i64 = 1_735_689_600;

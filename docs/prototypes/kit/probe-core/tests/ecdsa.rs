@@ -298,6 +298,22 @@ fn accepts_a_long_form_integer_length() {
 }
 
 #[test]
+fn accepts_a_long_form_length_that_the_short_form_could_express() {
+    // Tokens are sloppy about minimal lengths; `81 06` means 6 like `06`.
+    for hex in [
+        "30 81 06 02 01 01 02 01 02",
+        "30 07 02 81 01 01 02 01 02",
+        "30 81 07 02 81 01 01 02 01 02",
+    ] {
+        assert_eq!(
+            der_to_raw(&hex_decode(hex), P256),
+            Ok(raw_of(P256, &[1], &[2])),
+            "{hex}"
+        );
+    }
+}
+
+#[test]
 fn reads_a_p256_signature_as_p384_by_padding_it() {
     let (r, s) = (counting_bytes(1, 32), counting_bytes(0x41, 32));
     let der = der_ecdsa(&r, &s);
@@ -439,6 +455,21 @@ fn rejects_a_signature_of_a_bigger_curve() {
                 vector.shape
             );
         }
+    }
+}
+
+#[test]
+fn a_structural_problem_wins_over_an_oversized_integer() {
+    // Both integers are checked for shape before either is sized.
+    let too_wide = counting_bytes(1, 33);
+    let cases = [
+        ("s negative", der_ecdsa(&too_wide, &[0x80])),
+        ("r negative", der_ecdsa(&[0x80], &too_wide)),
+        ("s empty", der_ecdsa(&too_wide, &[])),
+        ("s zero", der_ecdsa(&too_wide, &[0x00])),
+    ];
+    for (label, der) in cases {
+        assert_eq!(der_to_raw(&der, P256), Err(Malformed), "{label}");
     }
 }
 
@@ -715,5 +746,25 @@ fn p521_openssl_signatures_use_the_long_length_form_when_long_enough() {
     for v in long {
         assert_eq!(v.der[..2], [0x30, 0x81], "{}", v.shape);
         assert_eq!(der_to_raw(&v.der, P521), Ok(v.raw), "{}", v.shape);
+    }
+}
+
+#[test]
+fn arbitrary_bytes_are_an_error_or_a_value_never_a_panic() {
+    let mut rng = Rng::new(0x5EED_0002);
+    for _ in 0..3000 {
+        let len = rng.below(160) as usize;
+        let mut bytes = rng.bytes(len);
+        // Mostly start like a signature so the parser gets past the first tag.
+        if let Some(first) = bytes.first_mut() {
+            *first = 0x30;
+        }
+        if len > 2 && rng.below(2) == 0 {
+            bytes[2] = 0x02;
+        }
+        for curve in ALL_CURVES {
+            let _ = der_to_raw(&bytes, curve);
+            let _ = raw_to_der(&bytes, curve);
+        }
     }
 }

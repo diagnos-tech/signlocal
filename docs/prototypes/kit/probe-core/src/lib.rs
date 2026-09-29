@@ -16,6 +16,8 @@ pub mod pkcs1;
 pub mod verify;
 
 mod hex;
+#[cfg(test)]
+mod testkit;
 
 pub use algorithm::{SignatureAlgorithm, UnknownAlgorithmError};
 pub use cert::{

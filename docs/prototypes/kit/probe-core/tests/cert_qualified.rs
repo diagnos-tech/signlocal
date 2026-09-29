@@ -61,7 +61,7 @@ fn an_empty_qc_type_list_gives_no_types() {
 
 #[test]
 fn an_empty_statement_list_is_still_a_qualified_extension() {
-    // SPEC: `Some` whenever the extension exists, whatever it holds.
+    // `Some` whenever the extension exists, whatever it holds.
     assert_eq!(qualified("qc-empty"), Qualified::default());
 }
 

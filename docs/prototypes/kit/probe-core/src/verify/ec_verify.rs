@@ -5,8 +5,9 @@ use crate::ecdsa::Curve;
 
 /// Verifies a raw `r || s` signature.
 ///
-/// SPEC: a public key that is not a valid point of its curve is reported as
-/// `UnsupportedKey`, not `InvalidSignature`.
+/// A public key that is not a valid point of its curve (off the curve, the
+/// identity, wrong size) is `UnsupportedKey`, not `InvalidSignature`: no
+/// signature could ever verify against it.
 ///
 /// The digest is used as FIPS 186-5 prescribes for any hash size: a digest
 /// longer than the curve order is truncated to its leftmost bytes and a

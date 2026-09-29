@@ -56,35 +56,3 @@ fn an_empty_qc_statement_list_still_marks_the_certificate_as_declaring_them() {
     let info = parse(&TestCert::new().extension(qc_statements(&[])));
     assert_eq!(info.qualified, Some(Qualified::default()));
 }
-
-#[test]
-fn a_certificate_issued_by_openssl_is_summarised_like_the_hand_built_ones() {
-    let der: Vec<u8> = (0..ICP_LIKE_CERT.len())
-        .step_by(2)
-        .map(|i| u8::from_str_radix(&ICP_LIKE_CERT[i..i + 2], 16).unwrap())
-        .collect();
-    let info = CertInfo::from_der(&der).unwrap();
-
-    assert_eq!(
-        info.fingerprint.to_string(),
-        "30:FC:D6:E5:E1:10:75:11:7E:D2:F4:C7:51:F6:7C:1A:46:82:E0:AB:27:BA:8A:31:56:CD:1F:49:97:13:83:11"
-    );
-    assert_eq!(info.serial_hex, "051263d0ac3796023128ea2b327cc1c7525616d4");
-    assert_eq!(info.key, PublicKeyKind::Rsa { bits: 2048 });
-    assert_eq!(info.subject.organizational_units, ["Segunda OU"]);
-    assert_eq!(
-        info.extended_key_usage,
-        ["1.3.6.1.5.5.7.3.2", "1.3.6.1.5.5.7.3.4"]
-    );
-    assert!(info.can_sign());
-
-    let icp = info.icp_brasil.as_ref().unwrap();
-    assert_eq!(icp.level, Some(IcpLevel::A3));
-    assert_eq!(icp.holder_name.as_deref(), Some("ANA BEATRIZ SOUZA"));
-    assert_eq!(icp.cpf.as_deref(), Some("12345678901"));
-    assert_eq!(icp.cnpj.as_deref(), Some("12345678000195"));
-
-    let qualified = info.qualified.unwrap();
-    assert!(qualified.compliance && qualified.sscd);
-    assert_eq!(qualified.types, [QcType::ESign]);
-}

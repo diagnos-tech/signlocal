@@ -8,11 +8,8 @@
 ///
 /// Returns `None` for the indefinite form (`80`), for long forms with more
 /// than one length byte (`82 ..`) and for truncated input. A `P-521`
-/// signature is the only one that needs `81 xx`.
-///
-/// SPEC: `81 xx` with `xx < 0x80` (a non-minimal length) is accepted like
-/// any other `81 xx`; the SPEC lists only the indefinite and multi-byte forms
-/// as malformed, and tokens are known to be sloppy about minimality.
+/// signature is the only one that needs `81 xx`; a non-minimal `81 xx` with
+/// `xx < 0x80` is accepted too, since tokens are sloppy about minimality.
 fn read_length(input: &[u8]) -> Option<(usize, &[u8])> {
     let (&first, rest) = input.split_first()?;
     match first {

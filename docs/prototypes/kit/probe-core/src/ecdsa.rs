@@ -4,8 +4,6 @@
 //! promises and what CNG and PKCS#11 return. macOS returns DER instead.
 
 mod sig_der;
-#[cfg(test)]
-mod tests;
 
 use sig_der::{push_length, read_tlv};
 
@@ -100,8 +98,10 @@ pub fn der_to_raw(der: &[u8], curve: Curve) -> Result<Vec<u8>, EcdsaEncodingErro
 
 /// Raw `r || s` → minimal DER `ECDSA-Sig-Value`.
 ///
-/// SPEC: an all-zero half is encoded as `02 01 00` rather than rejected;
-/// `der_to_raw` refuses such a value, so only that direction is lossy.
+/// Only the length is checked: an all-zero half still encodes (as
+/// `02 01 00`), and values are not compared with the curve order, because
+/// this is a change of encoding, not a validity check. `der_to_raw` refuses
+/// a zero, so only that value does not round-trip.
 pub fn raw_to_der(raw: &[u8], curve: Curve) -> Result<Vec<u8>, EcdsaEncodingError> {
     let wrong_length = || EcdsaEncodingError::WrongLength {
         expected: curve.signature_len(),

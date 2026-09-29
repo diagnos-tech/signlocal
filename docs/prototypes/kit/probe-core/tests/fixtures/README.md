@@ -142,7 +142,7 @@ NIS (11) + RG (15) + órgão emissor (6): `15051990` `12345678901` `98765432109`
 | `icp-pf-cpf-zeros` | idem | CPF `00000000000` | cpf `None` |
 | `icp-pf-odd-birth-tail` | idem | `ABCDEFGH` + CPF + `tail-with-letters` | cpf `12345678901` |
 | `icp-pf-priority` | idem | `.3.4` (CPF `22222222222`) antes de `.3.1` (CPF `12345678901`) | cpf `12345678901` |
-| `icp-pf-invalid-primary` | idem | `.3.1` só com nascimento; `.3.4` válido (`22222222222`) | cpf `None` (**suposição**, ver SPEC-QUESTIONS) |
+| `icp-pf-invalid-primary` | idem | `.3.1` só com nascimento; `.3.4` válido (`22222222222`) | cpf `None` (não cai para o `.3.4`; SPEC §6.3) |
 | `icp-only-34` | idem | só `.3.4` (`22222222222`) | cpf `22222222222` |
 | `icp-pj-a1` | `EMPRESA TESTE LTDA:12345678000195` | `2.16.76.1.2.1.1`; `.3.2`, `.3.3`, `.3.4` | `A1`, `EMPRESA TESTE LTDA`, cpf `98765432100`, cnpj `12345678000195` |
 | `icp-pj-printable` / `-utf8` / `-ia5` | idem | `.3.3` e `.3.4` no tipo indicado | igual ao `icp-pj-a1` |
@@ -158,8 +158,8 @@ NIS (11) + RG (15) + órgão emissor (6): `15051990` `12345678901` `98765432109`
 | `icp-multi-policy` | `ANA BEATRIZ SOUZA:…` | `1.2.3.4`, `2.16.76.1.2.3.4`, `2.16.76.1.2.1.2` | level `A3` (primeira política ICP) |
 | `icp-multi-policy-other-first` | idem | `2.16.76.1.2.999.1`, `2.16.76.1.2.3.1` | level `Other(999)` |
 | `icp-level-<n>` | `LEVEL <n>:11111111111` | `2.16.76.1.2.<n>.1` | ver tabela abaixo |
-| `icp-level-no-subarc` | idem | `2.16.76.1.2.3` (sem mais arcos) | `A3` (**suposição**) |
-| `icp-level-huge` | idem | `2.16.76.1.2.4294967296.1` | sem pânico (resultado não especificado) |
+| `icp-level-no-subarc` | idem | `2.16.76.1.2.3` (sem mais arcos) | `A3` |
+| `icp-level-huge` | idem | `2.16.76.1.2.4294967296.1` | política listada como está, level `None` (não cabe em `u32`) |
 
 `icp-level-<n>`, com n = 0, 1, 2, 3, 4, 5, 100, 101, 102, 103, 104, 105, 302,
 303, 304, 305, 999, 4294967295:

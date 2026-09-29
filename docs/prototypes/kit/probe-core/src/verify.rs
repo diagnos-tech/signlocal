@@ -4,14 +4,12 @@
 //! signature in exactly the format the SDK promises.
 
 mod ec_verify;
-#[cfg(test)]
-mod fixtures;
 mod rsa_verify;
 #[cfg(test)]
 mod tests;
 
 use crate::algorithm::SignatureAlgorithm;
-use crate::cert::{self, CertError, CertInfo, PublicKeyKind};
+use crate::cert::{self, CertError, PublicKey};
 use crate::hash::{DigestLengthError, HashAlgorithm};
 
 /// Why a signature was not accepted, in the order the checks run.
@@ -40,21 +38,15 @@ pub fn verify(
     digest: &[u8],
     signature: &[u8],
 ) -> Result<(), VerifyError> {
-    let certificate = cert::decode_certificate(cert_der)?;
-    let info = CertInfo::from_certificate(cert_der, &certificate)?;
+    let (info, key) = cert::decode(cert_der)?;
     hash.check_digest(digest)?;
 
-    let spki = certificate.tbs_certificate().subject_public_key_info();
-    match info.key {
-        PublicKeyKind::Unsupported { .. } => Err(VerifyError::UnsupportedKey),
-        ref key if !key.supports(algorithm) => Err(VerifyError::KeyMismatch(algorithm)),
-        PublicKeyKind::Rsa { .. } => {
-            let key = cert::rsa_components(spki)?;
-            rsa_verify::verify(key, hash, algorithm, digest, signature)
+    match key {
+        PublicKey::Unsupported { .. } => Err(VerifyError::UnsupportedKey),
+        _ if !info.key.supports(algorithm) => Err(VerifyError::KeyMismatch(algorithm)),
+        PublicKey::Rsa(components) => {
+            rsa_verify::verify(components, hash, algorithm, digest, signature)
         }
-        PublicKeyKind::Ec { curve } => {
-            let point = cert::ec_point(spki).ok_or(VerifyError::UnsupportedKey)?;
-            ec_verify::verify(curve, point, digest, signature)
-        }
+        PublicKey::Ec { curve, point } => ec_verify::verify(curve, point, digest, signature),
     }
 }

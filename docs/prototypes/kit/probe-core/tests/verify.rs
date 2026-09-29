@@ -7,7 +7,8 @@
 mod common;
 
 use common::{
-    SignatureVector, cert, ecdsa_vectors, fixture_digest, hex_decode, signature, signature_vectors,
+    SignatureVector, cert, ecdsa_vectors, fixture_digest, hex_decode, left_pad, rsa_modulus,
+    signature, signature_vectors,
 };
 use probe_core::ecdsa::der_to_raw;
 use probe_core::{
@@ -374,6 +375,40 @@ fn rejects_degenerate_signature_blocks_of_the_right_size() {
     }
 }
 
+/// `a + b` for big-endian numbers of equal length; the sum must fit.
+fn add(a: &[u8], b: &[u8]) -> Vec<u8> {
+    let mut sum = vec![0; a.len()];
+    let mut carry = 0;
+    for i in (0..a.len()).rev() {
+        let digit = u16::from(a[i]) + u16::from(b[i]) + carry;
+        sum[i] = digit as u8;
+        carry = digit >> 8;
+    }
+    assert_eq!(carry, 0, "sum overflows the block");
+    sum
+}
+
+#[test]
+fn rejects_rsa_signatures_that_are_not_below_the_modulus() {
+    // RFC 8017 §5.2.2: s must be below n. s + n has the same residue as a
+    // valid s, and a verifier that reduces instead of rejecting (the `rsa`
+    // crate's PSS verifier does) would accept it as a second signature. A
+    // 2047-bit modulus leaves room for s + n in the 256-byte block.
+    let modulus = left_pad(&rsa_modulus(&cert("rsa2047")), 256);
+    for (kind, algorithm) in [("pkcs1", RsaPkcs1v15), ("pss", RsaPss)] {
+        for hash in HashAlgorithm::ALL {
+            let valid = signature("rsa2047", kind, hash);
+            for (label, bad) in [("n", modulus.clone()), ("s + n", add(&valid, &modulus))] {
+                assert_eq!(
+                    verify_fixture("rsa2047", hash, algorithm, &bad),
+                    Err(VerifyError::InvalidSignature),
+                    "{kind} {hash}: {label}"
+                );
+            }
+        }
+    }
+}
+
 #[test]
 fn rejects_ecdsa_with_a_zero_or_out_of_range_component() {
     let good = signature("p256", "ecdsa", Sha256);
@@ -473,7 +508,7 @@ fn rejects_pkcs1_signatures_verified_as_pss_and_the_other_way_round() {
 
 #[test]
 fn rejects_pss_signatures_that_do_not_use_the_agreed_parameters() {
-    // SPEC: MGF1 over the same hash and a salt as long as the digest. The
+    // MGF1 over the same hash and a salt as long as the digest. The
     // manifest has signatures made with salt 0, salt 20 and MGF1-SHA1; a
     // verifier that auto-detects the salt or MGF1 hash would accept them.
     for kind in ["pss-salt-0", "pss-salt-20", "pss-mgf1-sha1"] {

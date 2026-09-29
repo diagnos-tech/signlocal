@@ -86,3 +86,40 @@ fn split_tlv(bytes: &[u8]) -> Option<(u8, &[u8], &[u8])> {
     };
     (rest.len() >= len).then(|| (tag, &rest[..len], &rest[len..]))
 }
+
+/// Splits `bytes` into (tag, content, remainder), for any definite length.
+/// Test inputs are trusted, so a malformed one panics.
+fn next_tlv(bytes: &[u8]) -> (u8, &[u8], &[u8]) {
+    let (header, len) = match bytes[1] {
+        short @ 0..=0x7f => (2, usize::from(short)),
+        long => {
+            let count = usize::from(long & 0x7f);
+            let len = bytes[2..2 + count]
+                .iter()
+                .fold(0, |len, &octet| (len << 8) | usize::from(octet));
+            (2 + count, len)
+        }
+    };
+    let (content, rest) = bytes[header..].split_at(len);
+    (bytes[0], content, rest)
+}
+
+/// The modulus of the RSA key in a certificate, without its sign byte.
+pub fn rsa_modulus(cert: &[u8]) -> Vec<u8> {
+    let (_, certificate, _) = next_tlv(cert);
+    let (_, mut tbs, _) = next_tlv(certificate);
+    // SEQUENCEs of the TBSCertificate: signature, issuer, validity, subject, SPKI.
+    let mut sequences = Vec::new();
+    while !tbs.is_empty() {
+        let (tag, content, rest) = next_tlv(tbs);
+        if tag == 0x30 {
+            sequences.push(content);
+        }
+        tbs = rest;
+    }
+    let (_, _algorithm, rest) = next_tlv(sequences[4]);
+    let (_, bit_string, _) = next_tlv(rest);
+    let (_, key, _) = next_tlv(&bit_string[1..]);
+    let (_, modulus, _) = next_tlv(key);
+    modulus.iter().copied().skip_while(|&b| b == 0).collect()
+}

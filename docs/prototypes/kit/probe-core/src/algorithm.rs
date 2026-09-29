@@ -61,36 +61,3 @@ pub struct UnknownAlgorithmError {
     /// The name exactly as received.
     pub name: String,
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn names_and_rsa_flag_follow_the_spec() {
-        let table = [
-            (SignatureAlgorithm::Ecdsa, "ECDSA", false),
-            (SignatureAlgorithm::RsaPkcs1v15, "RSASSA-PKCS1-v1_5", true),
-            (SignatureAlgorithm::RsaPss, "RSASSA-PSS", true),
-        ];
-        for (alg, name, rsa) in table {
-            assert_eq!(alg.name(), name);
-            assert_eq!(alg.to_string(), name);
-            assert_eq!(alg.is_rsa(), rsa);
-            assert_eq!(name.parse::<SignatureAlgorithm>(), Ok(alg));
-        }
-    }
-
-    #[test]
-    fn parsing_ignores_case_only() {
-        assert_eq!(
-            "rsassa-pkcs1-V1_5".parse::<SignatureAlgorithm>(),
-            Ok(SignatureAlgorithm::RsaPkcs1v15)
-        );
-        for text in ["", "RSA", "ECDSA ", "RSASSA-PKCS1-v1_5-SHA256", "ed25519"] {
-            let err = text.parse::<SignatureAlgorithm>().unwrap_err();
-            assert_eq!(err.name, text);
-            assert_eq!(err.to_string(), format!("unknown algorithm: {text}"));
-        }
-    }
-}

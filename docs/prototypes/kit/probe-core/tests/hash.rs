@@ -358,7 +358,7 @@ fn rejects_everything_else_with_the_original_string() {
 
 #[test]
 fn case_folding_is_ascii_only() {
-    // SPEC: "sem diferenciar maiusculas" is read as ASCII case-insensitivity.
+    // Case-insensitive means ASCII case-insensitive.
     // U+017F (long s) upper-cases to `S` under full Unicode rules and must
     // not sneak in as an `s`.
     assert!("ſha-256".parse::<HashAlgorithm>().is_err());

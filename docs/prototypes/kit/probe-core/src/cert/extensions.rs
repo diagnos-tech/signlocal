@@ -1,19 +1,15 @@
 //! The certificate extensions the summary reads.
 
-use der::asn1::{AnyRef, BitStringRef, ObjectIdentifier};
-use der::{Decode, Reader, Tag, Tagged};
-use x509_cert::ext::Extension;
-
-use super::asn1::{malformed, oid_with_optional_info};
+use super::der::{
+    self, BIT_STRING, BOOLEAN, DerError, INTEGER, OBJECT_IDENTIFIER, Reader, SEQUENCE,
+};
+use super::oid::{
+    self, BASIC_CONSTRAINTS, CERTIFICATE_POLICIES, EXTENDED_KEY_USAGE, KEY_USAGE, QC_STATEMENTS,
+    SUBJECT_ALT_NAME,
+};
 use super::san::{self, OtherName};
-use super::{CertError, KeyUsage, Qualified};
-
-const KEY_USAGE: ObjectIdentifier = ObjectIdentifier::new_unwrap("2.5.29.15");
-const SUBJECT_ALT_NAME: ObjectIdentifier = ObjectIdentifier::new_unwrap("2.5.29.17");
-const BASIC_CONSTRAINTS: ObjectIdentifier = ObjectIdentifier::new_unwrap("2.5.29.19");
-const CERTIFICATE_POLICIES: ObjectIdentifier = ObjectIdentifier::new_unwrap("2.5.29.32");
-const EXTENDED_KEY_USAGE: ObjectIdentifier = ObjectIdentifier::new_unwrap("2.5.29.37");
-const QC_STATEMENTS: ObjectIdentifier = ObjectIdentifier::new_unwrap("1.3.6.1.5.5.7.1.3");
+use super::x509::Extension;
+use super::{CertError, KeyUsage, Qualified, malformed};
 
 /// Everything read from the extensions block, before it is folded into a
 /// `CertInfo`.
@@ -28,94 +24,105 @@ pub(super) struct Extensions {
 }
 
 impl Extensions {
-    /// Decodes the known extensions; unknown ones are ignored.
+    /// Decodes the known extensions; unknown ones are never looked into.
     ///
     /// A known extension that fails to decode makes the whole certificate
     /// `Malformed`: showing a certificate as signing-capable on the strength
-    /// of a half-read KeyUsage would be worse than refusing it. If an
-    /// extension is repeated (which RFC 5280 forbids) the first copy wins.
-    ///
-    /// SPEC: repeated extensions are not an error; the first copy is used.
-    pub(super) fn parse(extensions: Option<&[Extension]>) -> Result<Self, CertError> {
-        let extensions = extensions.unwrap_or_default();
-        let find = |oid: ObjectIdentifier| {
-            extensions
-                .iter()
-                .find(|ext| ext.extn_id == oid)
-                .map(|ext| ext.extn_value.as_bytes())
-        };
-
-        let mut parsed = Self::default();
-        if let Some(value) = find(KEY_USAGE) {
-            parsed.key_usage = Some(key_usage(value).map_err(|e| malformed("KeyUsage", e))?);
-        }
-        if let Some(value) = find(EXTENDED_KEY_USAGE) {
-            parsed.extended_key_usage =
-                extended_key_usage(value).map_err(|e| malformed("ExtendedKeyUsage", e))?;
-        }
-        if let Some(value) = find(CERTIFICATE_POLICIES) {
-            parsed.policies =
-                policy_oids(value).map_err(|e| malformed("CertificatePolicies", e))?;
-        }
-        if let Some(value) = find(BASIC_CONSTRAINTS) {
-            parsed.is_ca = is_ca(value).map_err(|e| malformed("BasicConstraints", e))?;
-        }
-        if let Some(value) = find(SUBJECT_ALT_NAME) {
-            parsed.other_names =
-                san::other_names(value).map_err(|e| malformed("SubjectAltName", e))?;
-        }
-        if let Some(value) = find(QC_STATEMENTS) {
-            parsed.qualified =
-                Some(Qualified::from_extension(value).map_err(|e| malformed("qcStatements", e))?);
-        }
-        Ok(parsed)
+    /// of a half-read KeyUsage would be worse than refusing it. RFC 5280
+    /// forbids repeating an extension; if a certificate does, the first copy
+    /// is read and the others are ignored.
+    pub(super) fn parse(extensions: &[Extension<'_>]) -> Result<Self, CertError> {
+        let usage = known(extensions, KEY_USAGE, "KeyUsage", key_usage)?;
+        let extended = known(extensions, EXTENDED_KEY_USAGE, "ExtendedKeyUsage", oid_list)?;
+        let policies = known(
+            extensions,
+            CERTIFICATE_POLICIES,
+            "CertificatePolicies",
+            policy_oids,
+        )?;
+        let ca = known(extensions, BASIC_CONSTRAINTS, "BasicConstraints", is_ca)?;
+        let names = known(
+            extensions,
+            SUBJECT_ALT_NAME,
+            "SubjectAltName",
+            san::other_names,
+        )?;
+        let qualified = known(
+            extensions,
+            QC_STATEMENTS,
+            "qcStatements",
+            Qualified::from_extension,
+        )?;
+        Ok(Self {
+            key_usage: usage,
+            extended_key_usage: extended.unwrap_or_default(),
+            policies: policies.unwrap_or_default(),
+            is_ca: ca.unwrap_or(false),
+            other_names: names.unwrap_or_default(),
+            qualified,
+        })
     }
 }
 
-/// Reads the KeyUsage bit string. Bits past the end of a (DER-minimal, hence
-/// trimmed) bit string are zero.
-fn key_usage(value: &[u8]) -> der::Result<KeyUsage> {
-    let bits = BitStringRef::from_der(value)?;
-    let bit = |position: usize| bits.get(position).unwrap_or(false);
+/// Decodes the first extension with OID `id`, if the certificate has one.
+fn known<T>(
+    extensions: &[Extension<'_>],
+    id: &[u8],
+    name: &'static str,
+    decoder: impl FnOnce(&[u8]) -> Result<T, DerError>,
+) -> Result<Option<T>, CertError> {
+    extensions
+        .iter()
+        .find(|extension| extension.id == id)
+        .map(|extension| decoder(extension.value))
+        .transpose()
+        .map_err(|e| malformed(name, e))
+}
+
+/// KeyUsage BIT STRING. Bits past its end are zero (DER trims them), and a
+/// string with no bit set still means "the extension is present".
+fn key_usage(value: &[u8]) -> Result<KeyUsage, DerError> {
+    let bits = der::bit_string(der::single(value, BIT_STRING)?)?;
     Ok(KeyUsage {
-        digital_signature: bit(0),
-        non_repudiation: bit(1),
-        key_encipherment: bit(2),
-        data_encipherment: bit(3),
-        key_agreement: bit(4),
-        key_cert_sign: bit(5),
-        crl_sign: bit(6),
+        digital_signature: bits.bit(0),
+        non_repudiation: bits.bit(1),
+        key_encipherment: bits.bit(2),
+        data_encipherment: bits.bit(3),
+        key_agreement: bits.bit(4),
+        key_cert_sign: bits.bit(5),
+        crl_sign: bits.bit(6),
     })
 }
 
-fn extended_key_usage(value: &[u8]) -> der::Result<Vec<String>> {
-    Ok(Vec::<ObjectIdentifier>::from_der(value)?
-        .iter()
-        .map(ToString::to_string)
-        .collect())
+/// `SEQUENCE OF OBJECT IDENTIFIER` as dotted text, in order.
+fn oid_list(value: &[u8]) -> Result<Vec<String>, DerError> {
+    der::elements(der::single(value, SEQUENCE)?, OBJECT_IDENTIFIER)
+        .map(|oid| dotted(oid?))
+        .collect()
 }
 
 /// Policy identifiers only; qualifiers (CPS URI, user notice) are skipped.
-fn policy_oids(value: &[u8]) -> der::Result<Vec<String>> {
-    Vec::<AnyRef>::from_der(value)?
-        .into_iter()
-        .map(|policy| Ok(oid_with_optional_info(policy)?.0.to_string()))
+fn policy_oids(value: &[u8]) -> Result<Vec<String>, DerError> {
+    der::elements(der::single(value, SEQUENCE)?, SEQUENCE)
+        .map(|policy| dotted(der::oid_and_optional(policy?)?.0))
         .collect()
 }
 
 /// `BasicConstraints ::= SEQUENCE { cA BOOLEAN DEFAULT FALSE, pathLen INTEGER OPTIONAL }`.
-fn is_ca(value: &[u8]) -> der::Result<bool> {
-    AnyRef::from_der(value)?.sequence(|reader| {
-        let ca = if !reader.is_finished() && Tag::peek(reader)? == Tag::Boolean {
-            bool::decode(reader)?
-        } else {
-            false
-        };
-        if !reader.is_finished() {
-            AnyRef::decode(reader)?.tag().assert_eq(Tag::Integer)?;
-        }
-        Ok(ca)
-    })
+fn is_ca(value: &[u8]) -> Result<bool, DerError> {
+    let mut fields = Reader::new(der::single(value, SEQUENCE)?);
+    let ca = fields
+        .read_optional(BOOLEAN)?
+        .map(der::boolean)
+        .transpose()?;
+    fields.read_optional(INTEGER)?;
+    fields.finish()?;
+    Ok(ca.unwrap_or(false))
+}
+
+/// An OID the summary must print; one it cannot is a malformed extension.
+fn dotted(content: &[u8]) -> Result<String, DerError> {
+    oid::to_dotted(content).ok_or(DerError::Invalid("OBJECT IDENTIFIER"))
 }
 
 #[cfg(test)]
@@ -124,65 +131,66 @@ mod tests {
 
     #[test]
     fn key_usage_bits_follow_rfc_5280_positions() {
-        // BIT STRING, 1 unused bit: digitalSignature + nonRepudiation + keyCertSign + cRLSign.
-        // bits 0,1,5,6 -> 1100 0110 = 0xc6 (bit 7 unused).
+        // 1 unused bit; digitalSignature, nonRepudiation, keyCertSign, cRLSign.
         let usage = key_usage(&[0x03, 0x02, 0x01, 0xc6]).unwrap();
-        assert!(usage.digital_signature);
-        assert!(usage.non_repudiation);
-        assert!(!usage.key_encipherment);
-        assert!(!usage.data_encipherment);
-        assert!(!usage.key_agreement);
-        assert!(usage.key_cert_sign);
-        assert!(usage.crl_sign);
-    }
-
-    #[test]
-    fn key_usage_short_bit_strings_read_missing_bits_as_zero() {
-        // Only digitalSignature, bit string trimmed to one bit.
-        let usage = key_usage(&[0x03, 0x02, 0x07, 0x80]).unwrap();
         assert_eq!(
             usage,
             KeyUsage {
                 digital_signature: true,
+                non_repudiation: true,
+                key_cert_sign: true,
+                crl_sign: true,
                 ..KeyUsage::default()
             }
         );
-        // Two-byte bit string with decipherOnly (bit 8) set: none of ours.
-        let usage = key_usage(&[0x03, 0x03, 0x07, 0x00, 0x80]).unwrap();
-        assert_eq!(usage, KeyUsage::default());
-    }
-
-    #[test]
-    fn key_usage_rejects_other_types() {
+        // No bit at all, and only decipherOnly (bit 8): present, nothing set.
+        assert_eq!(key_usage(&[0x03, 0x01, 0x00]), Ok(KeyUsage::default()));
+        assert_eq!(
+            key_usage(&[0x03, 0x03, 0x07, 0x00, 0x80]),
+            Ok(KeyUsage::default())
+        );
         assert!(key_usage(&[0x04, 0x01, 0x00]).is_err());
-        assert!(key_usage(&[]).is_err());
+        assert!(key_usage(&[0x03, 0x02, 0x07, 0x80, 0x00]).is_err());
     }
 
     #[test]
     fn basic_constraints_variants() {
-        assert!(!is_ca(&[0x30, 0x00]).unwrap());
-        assert!(is_ca(&[0x30, 0x03, 0x01, 0x01, 0xff]).unwrap());
-        assert!(is_ca(&[0x30, 0x06, 0x01, 0x01, 0xff, 0x02, 0x01, 0x00]).unwrap());
-        // Only a path length: cA stays false.
-        assert!(!is_ca(&[0x30, 0x03, 0x02, 0x01, 0x00]).unwrap());
-        assert!(is_ca(&[0x30, 0x03, 0x01, 0x01, 0x05]).is_err());
+        assert_eq!(is_ca(&[0x30, 0x00]), Ok(false));
+        assert_eq!(is_ca(&[0x30, 0x03, 0x01, 0x01, 0xff]), Ok(true));
+        assert_eq!(is_ca(&[0x30, 0x03, 0x01, 0x01, 0x01]), Ok(true), "BER true");
+        assert_eq!(
+            is_ca(&[0x30, 0x03, 0x01, 0x01, 0x00]),
+            Ok(false),
+            "explicit default"
+        );
+        assert_eq!(
+            is_ca(&[0x30, 0x06, 0x01, 0x01, 0xff, 0x02, 0x01, 0x00]),
+            Ok(true)
+        );
+        assert_eq!(is_ca(&[0x30, 0x03, 0x02, 0x01, 0x00]), Ok(false));
         assert!(is_ca(&[0x30, 0x03, 0x04, 0x01, 0x00]).is_err());
+        assert!(is_ca(&[0x30, 0x04, 0x01, 0x02, 0xff, 0xff]).is_err());
         assert!(is_ca(&[0x04, 0x00]).is_err());
     }
 
     #[test]
-    fn eku_and_policies_keep_order() {
-        // clientAuth (1.3.6.1.5.5.7.3.2), emailProtection (1.3.6.1.5.5.7.3.4)
+    fn oid_lists_keep_order_and_refuse_unprintable_oids() {
+        // clientAuth, emailProtection.
         let eku = [
             0x30, 0x14, 0x06, 0x08, 0x2b, 0x06, 0x01, 0x05, 0x05, 0x07, 0x03, 0x02, 0x06, 0x08,
             0x2b, 0x06, 0x01, 0x05, 0x05, 0x07, 0x03, 0x04,
         ];
         assert_eq!(
-            extended_key_usage(&eku).unwrap(),
+            oid_list(&eku).unwrap(),
             ["1.3.6.1.5.5.7.3.2", "1.3.6.1.5.5.7.3.4"]
         );
+        assert_eq!(oid_list(&[0x30, 0x00]), Ok(vec![]));
+        assert!(oid_list(&[0x30, 0x03, 0x06, 0x01, 0x80]).is_err());
+    }
 
-        // Two policies: 2.5.29.32.0 with a qualifier SEQUENCE, then 2.5.29.32.1 alone.
+    #[test]
+    fn policies_skip_qualifiers() {
+        // 2.5.29.32.0 with a qualifier SEQUENCE, then 2.5.29.32.1 alone.
         let policies = [
             0x30, 0x15, 0x30, 0x0b, 0x06, 0x04, 0x55, 0x1d, 0x20, 0x00, 0x30, 0x03, 0x02, 0x01,
             0x01, 0x30, 0x06, 0x06, 0x04, 0x55, 0x1d, 0x20, 0x01,

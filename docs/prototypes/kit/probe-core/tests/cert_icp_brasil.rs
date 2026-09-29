@@ -9,8 +9,8 @@ mod common;
 
 use std::collections::HashSet;
 
-use common::{cert, info};
-use probe_core::{CertInfo, IcpBrasil, IcpLevel};
+use common::info;
+use probe_core::{IcpBrasil, IcpLevel};
 
 use IcpLevel::{A1, A2, A3, A4, Other, S1, S2, S3, S4, T3, T4};
 
@@ -139,16 +139,19 @@ fn the_first_icp_policy_wins_even_when_its_arc_is_unknown() {
 
 #[test]
 fn reads_the_level_from_a_policy_without_further_arcs() {
-    // SPEC: the policy is "2.16.76.1.2.<n>.<...>"; a bare 2.16.76.1.2.3 still starts
-    // with the ICP prefix, so it is read as n = 3.
+    // A bare 2.16.76.1.2.3 still starts with the ICP prefix, so it reads n = 3.
     assert_eq!(icp("icp-level-no-subarc").level, Some(A3));
 }
 
 #[test]
-fn survives_a_policy_arc_beyond_u32() {
-    // SPEC is silent (Other(n) holds a u32); the certificate may be accepted or
-    // rejected, but nothing may panic.
-    let _ = CertInfo::from_der(&cert("icp-level-huge"));
+fn keeps_a_policy_arc_beyond_u32_but_leaves_the_level_unknown() {
+    // `Other(n)` holds a u32, so 4294967296 has no level; the certificate
+    // is still ICP-Brasil and its policy is listed verbatim.
+    let info = info("icp-level-huge");
+    assert_eq!(info.policies, ["2.16.76.1.2.4294967296.1"]);
+    let icp = info.icp_brasil.expect("ICP-Brasil by its policy");
+    assert_eq!(icp.level, None);
+    assert_eq!(icp.holder_name.as_deref(), Some("LEVEL HUGE"));
 }
 
 #[test]
@@ -244,8 +247,8 @@ fn reads_the_cpf_in_every_accepted_string_type() {
 
 #[test]
 fn ignores_a_cpf_other_name_of_an_unsupported_string_type() {
-    // SPEC: only OCTET STRING, PrintableString, UTF8String and IA5String are read;
-    // this one is a BMPString, so it counts as absent.
+    // Only OCTET STRING, PrintableString, UTF8String and IA5String are read;
+    // this one is a BMPString, so the CPF is unknown.
     assert_eq!(icp("icp-pf-bmp"), person(None));
 }
 
@@ -283,8 +286,8 @@ fn the_person_other_name_wins_over_the_responsible_one_in_any_order() {
 
 #[test]
 fn a_present_but_invalid_person_value_is_not_replaced_by_the_responsible_one() {
-    // SPEC: "ou, se ausente, do 2.16.76.1.3.4" is read as: fall back only when the
-    // person otherName is absent, not when it is present and unusable.
+    // Fall back only when the person otherName is absent, not when it is
+    // present and unusable: the responsible person is someone else.
     assert_eq!(icp("icp-pf-invalid-primary").cpf, None);
 }
 
@@ -416,8 +419,9 @@ fn formats_the_cnpj_read_from_a_certificate() {
 }
 
 #[test]
-fn formatting_odd_public_field_values_never_panics() {
-    // The fields are public, so a caller can put anything in them.
+fn formatting_refuses_public_fields_that_are_not_all_digits() {
+    // The fields are public, so a caller can put anything in them; only
+    // exactly 11 (CPF) or 14 (CNPJ) ASCII digits are formatted.
     let odd = [
         "",
         "1",
@@ -431,8 +435,8 @@ fn formatting_odd_public_field_values_never_panics() {
         "🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀",
     ];
     for text in odd {
-        let _ = with_cpf(text).masked_cpf();
-        let _ = with_cnpj(text).formatted_cnpj();
+        assert_eq!(with_cpf(text).masked_cpf(), None, "{text:?}");
+        assert_eq!(with_cnpj(text).formatted_cnpj(), None, "{text:?}");
     }
 }
 

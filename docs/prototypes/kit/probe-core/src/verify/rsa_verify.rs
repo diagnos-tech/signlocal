@@ -23,9 +23,10 @@ pub(super) fn verify(
     digest: &[u8],
     signature: &[u8],
 ) -> Result<(), VerifyError> {
-    // `RsaPublicKey::new` validates the modulus and exponent (odd modulus,
-    // exponent in range) and reports a bad pair as an error, never a panic.
-    // SPEC: such a key is `UnsupportedKey`, like an EC point that is off-curve.
+    // `RsaPublicKey::new` refuses what it cannot use (even or zero modulus,
+    // more than 8192 bits, exponent even or outside 3..2^33) with an error,
+    // never a panic. The certificate is not at fault for the signature, so
+    // this is `UnsupportedKey`, like an EC point that is off its curve.
     let public_key = RsaPublicKey::new(
         BoxedUint::from_be_slice_vartime(key.modulus),
         BoxedUint::from_be_slice_vartime(key.exponent),

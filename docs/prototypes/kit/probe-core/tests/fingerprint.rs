@@ -268,6 +268,18 @@ fn rejects_prefixes_and_other_separators() {
 }
 
 #[test]
+fn rejects_whitespace_other_than_the_ascii_space() {
+    for separator in ["\t", "\n", "\r\n", "\u{a0}", "\u{2009}"] {
+        let text = format!("{}{separator}{}", &ABC_HEX[..32], &ABC_HEX[32..]);
+        assert_eq!(
+            text.parse::<Fingerprint>(),
+            Err(ParseFingerprintError),
+            "{separator:?}"
+        );
+    }
+}
+
+#[test]
 fn rejects_empty_and_separator_only_input() {
     for text in [
         "",

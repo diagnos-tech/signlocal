@@ -4,27 +4,28 @@
 //! a certificate the way a doctor recognizes it — holder name, ICP-Brasil
 //! level, eIDAS qualification, validity — without platform APIs.
 
-mod asn1;
+mod der;
 mod extensions;
-#[cfg(test)]
-mod fixtures;
 mod icp_brasil;
 mod key;
 mod names;
+mod oid;
 mod parse;
 mod qualified;
 mod san;
 mod strings;
 #[cfg(test)]
-mod testkit;
-#[cfg(test)]
 mod tests;
+mod time;
+mod x509;
 
 pub use icp_brasil::{IcpBrasil, IcpLevel};
 pub use qualified::{QcType, Qualified};
 
-pub(crate) use key::{RsaComponents, ec_point, rsa_components};
-pub(crate) use parse::decode_certificate;
+pub(crate) use key::{PublicKey, RsaComponents};
+pub(crate) use parse::decode;
+
+use std::fmt::Display;
 
 use crate::algorithm::SignatureAlgorithm;
 use crate::ecdsa::Curve;
@@ -36,9 +37,9 @@ pub struct CertInfo {
     pub fingerprint: Fingerprint,
     pub subject: DistinguishedName,
     pub issuer: DistinguishedName,
-    /// Lowercase hex of the serial number, without a leading sign byte.
+    /// Lowercase hex of the serial number, without leading zero octets.
     pub serial_hex: String,
-    /// Unix seconds.
+    /// Unix seconds; negative before 1970.
     pub not_before: i64,
     /// Unix seconds.
     pub not_after: i64,
@@ -56,9 +57,12 @@ pub struct CertInfo {
 
 impl CertInfo {
     /// Parses a DER certificate.
+    ///
+    /// The reader is tolerant of encoding slips that do not change the
+    /// summary (see `SPEC.md` §6), so a certificate the user owns is not
+    /// left out of the list over them.
     pub fn from_der(der: &[u8]) -> Result<CertInfo, CertError> {
-        let certificate = decode_certificate(der)?;
-        Self::from_certificate(der, &certificate)
+        decode(der).map(|(info, _)| info)
     }
 
     /// Whether `unix_secs` falls inside the validity period (inclusive).
@@ -78,14 +82,25 @@ impl CertInfo {
     }
 
     /// The name a person recognizes: ICP-Brasil holder, CN, O, or a
-    /// fingerprint prefix as the last resort.
+    /// fingerprint prefix as the last resort. Blank candidates are skipped so
+    /// the confirmation window never shows an empty name.
     pub fn display_name(&self) -> String {
-        self.icp_brasil
+        let holder = self
+            .icp_brasil
             .as_ref()
-            .and_then(|icp| icp.holder_name.clone())
-            .or_else(|| self.subject.common_name.clone())
-            .or_else(|| self.subject.organization.clone())
-            .unwrap_or_else(|| self.fingerprint.to_hex().chars().take(16).collect())
+            .and_then(|icp| icp.holder_name.as_deref());
+        [
+            holder,
+            self.subject.common_name.as_deref(),
+            self.subject.organization.as_deref(),
+        ]
+        .into_iter()
+        .flatten()
+        .find(|name| !name.trim().is_empty())
+        .map_or_else(
+            || self.fingerprint.to_hex().chars().take(16).collect(),
+            str::to_owned,
+        )
     }
 }
 
@@ -94,6 +109,11 @@ impl CertInfo {
 pub enum CertError {
     #[error("malformed certificate: {0}")]
     Malformed(String),
+}
+
+/// A `Malformed` error naming the part of the certificate that is broken.
+fn malformed(what: &str, detail: impl Display) -> CertError {
+    CertError::Malformed(format!("{what}: {detail}"))
 }
 
 /// The distinguished-name attributes the UI shows.

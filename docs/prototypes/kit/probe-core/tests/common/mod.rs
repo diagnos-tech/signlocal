@@ -6,10 +6,13 @@
 #![allow(dead_code)]
 
 mod der;
+mod names;
 mod vectors;
 
 #[allow(unused_imports)]
 pub use der::*;
+#[allow(unused_imports)]
+pub use names::*;
 #[allow(unused_imports)]
 pub use vectors::*;
 
@@ -17,10 +20,6 @@ use std::fs;
 use std::path::PathBuf;
 
 use probe_core::{CertInfo, Curve, DistinguishedName, Fingerprint, HashAlgorithm, PublicKeyKind};
-
-/// Fixtures whose outcome the SPEC leaves open (an arc beyond `u32` cannot be
-/// held by `IcpLevel::Other`); generic loops skip them.
-pub const UNSPECIFIED_FIXTURES: [&str; 1] = ["icp-level-huge"];
 
 pub fn fixture_path(relative: &str) -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))

@@ -1,7 +1,10 @@
 //! SubjectAltName `otherName` entries, where ICP-Brasil keeps CPF and CNPJ.
 
-use der::asn1::{AnyRef, ObjectIdentifier};
-use der::{Decode, Tag, TagNumber, Tagged};
+use super::der::{
+    self, DerError, IA5_STRING, OBJECT_IDENTIFIER, OCTET_STRING, PRINTABLE_STRING, Reader,
+    SEQUENCE, Tlv, UTF8_STRING, explicit,
+};
+use super::oid;
 
 /// One `otherName` of a SubjectAltName.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -13,55 +16,56 @@ pub(super) struct OtherName {
     pub value: Option<String>,
 }
 
-/// `[0]` constructed: the `otherName` choice of `GeneralName`, and also the
-/// EXPLICIT wrapper around an `otherName`'s value.
-const CONTEXT_0: Tag = Tag::ContextSpecific {
-    constructed: true,
-    number: TagNumber(0),
-};
+/// The `otherName` choice of `GeneralName`, and also the EXPLICIT wrapper
+/// around an `otherName`'s value.
+const OTHER_NAME: u8 = explicit(0);
 
 /// Extracts the `otherName` entries of a SubjectAltName extension value.
 ///
 /// Other `GeneralName` choices are skipped without being inspected, so a name
-/// form this crate does not model cannot make the certificate unreadable.
-pub(super) fn other_names(extension_value: &[u8]) -> der::Result<Vec<OtherName>> {
-    Vec::<AnyRef>::from_der(extension_value)?
-        .into_iter()
-        .filter(|name| name.tag() == CONTEXT_0)
-        .map(|name| decode_other_name(name.value()))
-        .collect()
+/// form this crate does not model cannot make the certificate unreadable. So
+/// is an `otherName` whose type-id cannot even be printed: it cannot be one
+/// of the ICP-Brasil ones.
+pub(super) fn other_names(extension_value: &[u8]) -> Result<Vec<OtherName>, DerError> {
+    let mut names = Vec::new();
+    for name in Reader::new(der::single(extension_value, SEQUENCE)?) {
+        let name = name?;
+        if name.tag != OTHER_NAME {
+            continue;
+        }
+        let (type_id, value) = decode_other_name(name.content)?;
+        if let Some(oid) = oid::to_dotted(type_id) {
+            names.push(OtherName {
+                oid,
+                value: ascii_text(value),
+            });
+        }
+    }
+    Ok(names)
 }
 
 /// `OtherName ::= SEQUENCE { type-id OID, value [0] EXPLICIT ANY }`, with the
 /// outer SEQUENCE header already replaced by the `[0]` of `GeneralName`.
-fn decode_other_name(content: &[u8]) -> der::Result<OtherName> {
-    let mut reader = der::SliceReader::new(content)?;
-    let oid: ObjectIdentifier = ObjectIdentifier::decode(&mut reader)?;
-    let wrapper = AnyRef::decode(&mut reader)?;
-    der::Reader::finish(reader)?;
-    wrapper.tag().assert_eq(CONTEXT_0)?;
-
-    let value = AnyRef::from_der(wrapper.value())?;
-    Ok(OtherName {
-        oid: oid.to_string(),
-        value: ascii_text(value),
-    })
+fn decode_other_name(content: &[u8]) -> Result<(&[u8], Tlv<'_>), DerError> {
+    let mut fields = Reader::new(content);
+    let type_id = fields.read(OBJECT_IDENTIFIER)?;
+    let mut wrapper = Reader::new(fields.read(OTHER_NAME)?);
+    fields.finish()?;
+    let value = wrapper.read_any()?;
+    wrapper.finish()?;
+    Ok((type_id, value))
 }
 
 /// ICP-Brasil values are digits and letters. The four string-like types seen
-/// in practice are accepted; anything else, or non-ASCII content, is dropped
-/// so byte offsets into the text are also character offsets.
-///
-/// SPEC: "read as ASCII text" means a value with any non-ASCII byte has no
-/// text (as if its type were unsupported) rather than being decoded lossily.
-fn ascii_text(value: AnyRef<'_>) -> Option<String> {
-    match value.tag() {
-        Tag::OctetString | Tag::PrintableString | Tag::Utf8String | Tag::Ia5String => {
-            let bytes = value.value();
-            bytes
-                .is_ascii()
-                .then(|| bytes.iter().map(|&b| char::from(b)).collect())
-        }
+/// in practice are accepted; anything else, or non-ASCII content, counts as
+/// no value rather than being decoded lossily, so byte offsets into the text
+/// are also character offsets.
+fn ascii_text(value: Tlv<'_>) -> Option<String> {
+    match value.tag {
+        OCTET_STRING | PRINTABLE_STRING | UTF8_STRING | IA5_STRING => value
+            .content
+            .is_ascii()
+            .then(|| value.content.iter().map(|&b| char::from(b)).collect()),
         _ => None,
     }
 }
@@ -72,7 +76,7 @@ mod tests {
 
     /// TLV with a short length.
     fn tlv(tag: u8, content: &[u8]) -> Vec<u8> {
-        let mut out = vec![tag, content.len() as u8];
+        let mut out = vec![tag, u8::try_from(content.len()).unwrap()];
         out.extend_from_slice(content);
         out
     }
@@ -118,30 +122,30 @@ mod tests {
     }
 
     #[test]
-    fn other_general_names_are_skipped() {
+    fn other_general_names_and_unprintable_type_ids_are_skipped() {
         let email = tlv(0x81, b"a@b.c");
         let dns = tlv(0x82, b"example.com");
         let x400 = tlv(0xa3, &[0x30, 0x00]);
-        let san = general_names(&[email, x400, other_name(&tlv(0x0c, b"1")), dns]);
+        let bad_id = tlv(
+            0xa0,
+            &[tlv(0x06, &[0x80, 0x01]), tlv(0xa0, &tlv(0x0c, b"1"))].concat(),
+        );
+        let san = general_names(&[email, x400, other_name(&tlv(0x0c, b"1")), bad_id, dns]);
         assert_eq!(other_names(&san).unwrap().len(), 1);
     }
 
     #[test]
     fn malformed_other_names_are_errors() {
-        // Missing the [0] value wrapper.
-        let no_value = tlv(0xa0, &tlv(0x06, &[0x60, 0x4c, 0x01, 0x03, 0x01]));
-        assert!(other_names(&general_names(&[no_value])).is_err());
-        // Wrapper with the wrong tag.
-        let bad_wrapper = tlv(
+        let oid = tlv(0x06, &[0x60, 0x4c, 0x01, 0x03, 0x01]);
+        let no_value = tlv(0xa0, &oid);
+        let wrong_wrapper = tlv(0xa0, &[oid.clone(), tlv(0xa1, &tlv(0x0c, b"1"))].concat());
+        let two_values = tlv(
             0xa0,
-            &[
-                tlv(0x06, &[0x60, 0x4c, 0x01, 0x03, 0x01]),
-                tlv(0xa1, &tlv(0x0c, b"1")),
-            ]
-            .concat(),
+            &[oid, tlv(0xa0, &[tlv(0x0c, b"1"), tlv(0x0c, b"2")].concat())].concat(),
         );
-        assert!(other_names(&general_names(&[bad_wrapper])).is_err());
-        // Not a SEQUENCE OF at all.
+        for bad in [no_value, wrong_wrapper, two_values] {
+            assert!(other_names(&general_names(&[bad])).is_err());
+        }
         assert!(other_names(&tlv(0x04, b"x")).is_err());
         assert!(other_names(&[]).is_err());
     }
