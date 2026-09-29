@@ -1,3 +1,51 @@
+WebeSign
+Copyright (C) 2026 MedDeck LTDA and the WebeSign contributors
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version, with the additional permission below.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+Scope: this file covers the whole repository except the parts that carry
+their own license file:
+  - sdk/           Apache License 2.0      (sdk/LICENSE)
+  - devices.json   CC0 1.0 Universal       (LICENSE-CC0 next to it)
+
+-------------------------------------------------------------------------------
+Additional permission under GNU GPL version 3 section 7
+-------------------------------------------------------------------------------
+
+As a special exception, the copyright holders of this program give you
+permission to convey this program, or any covered work based on it, in object
+code form through an application distribution service operated by a third
+party (such as the Apple App Store, the Mac App Store or the Microsoft Store),
+even if the terms of service or usage rules of that service impose on
+recipients restrictions or requirements beyond those of this License (for
+example, limits on the number of devices, digital rights management, or
+restrictions on further conveying), and even if you do not convey the
+installation information that section 6 would otherwise require, provided
+that:
+
+  a) the Corresponding Source of the conveyed work is made available to
+     everyone, at no charge, under the terms of this License, through a
+     publicly accessible network server; and
+
+  b) the conveyed work, or the store listing that offers it, includes a
+     prominent notice stating that it is licensed under this License and
+     where its Corresponding Source can be obtained.
+
+Recipients of copies conveyed under this permission keep every right this
+License grants them over the Corresponding Source. If you modify this
+program, you may extend this exception to your version, but you are not
+obliged to do so; if you do not wish to, delete this exception statement
+from your version.
+
+-------------------------------------------------------------------------------
+
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
