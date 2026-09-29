@@ -171,26 +171,30 @@ expect_output "pkcs11:libsofthsm2-registered.so" "p11-kit discovery"
 expect_output "warning: pkcs11:libsofthsm2-missing.so: module file not found" "p11-kit broken registration"
 expect_count '^ *[0-9]+\. ' "$expected_certificates" "p11-kit discovery (deduplicated by certificate)"
 
-step "p11-kit: the same certificate through two modules is listed once"
+step "the same certificate through two modules is listed once"
+# Two distinct module files over the same token. Loading one library both
+# directly and through p11-kit-proxy.so in one process initializes it twice,
+# which behaves differently across p11-kit builds; the app never does that.
+copy="$work/lib/libsofthsm2-registered.so"
+run_probe list --no-known-modules --no-p11-kit --module "$SOFTHSM_MODULE" --module "$copy"
+expect_status 0 "two-path list"
+expect_count '^ *[0-9]+\. ' "$expected_certificates" "two-path list (each certificate once)"
+expect_count '\+1 other path' "$expected_certificates" "two-path list"
+
+run_probe list --every-path --no-known-modules --no-p11-kit \
+  --module "$SOFTHSM_MODULE" --module "$copy"
+expect_output "also via pkcs11:libsofthsm2-registered.so" "two-path list --every-path"
+
 proxy=""
 for candidate in /usr/lib/*/p11-kit-proxy.so /usr/lib64/p11-kit-proxy.so /usr/lib/p11-kit-proxy.so; do
   if [[ -e $candidate ]]; then proxy=$candidate; break; fi
 done
 if [[ -z $proxy ]]; then
-  echo "  WARNING: p11-kit-proxy.so not found; the two-path deduplication step is skipped."
+  echo "  WARNING: p11-kit-proxy.so not found; signing through it is skipped."
 else
   echo "module: $SOFTHSM_MODULE" >"$modules/softhsm2.module"
   echo "  proxy: $proxy"
   use_home "$home"
-  run_probe list --no-known-modules --no-p11-kit --module "$SOFTHSM_MODULE" --module "$proxy"
-  expect_status 0 "two-path list"
-  expect_count '^ *[0-9]+\. ' "$expected_certificates" "two-path list (each certificate once)"
-  expect_count '\+1 other path' "$expected_certificates" "two-path list"
-
-  run_probe list --every-path --no-known-modules --no-p11-kit \
-    --module "$SOFTHSM_MODULE" --module "$proxy"
-  expect_output "also via pkcs11:p11-kit-proxy.so" "two-path list --every-path"
-
   step "sign through p11-kit-proxy.so alone"
   run_probe sign --all --hash all --pss --pin-env "$pin_var" \
     --no-known-modules --no-p11-kit --module "$proxy"
