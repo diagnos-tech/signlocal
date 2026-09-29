@@ -1,6 +1,6 @@
 # Prova 1 — Windows: CNG/CAPI, PIN em primeiro plano e MSIX
 
-**Status:** em andamento · **Resultado:** _a preencher_ · **Decisão:** _a preencher_
+**Status:** CNG/CAPI provados no CI com chaves de software; MSIX e tokens reais pendentes · **Resultado parcial:** SIM para CNG e CAPI (inclusive A1 em `PROV_RSA_FULL`) · **Decisão:** ver [Decisão proposta](#decisão-proposta)
 
 ## Objetivo
 
@@ -91,7 +91,7 @@ Decisões e porquês:
 ## Evidência do CI (chaves de software)
 
 Workflow: `.github/workflows/prototypes.yml`, job `windows` (`windows-latest`).
-Execução: _link do run_ · Commit: _sha_ · Imagem do runner: _versão_
+Execução: [36635313691](https://github.com/diagnos-tech/web-esign/actions/runs/36635313691) · Commit: `bdfa98f` · Runner: Windows Server 2025 Datacenter 10.0.26100, PowerShell 7.6.6
 
 ### Casos e o que se espera (`windows/ci-windows.ps1`)
 
@@ -101,30 +101,42 @@ Certificados criados por `windows/make-test-certs.ps1` (removidos no fim):
 |---|---|---|---|
 | `cng-rsa2048` | Software KSP (CNG) | 6/6 OK via `NCryptSignHash` | idem |
 | `cng-p256`, `cng-p384` | Software KSP (CNG) | 3/3 ECDSA OK | idem |
-| `capi-aes-rsa2048` | Enhanced RSA and AES CSP, `AT_SIGNATURE` | PKCS#1 3/3 OK via `CryptSignHash`; PSS = `not supported` (**falha esperada**) | observado |
-| `a1-rsa2048` | chave `AT_KEYEXCHANGE` criada no Enhanced CSP v1.0 (`PROV_RSA_FULL`), como fica um `.pfx` importado; o `certutil -importpfx` trava no runner | PKCS#1 3/3 OK via `CryptSignHash (PROV_RSA_AES)`; PSS = `not supported` | observado |
-| `capi-base-rsa2048` | Base CSP v1.0 (`PROV_RSA_FULL`), se o cmdlet aceitar | idem ao A1 | observado |
+| `capi-aes-rsa2048` | Enhanced RSA and AES CSP, `AT_SIGNATURE` | PKCS#1 3/3 OK via `CryptSignHash`; PSS = `not supported` (**falha esperada**) | **6/6 OK via `NCryptSignHash`** (ponte CAPI→CNG), inclusive PSS |
+| `a1-rsa2048` | chave `AT_KEYEXCHANGE` criada no Enhanced CSP v1.0 (`PROV_RSA_FULL`), como fica um `.pfx` importado; o `certutil -importpfx` trava no runner | PKCS#1 3/3 OK via `CryptSignHash (PROV_RSA_AES)`; PSS = `not supported` | **6/6 OK via `NCryptSignHash`**, inclusive PSS |
+| `capi-base-rsa2048` | Base CSP v1.0 (`PROV_RSA_FULL`) | idem ao A1 | **6/6 OK via `NCryptSignHash`**, inclusive PSS |
+
+Todas as assinaturas acima foram conferidas com `probe-core::verify`. Com `--silent`, nenhuma chamada
+abriu diálogo (o trace confirma `VERIFYCONTEXT | SILENT` na listagem e `silent: true` nas assinaturas).
+
+**Achado:** para as chaves dos CSPs da **Microsoft**, `prefer`/`only` faz o Windows abrir a chave legada
+pelo CNG e assinar **também RSASSA-PSS**. Proposta para o app: `prefer` como padrão, com volta para
+`allow` (CAPI) quando o CSP de terceiro recusar. Isso só se confirma com os tokens reais: CSPs de terceiros
+(SafeSign, Watchdata) podem não atravessar a ponte.
 
 "Observado" = registrado, sem reprovar o CI: é onde a ponte CAPI→CNG do Windows entra.
 Também é obrigatório: `list` mostra cada certificado com o provedor certo e marcado como software.
 
 ```text
-<!-- ORQUESTRADOR: colar a saída de windows/ci-windows.ps1 (tabela "Summary" e falhas) -->
+Summary (resumo; a tabela completa está no log do job)
+cng-rsa2048       allow|prefer|only  SHA-256/384/512  PKCS1 + PSS   OK  NCryptSignHash
+cng-p256/p384     allow|prefer|only  SHA-256/384/512  ECDSA         OK  NCryptSignHash
+capi-aes-rsa2048  allow              SHA-256/384/512  PKCS1         OK  CryptSignHash
+capi-aes-rsa2048  allow              SHA-256/384/512  PSS           FAIL (esperado) legacy CAPI key: RSASSA-PSS needs CNG
+a1-rsa2048        allow              SHA-256/384/512  PKCS1         OK  CryptSignHash (PROV_RSA_AES)
+capi-base-rsa2048 allow              SHA-256/384/512  PKCS1         OK  CryptSignHash (PROV_RSA_AES)
+capi-*, a1        prefer|only        SHA-256/384/512  PKCS1 + PSS   OK  NCryptSignHash
+All required checks passed.
 ```
 
-Relatório do probe (`report-windows.md`, artefato do job):
-
-```text
-<!-- ORQUESTRADOR: colar o report-windows.md -->
-```
+Relatório do probe: artefato `report-windows` do mesmo run (sem nomes nem números de série).
 
 ### MSIX no runner (`msix/build-msix.ps1` + `msix/test-msix.ps1`)
 
 O passo é `continue-on-error`: o resultado é evidência nos dois sentidos.
 
-```text
-<!-- ORQUESTRADOR: colar a tabela "Summary" do test-msix.ps1 -->
-```
+No run acima o `build-msix.ps1` parou antes do `makeappx`: um comentário do template continha um texto
+com cara de marcador (`@@TOKENS@@`) e a checagem de marcadores não preenchidos o recusou. O comentário foi
+corrigido; os resultados abaixo saem na próxima execução.
 
 | Verificação | Resultado |
 |---|---|

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Template for the websign-probe MSIX. build-msix.ps1 replaces the @@TOKENS@@
+  Template for the websign-probe MSIX. build-msix.ps1 replaces every placeholder token
   with values from project.toml.
 
   What the proof depends on:
