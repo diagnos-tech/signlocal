@@ -1,6 +1,6 @@
 # Prova 1 — Windows: CNG/CAPI, PIN em primeiro plano e MSIX
 
-**Status:** CNG/CAPI provados no CI com chaves de software; MSIX e tokens reais pendentes · **Resultado parcial:** SIM para CNG e CAPI (inclusive A1 em `PROV_RSA_FULL`) · **Decisão:** ver [Decisão proposta](#decisão-proposta)
+**Status:** CNG/CAPI e MSIX provados no CI (Windows Server 2025); tokens reais e Windows cliente pendentes · **Resultado parcial:** SIM para CNG e CAPI (inclusive A1 em `PROV_RSA_FULL`) · **Decisão:** ver [Decisão proposta](#decisão-proposta)
 
 ## Objetivo
 
@@ -134,19 +134,23 @@ Relatório do probe: artefato `report-windows` do mesmo run (sem nomes nem núme
 
 O passo é `continue-on-error`: o resultado é evidência nos dois sentidos.
 
-No run acima o `build-msix.ps1` parou antes do `makeappx`: um comentário do template continha um texto
-com cara de marcador (`@@TOKENS@@`) e a checagem de marcadores não preenchidos o recusou. O comentário foi
-corrigido; os resultados abaixo saem na próxima execução.
+Run [36637051578](https://github.com/diagnos-tech/web-esign/actions/runs/36637051578) (Windows Server 2025),
+pacote de teste assinado com certificado autoassinado e instalado por `Add-AppxPackage`:
 
 | Verificação | Resultado |
 |---|---|
-| `makeappx` aceita o manifesto (rescap + desktop6 + alias console) | _a preencher_ |
-| `Add-AppxPackage` instala | _a preencher_ |
-| alias existe e executa com stdout capturado | _a preencher_ |
-| (a) chaves no HKCU real (Chrome, Edge, Firefox) | _a preencher_ |
-| (b) manifestos no caminho real | _a preencher_ |
-| (c) `path` = alias, alias executa | _a preencher_ |
-| (d) Chromium troca mensagem com o host pelo alias | _a preencher_ |
+| `makeappx` aceita o manifesto (rescap `runFullTrust` + `unvirtualizedResources`, desktop6 sem virtualização, alias de console) | ✅ |
+| `Add-AppxPackage` instala | ✅ |
+| alias existe (raiz de `WindowsApps` e pasta da família) e executa com stdout capturado | ✅ `websign-probe 0.1.0` |
+| (a) chaves no HKCU **real**: Chrome, Edge, Firefox, Chromium, Brave, Vivaldi | ✅ as 6 |
+| (b) manifestos no caminho real (`%LOCALAPPDATA%\websign\NativeMessagingHosts\`) | ✅ Chromium e Firefox |
+| (c) `path` = alias da pasta da família (`WindowsApps\WebeSign.Probe_…\websign-probe.exe`), e ele executa | ✅ |
+| (d) Chromium inicia o host **pelo alias do MSIX** e troca mensagem | ✅ `NM-E2E: PASS`: ping, list, validação de digest; log do host com `family=chromium` |
+
+Leitura: **o caminho da Microsoft Store funciona tecnicamente**. Um app empacotado com
+`unvirtualizedResources` grava o registro do host no HKCU de verdade, e o navegador o inicia pelo alias.
+Falta o que o runner não prova: Windows 10/11 cliente, Chrome e Edge **de marca** (o CI usa Chromium) e
+o aceite da capacidade restrita na certificação da loja.
 
 ## O que o CI não prova
 

@@ -8,7 +8,7 @@
 
 | Prova | Resposta até agora | Falta (com roteiro) |
 |---|---|---|
-| 1. Windows | **CI (Windows Server 2025):** o CNG assina RSA PKCS#1 v1.5, PSS e ECDSA P-256/384 nos 3 hashes. O CAPI legado assina PKCS#1 (o A1 em `PROV_RSA_FULL` é reaberto no CSP AES). Com `prefer`, as chaves dos CSPs da Microsoft passam pela ponte CNG e assinam **também PSS**. Nada abre diálogo com `--silent` ([1-windows.md](prototypes/1-windows.md)) | MSIX no runner (em ajuste) · 4 tokens reais · navegadores pelo alias num Windows cliente · aceite da capacidade restrita no Partner Center |
+| 1. Windows | **CI (Windows Server 2025):** o CNG assina RSA PKCS#1 v1.5, PSS e ECDSA P-256/384 nos 3 hashes. O CAPI legado assina PKCS#1 (o A1 em `PROV_RSA_FULL` é reaberto no CSP AES). Com `prefer`, as chaves dos CSPs da Microsoft passam pela ponte CNG e assinam **também PSS**. Nada abre diálogo com `--silent`. **MSIX:** o pacote grava o HKCU real de 6 navegadores, e o Chromium inicia o host pelo alias e troca mensagens ([1-windows.md](prototypes/1-windows.md)) | 4 tokens reais · navegadores pelo alias num Windows cliente · aceite da capacidade restrita no Partner Center |
 | 2. Mac | **CI (macOS 26.6, arm64):** a partir de um `.app` na sandbox com os entitlements da loja, o app grava os manifestos no home real (Chrome, Edge, Brave, Firefox). O host iniciado como o Chrome o inicia responde, e o Keychain assina PKCS#1 v1.5, PSS e ECDSA. A ponte do Safari está só desenhada ([2-mac.md](prototypes/2-mac.md)) | Mac real com Chrome e Safari · token no CryptoTokenKit · App Review |
 | 3. Tokens no Mac | **CI:** um módulo PKCS#11 de fora do pacote **não carrega** dentro da sandbox (`file system sandbox blocked open()`). Logo, token que só funciona por PKCS#11 (ex.: DNIe) exige o complemento `.dmg`. SafeSign, OpenSC e Cartão de Cidadão expõem o token pelo CryptoTokenKit ([3-tokens-mac.md](prototypes/3-tokens-mac.md)) | Tokens reais: fechar quais middlewares ficam fora do CryptoTokenKit |
 | 4. Linux | A cadeia inteira funciona aqui: Chromium → extensão → host → PKCS#11 (SoftHSM2 direto e via p11-kit) → assinatura verificada. RSA v1.5/PSS e ECDSA P-256/384/521 nos 3 hashes, inclusive chave com `CKA_ALWAYS_AUTHENTICATE`; mesmo certificado por dois módulos deduplicado ([4-linux.md](prototypes/4-linux.md)) | Token real via p11-kit · Firefox Snap (portal) num Ubuntu com interface gráfica |
@@ -29,8 +29,10 @@ Cada uma tem uma proposta; sem resposta, sigo a proposta.
 | D4 | Assinatura em lote (30 laudos/dia) | **Fora da v1**; a fila de pedidos já existe | Uma confirmação para N documentos muda o modelo de consentimento; melhor medir o uso antes |
 | D5 | PIN do PKCS#11 por sessão ou a cada assinatura | **Por sessão** (até o token sair ou a conexão ociosa fechar), exceto chaves com `CKA_ALWAYS_AUTHENTICATE` | Mesmo comportamento do CNG/CryptoTokenKit, que o médico já conhece |
 | D6 | Nome, domínio e IDs definitivos | Seguir com os provisórios do [`project.toml`](../project.toml) até a busca de marca | Trocar é editar um arquivo |
-| D8 | Leitor de certificados | **Leitor DER próprio, tolerante** (~1 000 linhas, só resume; **não valida cadeia**), com fuzzing contínuo no CI | A pilha `x509-cert`/`der` fazia certificados reais sumirem da lista (§3). Validar cadeia continua sendo do site |
 | D7 | Assinatura dos commits | Os commits têm você como autor e `Signed-off-by`. **A chave SSH configurada neste ambiente não é a sua** (é a do ambiente de execução) | Para commits assinados com a sua chave, reassine ao integrar (`git rebase --exec 'git commit --amend --no-edit -S'`) |
+| D8 | Leitor de certificados | **Leitor DER próprio, tolerante** (~1 000 linhas, só resume; **não valida cadeia**), com fuzzing contínuo no CI | A pilha `x509-cert`/`der` fazia certificados reais sumirem da lista (§3). Validar cadeia continua sendo do site |
+| D9 | Como o Windows abre chaves legadas (CAPI) | **`prefer`** (ponte CAPI→CNG) por padrão, voltando a `allow` quando o CSP recusar | No CI, a ponte faz as chaves dos CSPs da Microsoft assinarem também PSS. Os CSPs de outros fabricantes serão confirmados com os tokens |
+| D10 | Complemento `.dmg` no Mac | **Planejar já** (Fase 3.4), com o escopo fechado pela matriz de tokens | Provado no CI: a sandbox da loja não abre módulo PKCS#11 de fora do pacote. Token só-PKCS#11 (ex.: DNIe) só funciona com o complemento |
 
 Pendências menores de UX estão em [ux.md §17](ux.md#17-pendências).
 
@@ -49,6 +51,12 @@ site (SDK)            extensão (MV3)             app (host de native messaging)
    │◀── {cert, chain,      │◀──────── signature ──────────│◀──────────── assinatura crua ────────│
    │     algorithm, sig} ──│                              │                                      │
 ```
+
+Achados das provas que já entram no desenho:
+- No MV3, o Chrome passa `--parent-window=0`. Por isso, o dono do diálogo de PIN do SO é a **janela de Confirmação** do app.
+- Dentro da sandbox do Mac, o home real vem de `getpwuid_r`, porque `$HOME` aponta para o contêiner.
+- O `.deb` precisa de `libpcsclite1`: sem ele o host não inicia. Alternativa: carregar o PC/SC dinamicamente.
+- O Firefox Snap inicia o host pelo portal, com o ambiente do portal, e só lê manifestos **de sistema**.
 
 A extensão mantém a porta de native messaging aberta enquanto houver uso e a fecha após um tempo
 ocioso. Assim, drivers PKCS#11 são carregados uma vez por sessão. "Abrir diagnóstico" dispara **outro processo** do mesmo binário, para a janela sobreviver ao fechamento da porta.
@@ -202,4 +210,4 @@ semente de [research/tokens.md](research/) e validação por schema no CI, `docs
 2. Contas, **quando chegar a hora** (nada será criado nem pago sem a sua confirmação): Apple Developer
    (US$ 99/ano, para o TestFlight e a Mac App Store), Microsoft Partner Center (para testar a aceitação de
    `unvirtualizedResources`), Chrome Web Store (US$ 5).
-3. Aprovar este plano, com D1–D7 respondidas ou a aceitação das propostas.
+3. Aprovar este plano, respondendo D1–D10 ou aceitando as propostas.
