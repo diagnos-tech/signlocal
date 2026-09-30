@@ -4414,6 +4414,7 @@ dependencies = [
  "jiff",
  "libc",
  "log",
+ "png",
  "secrecy",
  "security-framework",
  "serde",

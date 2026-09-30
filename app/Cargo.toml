@@ -16,7 +16,7 @@ path = "src/main.rs"
 # Test builds only (never in releases; CI checks the release binary): the
 # confirmation window confirms by itself once armed and saves a PNG of every
 # state it shows. See docs/architecture/testing.md.
-e2e = []
+e2e = ["dep:png"]
 
 [dependencies]
 websign-core.workspace = true
@@ -40,6 +40,8 @@ eframe.workspace = true
 egui.workspace = true
 # `subset`: embed only the icons `src/ui/icons.rs` names (docs/ux.md §12).
 egui-phosphor = { workspace = true, features = ["subset"] }
+# `e2e` builds only: the window screenshots (same version egui_kittest uses).
+png = { version = "=0.18.1", optional = true }
 
 [target.'cfg(windows)'.dependencies]
 windows = { workspace = true, features = [

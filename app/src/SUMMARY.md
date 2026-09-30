@@ -3,7 +3,8 @@
 - `cli/` — the command line: desktop API and installer entry points
 - `platform/` — OS facts and actions outside key stores and registration
 - `ui/` — the egui windows: rendering only, decisions come from websign-ui-model
-- `e2e.rs` — Test-only behavior (feature `e2e`, never in release builds; CI fails the release job if the release binary contains the marker string `WEBSIGN_E2E_BUILD`).
+- `e2e/` — the e2e drivers of the windows: screenshots, accessibility actions, the state on screen
+- `e2e.rs` — Test-only behavior (feature `e2e`, never in release builds; CI fails the release job if the release binary contains the marker string `WEBSIGN_E2E_BUILD`): the windows act by themselves and save every state they show.
 - `host_process/` — the threads of a host process: UI thread, diagnostics launcher, e2e headless confirmation
 - `host_process.rs` — A host process: the engine on a worker thread, the confirmation window on the main thread, started only when needed.
 - `launch/` — `websign:` URL parsing and the argv-shape tests

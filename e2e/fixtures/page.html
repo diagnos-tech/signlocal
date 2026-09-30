@@ -5,7 +5,70 @@
     <title>WebeSign e2e fixture</title>
   </head>
   <body>
-    <!-- Loads the built SDK and exposes window.websignE2e for Playwright. -->
+    <!-- Loads the built SDK and exposes window.websignE2e for Playwright:
+         plain JSON in, plain JSON out, errors as { ok: false, code }. -->
     <main id="result"></main>
+    <script type="module">
+      import { certificates, sign, status } from "/site/assets/websign-sdk.js";
+
+      const hex = (text) => Uint8Array.from(text.match(/../g) ?? [], (h) => Number.parseInt(h, 16));
+      const base64 = (bytes) => btoa(String.fromCharCode(...bytes));
+      const failure = (error, extra) => ({ ok: false, code: error?.code ?? String(error), ...extra });
+      let controller;
+
+      window.websignE2e = {
+        status: () => status(),
+
+        async certificates() {
+          try {
+            const [certificate] = await certificates();
+            return { ok: true, fingerprint: certificate.fingerprint, der: base64(certificate.der) };
+          } catch (error) {
+            return failure(error);
+          }
+        },
+
+        // Signs the hash of `message` (hex). `digestLength` overrides the
+        // length prepare returns; `abortAfter` (ms) aborts from the page;
+        // `holdPrepare` never returns the digest (the tab is then closed).
+        async sign({ hash, algorithm, certificate, message, digestLength, abortAfter, holdPrepare }) {
+          controller = new AbortController();
+          if (abortAfter !== undefined) setTimeout(() => controller.abort(), abortAfter);
+          const prepared = [];
+          try {
+            const result = await sign({
+              hash,
+              ...(algorithm ? { algorithm } : {}),
+              ...(certificate ? { certificate } : {}),
+              signal: controller.signal,
+              prepare: async (chosen, context) => {
+                prepared.push({ fingerprint: chosen.fingerprint, algorithm: context.algorithm });
+                if (holdPrepare) await new Promise(() => {});
+                const digest = new Uint8Array(await crypto.subtle.digest(hash, hex(message)));
+                return digestLength === undefined ? digest : new Uint8Array(digestLength);
+              },
+            });
+            return {
+              ok: true,
+              prepared,
+              hash: result.hash,
+              algorithm: result.algorithm,
+              signature: base64(result.signature),
+              certificate: base64(result.certificate.der),
+              fingerprint: result.certificate.fingerprint,
+            };
+          } catch (error) {
+            return failure(error, { prepared });
+          }
+        },
+
+        // Starts a signature without waiting for it.
+        start(request) {
+          window.websignE2e.pending = window.websignE2e.sign(request);
+          return true;
+        },
+      };
+      document.getElementById("result").textContent = "ready";
+    </script>
   </body>
 </html>

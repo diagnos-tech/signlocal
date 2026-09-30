@@ -106,7 +106,10 @@ fn confirm_ui(
         return Box::new(scripted);
     }
     let _ = events;
-    Box::new(crate::ui::bridge::WindowBridge::new(commands))
+    let window: Box<dyn ConfirmUi> = Box::new(crate::ui::bridge::WindowBridge::new(commands));
+    #[cfg(feature = "e2e")]
+    let window = crate::e2e::watch(window);
+    window
 }
 
 /// Disk stores when the OS has a data folder; the host still signs without

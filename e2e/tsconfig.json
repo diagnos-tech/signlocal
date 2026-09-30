@@ -3,7 +3,8 @@
   "compilerOptions": {
     "lib": ["ES2022", "DOM"],
     "noEmit": true,
-    "types": ["node"]
+    "types": ["node"],
+    "allowImportingTsExtensions": true
   },
-  "include": ["tests", "lib", "playwright.config.ts"]
+  "include": ["tests", "audit", "lib", "playwright.config.ts"]
 }

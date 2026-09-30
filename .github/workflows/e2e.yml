@@ -5,10 +5,9 @@
 # Pull requests touching the signing path run Windows and Ubuntu; macOS and
 # the distribution containers run nightly (and by hand).
 #
-# Readiness guard: until the e2e hooks exist, every job only reports that it
-# was skipped. The suite counts as ready when `app/src/e2e.rs` no longer
-# contains `todo!(` and `e2e/lib/environment.ts` no longer contains
-# `unimplemented` (step `ready`); nothing else needs to change here.
+# Software keys per OS (e2e/lib/environment.ts): SoftHSM2 token on Linux
+# (WEBSIGN_E2E_SOFTHSM), CNG/CAPI software keys on Windows and a temporary
+# keychain on macOS, whose certificates the suite reads from WEBSIGN_E2E_CERTS.
 name: e2e
 
 on:
@@ -61,15 +60,6 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@v5
-      - name: Is the e2e suite implemented?
-        id: ready
-        run: |
-          if grep -q 'todo!(' app/src/e2e.rs || grep -q 'unimplemented' e2e/lib/environment.ts; then
-            echo "::notice::e2e hooks not implemented yet; e2e skipped"
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "ready=true" >> "$GITHUB_OUTPUT"
-          fi
       - name: Screenshot folder name
         id: os
         run: |
@@ -79,7 +69,7 @@ jobs:
             *) echo "name=${{ matrix.os }}" ;;
           esac >> "$GITHUB_OUTPUT"
       - name: Install Xvfb, mesa and SoftHSM2
-        if: steps.ready.outputs.ready == 'true' && runner.os == 'Linux'
+        if: runner.os == 'Linux'
         timeout-minutes: 10
         run: |
           sudo apt-get update
@@ -87,33 +77,73 @@ jobs:
             libwayland-dev softhsm2 opensc p11-kit pcscd xvfb xauth mesa-vulkan-drivers libvulkan1 \
             libgl1-mesa-dri libegl1 libxkbcommon-x11-0 libx11-xcb1 libxcb-xfixes0
       - name: Install the pinned toolchain
-        if: steps.ready.outputs.ready == 'true'
         run: rustup toolchain install || rustup show
       - uses: Swatinem/rust-cache@v2
-        if: steps.ready.outputs.ready == 'true'
         with:
           key: e2e
           save-if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
       - name: Build the app with the e2e feature
-        if: steps.ready.outputs.ready == 'true'
         timeout-minutes: 30
         run: cargo build -p websign-app --features e2e
       - uses: oven-sh/setup-bun@v2
-        if: steps.ready.outputs.ready == 'true'
         with:
           bun-version: "1.3.11"
+      # Playwright runs on Node.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
       - name: Install packages, build the Chromium extension and the browser
-        if: steps.ready.outputs.ready == 'true'
         timeout-minutes: 15
         run: |
           bun install --frozen-lockfile
           (cd extension && bunx wxt build -b chrome)
           (cd e2e && bunx playwright install ${{ runner.os == 'Linux' && '--with-deps' || '' }} chromium)
-      # Pending the e2e suite: create the per-OS software keys (SoftHSM2 fixture,
-      # make-test-certs.ps1, temporary keychain) once the suite defines how
-      # it receives them.
+      - name: Build the desktop client
+        run: (cd clients/node && bun run build)
+      - name: Create the SoftHSM2 token (Linux)
+        if: runner.os == 'Linux'
+        timeout-minutes: 5
+        run: |
+          bash crates/websign-keystores/tests/support/softhsm-fixture.sh "$RUNNER_TEMP/softhsm"
+          echo "WEBSIGN_E2E_SOFTHSM=$RUNNER_TEMP/softhsm" >> "$GITHUB_ENV"
+      - name: Create CNG and CAPI software keys (Windows)
+        if: runner.os == 'Windows'
+        # make-test-certs.ps1 bounds every key creation itself; this is the
+        # backstop for a provider dialog nobody can answer.
+        timeout-minutes: 15
+        shell: pwsh
+        run: |
+          $certs = Join-Path $env:RUNNER_TEMP 'certs'
+          New-Item -ItemType Directory -Force -Path $certs | Out-Null
+          $created = ./docs/prototypes/kit/windows/make-test-certs.ps1
+          # The suite signs with CNG keys (every scheme, PSS included); the
+          # CAPI ones stay in the store, as a person's would.
+          foreach ($c in $created | Where-Object { $_.Api -eq 'CNG' }) {
+            $cert = Get-Item -LiteralPath "Cert:\CurrentUser\My\$($c.Thumbprint)"
+            Export-Certificate -Cert $cert -FilePath (Join-Path $certs "$($c.Name).cer") | Out-Null
+          }
+          "WEBSIGN_E2E_CERTS=$certs" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+      - name: Create a temporary keychain with software keys (macOS)
+        if: runner.os == 'macOS'
+        timeout-minutes: 10
+        run: |
+          set -euo pipefail
+          source docs/prototypes/kit/macos/lib/common.sh
+          find_openssl
+          P12_PASSWORD=websign-e2e
+          keychain_create websign-e2e.keychain websign-e2e
+          work=$(mktemp -d)
+          certs="$RUNNER_TEMP/certs"
+          mkdir -p "$certs"
+          for key in rsa2048 p256 p384; do
+            make_identity "$work" "websign-e2e-$key" "$key"
+            keychain_import "$work/websign-e2e-$key.p12"
+            cp "$work/websign-e2e-$key.cert.pem" "$certs/$key.pem"
+          done
+          # The partition list names the e2e binary by cdhash: built above.
+          keychain_allow "$GITHUB_WORKSPACE/target/debug/websign"
+          echo "WEBSIGN_E2E_CERTS=$certs" >> "$GITHUB_ENV"
       - name: Run the suite
-        if: steps.ready.outputs.ready == 'true'
         timeout-minutes: 20
         working-directory: e2e
         env:
@@ -122,20 +152,27 @@ jobs:
           WEBSIGN_E2E_SCREENSHOTS: ${{ runner.temp }}/screenshots
         run: |
           if [[ $RUNNER_OS == Linux ]]; then
-            xvfb-run -a -s "-screen 0 1280x800x24" bun run test:ci
+            xvfb-run -a -s "-screen 0 1600x900x24" bun run test:ci
           else
             bun run test:ci
           fi
       - name: Collect screenshots
-        if: steps.ready.outputs.ready == 'true'
         timeout-minutes: 15
         run: cargo xtask screenshots --from "$RUNNER_TEMP/screenshots" --os "${{ steps.os.outputs.name }}"
       - uses: actions/upload-artifact@v4
-        if: always() && steps.ready.outputs.ready == 'true'
+        if: always()
         with:
           name: screenshots-${{ steps.os.outputs.name }}
           path: docs/screenshots/${{ steps.os.outputs.name }}/
           if-no-files-found: warn
+      - name: Remove the test certificates (Windows)
+        if: always() && runner.os == 'Windows'
+        timeout-minutes: 5
+        shell: pwsh
+        run: ./docs/prototypes/kit/windows/make-test-certs.ps1 -Remove
+      - name: Delete the temporary keychain (macOS)
+        if: always() && runner.os == 'macOS'
+        run: security delete-keychain "$HOME/Library/Keychains/websign-e2e.keychain-db" || true
 
   container:
     name: e2e (${{ matrix.image }})
@@ -169,19 +206,9 @@ jobs:
             archlinux:*) pacman -Syu --noconfirm --needed bash ca-certificates curl git ;;
           esac
       - uses: actions/checkout@v5
-      - name: Is the e2e suite implemented?
-        id: ready
-        run: |
-          if grep -q 'todo!(' app/src/e2e.rs || grep -q 'unimplemented' e2e/lib/environment.ts; then
-            echo "::notice::e2e hooks not implemented yet; e2e skipped"
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "ready=true" >> "$GITHUB_OUTPUT"
-          fi
       # Besides proof 5's packages: the X11 client libraries winit loads
       # with dlopen (testing.md §5), SoftHSM2 and the distribution Chromium.
       - name: Install build tools, drivers, SoftHSM2 and Chromium
-        if: steps.ready.outputs.ready == 'true'
         timeout-minutes: 20
         run: |
           case "${{ matrix.image }}" in
@@ -212,34 +239,36 @@ jobs:
               ;;
           esac
       - name: Install Rust via rustup (version from rust-toolchain.toml)
-        if: steps.ready.outputs.ready == 'true'
         timeout-minutes: 10
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain none
           "$HOME/.cargo/bin/rustup" toolchain install
           echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
       - uses: Swatinem/rust-cache@v2
-        if: steps.ready.outputs.ready == 'true'
         with:
           key: e2e-${{ matrix.os }}
       - name: Build the app with the e2e feature
-        if: steps.ready.outputs.ready == 'true'
         timeout-minutes: 40
         run: cargo build -p websign-app --features e2e
       - uses: oven-sh/setup-bun@v2
-        if: steps.ready.outputs.ready == 'true'
         with:
           bun-version: "1.3.11"
+      # Playwright runs on Node.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
       - name: Install packages and build the Chromium extension
-        if: steps.ready.outputs.ready == 'true'
         timeout-minutes: 15
         run: |
           bun install --frozen-lockfile
           (cd extension && bunx wxt build -b chrome)
-      # Pending the e2e suite: create the SoftHSM2 keys once the suite defines how it
-      # receives them.
+      - name: Build the desktop client and create the SoftHSM2 token
+        timeout-minutes: 5
+        run: |
+          (cd clients/node && bun run build)
+          bash crates/websign-keystores/tests/support/softhsm-fixture.sh "$RUNNER_TEMP/softhsm"
+          echo "WEBSIGN_E2E_SOFTHSM=$RUNNER_TEMP/softhsm" >> "$GITHUB_ENV"
       - name: Run the suite with the distribution Chromium
-        if: steps.ready.outputs.ready == 'true'
         timeout-minutes: 20
         working-directory: e2e
         env:
@@ -247,13 +276,12 @@ jobs:
           WEBSIGN_E2E_EXTENSION: ${{ github.workspace }}/extension/.output/chrome-mv3
           WEBSIGN_E2E_SCREENSHOTS: ${{ runner.temp }}/screenshots
           WEBSIGN_E2E_BROWSER: ${{ matrix.browser }}
-        run: xvfb-run -a -s "-screen 0 1280x800x24" bun run test:ci
+        run: xvfb-run -a -s "-screen 0 1600x900x24" bun run test:ci
       - name: Collect screenshots
-        if: steps.ready.outputs.ready == 'true'
         timeout-minutes: 10
         run: cargo xtask screenshots --from "$RUNNER_TEMP/screenshots" --os "${{ matrix.os }}"
       - uses: actions/upload-artifact@v4
-        if: always() && steps.ready.outputs.ready == 'true'
+        if: always()
         with:
           name: screenshots-${{ matrix.os }}
           path: docs/screenshots/${{ matrix.os }}/
