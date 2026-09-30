@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>WebeSign</title>
+<meta name="description" content="Sign with your own digital certificate on any website or desktop program.">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/i18n.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main" data-i18n="nav.skip">Skip to content</a>
+<header class="bar">
+<a class="brand" href="index.html"><img src="assets/icon.svg" alt="" width="24" height="24">WebeSign</a>
+<nav aria-label="Main"><a href="index.html" aria-current="page" data-i18n="nav.home">Home</a><a href="download.html" data-i18n="nav.download">Download</a><a href="privacy.html" data-i18n="nav.privacy">Privacy</a><a href="developers.html" data-i18n="nav.developers">Developers</a></nav>
+<label class="lang"><span class="sr" data-i18n="nav.language">Language</span><select id="lang"><option value="en">English</option><option value="es">Español</option><option value="pt-PT">Português (Portugal)</option><option value="pt-BR">Português (Brasil)</option><option value="fr">Français</option><option value="it">Italiano</option><option value="de">Deutsch</option></select></label>
+</header>
+<main id="main">
+<div class="hero"><h1 data-i18n="home.title">Sign with your own digital certificate, on any website</h1><p class="lead" data-i18n="home.lead">WebeSign lets a website or a desktop program ask you to sign with the certificate you already have: a USB token, a smart card or a certificate installed on your computer. Windows, macOS and Linux; Chrome, Edge, Firefox and Brave.</p>
+<p class="cta"><a class="btn" href="download.html" data-i18n="home.cta_download">Download</a> <a class="btn ghost" href="developers.html" data-i18n="home.cta_dev">For developers</a></p></div>
+<section><h2 data-i18n="home.how_h">How it works</h2>
+<ol class="steps"><li data-i18n="home.how1">The website prepares the document and sends only its hash.</li><li data-i18n="home.how2">The browser extension passes the request to the WebeSign app on your computer.</li><li data-i18n="home.how3">The app shows who is asking and which certificate you are using. You confirm and, if needed, enter your PIN in the app.</li><li data-i18n="home.how4">The operating system (or the token driver) signs the hash. The signature goes back to the website.</li></ol>
+<p class="muted" data-i18n="home.how_note">The document never leaves the website. Any signature format, for any country, can be built on top: PAdES, CAdES, XAdES, JAdES.</p></section>
+<section><h2 data-i18n="home.promise_h">What we promise</h2><div class="cards">
+<article class="card"><h3 data-i18n="home.p1_h">Your PIN never passes through the browser</h3><p data-i18n="home.p1">The PIN is typed in the app or in the operating system window, never in a web page and never in the extension.</p></article><article class="card"><h3 data-i18n="home.p2_h">Each website needs your permission</h3><p data-i18n="home.p2">A website sees nothing about your certificates until you allow it, and you can revoke that at any time in the app.</p></article><article class="card"><h3 data-i18n="home.p3_h">Every signature asks you first</h3><p data-i18n="home.p3">Even for a website you allowed, each signature opens the app's window with a verification code you can compare with the site.</p></article><article class="card"><h3 data-i18n="home.p4_h">Only a hash is exchanged</h3><p data-i18n="home.p4">The app receives a fingerprint of the document, not the document. Nothing runs in the background and no network port is opened.</p></article></div></section>
+</main>
+<footer class="foot"><span data-i18n="foot.license">Free software (GPL-3.0-or-later; SDK and clients Apache-2.0)</span> · <a href="https://github.com/diagnos-tech/web-esign" data-i18n="foot.source">Source code</a></footer>
+</body>
+</html>

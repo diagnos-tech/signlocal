@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>WebeSign</title>
+<meta name="description" content="Sign with your own digital certificate on any website or desktop program.">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/i18n.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main" data-i18n="nav.skip">Skip to content</a>
+<header class="bar">
+<a class="brand" href="index.html"><img src="assets/icon.svg" alt="" width="24" height="24">WebeSign</a>
+<nav aria-label="Main"><a href="index.html" data-i18n="nav.home">Home</a><a href="download.html" aria-current="page" data-i18n="nav.download">Download</a><a href="privacy.html" data-i18n="nav.privacy">Privacy</a><a href="developers.html" data-i18n="nav.developers">Developers</a></nav>
+<label class="lang"><span class="sr" data-i18n="nav.language">Language</span><select id="lang"><option value="en">English</option><option value="es">Español</option><option value="pt-PT">Português (Portugal)</option><option value="pt-BR">Português (Brasil)</option><option value="fr">Français</option><option value="it">Italiano</option><option value="de">Deutsch</option></select></label>
+</header>
+<main id="main">
+<h1 data-i18n="dl.title">Download WebeSign</h1><p class="lead" data-i18n="dl.lead">Install the app and the browser extension. Both are needed.</p>
+<div class="notice" role="note"><strong data-i18n="dl.unsigned_h">Prerelease builds are not code-signed yet</strong><p data-i18n="dl.unsigned">Windows shows SmartScreen and macOS shows Gatekeeper the first time. The steps below say what to click. Code signing is planned. Always check the SHA256SUMS file.</p><p data-i18n="dl.private">The repository is private for now, so downloads need the GitHub CLI signed in (gh auth login).</p></div>
+<section><h2 data-i18n="dl.private_h">While the repository is private</h2><pre><code>gh auth login
+gh release download v&lt;v&gt; --repo diagnos-tech/web-esign --pattern install.sh --pattern SHA256SUMS</code></pre></section>
+<section><h2 data-i18n="dl.win_h">Windows</h2><p data-i18n="dl.win">Run the installer script. If you unzip and run websign.exe by hand and SmartScreen appears, choose More info, then Run anyway.</p><pre><code>gh release download v&lt;v&gt; --repo diagnos-tech/web-esign --pattern install.ps1 --pattern SHA256SUMS
+# verify install.ps1 against SHA256SUMS (docs/install.md), then:
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Version &lt;v&gt;</code></pre><p class="muted"><span data-i18n="dl.public_h">Once the repository is public</span>:</p><pre><code>Invoke-WebRequest -UseBasicParsing -Uri https://github.com/diagnos-tech/web-esign/releases/download/v&lt;v&gt;/install.ps1 -OutFile install.ps1
+Invoke-WebRequest -UseBasicParsing -Uri https://github.com/diagnos-tech/web-esign/releases/download/v&lt;v&gt;/SHA256SUMS -OutFile SHA256SUMS</code></pre></section>
+<section><h2 data-i18n="dl.mac_h">macOS</h2><p data-i18n="dl.mac">Run the installer script. If you installed by hand and macOS blocks the app, open System Settings, Privacy &amp; Security, and click Open Anyway, or run the xattr command below. Notarization is pending.</p><pre><code>gh release download v&lt;v&gt; --repo diagnos-tech/web-esign --pattern install.sh --pattern SHA256SUMS
+shasum -a 256 --ignore-missing -c SHA256SUMS &amp;&amp; sh install.sh --version &lt;v&gt;
+# only if you installed by hand:
+xattr -dr com.apple.quarantine /Applications/WebeSign.app</code></pre><p class="muted"><span data-i18n="dl.public_h">Once the repository is public</span>:</p><pre><code>curl -fsSLO https://github.com/diagnos-tech/web-esign/releases/download/v&lt;v&gt;/install.sh
+curl -fsSLO https://github.com/diagnos-tech/web-esign/releases/download/v&lt;v&gt;/SHA256SUMS
+shasum -a 256 --ignore-missing -c SHA256SUMS &amp;&amp; sh install.sh --version &lt;v&gt;</code></pre></section>
+<section><h2 data-i18n="dl.linux_h">Linux</h2><p data-i18n="dl.linux">Use the .deb (Ubuntu 22.04 and 24.04, Debian 12), the .rpm (Fedora 42, Rocky 9), or the script and tar.gz for Arch and others.</p><pre><code># any distribution, per user
+sha256sum --ignore-missing -c SHA256SUMS &amp;&amp; sh install.sh --version &lt;v&gt;
+# Ubuntu, Debian
+sha256sum --ignore-missing -c SHA256SUMS &amp;&amp; sudo apt install ./websign_&lt;v&gt;_amd64.deb
+# Fedora, Rocky Linux 9
+sha256sum --ignore-missing -c SHA256SUMS &amp;&amp; sudo dnf install ./websign-&lt;v&gt;-1.x86_64.rpm</code></pre></section>
+<section><h2 data-i18n="dl.ext_h">Browser extension</h2><p data-i18n="dl.ext">Chrome, Edge and Brave: load the unzipped extension from the extensions page in developer mode. Firefox: load it as a temporary add-on until it is signed. Safari comes later.</p></section>
+<section><h2 data-i18n="dl.verify_h">Check every download</h2><p data-i18n="dl.verify">Each release has a SHA256SUMS file. Compare the hash of your file with its line. The installer scripts do this for you.</p><pre><code>sha256sum --ignore-missing -c SHA256SUMS</code></pre></section>
+<p><a href="https://github.com/diagnos-tech/web-esign/blob/main/docs/install.md" data-i18n="dl.guide">Full guide, file names and uninstall steps: docs/install.md</a></p>
+</main>
+<footer class="foot"><span data-i18n="foot.license">Free software (GPL-3.0-or-later; SDK and clients Apache-2.0)</span> · <a href="https://github.com/diagnos-tech/web-esign" data-i18n="foot.source">Source code</a></footer>
+</body>
+</html>

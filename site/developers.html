@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>WebeSign</title>
+<meta name="description" content="Sign with your own digital certificate on any website or desktop program.">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/i18n.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main" data-i18n="nav.skip">Skip to content</a>
+<header class="bar">
+<a class="brand" href="index.html"><img src="assets/icon.svg" alt="" width="24" height="24">WebeSign</a>
+<nav aria-label="Main"><a href="index.html" data-i18n="nav.home">Home</a><a href="download.html" data-i18n="nav.download">Download</a><a href="privacy.html" data-i18n="nav.privacy">Privacy</a><a href="developers.html" aria-current="page" data-i18n="nav.developers">Developers</a></nav>
+<label class="lang"><span class="sr" data-i18n="nav.language">Language</span><select id="lang"><option value="en">English</option><option value="es">Español</option><option value="pt-PT">Português (Portugal)</option><option value="pt-BR">Português (Brasil)</option><option value="fr">Français</option><option value="it">Italiano</option><option value="de">Deutsch</option></select></label>
+</header>
+<main id="main">
+<h1 data-i18n="dev.title">For developers</h1><p class="lead" data-i18n="dev.lead">Add signing to your website or your desktop program. You build the document and its hash; WebeSign returns the signature and the certificate.</p>
+<section><h2 data-i18n="dev.web_h">Website: @websign/sdk</h2><p data-i18n="dev.web">TypeScript, zero dependencies, under 5 KB. Call sign() with a prepare function that returns the hash of the signed attributes.</p><pre><code>import { sign } from &quot;@websign/sdk&quot;;
+const result = await sign({
+  hash: &quot;SHA-256&quot;,
+  prepare: async (certificate, { algorithm }) =&gt; digestOfSignedAttributes(certificate, algorithm),
+});</code></pre></section>
+<section><h2 data-i18n="dev.desk_h">Desktop program (Node, Bun, Electron): @websign/desktop</h2><p data-i18n="dev.desk">Connect to the app, then call sign(). The app names your program in its confirmation window.</p><pre><code>import { WebSign } from &quot;@websign/desktop&quot;;
+const websign = await WebSign.connect();
+const { signature, certificate } = await websign.sign({
+  hash: &quot;SHA-256&quot;,
+  prepare: async (cert, algorithm) =&gt; digestFor(cert.der, algorithm),
+});
+await websign.close();</code></pre></section>
+<section><h2 data-i18n="dev.rust_h">Desktop program (Rust): websign-client</h2><p data-i18n="dev.rust">Client::connect(), then certificates() or sign(). The app is started on demand.</p></section>
+<p><span data-i18n="dev.docs">API guides and contracts in the repository: docs/architecture/web-api.md and docs/architecture/desktop-api.md</span></p>
+</main>
+<footer class="foot"><span data-i18n="foot.license">Free software (GPL-3.0-or-later; SDK and clients Apache-2.0)</span> · <a href="https://github.com/diagnos-tech/web-esign" data-i18n="foot.source">Source code</a></footer>
+</body>
+</html>

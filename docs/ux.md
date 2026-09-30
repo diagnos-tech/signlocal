@@ -276,6 +276,24 @@ With any warning, the "Remember this site" checkbox is **unchecked and disabled*
 (the user can still sign, but cannot remember). **Why:** addresses that are hard to check must not
 get silent access.
 
+### 4.3.1 Desktop program as the caller
+
+A desktop program (`websign connect`, `@websign/desktop`, `websign-client`) replaces the site origin with the
+**program name** in the same headline slot; everything else in the window is unchanged.
+
+| Element | Treatment | Key |
+|---------|-----------|-----|
+| Eyebrow | "Signature request · from a program on this computer" instead of "via {browser}" | `confirm.via_app` |
+| Headline | The program's display name (executable name when it has none), `text-headline`, never cut | n/a |
+| Line under the name | "Signed by {signer}" when the executable's signature verifies; otherwise a `warning` line "Unverified program. Only continue if you started it yourself." | `caller.signed_by`, `caller.unverified` |
+| Chip | success "Allowed program" or neutral "New program" (accessible name: "First time this program asks for anything on this computer") | `confirm.app_remembered`, `confirm.app_new`, `confirm.app_new_a11y` |
+| Remember checkbox | "Remember this program on this computer"; same help text and default (unchecked) as for sites | `consent.remember_app`, `consent.remember_help` |
+| Window title (OS) | "Sign for {site} — WebeSign" with the program name in `{site}` | `confirm.window_title` |
+| Revoke | Diagnostics › Browsers › "Allowed programs"; empty: "No remembered programs." | `sites.apps_section`, `sites.apps_empty` |
+
+**Why:** the program name is self-declared, so the signature check and the "Unverified program" warning are the only
+evidence the user gets; a program that is new or unverified never gets a silent pass.
+
 ### 4.4 Verification code
 
 **Decision:** show the **first 8 bytes of the digest** in uppercase hexadecimal, in 4 groups of 4
@@ -288,6 +306,25 @@ No emoji and no word list.
 | Emoji-hash | ✗ | egui's emoji (embedded font) and the browser's (OS font) have different drawings; the user would compare drawings that do not match. |
 | Word list | ✗ | Depends on the language; the site and the app could be in different languages; a per-language list weighs on the SDK. |
 | **Short hex in groups + identicon** | ✓ | The identicon allows checking "at a glance" (shape + color); the hex allows checking exactly; both are reproduced in the SDK in a few lines and with no special font. |
+
+**New callers see the certificate only after Continue (D11).** For a caller that is not remembered (new site or
+new program), the window does not tell it which certificate is highlighted until the user decides:
+
+- In `choosing`, the code card is replaced by the neutral hint "Choose the certificate and click Continue to see the
+  verification code." (`code.continue_hint`) and the primary button reads "Continue" (`action.continue`) instead of
+  "Sign". Continue obeys the same arming as Sign ([§4.7](#47-buttons-arming-and-accidental-click-prevention)): it
+  works only 600 ms after the window is visible **and** focused, so a click that merely brings the window forward
+  never releases a certificate. Enter never triggers Continue; a click or Space on the focused button does.
+- Pressing Continue releases the chosen certificate to the caller, which prepares the document and returns the
+  digest; the code card shows "Preparing the document…" and, when the digest arrives, the window moves to `ready`
+  with the code visible, re-arms, and the button becomes "Sign".
+- A digest that arrives before Continue, or for a certificate that is not selected, is ignored: the window never
+  asked for it. Choosing another certificate after Continue brings back the hint and "Continue".
+- A remembered caller skips this step: its certificate is already known, so the code appears as soon as the digest
+  arrives.
+
+**Why:** the certificate holds the person's name and ID; a caller that was never allowed must not learn it merely
+because the window opened. Continue is the moment the user consents to share it.
 
 Algorithm (identical in Rust and in the SDK, `R3`):
 
@@ -395,7 +432,7 @@ API allows aborting); in that case it shows `Please wait…`.
 |--------|--------------|--------|
 | `loading_certs` | 2-row skeleton after 150 ms; "Looking for certificates…"; after 2 s, "Still reading {device}. Token drivers can take a few seconds." | → `choosing`, `empty` |
 | `empty` | No code card; empty state + possible certificates ([§6](#6-possible-certificates)); "Open diagnostics" on the left of the footer; Sign disabled; focus on Cancel | → `choosing` (token inserted), Cancel → `NoCertificates` |
-| `choosing` | List; pending digest shows "Preparing the document…" | → `ready` (digest arrived), Cancel |
+| `choosing` | List; pending digest shows "Preparing the document…"; for a new caller before Continue, the hint `code.continue_hint` and a "Continue" button ([§4.4](#44-verification-code), D11) | → `ready` (digest arrived), Cancel |
 | `ready` | Code visible; Sign arms in 600 ms | → `signing`, Cancel → `UserCancelled` |
 | `pin_error` | PIN block with message (§4.6) | → `signing`, `pin_locked`, Cancel |
 | `pin_locked` | Lockout notice; row disabled | Choose another → `ready`; Cancel → `PinLocked` |
@@ -864,7 +901,7 @@ browsers:
   firefox 131.0 · extension 1.4.2 · host registered · last ping 2026-09-28T20:40Z
 devices:
   usb 0529:0620 safenet-etoken-5110 · certs 0
-  reader "Identiv uTrust 2700 R" · atr 3B:D5:18:FF:81:91:FE:1F:C3:80:73:C8:21:10:0A · certs 1
+  reader "Identiv uTrust 2700 R" · atr 3B:D5:18:FF:81:91:FE:1F:C3:..:..:..:..:..:.. · certs 1
 pkcs11:
   %ProgramFiles%\OpenSC Project\OpenSC\pkcs11\opensc-pkcs11.dll · loaded · slots 1 · tokens 1
   %USERPROFILE%\Downloads\wdpkcs_icp.dll · failed: file not found (user-added)
@@ -878,11 +915,16 @@ recent errors (last 20):
 ```
 
 **Included:** versions, OS, language, scale, render backend, browsers and extension state, VID:PID, reader
-name, ATR, module paths with the user folder replaced by a variable (`%USERPROFILE%`, `~`), certificate counts
+name, the matched device (or, for an unknown card, its ATR with the historical bytes masked), module paths with the user folder replaced by a variable (`%USERPROFILE%`, `~`), certificate counts
 by type/algorithm/situation, technical error codes.
 **Not included:** name, CPF, CNPJ, email, certificate serial number or fingerprint, token/USB serial
 number, computer name, user name, sites (including remembered ones), digests, verification
-codes. **Why:** the text ends up in a public issue; ATR and VID:PID identify a model, not a person.
+codes. **Why:** the text ends up in a public issue; VID:PID identifies a model, not a person.
+
+A card is shown by its matched device (`card safenet-etoken-5110`). For a card `devices.json` does not know, the line
+shows the ATR up to its last interface byte (TS, T0, TA/TB/TC/TD) and `..` for every historical byte and for TCK
+(as in the example above): the historical bytes of some cards carry a chip serial number, which is personal data.
+If the ATR cannot be parsed, only its length is shown (`atr 19 bytes`). The same rule applies to any ATR on screen.
 
 ### 8.8 Keyboard in Diagnostics
 
@@ -1239,6 +1281,12 @@ the translations for es, fr, it, de, and pt-PT follow the same keys.
 | `confirm.site_remembered` | Site com permissão | Allowed site |
 | `confirm.site_new` | Site novo | New site |
 | `confirm.site_new_a11y` | Primeira vez que este site pede algo neste computador | First time this site asks for anything on this computer |
+| `confirm.via_app` | de um programa neste computador | from a program on this computer |
+| `confirm.app_remembered` | Programa com permissão | Allowed program |
+| `confirm.app_new` | Programa novo | New program |
+| `confirm.app_new_a11y` | Primeira vez que este programa pede algo neste computador | First time this program asks for anything on this computer |
+| `caller.signed_by` | Assinado por {signer} | Signed by {signer} |
+| `caller.unverified` | Programa não verificado. Só continue se você mesmo o abriu. | Unverified program. Only continue if you started it yourself. |
 | `confirm.eyebrow_queue` | Pedido de assinatura {current} de {total} | Signature request {current} of {total} |
 | `confirm.inside_frame` | Dentro da página de {top_site} | Inside a page from {top_site} |
 | `origin.warn_idn` | Endereço com caracteres especiais. Confira letra por letra. | Address with special characters. Check it letter by letter. |
@@ -1256,6 +1304,7 @@ the translations for es, fr, it, de, and pt-PT follow the same keys.
 | `code.help` | Confira se o site mostra o mesmo código. | Check that the site shows the same code. |
 | `code.preparing` | Preparando o documento… | Preparing the document… |
 | `code.a11y` | Código de conferência: {spelled} | Verification code: {spelled} |
+| `code.continue_hint` | Escolha o certificado e clique em Continuar para ver o código de conferência. | Choose the certificate and click Continue to see the verification code. |
 | `certs.label_sign` | Assinar com | Sign with |
 | `certs.label_select` | Escolha o certificado | Choose a certificate |
 | `certs.loading` | Procurando certificados… | Looking for certificates… |
@@ -1330,12 +1379,14 @@ the translations for es, fr, it, de, and pt-PT follow the same keys.
 | `pin.locked_body` | O token bloqueou depois de muitas tentativas erradas. Desbloqueie com o PUK no {tool} ou procure a {issuer}. | The token locked after too many wrong attempts. Unlock it with the PUK in {tool} or contact {issuer}. |
 | `pin.locked_body_generic` | O token bloqueou depois de muitas tentativas erradas. Desbloqueie com o PUK no programa do fabricante ou procure a autoridade certificadora. | The token locked after too many wrong attempts. Unlock it with the PUK in the vendor's software or contact your certificate authority. |
 | `consent.remember` | Lembrar este site neste computador | Remember this site on this computer |
+| `consent.remember_app` | Lembrar este programa neste computador | Remember this program on this computer |
 | `consent.remember_help` | Ele poderá saber qual certificado você usa sem perguntar. Cada assinatura continua pedindo sua confirmação. | It will be able to see which certificate you use without asking. Every signature still asks for your confirmation. |
 | `consent.remember_disabled` | Endereços numéricos ou com caracteres especiais não podem ser lembrados. | Numeric or special-character addresses can't be remembered. |
 | `consent.select_shares` | O site vai receber nome, tipo, emissor e validade do certificado escolhido. Nada é assinado agora. | The site will receive the name, type, issuer and validity of the chosen certificate. Nothing is signed now. |
 | `action.sign` | Assinar | Sign |
 | `action.signing` | Assinando… | Signing… |
 | `action.use_cert` | Usar este certificado | Use this certificate |
+| `action.continue` | Continuar | Continue |
 | `footer.expires_in` | Este pedido expira em {seconds} s | This request expires in {seconds} s |
 | `state.success_title` | Assinado | Signed |
 | `state.success_body` | A assinatura foi enviada para {site}. | The signature was sent to {site}. |
@@ -1405,6 +1456,8 @@ the translations for es, fr, it, de, and pt-PT follow the same keys.
 | `browsers.snap_hint` | Firefox instalado como Snap: na primeira assinatura, permita o acesso quando o sistema perguntar. | Firefox is installed as a Snap: on your first signature, allow access when the system asks. |
 | `browsers.none` | Nenhum navegador compatível encontrado. O WebeSign funciona com Chrome, Edge, Firefox, Brave e Safari. | No supported browser found. WebeSign works with Chrome, Edge, Firefox, Brave and Safari. |
 | `sites.section` | Sites com permissão | Allowed sites |
+| `sites.apps_section` | Programas com permissão | Allowed programs |
+| `sites.apps_empty` | Nenhum programa lembrado. | No remembered programs. |
 | `sites.row` | Lembrado em {date} · último uso {when} | Remembered on {date} · last used {when} |
 | `sites.revoke` | Revogar | Revoke |
 | `sites.revoke_confirm` | Confirmar revogação | Confirm revoke |
