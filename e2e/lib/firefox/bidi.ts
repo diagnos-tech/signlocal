@@ -22,6 +22,9 @@ export class Bidi {
   private next = 0;
   private readonly waiting = new Map<number, (reply: Reply) => void>();
 
+  /** `browserVersion` of the session's capabilities. */
+  version = "unknown";
+
   private constructor(private readonly socket: WebSocket) {
     socket.addEventListener("message", (event) => {
       const reply = JSON.parse(String(event.data)) as Reply;
@@ -47,7 +50,10 @@ export class Bidi {
       });
     });
     const bidi = new Bidi(socket);
-    await bidi.send("session.new", { capabilities: {} });
+    const session = await bidi.send<{ capabilities: { browserVersion?: string } }>("session.new", {
+      capabilities: {},
+    });
+    bidi.version = session.capabilities.browserVersion ?? "unknown";
     return bidi;
   }
 

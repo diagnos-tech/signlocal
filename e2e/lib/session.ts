@@ -13,6 +13,8 @@ import type { Tab } from "./fixture.ts";
 
 /** A running browser with the extension, the app registered for it. */
 export interface BrowserSession {
+  /** The browser's product version, for the compatibility record. */
+  readonly version: string;
   /** Shows the fixture page (or `path` on the page server). */
   open(path?: string): Promise<Tab>;
   close(): Promise<void>;
@@ -22,8 +24,16 @@ export interface BrowserSession {
 export async function openBrowser(env: E2eEnvironment, confirm: Confirm): Promise<BrowserSession> {
   if (env.browserName !== undefined && engineOf(env.browserName) === "firefox") {
     const firefox = await launchFirefox(env, confirm);
-    return { open: (path) => firefox.open(path), close: () => firefox.close() };
+    return {
+      version: firefox.version,
+      open: (path) => firefox.open(path),
+      close: () => firefox.close(),
+    };
   }
   const session = await launch(env, { confirm });
-  return { open: (path) => session.open(path), close: () => session.close() };
+  return {
+    version: session.context.browser()?.version() ?? "unknown",
+    open: (path) => session.open(path),
+    close: () => session.close(),
+  };
 }

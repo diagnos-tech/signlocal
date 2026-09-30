@@ -39,6 +39,7 @@ const PREFS: Readonly<Record<string, boolean | string | number>> = {
 /** A running Firefox with a page server. */
 export interface FirefoxSession {
   readonly server: PageServer;
+  readonly version: string;
   /** Shows the fixture page (or `path` on the server) in the session's tab. */
   open(path?: string): Promise<FirefoxTab>;
   close(): Promise<void>;
@@ -79,6 +80,7 @@ export async function launchFirefox(
     const server = await startServer();
     return {
       server,
+      version: bidi.version,
       async open(path = "/") {
         await tab.goto(server.origin + path);
         return tab;

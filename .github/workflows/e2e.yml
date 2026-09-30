@@ -5,6 +5,12 @@
 # Pull requests touching the signing path run Windows and Ubuntu; macOS and
 # the distribution containers run nightly (and by hand).
 #
+# After the full suite, each runner (but Ubuntu 22.04) proves every browser
+# it can install — Chrome, Edge, Brave, Opera, Firefox (and ESR on Linux) —
+# with the cross-browser core (e2e/browsers/, e2e/run-browsers.sh): the host
+# registered as `websign install` does, results in the job summary and in
+# docs/compatibility.md.
+#
 # Software keys per OS (e2e/lib/environment.ts): SoftHSM2 token on Linux
 # (WEBSIGN_E2E_SOFTHSM), CNG/CAPI software keys on Windows and a temporary
 # keychain on macOS, whose certificates the suite reads from WEBSIGN_E2E_CERTS.
@@ -18,6 +24,7 @@ on:
       - "sdk/**"
       - "crates/websign-protocol/**"
       - "crates/websign-host/**"
+      - "crates/websign-registration/**"
       - "e2e/**"
       - ".github/workflows/e2e.yml"
   push:
@@ -28,6 +35,7 @@ on:
       - "sdk/**"
       - "crates/websign-protocol/**"
       - "crates/websign-host/**"
+      - "crates/websign-registration/**"
       - "e2e/**"
       - ".github/workflows/e2e.yml"
   schedule:
@@ -55,7 +63,7 @@ jobs:
       matrix:
         os: ${{ fromJSON((github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && '["windows-latest","macos-latest","ubuntu-22.04","ubuntu-24.04"]' || '["windows-latest","ubuntu-22.04","ubuntu-24.04"]') }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 60
+    timeout-minutes: 100
     defaults:
       run:
         shell: bash
@@ -91,6 +99,7 @@ jobs:
           key: e2e
           save-if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
       - name: Build the app with the e2e feature
+        id: build
         timeout-minutes: 30
         run: cargo build -p websign-app --features e2e
       - uses: oven-sh/setup-bun@v2
@@ -100,11 +109,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Install packages, build the Chromium extension and the browser
+      - name: Install packages, build the extensions and the browser
         timeout-minutes: 30
         run: |
           bun install --frozen-lockfile
-          (cd extension && bunx wxt build -b chrome)
+          (cd extension && bunx wxt build -b chrome && bunx wxt build -b firefox --mv3)
           retry() { for i in 1 2 3; do "$@" && return 0; echo "::warning::attempt $i failed: $*"; done; return 1; }
           if [ "$RUNNER_OS" = Linux ]; then
             (cd e2e && retry timeout 420 bunx playwright install-deps chromium)
@@ -168,6 +177,110 @@ jobs:
           else
             bun run test:ci
           fi
+      # The browsers to prove, as `<label>=<executable>` lines for
+      # run-browsers.sh; an empty path is reported as "skipped". Installs are
+      # retried (infrastructure), never the tests.
+      - name: Install the browsers to prove (Linux)
+        id: browsers-linux
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && runner.os == 'Linux' && matrix.os != 'ubuntu-22.04' }}
+        timeout-minutes: 20
+        continue-on-error: true
+        run: |
+          retry() { for i in 1 2 3; do "$@" && return 0; echo "::warning::attempt $i failed: $*"; sleep 5; done; return 1; }
+          # Opera aborts without the GNOME settings schemas.
+          retry sudo timeout 300 apt-get install -y --no-install-recommends gsettings-desktop-schemas
+          # Brave and Opera from their vendors' apt repositories.
+          retry sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg \
+            https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main" \
+            | sudo tee /etc/apt/sources.list.d/brave-browser-release.list
+          curl -fsSL --retry 3 https://deb.opera.com/archive.key | sudo gpg --batch --yes --dearmor -o /usr/share/keyrings/opera-browser.gpg
+          echo "deb [signed-by=/usr/share/keyrings/opera-browser.gpg] https://deb.opera.com/opera-stable/ stable non-free" \
+            | sudo tee /etc/apt/sources.list.d/opera-stable.list
+          retry sudo timeout 180 apt-get update
+          for package in brave-browser opera-stable; do
+            retry sudo DEBIAN_FRONTEND=noninteractive timeout 600 apt-get install -y "$package" \
+              || echo "::warning::$package could not be installed"
+          done
+          if ! command -v microsoft-edge > /dev/null; then
+            curl -fsSL --retry 3 https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --batch --yes --dearmor -o /usr/share/keyrings/microsoft-edge.gpg
+            echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-edge.gpg] https://packages.microsoft.com/repos/edge stable main" \
+              | sudo tee /etc/apt/sources.list.d/microsoft-edge.list
+            retry sudo timeout 180 apt-get update
+            retry sudo DEBIAN_FRONTEND=noninteractive timeout 600 apt-get install -y microsoft-edge-stable \
+              || echo "::warning::Edge could not be installed"
+          fi
+          # Firefox and Firefox ESR from Mozilla (not the Snap, whose native
+          # messaging goes through a portal that asks the person).
+          for product in firefox-latest-ssl:firefox firefox-esr-latest-ssl:firefox-esr; do
+            mkdir -p "$RUNNER_TEMP/${product#*:}"
+            retry curl -fsSL -o "$RUNNER_TEMP/firefox.tar" "https://download.mozilla.org/?product=${product%%:*}&os=linux64&lang=en-US" \
+              && tar -xf "$RUNNER_TEMP/firefox.tar" -C "$RUNNER_TEMP/${product#*:}"
+          done
+          real() { [[ -e $1 ]] && readlink -f "$1"; }
+          {
+            echo "chrome=$(real /opt/google/chrome/chrome)"
+            echo "edge=$(real /opt/microsoft/msedge/msedge)"
+            echo "brave=$(real /opt/brave.com/brave/brave)"
+            echo "opera=$(real /usr/bin/opera)"
+            echo "firefox=$(real "$RUNNER_TEMP/firefox/firefox/firefox")"
+            echo "firefox-esr=$(real "$RUNNER_TEMP/firefox-esr/firefox/firefox")"
+          } | tee "$RUNNER_TEMP/browsers.txt"
+      - name: Install the browsers to prove (Windows)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && runner.os == 'Windows' }}
+        timeout-minutes: 20
+        continue-on-error: true
+        run: |
+          retry() { for i in 1 2 3; do "$@" && return 0; echo "::warning::attempt $i failed: $*"; sleep 5; done; return 1; }
+          for package in brave opera; do
+            retry choco install "$package" -y --no-progress || echo "::warning::$package could not be installed"
+          done
+          pf="C:/Program Files"; pf86="C:/Program Files (x86)"; local=$(cygpath -m "$LOCALAPPDATA")
+          first() { for path in "$@"; do [[ -f $path ]] && { echo "$path"; return; }; done; }
+          # Opera's top-level opera.exe is a launcher; the browser sits in the version folder.
+          {
+            echo "chrome=$(first "$pf/Google/Chrome/Application/chrome.exe" "$pf86/Google/Chrome/Application/chrome.exe")"
+            echo "edge=$(first "$pf86/Microsoft/Edge/Application/msedge.exe" "$pf/Microsoft/Edge/Application/msedge.exe")"
+            echo "brave=$(first "$pf/BraveSoftware/Brave-Browser/Application/brave.exe" "$local/BraveSoftware/Brave-Browser/Application/brave.exe")"
+            echo "opera=$(first "$pf"/Opera/*/opera.exe "$local"/Programs/Opera/*/opera.exe)"
+            echo "firefox=$(first "$pf/Mozilla Firefox/firefox.exe")"
+          } | tee "$RUNNER_TEMP/browsers.txt"
+      - name: Install the browsers to prove (macOS)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && runner.os == 'macOS' }}
+        timeout-minutes: 20
+        continue-on-error: true
+        run: |
+          retry() { for i in 1 2 3; do "$@" && return 0; echo "::warning::attempt $i failed: $*"; sleep 5; done; return 1; }
+          install() { [[ -d "/Applications/$1.app" ]] || retry brew install --cask "$2" || echo "::warning::$2 could not be installed"; }
+          install "Google Chrome" google-chrome
+          install "Microsoft Edge" microsoft-edge
+          install "Brave Browser" brave-browser
+          install Opera opera
+          install Firefox firefox
+          app() { [[ -x "/Applications/$1.app/Contents/MacOS/$2" ]] && echo "/Applications/$1.app/Contents/MacOS/$2"; }
+          {
+            echo "chrome=$(app "Google Chrome" "Google Chrome")"
+            echo "edge=$(app "Microsoft Edge" "Microsoft Edge")"
+            echo "brave=$(app "Brave Browser" "Brave Browser")"
+            echo "opera=$(app Opera Opera)"
+            echo "firefox=$(app Firefox firefox)"
+          } | tee "$RUNNER_TEMP/browsers.txt"
+      - name: Prove every installed browser
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && matrix.os != 'ubuntu-22.04' }}
+        timeout-minutes: 45
+        env:
+          WEBSIGN_E2E_APP: ${{ github.workspace }}/target/debug/websign${{ runner.os == 'Windows' && '.exe' || '' }}
+          WEBSIGN_E2E_SCREENSHOTS: ${{ runner.temp }}/browser-screenshots
+          WEBSIGN_E2E_BROWSER_RESULTS: ${{ runner.temp }}/browser-screenshots/results.md
+        run: |
+          touch "$RUNNER_TEMP/browsers.txt"
+          bash e2e/run-browsers.sh "$RUNNER_TEMP/browsers.txt"
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && matrix.os != 'ubuntu-22.04' }}
+        with:
+          name: browsers-${{ steps.os.outputs.name }}
+          path: ${{ runner.temp }}/browser-screenshots/
+          if-no-files-found: ignore
       # A native crash prints nothing; the OS crash report is its only trace.
       # `websign doctor` runs the diagnostics scan without a window, which
       # tells a crash in the scan from one in the window.

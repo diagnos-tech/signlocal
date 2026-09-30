@@ -1,3 +1,6 @@
+import { writeFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { expect, test } from "@playwright/test";
 
 import { certificates, newMessage, ready, sign, status } from "../lib/fixture.ts";
@@ -21,6 +24,8 @@ test.describe(`${browser}: finds the app and signs`, () => {
   });
 
   test("the page sees the extension and the app", async () => {
+    // The version tested, for the compatibility record (`run-browsers.sh`).
+    writeFileSync(join(env.screenshots, "browser-version.txt"), `${session.version}\n`);
     const page = await session.open();
     await ready(page);
     expect(await status(page)).toMatchObject({
