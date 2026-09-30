@@ -251,12 +251,12 @@ jobs:
         continue-on-error: true
         run: |
           retry() { for i in 1 2 3; do "$@" && return 0; echo "::warning::attempt $i failed: $*"; sleep 5; done; return 1; }
-          install() { [[ -d "/Applications/$1.app" ]] || retry brew install --cask "$2" || echo "::warning::$2 could not be installed"; }
-          install "Google Chrome" google-chrome
-          install "Microsoft Edge" microsoft-edge
-          install "Brave Browser" brave-browser
-          install Opera opera
-          install Firefox firefox
+          cask() { [[ -d "/Applications/$1.app" ]] || retry brew install --cask "$2" || echo "::warning::$2 could not be installed"; }
+          cask "Google Chrome" google-chrome
+          cask "Microsoft Edge" microsoft-edge
+          cask "Brave Browser" brave-browser
+          cask Opera opera
+          cask Firefox firefox
           app() { [[ -x "/Applications/$1.app/Contents/MacOS/$2" ]] && echo "/Applications/$1.app/Contents/MacOS/$2"; }
           {
             echo "chrome=$(app "Google Chrome" "Google Chrome")"
