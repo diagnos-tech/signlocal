@@ -4,10 +4,11 @@
   "description": "Call the WebeSign app from Node.js, Bun or Electron: choose a certificate and sign a digest through `websign connect`. Zero runtime dependencies.",
   "license": "Apache-2.0",
   "type": "module",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "default": "./dist/index.js"
     }
   },
   "files": [
@@ -16,7 +17,7 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=20"
+    "node": ">=20.19"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p .",

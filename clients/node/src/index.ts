@@ -10,7 +10,19 @@
  * @packageDocumentation
  */
 
-export type { ConnectOptions, SignOptions, SignResult } from "./client";
-export { WebSign } from "./client";
-export { WebSignError } from "./errors";
-export { findExecutable } from "./locate";
+export { WebSign } from "./client.js";
+export { WebSignError } from "./errors.js";
+export type {
+  AppInfo,
+  CertificateFilter,
+  CertificateProfile,
+  DiagnosticsTab,
+  ErrorCode,
+  ErrorDetails,
+  HashName,
+  KeyDescription,
+  SignatureAlgorithmName,
+  StatusReply,
+} from "./generated/index.js";
+export { findExecutable } from "./locate.js";
+export type { Certificate, ConnectOptions, SignOptions, SignResult } from "./types.js";

@@ -10,8 +10,11 @@ from a scenario file).
 else, in order: Windows `%LOCALAPPDATA%\Programs\WebeSign\websign.exe`,
 `%LOCALAPPDATA%\Microsoft\WindowsApps\websign.exe`; macOS
 `/Applications/WebeSign.app/Contents/MacOS/websign`,
-`~/Applications/WebeSign.app/Contents/MacOS/websign`; Linux
-`/usr/bin/websign`, `~/.local/bin/websign`. `undefined` when none exists.
+`~/Applications/WebeSign.app/Contents/MacOS/websign`, `~/.local/bin/websign`
+(the symlink the direct macOS install may create); Linux `/usr/bin/websign`,
+`~/.local/bin/websign`. `undefined` when none exists. "Exists" means a
+regular file with the execute bit; on Windows any non-directory, because the
+`WindowsApps` MSIX alias is a reparse point that `stat` reports as a link.
 
 ## 2. Connection and framing
 
@@ -25,11 +28,41 @@ else, in order: Windows `%LOCALAPPDATA%\Programs\WebeSign\websign.exe`,
 - Ids: `"n" + counter`.
 - Child exit with requests open → reject them with `Internal`
   ("the app exited").
-- `close()`: end stdin, wait for exit (≤ 5 s, then kill).
+- `close()`: end stdin, wait for exit (≤ 5 s, then kill; on Windows every
+  kill is `TerminateProcess`). Idempotent; rejects requests in flight with
+  `Internal`.
+- Event loop: the child and its pipes keep Node alive only while a request is
+  in flight or `close()` is waiting; an idle, unclosed connection lets the
+  program exit, and a process `exit` handler kills the child (the handler is
+  removed when the child exits).
 
 ## 3. Methods
 
 Same flows as the SDK (§5–§6 of `sdk/SPEC.md`) without `web` and without
 discovery: `status`, `certificates(filter)`, `sign(options)` (with
 `prepare`, stale-seq handling, `cancel` on throw or abort),
-`openDiagnostics(tab)` → `done`. Results decode Base64 to `Uint8Array`.
+`openDiagnostics(tab)` → `done`.
+
+- `prepare(certificate, algorithm)` must return exactly 32/48/64 bytes for
+  SHA-256/384/512 (`Uint8Array` or `ArrayBuffer`); otherwise `cancel` and
+  `InvalidRequest`. A throw → `cancel` and `Aborted` with the error as
+  `cause`. Digests and failures for a `seq` older than the latest are dropped.
+- `signal` already aborted → `Aborted`, nothing sent; aborted later →
+  `cancel` sent, `Aborted` at once; the listener is removed when the call
+  settles.
+
+## 4. Public types
+
+The wire types stay internal where they carry Base64. The public
+`Certificate` (`src/types.ts`) is the protocol's certificate with `der:
+Uint8Array` and `chain: readonly Uint8Array[]`, decoded once when the message
+arrives (`certificates()`, `prepare`, `SignResult.certificate`); other fields
+as sent (`notBefore`/`notAfter` in Unix seconds). `SignResult.signature` is
+`Uint8Array`. Base64 that is not canonical padded RFC 4648 §4, or a missing
+`chain`, fails the request with `Internal` (and `cancel` inside `sign`).
+
+## 5. Packaging
+
+ESM only, zero runtime dependencies, Node ≥ 20.19 (Bun, Electron with such a
+Node). The `exports` `default` condition lets CommonJS `require()` load it
+(Node's `require(esm)`); `types` points at the declarations.
