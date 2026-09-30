@@ -3,7 +3,7 @@
 //! locked notice in the field's place. System prompts only show in the
 //! footer hint.
 
-use egui::{Id, Sense, Ui, Vec2};
+use egui::{Id, Response, Sense, Ui, Vec2};
 use websign_i18n::k;
 use websign_ui_model::confirm::view::{PinBlock, PinError};
 use websign_ui_model::confirm::{ConfirmState, ConfirmView, UserInput};
@@ -41,14 +41,15 @@ pub fn visible(view: &ConfirmView) -> bool {
     )
 }
 
-pub fn show(ui: &mut Ui, s: &mut Screen<'_>) {
+/// Draws the PIN area; returns our field, when it shows one.
+pub fn show(ui: &mut Ui, s: &mut Screen<'_>) -> Option<Response> {
     match s.view.pin {
         PinBlock::Field {
             card,
             length,
             error,
             ..
-        } => field(ui, s, card, length, error),
+        } => return Some(field(ui, s, card, length, error)),
         PinBlock::PinPad { now: false } => {
             let note = s.tr.tr(k::PIN_PINPAD_BEFORE).to_string();
             line(
@@ -77,6 +78,7 @@ pub fn show(ui: &mut Ui, s: &mut Screen<'_>) {
         }
         PinBlock::Hidden | PinBlock::OsPrompt { .. } | PinBlock::PinPad { .. } => {}
     }
+    None
 }
 
 fn field(
@@ -85,7 +87,7 @@ fn field(
     card: bool,
     length: Option<(u32, u32)>,
     error: Option<PinError>,
-) {
+) -> Response {
     let c = theme::colors(ui.ctx());
     let tr = s.tr;
     let name = tr
@@ -126,7 +128,7 @@ fn field(
         enabled: s.view.state != ConfirmState::Signing,
     }
     .show(ui);
-    if s.session.take_focus(FocusTarget::Pin) {
+    if s.session.fit.placed() && s.session.take_focus(FocusTarget::Pin) {
         shown.field.request_focus();
     }
     if shown.changed {
@@ -153,6 +155,7 @@ fn field(
             line(ui, icons::PRIVACY, &privacy, c.fg_subtle, false);
         }
     }
+    shown.field
 }
 
 /// An icon and a wrapping line of `text-small` (600 for the last try). An

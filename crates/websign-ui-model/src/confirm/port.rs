@@ -100,10 +100,13 @@ pub enum Failure {
 pub enum Finish {
     Signed,
     Chosen,
-    /// The tab closed or navigated.
+    /// The caller gave up: the page cancelled (AbortSignal, tab closed or
+    /// navigated) or its connection dropped. The window says so for 1.5 s
+    /// so the person knows why it goes away.
     SiteCancelled,
     Timeout,
-    /// The caller withdrew the request (no text; the window just moves on).
+    /// Ended without a notice (the person's own Cancel, a protocol error):
+    /// the window just moves on.
     Aborted,
 }
 

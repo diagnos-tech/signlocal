@@ -55,11 +55,17 @@ test.describe("consent", () => {
       try {
         const page = await second.open();
         await ready(page);
+        let timer: ReturnType<typeof setTimeout> | undefined;
         const reply = await Promise.race([
           certificates(page),
-          new Promise<"window">((done) => setTimeout(() => done("window"), 20_000)),
+          new Promise<"no answer">((done) => {
+            timer = setTimeout(() => done("no answer"), 20_000);
+          }),
         ]);
-        expect(reply).toMatchObject({ ok: true });
+        clearTimeout(timer);
+        expect(reply, "a remembered site waited for a window nobody answers").toMatchObject({
+          ok: true,
+        });
       } finally {
         await second.close();
       }

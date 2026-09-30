@@ -14,7 +14,7 @@ use websign_ui_model::confirm::port::Finish;
 const SHA256: HashAlgorithm = HashAlgorithm::Sha256;
 
 #[test]
-fn cancel_from_the_client_aborts_the_request() {
+fn cancel_from_the_client_aborts_the_request_and_says_the_site_cancelled() {
     let p = Cert::p256();
     let mut h = Harness::native_ready();
     let key = h.drive_to_ready("s1", ORIGIN, &p);
@@ -22,7 +22,8 @@ fn cancel_from_the_client_aborts_the_request() {
     h.send(wire::cancel("s1"));
     let out = h.take();
     assert_eq!(out.only_error(), ("s1".to_owned(), ErrorCode::Aborted));
-    assert_eq!(out.finished(), [(key, Finish::Aborted)]);
+    // The page withdrew it (abort, tab closed): the window tells the person.
+    assert_eq!(out.finished(), [(key, Finish::SiteCancelled)]);
     assert!(out.signs().is_empty());
 }
 

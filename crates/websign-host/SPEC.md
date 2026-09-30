@@ -102,7 +102,7 @@ transition:
 | `Keys(Signed Unsupported)` | → Selecting | `Ui(Failed UnsupportedAlgorithm)` |
 | `Keys(Signed Native/Other)` | → Ready | `Ui(Failed DriverFailure{driver of the path tried, alternate: via 0 and an alternate exists})`, `RecordError` |
 | `Ui(Cancel code)` | → Done | `Send(Error code)`, `Ui(Finished …)` |
-| `end(code)` (abort, timeout) | → Done | `Send(Error code)`; `Ui(Finished Timeout)` for a timeout, else `Ui(Finished Aborted)` (only when on screen) |
+| `end(code)` (cancel, timeout) | → Done | `Send(Error code)`; when on screen: `Ui(Finished SiteCancelled)` for `Aborted` (the caller's `cancel`: AbortSignal, tab closed or navigated, `prepare` threw — the person sees why the window goes), `Ui(Finished Timeout)` for a timeout, else `Ui(Finished Aborted)` |
 | `disconnected()` | → Done | `Ui(Finished SiteCancelled)` when on screen; nothing is sent |
 
 `Ui(Sign{via: n})` signs through `KeyRef { path: n }` with the window's PIN:
@@ -155,6 +155,8 @@ Same `activate(now, &presentation)` / `on_listed(snapshot, context)` as §4.
   {fp, remember})` for a usable row → `Keys(Chain)`; its answer →
   `RecordConsent`, `Send(ChooseResult{[that one]})`, `Ui(Finished Chosen)`.
   Further `Choose` events while the chain is read are ignored.
+- `end(code)` and `disconnected()` tell the window as in §4 (the caller's
+  `cancel` → `Finished SiteCancelled`), only once the window was told.
 
 ## 6. Queue
 
@@ -206,7 +208,8 @@ Each is a test: events in, assert frames out, UI commands, key commands.
 6. Wrong digest length → `InvalidRequest`.
 7. Wrong PIN then right PIN: one `sign.result`, no error frame.
 8. Key store returns garbage → not verified → DriverFailure in UI, nothing sent.
-9. `cancel` from the client → `Aborted`; client disconnect → UI
+9. `cancel` from the client → `Aborted` sent, UI `Finished SiteCancelled`
+   (both flows); client disconnect → UI
    `Finished SiteCancelled`, no frames, `Control::Exit(0)` (`Broken` →
    `Exit(1)`).
 10. Decision timeout (manual clock +300 s) → `Timeout`; digest timeout

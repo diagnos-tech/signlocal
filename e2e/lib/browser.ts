@@ -13,6 +13,7 @@ import { type BrowserContext, chromium, type Page } from "@playwright/test";
 
 import { appEnv, type Confirm, register } from "./app.ts";
 import type { E2eEnvironment } from "./environment.ts";
+import { installOldApp } from "./old-app.ts";
 import { type PageServer, startServer } from "./server.ts";
 
 /** What a launch sets up. */
@@ -20,8 +21,11 @@ export interface LaunchOptions {
   readonly confirm: Confirm;
   /** Load the extension (false: ExtensionMissing). */
   readonly extension?: boolean;
-  /** Register the app (false: AppMissing). */
-  readonly app?: boolean;
+  /**
+   * The native messaging host: the app (default), none (AppMissing), or
+   * the fake old app (AppOutdated, `old-app.ts`).
+   */
+  readonly host?: "app" | "none" | "old-app";
   /** Serve the pages from this (still open) server: the same site again. */
   readonly server?: PageServer;
 }
@@ -43,8 +47,10 @@ export interface Session {
 export async function launch(env: E2eEnvironment, options: LaunchOptions): Promise<Session> {
   const profile = mkdtempSync(join(tmpdir(), "websign-e2e-profile-"));
   const withExtension = options.extension ?? true;
-  const withApp = options.app ?? true;
+  const host = options.host ?? "app";
+  const withApp = host !== "none";
   if (withApp) await register(env, profile);
+  if (host === "old-app") installOldApp(profile);
   const context = await chromium.launchPersistentContext(profile, {
     ...(env.browser === undefined ? {} : { executablePath: env.browser }),
     // Extensions need a headed Chromium (Xvfb on Linux CI).

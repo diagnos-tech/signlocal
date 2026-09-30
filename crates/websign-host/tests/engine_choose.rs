@@ -275,6 +275,17 @@ fn closing_the_choose_window_reports_the_windows_code() {
 }
 
 #[test]
+fn a_page_cancel_on_screen_says_the_site_cancelled() {
+    let p = Cert::p256();
+    let mut h = Harness::native_ready();
+    let key = on_screen(&mut h, "c1", &[&p]);
+    h.send(wire::cancel("c1"));
+    let out = h.take();
+    assert_eq!(out.only_error(), ("c1".to_owned(), ErrorCode::Aborted));
+    assert_eq!(out.finished(), [(key, Finish::SiteCancelled)]);
+}
+
+#[test]
 fn choose_can_be_cancelled_by_the_client_and_times_out() {
     let mut h = Harness::native_ready();
     h.send(wire::choose("c1", Some(ORIGIN)));

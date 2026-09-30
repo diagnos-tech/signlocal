@@ -12,7 +12,7 @@ use super::viewport::{self, Shown};
 use super::window::ConfirmWindow;
 use crate::ui::{bridge, i18n, renderer, theme};
 
-/// See [`super::run`].
+/// See [`super::run()`].
 pub fn run(
     first: UiCommand,
     commands: &Receiver<UiCommand>,

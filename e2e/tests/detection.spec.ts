@@ -37,7 +37,7 @@ test.describe("detection", () => {
   });
 
   test("no native messaging host: AppMissing", async () => {
-    const session = await launch(env, { confirm: "wait", app: false });
+    const session = await launch(env, { confirm: "wait", host: "none" });
     try {
       const page = await session.open();
       await ready(page);
@@ -53,7 +53,24 @@ test.describe("detection", () => {
     }
   });
 
-  // TODO(gustavo): AppOutdated needs a fake old host answering `hello` with
-  // an old protocol range, registered in place of the app.
-  test.fixme("an old app: AppOutdated", async () => {});
+  test("an old app: AppOutdated", async () => {
+    // The fake old app answers `hello` as version 0.0.1 (fixtures/old-app.mjs).
+    // The popup's outdated card is not driven here: Playwright does not see
+    // the toolbar popup, and the popup only answers its own page. Its state
+    // and text for this probe are unit-tested (extension/test/popup-*.test.ts).
+    const session = await launch(env, { confirm: "wait", host: "old-app" });
+    try {
+      const page = await session.open();
+      await ready(page);
+      expect(await status(page)).toMatchObject({
+        extension: { installed: true },
+        app: { installed: true, outdated: true },
+        ready: false,
+      });
+      const reply = await sign(page, { hash: "SHA-256", message: newMessage() });
+      expect(reply).toMatchObject({ ok: false, code: "AppOutdated" });
+    } finally {
+      await session.close();
+    }
+  });
 });

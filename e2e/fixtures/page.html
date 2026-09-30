@@ -15,6 +15,7 @@
       const base64 = (bytes) => btoa(String.fromCharCode(...bytes));
       const failure = (error, extra) => ({ ok: false, code: error?.code ?? String(error), ...extra });
       let controller;
+      let latestPrepared = [];
 
       window.websignE2e = {
         status: () => status(),
@@ -29,12 +30,12 @@
         },
 
         // Signs the hash of `message` (hex). `digestLength` overrides the
-        // length prepare returns; `abortAfter` (ms) aborts from the page;
-        // `holdPrepare` never returns the digest (the tab is then closed).
-        async sign({ hash, algorithm, certificate, message, digestLength, abortAfter, holdPrepare }) {
+        // length prepare returns; `holdPrepare` never returns the digest
+        // (the page is then closed or navigated).
+        async sign({ hash, algorithm, certificate, message, digestLength, holdPrepare }) {
           controller = new AbortController();
-          if (abortAfter !== undefined) setTimeout(() => controller.abort(), abortAfter);
           const prepared = [];
+          latestPrepared = prepared;
           try {
             const result = await sign({
               hash,
@@ -62,9 +63,17 @@
           }
         },
 
-        // Starts a signature without waiting for it.
+        // Starts a signature without waiting for it; `result()` awaits it.
         start(request) {
           window.websignE2e.pending = window.websignE2e.sign(request);
+          return true;
+        },
+        result: () => window.websignE2e.pending,
+        // How many times `prepare` ran for the latest signature.
+        preparedCount: () => latestPrepared.length,
+        // Withdraws the latest signature through its AbortSignal.
+        abort() {
+          controller?.abort();
           return true;
         },
       };

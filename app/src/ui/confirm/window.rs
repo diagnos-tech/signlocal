@@ -1,6 +1,6 @@
 //! The window's state and its frame: host commands in, person input
 //! through the model, decisions out. No eframe here, so tests drive it with
-//! `egui_kittest` exactly as the real event loop does ([`super::run`]).
+//! `egui_kittest` exactly as the real event loop does ([`super::run()`]).
 
 use std::time::{Duration, Instant};
 

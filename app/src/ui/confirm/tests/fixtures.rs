@@ -313,3 +313,27 @@ pub fn request(mode: Mode, caller: CallerView, remembered: bool) -> OpenRequest 
 pub fn code() -> VerificationCode {
     verification_code(&[0x7F, 0x3A, 0x9C, 0x21, 0xE0, 0xB4, 0x55, 0xD8]).expect("8 bytes")
 }
+
+/// A software token holding `usable` signing keys and `expired` ones behind
+/// our PIN field (the e2e SoftHSM2 token): a long list with the PIN block.
+pub fn token_keys(usable: u8, expired: u8) -> Vec<CertCandidate> {
+    let token = DeviceLabel::Token {
+        name: "SoftHSM token".to_owned(),
+    };
+    let driver = KeySource::Driver {
+        path: "/usr/lib/softhsm/libsofthsm2.so".to_owned(),
+    };
+    (0..usable + expired)
+        .map(|n| {
+            let days = if n < usable { 3650 } else { -30 };
+            let info = info(40 + n, &format!("Test Holder {n}"), "Test CA", days);
+            candidate(
+                info,
+                driver.clone(),
+                Some(token.clone()),
+                app_pin(false, false, false),
+                true,
+            )
+        })
+        .collect()
+}

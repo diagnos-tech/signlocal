@@ -156,6 +156,13 @@ jobs:
           else
             bun run test:ci
           fi
+      # Traces of failed scenarios (fixture page and test keys only).
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-results-${{ steps.os.outputs.name }}
+          path: target/e2e-results/
+          if-no-files-found: ignore
       - name: Collect screenshots
         timeout-minutes: 15
         run: cargo xtask screenshots --from "$RUNNER_TEMP/screenshots" --os "${{ steps.os.outputs.name }}"
@@ -277,6 +284,12 @@ jobs:
           WEBSIGN_E2E_SCREENSHOTS: ${{ runner.temp }}/screenshots
           WEBSIGN_E2E_BROWSER: ${{ matrix.browser }}
         run: xvfb-run -a -s "-screen 0 1600x900x24" bun run test:ci
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-results-${{ matrix.os }}
+          path: target/e2e-results/
+          if-no-files-found: ignore
       - name: Collect screenshots
         timeout-minutes: 10
         run: cargo xtask screenshots --from "$RUNNER_TEMP/screenshots" --os "${{ matrix.os }}"

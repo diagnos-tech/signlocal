@@ -234,7 +234,9 @@ Layout rules:
 
 - Header and footer are fixed; only the body scrolls. The list has a maximum height of **3 rows** (216 px) and scrolls
   within itself; with the PIN block visible, the maximum drops to **2 rows** and the selected row is kept
-  visible.
+  visible. When our PIN field would still fall below the footer (a site notice, a long list), the list gives
+  up height, down to 1 row, so the field is visible without scrolling the body; if even that is not enough,
+  the body scrolls to the field once when it appears.
 - **Button order follows the platform.** Windows: `[Sign] [Cancel]` right-aligned. macOS and Linux:
   `[Cancel] [Sign]`. **Why:** the user clicks by muscle memory of their own system; reversing causes
   wrong clicks. The mockups have a "Windows / macOS and Linux" selector that swaps the order.
@@ -469,7 +471,7 @@ Esc and key releases always pass.
 | `signing` | "Signing…" button; system/reader keypad hint; list and PIN disabled | → `success`, `pin_error`, `error` |
 | `success` | Body swaps to a 48 px `check-circle` (success), "Signed", "The signature was sent to {site}."; the result has already been sent to the site | Closes by itself after **900 ms** |
 | `error` | `danger` notice above the list with title, text, action, and a collapsed "Technical details" (copyable code) | Action from [§15](#15-errors); Cancel → error code |
-| `site_cancelled` | "{site} cancelled the request." (the tab closed or navigated) | Closes after 1.5 s |
+| `site_cancelled` | "{site} cancelled the request." — any cancel from the caller: the page aborted (`AbortSignal`), its tab closed or navigated, or its connection dropped; the person always learns why the window goes away | Closes after 1.5 s |
 | `timeout` | After **5 min** without a decision | Closes; SDK receives `Timeout` |
 | `blocked_origin` | Only through a bug (R5): `InsecureOrigin` error, no Sign | Close |
 

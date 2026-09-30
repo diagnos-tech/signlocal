@@ -90,26 +90,51 @@ feature (never in release builds; `cargo xtask check release` fails if the
 release binary contains the marker `WEBSIGN_E2E_BUILD`) makes the
 confirmation window:
 
-- confirm by itself once armed — after the real 600 ms, through the same code
-  path as a click (`WEBSIGN_E2E_CONFIRM=sign|choose|cancel`);
+- act by itself once armed — after the real 600 ms, through accessibility
+  actions on its own widgets, the same code path as a click
+  (`WEBSIGN_E2E_CONFIRM`): `sign` and `choose` press the primary button at
+  every step (Continue, Use certificate, Sign); `remember` ticks "Remember
+  this site" first, then does the same; `cancel` presses Cancel; unset, the
+  window waits for the page (abort, tab closed);
 - type `WEBSIGN_E2E_PIN` into our PIN field for PKCS#11 keys;
-- save a PNG of every state it shows (`WEBSIGN_E2E_SCREENSHOTS=<dir>`), via
-  `ViewportCommand::Screenshot`.
+- save a PNG of every state it shows, light then dark, once per app process
+  (`WEBSIGN_E2E_SCREENSHOTS=<dir>`), via `ViewportCommand::Screenshot`, named
+  `<window>-<state>-<theme>.png`: `window` is `confirm` or `diagnostics`;
+  `state` is the confirmation state in kebab case (`continue-new-site`,
+  `preparing`, `ready`, `pin-error`, `error-<code>`, `success`,
+  `site-cancelled`, `timeout`, `choose`…) or the diagnostics tab; `theme` is
+  `light` or `dark`. The suite also waits on these files to know what the
+  window shows (`e2e/lib/window.ts`), never on fixed sleeps.
 
-Scenarios (each asserts the signature verifies against the certificate with
-an independent verifier):
+Scenarios (each signature is verified against the certificate with an
+independent verifier, `node:crypto`):
 
 1. sign SHA-256/384/512 with every software key (RSA PKCS#1 v1.5, RSA-PSS,
-   ECDSA P-256/P-384/P-521);
+   ECDSA P-256/P-384/P-521), and the website's test page;
 2. `certificates()` on a new site (choose mode) and on a remembered site (no
    window);
 3. D11: new site cancels before Continue → the page received no certificate;
-4. switch certificate → new `need_digest`, stale digest ignored;
-5. cancel → `UserCancelled`; tab closed → window shows "site cancelled";
-6. `ExtensionMissing` (extension not loaded), `AppMissing` (manifest removed),
-   `AppOutdated` (fake old app);
+4. switch certificate → new `need_digest`, stale digest ignored — **not in
+   the e2e suite**: the driver has no "select another row" step yet; covered
+   by `crates/websign-host/tests/engine_sign_switch.rs` and the
+   `websign-ui-model` state-machine tests;
+5. cancel in the window → `UserCancelled`; the page cancels (its
+   `AbortSignal`, closing the tab, navigating to another site) → `Aborted`
+   and the window shows "site cancelled" (`docs/ux.md` §4.8);
+6. `ExtensionMissing` (extension not loaded), `AppMissing` (no manifest),
+   `AppOutdated` (a fake old app, `e2e/fixtures/old-app.mjs`, answers `hello`
+   as 0.0.1 in place of the app; the popup's outdated card for that probe is
+   unit-tested, since Playwright cannot open the toolbar popup);
 7. desktop: `websign sign` and `@websign/desktop` against the same keys;
-8. log audit: the run's log contains none of the fixture holder names.
+8. log audit: the run's log contains none of the fixture holder names and
+   certificate fingerprints.
+
+Isolation: every browser runs in a new temporary profile, and the app is
+registered only in that profile (Linux, macOS) or with a manifest in it
+(Windows, HKCU key removed afterwards). On Linux the app's settings, consent
+records and log live in a temporary `WEBSIGN_E2E_HOME` (XDG folders),
+removed after the run unless given. On Windows and macOS the app uses the
+account's own settings folder, so run the suite on CI or a throwaway account.
 
 ### Matrix
 

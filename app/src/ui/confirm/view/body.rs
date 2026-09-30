@@ -25,6 +25,7 @@ pub fn show(ui: &mut Ui, s: &mut Screen<'_>) {
 /// (above the list, so another certificate is one click away), the code
 /// card, the list, the PIN and "Remember".
 fn request(ui: &mut Ui, s: &mut Screen<'_>) {
+    let top = ui.cursor().top();
     let mut gap = false;
     let mut section = |ui: &mut Ui| {
         if gap {
@@ -47,10 +48,19 @@ fn request(ui: &mut Ui, s: &mut Screen<'_>) {
         code::show(ui, s);
     }
     section(ui);
-    list::show(ui, s);
+    let rows_box = list::show(ui, s);
+    let mut field = None;
     if pin::visible(s.view) {
         section(ui);
-        pin::show(ui, s);
+        field = pin::show(ui, s);
+    }
+    match (field, rows_box) {
+        (Some(field), Some(rows_box)) => {
+            let around_rows = field.rect.bottom() - top - rows_box;
+            let settled = s.session.fit.measured(ui.ctx(), around_rows);
+            s.session.fit.reveal(ui, &field, settled);
+        }
+        _ => s.session.fit.no_field(),
     }
     if remember::visible(s.view) {
         section(ui);

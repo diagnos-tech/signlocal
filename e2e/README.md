@@ -13,7 +13,9 @@ keys and verifying every signature with `node:crypto`.
 - Environment (`lib/environment.ts`, which also says how each OS gets its
   keys): `WEBSIGN_E2E_APP` (required), `WEBSIGN_E2E_EXTENSION`,
   `WEBSIGN_E2E_SCREENSHOTS`, `WEBSIGN_E2E_BROWSER`, `WEBSIGN_E2E_SOFTHSM` or
-  `WEBSIGN_E2E_CERTS`, `WEBSIGN_E2E_WINDOW=headless` (no display).
+  `WEBSIGN_E2E_CERTS`, `WEBSIGN_E2E_WINDOW=headless` (no display),
+  `WEBSIGN_E2E_HOME` (Linux: the app's folders and log; by default a
+  temporary one, removed after the run).
 - Before a run: `cargo build -p websign-app --features e2e`,
   `(cd extension && bunx wxt build -b chrome)` (direct channel: the ID is
   `dev_id`), `(cd clients/node && bun run build)`.

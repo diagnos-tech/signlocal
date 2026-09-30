@@ -227,7 +227,8 @@ fn ui_cancel_ends_with_the_windows_code() {
 fn end_reports_the_code_and_tells_the_window_why() {
     let p = Cert::p256();
     for (code, expected) in [
-        (ErrorCode::Aborted, Finish::Aborted),
+        (ErrorCode::Aborted, Finish::SiteCancelled),
+        (ErrorCode::InvalidRequest, Finish::Aborted),
         (ErrorCode::Timeout, Finish::Timeout),
     ] {
         let mut flow = awaiting(&p);

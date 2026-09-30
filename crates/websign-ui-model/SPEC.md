@@ -160,9 +160,9 @@ States and transitions follow ux §4.8 with D11:
 | Signing | `Finished(Signed)` | Success; `tick` after 900 ms → Idle (or next `Open`) |
 | request on screen | Escape / Cancel / Close | intent `Cancel(cancel_code(state))`, every press |
 | Success / SiteCancelled / Timeout | Escape / Cancel / Close | Idle, no intent (the request is already answered) |
-| any | `Finished(SiteCancelled)` | SiteCancelled; 1500 ms → Idle |
+| any | `Finished(SiteCancelled)` (the caller cancelled: AbortSignal, tab closed or navigated, connection dropped) | SiteCancelled; 1500 ms → Idle |
 | any | `Finished(Timeout)` | Timeout ("The request expired"); 1500 ms → Idle |
-| any | `Finished(Aborted)` or `Hide` | Idle at once, no notice |
+| any | `Finished(Aborted)` (the person's own Cancel, a protocol error) or `Hide` | Idle at once, no notice |
 | Choose mode, Choosing (armed) | primary click | intent `Choose { … }` once; `Finished(Chosen)` → Success |
 
 Commands whose `key` is not the request on screen are dropped (a `Queue`

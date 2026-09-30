@@ -99,7 +99,7 @@ pub enum Intent {
 /// The window's whole state.
 ///
 /// Fields are visible to the sibling modules that implement its transitions
-/// ([`commands`], [`inputs`], [`timers`], [`build`]); nothing outside
+/// (`commands`, `inputs`, `timers`, `build`); nothing outside
 /// `confirm` can touch them.
 #[derive(Debug, Clone)]
 pub struct ConfirmModel {

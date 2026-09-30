@@ -12,4 +12,5 @@ mod arming;
 mod keyboard;
 mod open_time;
 mod paths;
+mod pin_fit;
 mod snapshots;

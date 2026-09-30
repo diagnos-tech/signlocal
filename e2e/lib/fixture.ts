@@ -46,7 +46,6 @@ export interface SignRequest {
   readonly algorithm?: SignatureAlgorithm;
   readonly certificate?: string;
   readonly digestLength?: number;
-  readonly abortAfter?: number;
   readonly holdPrepare?: boolean;
 }
 
@@ -77,11 +76,36 @@ export async function start(page: Page, request: SignRequest): Promise<void> {
   await page.evaluate((r) => (window as unknown as E2eWindow).websignE2e.start(r), request);
 }
 
+/** The reply of the signature `start` began. */
+export function result(page: Page): Promise<SignReply> {
+  return page.evaluate(() => (window as unknown as E2eWindow).websignE2e.result());
+}
+
+/**
+ * Waits until the page's `prepare` was called: the app asked for the
+ * digest. Polls on a timer: a background tab draws no animation frames.
+ */
+export async function prepareCalled(page: Page): Promise<void> {
+  await page.waitForFunction(
+    () => (window as unknown as E2eWindow).websignE2e.preparedCount() > 0,
+    undefined,
+    { polling: 100, timeout: 60_000 },
+  );
+}
+
+/** Withdraws the started signature through its AbortSignal. */
+export async function abort(page: Page): Promise<void> {
+  await page.evaluate(() => (window as unknown as E2eWindow).websignE2e.abort());
+}
+
 interface E2eWindow {
   readonly websignE2e: {
     status(): Promise<StatusReply>;
     sign(request: SignRequest): Promise<SignReply>;
     certificates(): Promise<CertificatesReply>;
     start(request: SignRequest): boolean;
+    result(): Promise<SignReply>;
+    preparedCount(): number;
+    abort(): boolean;
   };
 }

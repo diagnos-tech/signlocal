@@ -1,13 +1,17 @@
 //! Saving what the window shows, in the light and then the dark theme:
 //! pin the theme, let a few frames settle, ask the viewport for a
-//! screenshot (`ViewportCommand::Screenshot`), save the image the next
-//! frame brings, then do the same in the other theme and go back to the
-//! system's.
+//! screenshot (`ViewportCommand::Screenshot`), keep the image the next
+//! frame brings, then do the same in the other theme, save both and go back
+//! to the system's. Files are written only for a whole pair, so a state
+//! that leaves the screen halfway never leaves (or removes) a lone picture.
 
 use std::path::PathBuf;
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use egui::{Context, Event, RawInput, Theme, ThemePreference, UserData, ViewportCommand};
+use egui::{
+    ColorImage, Context, Event, RawInput, Theme, ThemePreference, UserData, ViewportCommand,
+};
 
 /// Frames drawn in a newly pinned theme before its screenshot.
 const SETTLE_FRAMES: u32 = 3;
@@ -30,6 +34,8 @@ pub struct Capture {
     state: String,
     theme: Theme,
     step: Step,
+    /// The light picture, kept until its dark one arrives.
+    light: Option<Arc<ColorImage>>,
 }
 
 impl Capture {
@@ -41,6 +47,7 @@ impl Capture {
             state: String::new(),
             theme: Theme::Light,
             step: Step::Idle,
+            light: None,
         }
     }
 
@@ -66,7 +73,7 @@ impl Capture {
         if !self.is_busy() || shown == Some(self.state.as_str()) {
             return None;
         }
-        let _ = std::fs::remove_file(self.path("light"));
+        self.light = None;
         ctx.set_theme(ThemePreference::System);
         self.step = Step::Idle;
         Some(std::mem::take(&mut self.state))
@@ -85,6 +92,7 @@ impl Capture {
                 if since.elapsed() > GIVE_UP {
                     log::warn!("e2e screenshot never arrived; skipped");
                     ctx.set_theme(ThemePreference::System);
+                    self.light = None;
                     self.step = Step::Idle;
                 }
             }
@@ -99,7 +107,8 @@ impl Capture {
         }
     }
 
-    /// Call with every frame's input: saves an arrived screenshot.
+    /// Call with every frame's input: keeps an arrived light screenshot;
+    /// with the dark one, saves the pair.
     pub fn input(&mut self, ctx: &Context, input: &RawInput) {
         if !self.is_awaiting() {
             return;
@@ -110,20 +119,25 @@ impl Capture {
         }) else {
             return;
         };
-        let theme = match self.theme {
-            Theme::Light => "light",
-            Theme::Dark => "dark",
-        };
-        let path = self.path(theme);
-        if let Err(error) = super::png::write(&path, &image) {
-            log::error!("e2e screenshot not saved: {error}");
-        }
         match self.theme {
-            Theme::Light => self.pin(ctx, Theme::Dark),
+            Theme::Light => {
+                self.light = Some(image);
+                self.pin(ctx, Theme::Dark);
+            }
             Theme::Dark => {
+                if let Some(light) = self.light.take() {
+                    self.save("light", &light);
+                    self.save("dark", &image);
+                }
                 ctx.set_theme(ThemePreference::System);
                 self.step = Step::Idle;
             }
+        }
+    }
+
+    fn save(&self, theme: &str, image: &ColorImage) {
+        if let Err(error) = super::png::write(&self.path(theme), image) {
+            log::error!("e2e screenshot not saved: {error}");
         }
     }
 

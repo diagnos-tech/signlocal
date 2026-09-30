@@ -9,6 +9,8 @@
 - `confirm-preparing-light.png` — confirm window, preparing, light theme
 - `confirm-ready-dark.png` — confirm window, ready, dark theme
 - `confirm-ready-light.png` — confirm window, ready, light theme
+- `confirm-site-cancelled-dark.png` — confirm window, site cancelled, dark theme
+- `confirm-site-cancelled-light.png` — confirm window, site cancelled, light theme
 - `confirm-success-dark.png` — confirm window, success, dark theme
 - `confirm-success-light.png` — confirm window, success, light theme
 - `diagnostics-browsers-dark.png` — diagnostics window, browsers, dark theme

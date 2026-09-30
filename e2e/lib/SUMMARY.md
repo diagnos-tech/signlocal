@@ -6,6 +6,8 @@
 - `fixture.ts` — Typed calls into the fixture page.
 - `global-setup.ts` — Once per run: private app folders, the SoftHSM2 token when nothing else provides keys.
 - `keys.ts` — The software keys of the run, known by their certificates.
+- `old-app.ts` — Puts the fake old app in place of the app's registration in a throwaway profile (AppOutdated).
 - `server.ts` — Serves the fixture page and the website from the repository on localhost.
 - `suite.ts` — What every spec shares: environment, keys, the signature checks.
 - `verify.ts` — The independent verifier (node:crypto) of every signature.
+- `window.ts` — What the confirmation window shows, seen through the pictures the e2e build saves.

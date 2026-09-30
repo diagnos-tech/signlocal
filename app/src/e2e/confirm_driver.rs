@@ -107,9 +107,17 @@ impl ConfirmDriver {
     fn follow(&mut self) -> Option<(String, Duration)> {
         let now = shadow::state_name();
         if self.state.as_ref().map(|(name, _)| name) != now.as_ref() {
-            // The field starts empty with each request and is emptied
-            // after a wrong PIN; otherwise it keeps what was typed.
-            if matches!(now.as_deref(), None | Some("loading" | "pin-error")) {
+            // The field starts empty with each request (the next one may
+            // follow a result notice at once) and is emptied after a wrong
+            // PIN; otherwise it keeps what was typed.
+            let fresh = [
+                "loading",
+                "pin-error",
+                "success",
+                "site-cancelled",
+                "timeout",
+            ];
+            if now.as_deref().is_none_or(|name| fresh.contains(&name)) {
                 self.pin_typed = false;
             }
             log::debug!(

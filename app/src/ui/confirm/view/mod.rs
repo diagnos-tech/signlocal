@@ -9,6 +9,7 @@ mod code;
 mod details;
 mod empty;
 mod error;
+pub(super) mod fit;
 mod footer;
 mod header;
 mod list;
@@ -77,6 +78,8 @@ pub fn show(ui: &mut Ui, mut screen: Screen<'_>) {
     CentralPanel::no_frame()
         .frame(Frame::new().fill(c.bg_canvas))
         .show(ui, |ui| {
+            let viewport = ui.available_height() - f32::from(BODY_MARGIN.top);
+            screen.session.fit.set_viewport(viewport);
             ScrollArea::vertical()
                 .auto_shrink([false, false])
                 .show(ui, |ui| {

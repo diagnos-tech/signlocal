@@ -16,11 +16,15 @@ pub(super) fn error_reply(code: ErrorCode) -> Effect {
     }))
 }
 
-/// The window's closing command for a request that ended with `code`: a
-/// timeout says so; every other end just moves the window on.
+/// The window's closing command for a request that ended with `code`. A
+/// cancel from the caller (`Aborted`: the page's AbortSignal, its tab closed
+/// or navigated, `prepare` threw) shows "site cancelled", so the person
+/// knows why the window goes away; a timeout says so; every other end (the
+/// person's own Cancel, a protocol error) just moves the window on.
 pub(super) fn finished(key: RequestKey, code: ErrorCode) -> Effect {
     let finish = match code {
         ErrorCode::Timeout => Finish::Timeout,
+        ErrorCode::Aborted => Finish::SiteCancelled,
         _ => Finish::Aborted,
     };
     Effect::Ui(UiCommand::Finished { key, finish })

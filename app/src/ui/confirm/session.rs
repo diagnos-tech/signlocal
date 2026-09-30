@@ -7,6 +7,8 @@ use websign_core::Fingerprint;
 use websign_ui_model::confirm::port::RequestKey;
 use zeroize::{Zeroize, Zeroizing};
 
+use super::view::fit::Fit;
+
 /// A widget to give keyboard focus to on the next frame (`docs/ux.md` §4.9).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FocusTarget {
@@ -36,6 +38,8 @@ pub struct Session {
     /// The first listing of this request has been placed: initial focus is
     /// chosen once, never again under the person's hands.
     pub placed: bool,
+    /// Heights that keep our PIN field on screen.
+    pub fit: Fit,
 }
 
 impl Default for Session {
@@ -51,6 +55,7 @@ impl Default for Session {
             filter: String::new(),
             focus: None,
             placed: false,
+            fit: Fit::default(),
         }
     }
 }
