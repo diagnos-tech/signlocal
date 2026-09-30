@@ -181,6 +181,14 @@ See §5 for the state machine.
   through plain CAPI only RSASSA-PKCS1-v1_5; macOS from
   `SecKeyIsAlgorithmSupported` (brainpool keys: none). The same intersection
   is `certificate.algorithms` on the wire.
+- `certificate.algorithms` is per algorithm, while the page picks the hash,
+  so an algorithm is listed only when the store produces it with every hash
+  (SHA-256, SHA-384, SHA-512; macOS asks for each `…SignatureDigest…` pair,
+  e.g. `ECDSASignatureDigestX962SHA384`, on the private key; the PKCS#11
+  and CNG mechanisms take any digest). If a store still refuses the pair at
+  signing time, the key source answers `Unsupported` before the PIN is asked
+  (macOS checks the pair before `SecKeyCreateSignature`, which owns the
+  dialog), never after.
 - RSASSA-PSS always uses MGF1 with the same hash and a salt as long as the
   digest (what CNG, CryptoTokenKit and PKCS#11 do; proven in the kit).
 - `signature`: RSA → the modulus-length block; ECDSA → raw `r‖s`, each half

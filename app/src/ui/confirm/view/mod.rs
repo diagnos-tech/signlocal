@@ -53,14 +53,22 @@ impl Screen<'_> {
     }
 }
 
-/// Header `padding: 20px 24px 16px`; body `16px 24px`; footer `0 24px`.
+/// Header `padding: 20px 24px 16px`; body `16px 24px 4px`; footer `0 24px`.
 const HEADER_MARGIN: Margin = Margin {
     left: 24,
     right: 24,
     top: 20,
     bottom: 16,
 };
-const BODY_MARGIN: Margin = Margin::symmetric(24, 16);
+/// The body's bottom padding is only the gap kept above the footer: it
+/// scrolls with the content, so any more than the fit leaves (`fit.rs`)
+/// would make the body scroll by a sliver and show its scrollbar.
+pub(super) const BODY_MARGIN: Margin = Margin {
+    left: 24,
+    right: 24,
+    top: 16,
+    bottom: 4,
+};
 const FOOTER_MARGIN: Margin = Margin::symmetric(24, 0);
 const FOOTER_HEIGHT: f32 = 64.0;
 
@@ -78,7 +86,7 @@ pub fn show(ui: &mut Ui, mut screen: Screen<'_>) {
     CentralPanel::no_frame()
         .frame(Frame::new().fill(c.bg_canvas))
         .show(ui, |ui| {
-            let viewport = ui.available_height() - f32::from(BODY_MARGIN.top);
+            let viewport = ui.available_height() - BODY_MARGIN.sum().y;
             screen.session.fit.set_viewport(viewport);
             ScrollArea::vertical()
                 .auto_shrink([false, false])

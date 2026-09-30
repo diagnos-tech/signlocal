@@ -19,8 +19,6 @@ use egui::{Align, Context, Rect, Response, Ui};
 
 use crate::ui::theme::metrics;
 
-/// Space kept between the last block and the footer.
-const ABOVE_FOOTER: f32 = metrics::SPACE_1;
 /// A shortened box hides at least this much of a row, so what is left of
 /// it reads as "more below" rather than as a clipping mistake.
 const CUT_AT_LEAST: f32 = 0.4 * metrics::ROW_CERT;
@@ -32,7 +30,8 @@ const SHORTEST: f32 = 0.5 * metrics::ROW_CERT;
 /// What the body measured for the request on screen (`Session::fit`).
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct Fit {
-    /// Visible height of the body's content, below its top margin.
+    /// Visible height of the body's content, inside its margins (the bottom
+    /// one is the gap kept above the footer).
     viewport: f32,
     /// Height from the body's top to the bottom of the last block that must
     /// be seen, without the rows' scroll box; `None` while none is shown.
@@ -65,7 +64,7 @@ impl MustSee<'_> {
 }
 
 impl Fit {
-    /// The body's visible height below its top margin, this frame.
+    /// The body's visible height inside its margins, this frame.
     pub fn set_viewport(&mut self, height: f32) {
         self.viewport = height;
     }
@@ -76,7 +75,7 @@ impl Fit {
         let Some(around) = self.around_rows else {
             return wanted;
         };
-        let room = self.viewport - around - ABOVE_FOOTER;
+        let room = self.viewport - around;
         if room >= wanted {
             return wanted;
         }

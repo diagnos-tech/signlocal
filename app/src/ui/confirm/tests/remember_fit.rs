@@ -2,7 +2,7 @@
 //! top (the Continue hint, or what Choose mode shares) says what the primary
 //! button does, and "Remember" says what ticking it grants, so both stay in
 //! the visible body, between the header and the footer; the list scrolls
-//! inside itself instead of the body.
+//! inside itself instead of the body, which never scrolls by a sliver.
 
 use egui::Rect;
 use egui::accesskit::Role;
@@ -11,6 +11,7 @@ use websign_protocol::types::BrowserName;
 use websign_ui_model::certs::CertCandidate;
 use websign_ui_model::confirm::port::{CallerView, Mode};
 
+use super::super::view::BODY_MARGIN;
 use super::fixtures::*;
 use super::pin_fit::PIN_PRIVACY;
 use super::support::{Rig, THEMES};
@@ -86,6 +87,15 @@ fn assert_readable(
         assert!(
             seen.body.contains_rect(seen.remember),
             "{name}, {theme}: Remember ({:?}) is not whole in the body ({:?})",
+            seen.remember,
+            seen.body
+        );
+        // Less room under "Remember" than the body's bottom padding would
+        // make the body scroll by a few pixels and show its scrollbar.
+        let padding = f32::from(BODY_MARGIN.bottom);
+        assert!(
+            seen.body.bottom() - seen.remember.bottom() >= padding - 0.5,
+            "{name}, {theme}: the body overflows under Remember ({:?} in {:?})",
             seen.remember,
             seen.body
         );
