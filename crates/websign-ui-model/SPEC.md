@@ -147,7 +147,7 @@ States and transitions follow ux §4.8 with D11:
 | Choosing | remembered caller | (host already sent the digest request) code card `Preparing` |
 | Choosing | `DigestReady` for the selected certificate, after Continue or for a remembered caller | Ready; re-arm |
 | Ready | `DigestReady` again for the selection | code replaced; re-arm |
-| Choosing / Ready / PinError / PinLocked / Error | `Select(other usable)` (armed) | Choosing; intent `Selected(other)`; re-arm; PIN length, PIN error, banner and path reset; (remembered: `Preparing`, new: `ContinueHint`) |
+| Choosing / Ready / PinError / PinLocked / Error | `Select(other usable)` (settled, §2.2.1) | Choosing; intent `Selected(other)`; re-arm; PIN length, PIN error, banner and path reset; (remembered: `Preparing`, new: `ContinueHint`) |
 | Ready / PinError | primary click or `Enter` (armed; PIN length valid when the field is shown) | Signing; intent `Sign { via, … }` |
 | Error (retryable) | primary click or `Enter` (armed, "Try again") | Signing; intent `Sign` on the last path |
 | Error `DriverFailure { alternate: true }` | `UseAlternatePath` (armed) | Signing; intent `Sign { via: 1 }`; later retries keep `via: 1` |
@@ -185,8 +185,19 @@ asked for it (D11).
   no API can abort: Cancel is disabled ("Please wait…") and Escape does
   nothing; the OS dialog or the keypad has its own cancel.
 - Everything else is ignored while unarmed: primary press/release, `Enter`,
-  `Select`, `Remember`, `Rescan`, `OpenDiagnostics`, `UseAlternatePath`.
+  `Remember`, `Rescan`, `OpenDiagnostics`, `UseAlternatePath`.
   `Focus` and `PinLength` are always taken (they decide nothing).
+- `Select` is gated only until the window **settles**: it has been armed at
+  least once since the last `Focus` change or `Open` (an input or a re-arm
+  observed while armed marks it). From then on `Select` is taken armed or
+  not, and re-arms as usual: a selection approves nothing, so ↑/↓ are not
+  limited to one step per 600 ms, while a click or arrow that lands on a
+  window just shown or just refocused is still dropped. `Focus(_)` and
+  `Open` unsettle it.
+- `is_armed(now)` exposes the arming to the renderer, which drops typed keys
+  (except Esc) before any widget sees them while it is false;
+  `accepts_selection(now)` (= settled or armed) lets it keep the list's
+  navigation keys (↑, ↓, Home, End) during that time.
 - `Enter` means Enter in the PIN field or on the focused primary button; the
   app never sends it for Enter on a list row (ux §4.9: it moves focus). The
   model accepts `Enter` **only as Sign** (Ready, PinError, retryable Error):
@@ -198,6 +209,11 @@ asked for it (D11).
 
 #### 2.2.2 PIN, retries and the code card
 
+- `PinMode::System` → `PinBlock::OsPrompt { system }` named after the key's
+  store, not the running OS: `KeySource::Windows` → `Windows`,
+  `MacosKeychain`/`MacosToken` → `Macos`. A `Driver` source has no system
+  dialog (C_Login needs our PIN), so `System` there is treated as our field
+  with no stated limits. Linux therefore never shows an OS PIN hint.
 - PIN length is valid when inside the token's `(min, max)`; with no stated
   limits, any length ≥ 1. It only matters when our field is shown.
 - `PinIncorrect { final_try }` → `IncorrectFinal`; else `count_low` →
@@ -211,10 +227,15 @@ asked for it (D11).
 - `Preparing { skeleton }` turns true 150 ms after the card started
   preparing: the Continue click (new caller), entering Choosing (remembered
   caller) or a `DigestPending` for the selection, whichever is latest.
+- `loading` is `Some` only in LoadingCerts: `skeleton` 150 ms after the
+  listing started (`Open` or `Rescan`), `slow_device` = the device of the
+  last `SlowListing` for the request on screen, shown 2 s after the listing
+  started. Leaving LoadingCerts forgets both.
 - The countdown shows whole seconds left, rounded up (14.5 s → 15).
 - `next_deadline`: the earliest future instant of arming completion, the
   success / site-cancelled / timeout hold end, the countdown start or its
-  next second, and the skeleton delay.
+  next second, the skeleton delay, and while loading its 150 ms and 2 s
+  marks.
 
 ### 2.3 `cancel_code`
 

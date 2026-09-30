@@ -122,6 +122,16 @@ pub struct ConfirmModel {
     pub(super) focused: bool,
     /// Choose mode: the decision was sent and the answer is pending.
     pub(super) chosen: bool,
+    /// The window has been armed since it last gained focus or took a
+    /// request: the person has had it in front of them for 600 ms. From then
+    /// on moving the selection is not gated (a selection approves nothing and
+    /// re-arms the button), so ↑/↓ are not limited to one step per 600 ms,
+    /// while keys and clicks that land on a window just shown still are.
+    pub(super) settled: bool,
+    /// When the current listing started (`LoadingCerts`).
+    pub(super) loading_since: Option<Instant>,
+    /// The device the host says is slow to list ("Still reading {device}").
+    pub(super) slow_device: Option<String>,
 }
 
 impl Default for ConfirmModel {
@@ -149,6 +159,9 @@ impl ConfirmModel {
             hold_until: None,
             focused: false,
             chosen: false,
+            settled: false,
+            loading_since: None,
+            slow_device: None,
         }
     }
 
@@ -175,6 +188,23 @@ impl ConfirmModel {
         timers::tick(self, now)
     }
 
+    /// Whether the window takes decisions at `now` (`docs/ux.md` §4.7):
+    /// focused, and 600 ms past the last re-arm. The model gates its own
+    /// inputs with it; the renderer asks too, to drop keystrokes before any
+    /// widget sees them, so typing meant for the site never fills the PIN
+    /// field.
+    pub fn is_armed(&self, now: Instant) -> bool {
+        self.arming.is_armed(now)
+    }
+
+    /// Whether [`UserInput::Select`] is taken at `now`: once armed, or
+    /// after the window has been armed since it last gained focus or took a
+    /// request. The renderer lets the list's navigation keys through its
+    /// keystroke guard while this holds.
+    pub fn accepts_selection(&self, now: Instant) -> bool {
+        self.settled || self.is_armed(now)
+    }
+
     /// What to draw at `now`.
     pub fn view(&self, now: Instant) -> ConfirmView {
         build::view(self, now)
@@ -195,5 +225,7 @@ mod error_tests;
 mod pin_and_list_tests;
 #[cfg(test)]
 mod rig;
+#[cfg(test)]
+mod selection_tests;
 #[cfg(test)]
 mod tests;

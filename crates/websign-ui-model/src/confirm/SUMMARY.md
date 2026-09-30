@@ -14,5 +14,5 @@
 - `pin.rs` — The PIN area of the window (`docs/ux.md` §4.6).
 - `port.rs` — The contract between the host engine and the confirmation window.
 - `slot.rs` — What the code card is waiting for.
-- `timers.rs` — Time-driven changes: result holds, arming, countdown, skeleton delay.
+- `timers.rs` — Time-driven changes: result holds, arming, countdown, skeleton and slow-listing delays.
 - `view.rs` — A description of the confirmation window at one instant: everything the egui renderer needs, nothing it must decide.

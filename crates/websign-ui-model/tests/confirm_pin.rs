@@ -4,9 +4,9 @@ mod common;
 
 use common::*;
 use websign_protocol::ErrorCode;
-use websign_ui_model::certs::{CertCandidate, DeviceLabel, PinMode};
+use websign_ui_model::certs::{CertCandidate, DeviceLabel, KeySource, PinMode};
 use websign_ui_model::confirm::port::Failure;
-use websign_ui_model::confirm::view::{FooterHint, PinBlock, PrimaryButton};
+use websign_ui_model::confirm::view::{FooterHint, PinBlock, PinSystem, PrimaryButton};
 use websign_ui_model::confirm::{ConfirmState, Intent, UserInput};
 
 fn app_pin_token(length: Option<(u32, u32)>) -> CertCandidate {
@@ -113,11 +113,48 @@ fn without_stated_limits_any_typed_pin_is_valid_but_an_empty_one_is_not() {
 fn a_system_pin_shows_the_os_prompt_hint_before_and_after_the_click() {
     let mut w = ready_remembered(pair(), context());
     let view = w.view();
-    assert_eq!(view.pin, PinBlock::OsPrompt { now: false });
+    let windows = PinSystem::Windows;
+    assert_eq!(
+        view.pin,
+        PinBlock::OsPrompt {
+            now: false,
+            system: windows
+        }
+    );
     assert_eq!(view.footer.hint, FooterHint::OsPinPrompt);
     w.click();
     w.signing();
-    assert_eq!(w.view().pin, PinBlock::OsPrompt { now: true });
+    assert_eq!(
+        w.view().pin,
+        PinBlock::OsPrompt {
+            now: true,
+            system: windows
+        }
+    );
+}
+
+#[test]
+fn the_os_prompt_names_the_key_store_not_the_running_os() {
+    let mut keychain = candidate(1, "Ana");
+    keychain.source = KeySource::MacosToken;
+    let w = ready_remembered(vec![keychain], context());
+    assert_eq!(
+        w.view().pin,
+        PinBlock::OsPrompt {
+            now: false,
+            system: PinSystem::Macos
+        }
+    );
+}
+
+#[test]
+fn a_driver_key_always_gets_our_field_and_never_an_os_hint() {
+    // PKCS#11 has no system dialog: even a candidate that claims a system
+    // PIN gets our field (the only way C_Login gets a PIN), with no hint.
+    let w = ready_remembered(vec![pin_token(1, "Ana", PinMode::System)], context());
+    let view = w.view();
+    assert!(matches!(view.pin, PinBlock::Field { length: None, .. }));
+    assert_eq!(view.footer.hint, FooterHint::None);
 }
 
 #[test]
@@ -139,7 +176,8 @@ fn an_unlocked_token_needs_no_pin_and_signs_directly() {
 #[test]
 fn cancel_is_disabled_only_while_the_os_or_the_pin_pad_is_signing() {
     let cases = [
-        (pin_token(1, "Ana", PinMode::System), false),
+        // A system PIN belongs to an OS key store; a driver never has one.
+        (candidate(1, "Ana"), false),
         (pin_token(1, "Ana", PinMode::PinPad), false),
         (pin_token(1, "Ana", app_pin(Some((4, 16)))), true),
         (pin_token(1, "Ana", PinMode::Unlocked), true),

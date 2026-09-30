@@ -6,6 +6,10 @@ use std::time::{Duration, Instant};
 use super::machine::{ConfirmModel, ConfirmState, Intent};
 use super::slot::{CodeSlot, SKELETON_DELAY};
 
+/// "Still reading {device}…" waits this long (`docs/ux.md` §11.4
+/// `delay-slow-hint`).
+pub(super) const SLOW_HINT_DELAY: Duration = Duration::from_secs(2);
+
 /// The footer counts down during the last stretch of the request.
 const COUNTDOWN: Duration = Duration::from_secs(30);
 
@@ -35,6 +39,9 @@ pub(super) fn next_deadline(model: &ConfirmModel, now: Instant) -> Option<Instan
         candidates.extend(countdown_change(model, now));
         if let CodeSlot::Preparing(since) = model.code {
             candidates.push(since + SKELETON_DELAY);
+        }
+        if let Some(since) = model.loading_since.filter(|_| model.state == ConfirmState::LoadingCerts) {
+            candidates.extend([since + SKELETON_DELAY, since + SLOW_HINT_DELAY]);
         }
     }
     candidates.into_iter().filter(|at| *at > now).min()

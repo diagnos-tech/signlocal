@@ -24,6 +24,9 @@ impl ConfirmModel {
     /// (`docs/ux.md` §4.7), so an unfocused window stays unarmed until
     /// `Focus(true)`: a click that only brings it forward never approves.
     pub(super) fn rearm(&mut self, now: Instant) {
+        if self.arming.is_armed(now) {
+            self.settled = true;
+        }
         if self.focused {
             self.arming.rearm(now);
         } else {

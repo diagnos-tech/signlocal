@@ -8,9 +8,10 @@ use super::machine::{ConfirmModel, ConfirmState};
 use super::outcome::is_retryable;
 use super::port::{CallerView, Mode};
 use super::slot::{CodeSlot, SKELETON_DELAY};
-use super::timers::seconds_left;
+use super::timers::{SLOW_HINT_DELAY, seconds_left};
 use super::view::{
-    CodeCard, ConfirmView, FooterHint, FooterView, HeaderView, PinBlock, PrimaryButton, RememberBox,
+    CodeCard, ConfirmView, FooterHint, FooterView, HeaderView, LoadingView, PinBlock,
+    PrimaryButton, RememberBox,
 };
 
 /// The view of `model` at `now`.
@@ -42,7 +43,27 @@ pub(super) fn view(model: &ConfirmModel, now: Instant) -> ConfirmView {
             cancel_enabled: model.cancel_allowed(),
             primary_first: cfg!(target_os = "windows"),
         },
+        loading: loading(model, now),
     }
+}
+
+/// The skeleton after 150 ms and the slow-device hint after 2 s, counted
+/// from the start of the listing.
+fn loading(model: &ConfirmModel, now: Instant) -> Option<LoadingView> {
+    if model.state != ConfirmState::LoadingCerts {
+        return None;
+    }
+    let waited = model
+        .loading_since
+        .map(|since| now.saturating_duration_since(since))
+        .unwrap_or_default();
+    Some(LoadingView {
+        skeleton: waited >= SKELETON_DELAY,
+        slow_device: model
+            .slow_device
+            .clone()
+            .filter(|_| waited >= SLOW_HINT_DELAY),
+    })
 }
 
 /// The header of the request on screen. An idle window is hidden and never

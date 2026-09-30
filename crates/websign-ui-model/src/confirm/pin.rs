@@ -1,8 +1,8 @@
 //! The PIN area of the window (`docs/ux.md` §4.6).
 
 use super::machine::{ConfirmModel, ConfirmState};
-use super::view::{PinBlock, PinError};
-use crate::certs::{DeviceLabel, DisabledReason, PinMode, RowStatus};
+use super::view::{PinBlock, PinError, PinSystem};
+use crate::certs::{CertRow, DeviceLabel, DisabledReason, KeySource, PinMode, RowStatus};
 
 impl ConfirmModel {
     /// What the PIN area shows for the selected certificate.
@@ -25,16 +25,28 @@ impl ConfirmModel {
             RowStatus::Disabled(DisabledReason::PinLocked) => PinBlock::Locked,
             RowStatus::Disabled(_) => PinBlock::Hidden,
             RowStatus::Usable => match row.candidate.pin {
-                PinMode::System => PinBlock::OsPrompt { now: signing },
+                PinMode::System => match pin_system(&row.candidate.source) {
+                    Some(system) => PinBlock::OsPrompt {
+                        now: signing,
+                        system,
+                    },
+                    // A driver never shows a dialog of its own: C_Login
+                    // needs the PIN from us.
+                    None => self.field(row, None),
+                },
                 PinMode::PinPad => PinBlock::PinPad { now: signing },
                 PinMode::Unlocked => PinBlock::Unlocked,
-                PinMode::App { length, .. } => PinBlock::Field {
-                    card: matches!(row.candidate.device, Some(DeviceLabel::CardInReader { .. })),
-                    length,
-                    valid: self.pin_length_valid(length),
-                    error: self.pin_error,
-                },
+                PinMode::App { length, .. } => self.field(row, length),
             },
+        }
+    }
+
+    fn field(&self, row: &CertRow, length: Option<(u32, u32)>) -> PinBlock {
+        PinBlock::Field {
+            card: matches!(row.candidate.device, Some(DeviceLabel::CardInReader { .. })),
+            length,
+            valid: self.pin_length_valid(length),
+            error: self.pin_error,
         }
     }
 
@@ -52,6 +64,16 @@ impl ConfirmModel {
             Some((min, max)) => (min..=max).contains(&typed),
             None => typed > 0,
         }
+    }
+}
+
+/// Whose dialog asks for the PIN of a key reached through `source`; `None`
+/// for a token driver, which has none.
+fn pin_system(source: &KeySource) -> Option<PinSystem> {
+    match source {
+        KeySource::Windows => Some(PinSystem::Windows),
+        KeySource::MacosKeychain | KeySource::MacosToken => Some(PinSystem::Macos),
+        KeySource::Driver { .. } => None,
     }
 }
 

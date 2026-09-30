@@ -25,6 +25,19 @@ pub struct ConfirmView {
     pub remember: RememberBox,
     pub banner: Option<Failure>,
     pub footer: FooterView,
+    /// "Looking for certificates…", only in `LoadingCerts`.
+    pub loading: Option<LoadingView>,
+}
+
+/// The list's place while the key stores are read (`docs/ux.md` §4.8).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LoadingView {
+    /// Two skeleton rows, once 150 ms have passed (a fast listing never
+    /// flashes them).
+    pub skeleton: bool,
+    /// "Still reading {device}…", once 2 s have passed and the host said
+    /// which device is slow.
+    pub slow_device: Option<String>,
 }
 
 /// Header: eyebrow, caller, alerts.
@@ -64,9 +77,12 @@ pub enum PinBlock {
         valid: bool,
         error: Option<PinError>,
     },
-    /// "Windows/macOS will ask for your PIN in its own window."
+    /// "Windows/macOS will ask for your PIN in its own window." Only keys
+    /// an OS key store holds get here; a token driver (PKCS#11) never has a
+    /// system dialog, so on Linux this block never shows.
     OsPrompt {
         now: bool,
+        system: PinSystem,
     },
     /// "Enter your PIN on the reader's keypad."
     PinPad {
@@ -76,6 +92,17 @@ pub enum PinBlock {
     Unlocked,
     /// The locked warning replaces the field.
     Locked,
+}
+
+/// The key store whose own dialog asks for the PIN (`docs/ux.md` §4.6).
+/// It names the key's store, not the running OS, so the hint can never
+/// promise a dialog that will not come.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PinSystem {
+    /// CNG / CAPI (or the smart-card middleware they load).
+    Windows,
+    /// Keychain / CryptoTokenKit.
+    Macos,
 }
 
 /// The PIN field's error line.
@@ -118,6 +145,7 @@ pub enum FooterHint {
     ExpiresIn {
         seconds: u32,
     },
+    /// The OS asks for the PIN; which OS is in [`PinBlock::OsPrompt`].
     OsPinPrompt,
     OpenDiagnostics,
 }

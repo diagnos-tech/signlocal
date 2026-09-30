@@ -50,6 +50,11 @@ pub(super) fn apply(model: &mut ConfirmModel, command: UiCommand, now: Instant) 
         UiCommand::Signing { key } if model.is_current(key) => model.signing_started(),
         UiCommand::Failed { key, failure } if model.is_current(key) => model.failed(failure),
         UiCommand::Finished { key, finish } if model.is_current(key) => model.finished(finish, now),
+        UiCommand::SlowListing { key, device }
+            if model.is_current(key) && model.state == ConfirmState::LoadingCerts =>
+        {
+            model.slow_device = device;
+        }
         UiCommand::Queue { key, position } if model.is_current(key) => {
             if let Some(request) = &mut model.request {
                 request.position = position;
@@ -65,9 +70,12 @@ impl ConfirmModel {
         self.deadline = Some(now + Duration::from_secs(u64::from(request.timeout_secs)));
         self.request = Some(request);
         self.state = ConfirmState::LoadingCerts;
+        self.loading_since = Some(now);
         // The next request of a queue re-arms a focused window at once; a
-        // window that is only being shown waits for `Focus(true)`.
+        // window that is only being shown waits for `Focus(true)`. New
+        // content is on screen: the selection is gated again until armed.
         self.rearm(now);
+        self.settled = false;
     }
 
     /// A fresh listing. While searching (loading or empty) the list is built

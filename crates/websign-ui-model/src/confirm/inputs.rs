@@ -18,17 +18,23 @@ use crate::certs::RowStatus;
 /// this certificate, Remember) and the other clicks and keys of the window,
 /// so a keystroke or double-click meant for the site never lands here
 /// (`docs/ux.md` §4.7). Focus changes and PIN typing are always taken: they
-/// decide nothing.
+/// decide nothing. Selection is not approval: once the window has been
+/// armed since it gained focus, `Select` is taken during the re-arm it
+/// causes, so the arrows move freely while Sign waits its 600 ms again.
 pub(super) fn handle(model: &mut ConfirmModel, input: UserInput, now: Instant) -> Vec<Intent> {
     let armed = model.arming.is_armed(now);
+    if armed {
+        model.settled = true;
+    }
     match input {
-        UserInput::Focus(true) => {
-            model.focused = true;
-            model.arming.rearm(now);
-        }
-        UserInput::Focus(false) => {
-            model.focused = false;
-            model.arming.disarm();
+        UserInput::Focus(focused) => {
+            model.focused = focused;
+            model.settled = false;
+            if focused {
+                model.arming.rearm(now);
+            } else {
+                model.arming.disarm();
+            }
         }
         UserInput::PinLength(length) => model.pin_len = length,
         UserInput::PrimaryPress => model.arming.press(now),
@@ -41,9 +47,9 @@ pub(super) fn handle(model: &mut ConfirmModel, input: UserInput, now: Instant) -
             return model.close();
         }
         UserInput::Enter if armed => return model.enter(),
-        UserInput::Select(fingerprint) if armed => return model.select(fingerprint, now),
+        UserInput::Select(fingerprint) if model.settled => return model.select(fingerprint, now),
         UserInput::Remember(checked) if armed => model.set_remember(checked),
-        UserInput::Rescan if armed && model.on_screen() => return model.rescan(),
+        UserInput::Rescan if armed && model.on_screen() => return model.rescan(now),
         UserInput::OpenDiagnostics if armed && model.on_screen() => {
             return vec![Intent::OpenDiagnostics(None)];
         }
@@ -93,10 +99,12 @@ impl ConfirmModel {
         vec![Intent::Selected(fingerprint)]
     }
 
-    fn rescan(&mut self) -> Vec<Intent> {
+    fn rescan(&mut self, now: Instant) -> Vec<Intent> {
         if self.state == ConfirmState::Empty {
             self.state = ConfirmState::LoadingCerts;
             self.list = None;
+            self.slow_device = None;
+            self.loading_since = Some(now);
         }
         vec![Intent::Rescan]
     }
