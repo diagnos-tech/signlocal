@@ -62,6 +62,6 @@ export function checkFingerprint(certificate: unknown): string | undefined {
   if (typeof fingerprint === "string" && FINGERPRINT.test(fingerprint)) return fingerprint;
   throw new WebSignError(
     "InvalidRequest",
-    "certificate must be a Certificate from certificates() or its SHA-256 fingerprint (64 lowercase hex digits).",
+    "certificate must be a Certificate or its fingerprint (64 lowercase hex digits).",
   );
 }

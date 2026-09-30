@@ -1,7 +1,16 @@
 # Install WebeSign
 
-WebeSign has two parts: the **app** (`websign`, on your computer) and the **browser extension**. Install both.
-Prerelease builds are **not code-signed yet** (see [Why unsigned?](#why-unsigned)), so each OS shows a
+Use your smart card, USB token, or OS certificate to sign on any website, in Chrome, Edge, Firefox, Opera,
+Brave or Safari on Windows, macOS or Linux. WebeSign has two parts: the **app** (`websign`, on your
+computer) and the **browser extension**. Install both, in three steps:
+
+1. Install the app for your system: [Windows](#windows-x64-arm64), [macOS](#macos-universal-apple-silicon-and-intel)
+   or [Linux](#linux-amd64-arm64).
+2. Add the [browser extension](#browser-extension).
+3. Sign a harmless sample on the website's `/test` page to check that everything works.
+
+The [download page](https://diagnos-tech.github.io/web-esign/download.html) shows the same steps for your
+system and browser. Prerelease builds are **not code-signed yet** (see [Why unsigned?](#why-unsigned)), so each OS shows a
 warning once. File names below are those of [`docs/architecture/packaging-and-release.md`](architecture/packaging-and-release.md);
 replace `<v>` with the release version (for example `0.1.0`).
 
@@ -175,7 +184,7 @@ The extension is not in the stores yet. Download `websign-extension-<v>-chromium
 |---|---|
 | Chrome, Edge, Brave | Open `chrome://extensions` (`edge://extensions`, `brave://extensions`), turn on **Developer mode**, click **Load unpacked** and pick the unzipped `websign-extension-<v>-chromium` folder. Keep the folder: the browser loads it from there. Its fixed development key gives the ID the app allows. |
 | Firefox | Open `about:debugging`, **This Firefox**, **Load Temporary Add-on**, and pick `manifest.json` in the unzipped folder. It lasts until Firefox restarts. To keep it, use Firefox Developer Edition, Nightly or ESR: set `xpinstall.signatures.required` to `false` in `about:config`, then in `about:addons` choose **Install Add-on From File** and pick the zip. |
-| Safari | Not available in direct builds; it arrives with the store release. |
+| Safari | Comes inside `WebeSign.app`; nothing to download. See [Safari](#safari) below. |
 
 **About the development key.** The Chromium zip pins its ID with a public development key from `project.toml`, so the
 app can allow it before the extension is in a store. Anyone can reuse that key: an unpacked extension built with it gets
@@ -184,6 +193,36 @@ keep other unpacked extensions you do not trust. Your confirmation in the app wi
 signature. Store builds never carry this key.
 
 **Uninstall:** remove it from the browser's extensions page (`about:addons` in Firefox), then delete the folder.
+
+## Safari
+
+The Safari extension ships inside `WebeSign.app` (macOS 13 or later, Safari 17 or later), so installing the app
+on macOS is the whole download. The build is not signed by Apple yet, so Safari only loads it with
+**Allow Unsigned Extensions**, a developer setting Safari turns off again every time it quits.
+
+1. Install the app (see [macOS](#macos-universal-apple-silicon-and-intel)) and open **WebeSign** once from
+   Applications, so macOS registers the extension it contains. Close the window.
+2. In Safari, open **Settings → Advanced** and turn on **Show features for web developers**.
+3. Open **Settings → Developer** and turn on **Allow unsigned extensions**. Safari asks for your Mac password.
+4. Open **Settings → Extensions**, tick **WebeSign**, and allow it on the websites where you sign (**Edit
+   Websites…**, or **Always Allow on This Website** the first time a site asks).
+5. Check it: open the test page of the website (`/test/`) and sign once. The WebeSign window says
+   "via Safari".
+
+**After every Safari restart**, repeat step 3; the extension stays ticked. If WebeSign is missing from
+**Settings → Extensions**, open the app once more, or run
+`pluginkit -a /Applications/WebeSign.app/Contents/PlugIns/WebeSignExtension.appex` and restart Safari.
+
+**What is different in Safari.** Safari runs the extension's native part in a sandbox, and the WebeSign window it
+opens runs in that sandbox too. Certificates in the Keychain and tokens that work with macOS (CryptoTokenKit)
+behave as in other browsers. Sites you choose to remember, and the diagnostics of Safari connections, are kept
+separately from the other browsers'. Token drivers that are only PKCS#11 modules load from `/Applications`,
+`/Library`, `/usr/local/lib` or `/opt/homebrew/lib`.
+
+**Uninstall.** Untick WebeSign in **Settings → Extensions**; deleting the app removes the extension.
+
+`TODO(gustavo)`: Apple Developer ID signing and notarization (Safari then loads the extension without the developer
+setting), and later the Mac App Store.
 
 ## Why unsigned?
 

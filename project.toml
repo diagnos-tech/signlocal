@@ -13,7 +13,7 @@
 name = "WebeSign"
 # Lowercase ASCII: binary names, folders, log files.
 slug = "websign"
-tagline = "Sign with your digital certificate on any website or app."
+tagline = "Use your smart card, USB token, or OS certificate to sign on any website."
 repository = "https://github.com/diagnos-tech/web-esign"
 # TODO(gustavo): own GitHub Pages subdomain (CNAME file + DNS).
 homepage = "https://diagnos-tech.github.io/web-esign/"

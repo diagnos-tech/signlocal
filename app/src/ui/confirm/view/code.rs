@@ -28,11 +28,14 @@ pub fn show(ui: &mut Ui, s: &mut Screen<'_>) {
         Mode::Sign { hash } => words::hash(hash),
         Mode::Choose => "",
     };
+    // Under an error notice the help line gives its room to the notice.
+    let compact = s.view.banner.is_some();
     let card = |state| CodeCard {
         label: &label,
         hash,
         help: &help,
         state,
+        compact,
     };
     match &s.view.code {
         Slot::Hidden => {}

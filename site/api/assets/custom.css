@@ -1,0 +1,44 @@
+/*
+ * Maps TypeDoc's default theme onto the site's tokens (site/assets/tokens.css,
+ * docs/ux.md §11), so the API reference looks like the rest of the site in
+ * light and dark. Values are copied, not imported: site/api/ is self-contained.
+ */
+:root {
+  --light-color-background: #f5f6f9;
+  --light-color-background-secondary: #ffffff;
+  --light-color-background-active: #edeff4;
+  --light-color-background-warning: #fff2d9;
+  --light-color-warning-text: #935300;
+  --light-color-accent: #dce0e8;
+  --light-color-active-menu-item: #eef0fd;
+  --light-color-text: #141722;
+  --light-color-text-aside: #545c6d;
+  --light-color-link: #3346d1;
+  --light-color-focus-outline: #3346d1;
+  --light-color-ts-keyword: #3346d1;
+  --light-code-background: #edeff4;
+
+  --dark-color-background: #0e1016;
+  --dark-color-background-secondary: #161922;
+  --dark-color-background-active: #1e222d;
+  --dark-color-background-warning: #2a1f0e;
+  --dark-color-warning-text: #efb35e;
+  --dark-color-accent: #2a2f3c;
+  --dark-color-active-menu-item: #1a1f3c;
+  --dark-color-text: #e7e9ef;
+  --dark-color-text-aside: #a3aab9;
+  --dark-color-link: #9da8ff;
+  --dark-color-focus-outline: #9da8ff;
+  --dark-color-ts-keyword: #9da8ff;
+  --dark-code-background: #0b0d12;
+
+  --font-family-text: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-family-code: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+body {
+  font-family: var(--font-family-text);
+}
+code,
+pre {
+  font-family: var(--font-family-code);
+}

@@ -13,6 +13,7 @@ use super::Screen;
 use crate::ui::confirm::words;
 use crate::ui::icons::{self, Icon};
 use crate::ui::theme::{self, metrics, typography};
+use crate::ui::widgets::text;
 
 const ICON: f32 = 48.0;
 /// Room above the notice, so it sits in the upper middle of the body.
@@ -72,7 +73,7 @@ fn notice(ui: &mut Ui, icon: Icon, color: egui::Color32, title: &str, body: Opti
     let response = ui
         .with_layout(Layout::top_down(Align::Center), |ui| {
             ui.spacing_mut().item_spacing = Vec2::new(0.0, metrics::SPACE_1);
-            ui.add_sized(Vec2::splat(ICON), egui::Label::new(icon.rich(ICON, color)));
+            text::icon(ui, icon, ICON, color);
             ui.add_space(6.0);
             ui.label(typography::TITLE.rich(title).color(c.fg));
             if let Some(body) = body {
@@ -89,6 +90,9 @@ fn notice(ui: &mut Ui, icon: Icon, color: egui::Color32, title: &str, body: Opti
     };
     response.widget_info(|| WidgetInfo::labeled(WidgetType::Label, true, &spoken));
     ui.ctx().accesskit_node_builder(response.id, |node| {
+        // egui files a label's text as its value; a status is named.
+        node.clear_value();
+        node.set_label(spoken.clone());
         node.set_role(egui::accesskit::Role::Status);
         node.set_live(egui::accesskit::Live::Polite);
     });

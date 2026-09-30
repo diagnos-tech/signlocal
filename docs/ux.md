@@ -1014,41 +1014,69 @@ diagnostics · Ctrl/⌘+W closes.
 
 ## 9. Extension popup
 
-Plain TS + CSS, no framework, **< 15 KB** in total (HTML + CSS + JS + inline SVG icons).
+Plain TS + CSS, no framework, **< 15 KB** in total (HTML + CSS + JS + inline SVG icons; `bun run size`).
 Width **320 px**, height by content (max 480). Font: system stack (`--ws-font-popup`).
 **Why the system font:** embedding Inter would cost ~50 KB, more than the whole popup, and the popup lives
 inside the browser's interface, where the system font looks native.
+Screenshots of every state, light and dark and in each locale: [`docs/screenshots/popup/`](screenshots/popup/)
+(`bun scripts/screenshots.ts` in `extension/`).
 
-Anatomy: header (20 px brand + "WebeSign") → status card (32 px icon + `text-title` title +
-`text-body` `fg-muted` text) → wide primary button (`control-lg`) → secondary text action → footer
-(`text-small` `fg-subtle`): "Extension 1.4.2 · App 1.4.0" and a "Privacy" link.
+Anatomy, on `bg-surface` with 16 px padding and 16 px gaps (like [the mockup](ux/mockups.html#popup)):
+header (20 px brand mark in `accent-fg` + "WebeSign", `text-body-strong`) → status (40 px circle in the
+tone's `*-soft` with a 22 px icon + `text-title` title + `text-body` `fg-muted` text) → wide primary button
+(`control-lg`) → secondary ghost button → footer above a `border` line (`text-small` `fg-subtle`):
+"Extension 1.4.2 · App 1.4.0" (only "Extension 1.4.2" while the app's version is unknown) and a "Privacy" link.
+Links that open a tab end in a 16 px `arrow-square-out` (primary only: beside a wrapping secondary label it
+floats off); buttons that act in place lead with their icon.
 
 | State | Detection | Icon | Title | Text | Primary | Secondary |
 |--------|----------|-------|--------|-------|----------|------------|
-| `checking` | connection in progress (shown only after 150 ms) | spinner | "Checking…" | n/a | n/a | n/a |
-| `ready` | host answered with version ≥ `MIN_APP_VERSION` | `check-circle` success | "Ready to sign" | "The WebeSign app 1.4.0 is connected to this browser." | Open diagnostics | n/a |
-| `missing` | `connectNative` failed ("host not found") | `download-simple` accent | "The WebeSign app isn't installed" | "The extension needs the app on your computer to sign." | Download for Windows | "Already installed? Activate the app" |
-| `outdated` | version < `MIN_APP_VERSION` or old protocol | `warning` warning | "Update the WebeSign app" | "You have version 1.1.0. This browser needs 1.3.0 or newer." | Update in Microsoft Store | n/a |
-| `error` | host started but did not answer within 3 s / closed | `x-circle` danger | "The app didn't respond" | "Try again. If it keeps happening, restart your computer." + technical code in `text-mono` | Try again | Download again |
-| `unsupported` | `runtime.getPlatformInfo().os` ∉ {win, mac, linux} | `info` | "WebeSign doesn't work on this system yet" | "Use a computer running Windows, macOS or Linux." | n/a | n/a |
+| `checking` | connection in progress (shown only after 150 ms) | spinner | "Looking for the app…" | n/a | n/a | n/a |
+| `ready` | host answered with version ≥ `MIN_APP_VERSION` | `check-circle` success | "Ready to sign" | "The WebeSign app 1.4.0 is connected to this browser." | Test your setup ↗ (site `/test/`) | Open diagnostics |
+| `missing` | `connectNative` failed ("host not found") | `download-simple` accent | "Install the WebeSign app" | "The extension needs the app on your computer to sign." | Download for Windows ↗ | "Already installed? Finish setting up" (site `/activate/`) |
+| `outdated` | version < `MIN_APP_VERSION` or old protocol | `warning` warning | "Update the WebeSign app" | "You have version 1.1.0. This browser needs 1.3.0 or newer." | Download the update ↗ | n/a |
+| `error` | host started but did not answer within 3 s / closed | `x-circle` danger | "The app didn't respond" | "Try again. If it keeps happening, restart your computer." + "Error code: Timeout" in `text-mono` | Try again | Download again |
+| `unsupported` | `runtime.getPlatformInfo().os` ∉ {win, mac, linux} | `info` neutral | "WebeSign doesn't work on this system yet" | "Use a computer running Windows, macOS, or Linux." | n/a | n/a |
+
+**Why "Test your setup" leads in `ready`:** people who open a popup that works want to see a signature work;
+Diagnostics is for trouble and stays one step away. **Why "Download the update" and not "Update in Microsoft
+Store":** the app is not in the stores yet; the label names the store (`popup.update_in`) once it is
+(`TODO(gustavo)`). The activation and test links use the site's own words for those pages.
 
 **App installed but never opened (host not registered):** for the extension this is the same as "not installed"
 (`connectNative` fails the same way). Resolution:
 
 1. The package registers the `websign:` URL scheme **at installation** (MSIX `windows.protocol`, `CFBundleURLTypes`
    on Mac, `.desktop` with `x-scheme-handler/websign` on Linux). This does not require opening the app.
-2. "Already installed? Activate the app" opens `https://<site>/activate/` in a tab. That page calls `websign:activate`
-   (the browser asks "Open WebeSign?"), the app writes the manifests of all browsers and shows the
-   Diagnostics window with "Getting started".
+2. "Already installed? Finish setting up" opens `https://<site>/activate/` in a tab. That page calls
+   `websign:activate` (the browser asks "Open WebeSign?"), the app writes the manifests of all browsers and shows
+   the Diagnostics window with "Getting started".
 3. The `/activate/` page uses the extension's announcement on the page to show live "Looking for the app… → Ready".
 
 **Why a page and not the popup:** the popup closes when the browser shows the protocol prompt;
 the page stays open and follows the result.
 
-Other rules: "Open diagnostics" sends `{type: "openDiagnostics"}` through native messaging and closes the popup;
-download links pick the OS through `runtime.getPlatformInfo()` (Windows → Microsoft Store; Mac → Mac App
-Store; Linux → the site's download page with .deb/.rpm); the extension icon gets the "!" badge (`warning`)
-in `missing`/`outdated`/`error` and loses it in `ready`.
+Behavior:
+
+- **No flash, no jump.** The frame (header, status, actions, footer) is drawn synchronously on open, so the
+  browser sizes the popup once; only the status, actions and footer text change. The status content fades in
+  over `motion-base` (none with reduced motion); "Checking" appears only after `delay-loading`.
+- **Screen readers.** The status is one persistent `role="status"` region (a region born with its text is not
+  announced), `aria-busy` while checking; icons are `aria-hidden`; every link is described as "Opens in a new
+  tab"; the page `lang` is the browser's UI language.
+- **Focus and keyboard.** Nothing takes focus on open (no focus ring flashing at mouse users); Tab reaches the
+  primary action first, then the secondary, then Privacy; Esc closes (browser). When a repaint removes the
+  focused button ("Try again"), focus moves to the new state's primary action. Focus ring: 2 px `focus`,
+  offset 2 px. In forced-colors mode the buttons keep a visible border.
+- **Links** open with `tabs.create` and close the popup (Safari's popover ignores `target=_blank`); middle and
+  modified clicks keep the browser's own behavior. Download links go to the site's download page at the
+  detected OS's section (`download.html#windows|#macos|#linux`; stores later, `TODO(gustavo)`).
+- **Open diagnostics** sends `{type: "diagnostics.open"}` through native messaging once (the actions are
+  `aria-busy` until the answer) and closes the popup; if the app could not open it, the popup re-checks.
+- **Per browser.** One build per browser, same popup. Firefox and Safari close the popup themselves when a tab
+  opens; Chromium browsers (Chrome, Edge, Brave, Opera) need `window.close()`. Safari on iOS reports `ios`
+  and gets `unsupported`. Opened as a tab or in a side panel, the popup stays 320 px and centers.
+- The extension icon gets the "!" badge (`warning`) in `missing`/`outdated`/`error` and loses it in `ready`.
 
 ---
 
@@ -1597,25 +1625,30 @@ the translations for es, fr, it, de, and pt-PT follow the same keys.
 
 | Key | pt-BR | en |
 |-------|-------|----|
-| `popup.checking` | Verificando… | Checking… |
+| `popup.checking` | Procurando o app… | Looking for the app… |
 | `popup.ready_title` | Tudo pronto para assinar | Ready to sign |
 | `popup.ready_body` | O app WebeSign {version} está conectado a este navegador. | The WebeSign app {version} is connected to this browser. |
+| `popup.test` | Teste sua configuração | Test your setup |
 | `popup.open_diagnostics` | Abrir diagnóstico | Open diagnostics |
-| `popup.missing_title` | Falta instalar o app WebeSign | The WebeSign app isn't installed |
+| `popup.missing_title` | Instale o app WebeSign | Install the WebeSign app |
 | `popup.missing_body` | A extensão precisa do app no computador para assinar. | The extension needs the app on your computer to sign. |
 | `popup.download` | Baixar para {os} | Download for {os} |
-| `popup.activate` | Já instalei? Ativar o app | Already installed? Activate the app |
+| `popup.activate` | Já instalou? Conclua a configuração | Already installed? Finish setting up |
 | `popup.outdated_title` | Atualize o app WebeSign | Update the WebeSign app |
 | `popup.outdated_body` | Você tem a versão {installed}. Este navegador precisa da {required} ou mais nova. | You have version {installed}. This browser needs {required} or newer. |
+| `popup.update` | Baixar a atualização | Download the update |
 | `popup.update_in` | Atualizar na {store} | Update in {store} |
 | `popup.error_title` | O app não respondeu | The app didn't respond |
 | `popup.error_body` | Tente de novo. Se continuar, reinicie o computador. | Try again. If it keeps happening, restart your computer. |
+| `popup.error_code` | Código de erro: {code} | Error code: {code} |
 | `popup.retry` | Tentar de novo | Try again |
 | `popup.redownload` | Baixar de novo | Download again |
 | `popup.unsupported_title` | O WebeSign ainda não funciona neste sistema | WebeSign doesn't work on this system yet |
-| `popup.unsupported_body` | Use um computador com Windows, macOS ou Linux. | Use a computer running Windows, macOS or Linux. |
+| `popup.unsupported_body` | Use um computador com Windows, macOS ou Linux. | Use a computer running Windows, macOS, or Linux. |
 | `popup.footer_versions` | Extensão {ext} · App {app} | Extension {ext} · App {app} |
+| `popup.footer_extension` | Extensão {ext} | Extension {ext} |
 | `popup.privacy` | Privacidade | Privacy |
+| `popup.new_tab` | Abre em uma nova aba | Opens in a new tab |
 | `store.microsoft` | Microsoft Store | Microsoft Store |
 | `store.apple` | Mac App Store | Mac App Store |
 | `store.linux` | página de download | download page |

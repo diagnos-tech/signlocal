@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { WebSignError } from "../src/errors";
 import { errorText } from "../src/messages";
 import { ERROR_CODES } from "./helpers/fixtures";
 
@@ -58,5 +59,38 @@ describe("errorText()", () => {
 
   it("locales are distinct texts", () => {
     expect(errorText("Timeout", "de")).not.toEqual(errorText("Timeout", "en"));
+  });
+});
+
+describe("errorText() with an error", () => {
+  it("fills {installed} and {required} from details", () => {
+    const error = new WebSignError("AppOutdated", "old", { installed: "1.0.0", required: "1.2.0" });
+    const text = errorText(error, "en");
+    expect(text?.body).toContain("1.0.0");
+    expect(text?.body).toContain("1.2.0");
+    expect(text?.body).not.toMatch(/\{(installed|required)\}/);
+  });
+
+  it("leaves placeholders it has no value for", () => {
+    expect(errorText("AppOutdated", "en")?.body).toMatch(/\{installed\}/);
+    expect(errorText({ code: "AppOutdated", details: { required: "2" } }, "en")?.body).toMatch(
+      /\{installed\}/,
+    );
+  });
+
+  it("returns undefined for undefined, so status().problem can be passed as is", () => {
+    expect(errorText(undefined, "en")).toBeUndefined();
+  });
+
+  it("defaults to the browser's language", () => {
+    vi.stubGlobal("navigator", { language: "de-DE" });
+    expect(errorText("Timeout")).toEqual(errorText("Timeout", "de"));
+    vi.unstubAllGlobals();
+  });
+
+  it("defaults to English without a navigator", () => {
+    vi.stubGlobal("navigator", undefined);
+    expect(errorText("Timeout")).toEqual(errorText("Timeout", "en"));
+    vi.unstubAllGlobals();
   });
 });

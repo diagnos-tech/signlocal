@@ -3,7 +3,7 @@
 //! follows it.
 
 use egui::accesskit::Role;
-use egui::{Frame, Label, Margin, Sense, Stroke, Ui, vec2};
+use egui::{Frame, Label, Margin, Sense, Stroke, Ui, WidgetInfo, WidgetType, vec2};
 use websign_i18n::{Catalog, Key, k};
 
 use super::words::tr;
@@ -73,6 +73,7 @@ fn summary(ui: &mut Ui, question: &str, open: bool, position: Position) -> bool 
     let c = theme::colors(ui.ctx());
     let (rect, response) =
         ui.allocate_exact_size(vec2(ui.available_width(), QUESTION), Sense::click());
+    response.widget_info(|| WidgetInfo::labeled(WidgetType::Button, true, question));
     ui.ctx().accesskit_node_builder(response.id, |node| {
         node.set_role(Role::Button);
         node.set_label(question.to_owned());

@@ -17,3 +17,4 @@ mod paths;
 mod pin_fit;
 mod remember_fit;
 mod snapshots;
+mod tree;

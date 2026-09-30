@@ -131,6 +131,7 @@ describe("status()", () => {
       app: { installed: false, outdated: false },
       remembered: false,
       ready: false,
+      problem: "ExtensionMissing",
     });
   });
 

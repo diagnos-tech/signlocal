@@ -105,8 +105,7 @@ pub fn show(ui: &mut Ui, s: &mut Screen<'_>) {
             .show(ui, |ui| {
                 ui.with_layout(Layout::top_down(Align::Center), |ui| {
                     ui.spacing_mut().item_spacing = Vec2::new(0.0, metrics::SPACE_1);
-                    let glyph = icons::CERTIFICATE.rich(EMPTY_ICON, c.fg_subtle);
-                    ui.label(glyph);
+                    text::icon(ui, icons::CERTIFICATE, EMPTY_ICON, c.fg_subtle);
                     ui.label(typography::BODY_STRONG.rich(&title).color(c.fg));
                     ui.scope(|ui| {
                         ui.set_max_width(EMPTY_TEXT_WIDTH.min(ui.available_width()));

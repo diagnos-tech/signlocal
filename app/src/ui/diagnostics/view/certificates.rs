@@ -16,6 +16,7 @@ use crate::ui::icons;
 use crate::ui::theme::{self, metrics, typography};
 use crate::ui::widgets::button::Button;
 use crate::ui::widgets::cert_row::CertRow as CertRowWidget;
+use crate::ui::widgets::focus;
 use crate::ui::widgets::list::{self, Position};
 
 /// The groups, in order.
@@ -115,9 +116,12 @@ fn hidden_group(
     let text = format!("{}  {title}", caret.glyph());
     let toggle =
         ui.add(Label::new(typography::CAPTION.rich(text).color(c.fg_muted)).sense(Sense::click()));
+    focus::ring(ui, &toggle, toggle.rect, metrics::RADIUS_SM);
     let expanded = open;
     ui.ctx().accesskit_node_builder(toggle.id, |node| {
         node.set_role(egui::accesskit::Role::Button);
+        // Not the caret glyph egui filed as the label's value.
+        node.clear_value();
         node.set_label(title.clone());
         node.set_expanded(expanded);
     });

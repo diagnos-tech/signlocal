@@ -3,7 +3,8 @@
 - `mod.rs` — The window's layout (200 px sidebar, scrolling content) and the `Screen` every view reads.
 - `sidebar.rs` — Brand, overall light, the tab list (↑/↓ between tabs) and "Copy diagnostics".
 - `header.rs` — Tab title, subtitle and [Scan again]; the first-scan spinner.
-- `onboarding.rs` — The "Getting started" strip (§8.2).
+- `onboarding.rs` — "Getting started" (§8.2): steps done as check marks, one row per step to do with its fix, then "You're ready to sign".
+- `onboarding_steps.rs` — What each step still to do says and the click that fixes it (Repair, install, `pcscd` command, driver download, `.pfx` import, test page).
 - `browsers.rs` — Browsers on this computer: connection, install extension, repair (§8.3).
 - `sites.rs` — Allowed sites and programs with inline "Confirm revoke" (§8.3).
 - `devices.rs` — Card service, tokens and cards, card readers with masked ATR (§8.4).

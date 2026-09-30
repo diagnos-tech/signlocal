@@ -16,6 +16,7 @@ a { color: var(--ws-accent-fg); }
 .bar nav a[aria-current="page"] { color: var(--ws-fg); border-bottom-color: var(--ws-accent); }
 select { font: inherit; color: var(--ws-fg); background: var(--ws-bg-sunken); border: 1px solid var(--ws-border-strong); border-radius: var(--ws-radius-sm); padding: 4px 8px; }
 main { max-width: 760px; margin: 0 auto; padding: 32px 16px 48px; }
+main.wide { max-width: 1080px; }
 h1 { font-size: clamp(1.75rem, 5vw, 2.5rem); line-height: 1.2; margin: 0 0 16px; }
 h2 { font-size: 1.35rem; margin: 40px 0 8px; }
 h3 { font-size: 1.05rem; margin: 0 0 4px; }
@@ -36,4 +37,7 @@ h3 { font-size: 1.05rem; margin: 0 0 4px; }
 pre { background: var(--ws-bg-sunken); border: 1px solid var(--ws-border); border-radius: var(--ws-radius-sm); padding: 12px; overflow-x: auto; margin: 8px 0; }
 code { font-family: var(--ws-font-mono); font-size: .9rem; }
 .foot { max-width: 760px; margin: 0 auto; padding: 24px 16px 40px; color: var(--ws-fg-subtle); font-size: .9rem; border-top: 1px solid var(--ws-border); }
+.foot.wide { max-width: 1080px; display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: baseline; }
+.foot.wide nav { display: flex; flex-wrap: wrap; gap: 4px 20px; }
+.foot.wide p { margin: 0; flex: 1 1 280px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }

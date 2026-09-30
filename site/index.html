@@ -4,29 +4,91 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<title>WebeSign</title>
-<meta name="description" content="Sign with your own digital certificate on any website or desktop program.">
+<title>WebeSign: sign on any website with your smart card, USB token or OS certificate</title>
+<meta name="description" content="Use your smart card, USB token, or OS certificate to sign on any website. Works with Chrome, Edge, Firefox, Opera, Brave and Safari on Windows, macOS, and Linux. Free and Open Source for everyone.">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/tokens.css">
 <link rel="stylesheet" href="assets/site.css">
+<link rel="stylesheet" href="assets/home.css">
 <script src="assets/i18n.js" defer></script>
+<script src="assets/detect.js" defer></script>
+<script src="assets/cta.js" defer></script>
 </head>
-<body>
+<body class="home">
 <a class="skip" href="#main" data-i18n="nav.skip">Skip to content</a>
 <header class="bar">
 <a class="brand" href="index.html"><img src="assets/icon.svg" alt="" width="24" height="24">WebeSign</a>
 <nav aria-label="Main"><a href="index.html" aria-current="page" data-i18n="nav.home">Home</a><a href="download.html" data-i18n="nav.download">Download</a><a href="privacy.html" data-i18n="nav.privacy">Privacy</a><a href="developers.html" data-i18n="nav.developers">Developers</a></nav>
 <label class="lang"><span class="sr" data-i18n="nav.language">Language</span><select id="lang"><option value="en">English</option><option value="es">Español</option><option value="pt-PT">Português (Portugal)</option><option value="pt-BR">Português (Brasil)</option><option value="fr">Français</option><option value="it">Italiano</option><option value="de">Deutsch</option></select></label>
 </header>
-<main id="main">
-<div class="hero"><h1 data-i18n="home.title">Sign with your own digital certificate, on any website</h1><p class="lead" data-i18n="home.lead">WebeSign lets a website or a desktop program ask you to sign with the certificate you already have: a USB token, a smart card or a certificate installed on your computer. Windows, macOS and Linux; Chrome, Edge, Firefox and Brave.</p>
-<p class="cta"><a class="btn" href="download.html" data-i18n="home.cta_download">Download</a> <a class="btn ghost" href="developers.html" data-i18n="home.cta_dev">For developers</a></p></div>
-<section><h2 data-i18n="home.how_h">How it works</h2>
-<ol class="steps"><li data-i18n="home.how1">The website prepares the document and sends only its hash.</li><li data-i18n="home.how2">The browser extension passes the request to the WebeSign app on your computer.</li><li data-i18n="home.how3">The app shows who is asking and which certificate you are using. You confirm and, if needed, enter your PIN in the app.</li><li data-i18n="home.how4">The operating system (or the token driver) signs the hash. The signature goes back to the website.</li></ol>
-<p class="muted" data-i18n="home.how_note">The document never leaves the website. Any signature format, for any country, can be built on top: PAdES, CAdES, XAdES, JAdES.</p></section>
-<section><h2 data-i18n="home.promise_h">What we promise</h2><div class="cards">
-<article class="card"><h3 data-i18n="home.p1_h">Your PIN never passes through the browser</h3><p data-i18n="home.p1">The PIN is typed in the app or in the operating system window, never in a web page and never in the extension.</p></article><article class="card"><h3 data-i18n="home.p2_h">Each website needs your permission</h3><p data-i18n="home.p2">A website sees nothing about your certificates until you allow it, and you can revoke that at any time in the app.</p></article><article class="card"><h3 data-i18n="home.p3_h">Every signature asks you first</h3><p data-i18n="home.p3">Even for a website you allowed, each signature opens the app's window with a verification code you can compare with the site.</p></article><article class="card"><h3 data-i18n="home.p4_h">Only a hash is exchanged</h3><p data-i18n="home.p4">The app receives a fingerprint of the document, not the document. Nothing runs in the background and no network port is opened.</p></article></div></section>
+<main id="main" class="wide">
+<section class="hero" aria-labelledby="hero-h">
+<p class="eyebrow" data-i18n="home.eyebrow">Free and Open Source</p>
+<h1 id="hero-h" data-i18n="home.title">Use your smart card, USB token, or OS certificate to sign on any website.</h1>
+<p class="lead" data-i18n="home.lead">Works with Chrome, Edge, Firefox, Opera, Brave and Safari on Windows, macOS, and Linux. Free and Open Source for everyone.</p>
+<div class="cta">
+<a class="btn" href="download.html" data-os-link><span data-when-os="other" data-i18n="home.cta_download">Download</span><span data-when-os="windows" hidden data-i18n="home.cta_windows">Download for Windows</span><span data-when-os="macos" hidden data-i18n="home.cta_macos">Download for macOS</span><span data-when-os="linux" hidden data-i18n="home.cta_linux">Download for Linux</span></a>
+<a class="btn ghost" href="developers.html" data-i18n="home.cta_dev">For developers</a>
+</div>
+<p class="cta-note" data-i18n="home.unsigned_note">Prerelease builds are not code-signed yet, so Windows and macOS warn once. Every file has a published checksum.</p>
+<p class="cta-note" data-when-os="mobile" hidden data-i18n="home.mobile">WebeSign runs on computers with Windows, macOS or Linux. Open this page on your computer to install it.</p>
+</section>
+
+<section aria-labelledby="how-h">
+<h2 id="how-h" data-i18n="home.how_h">How it works</h2>
+<p class="section-lead" data-i18n="home.how_lead">The website never touches your keys. Everything that involves your certificate happens on your computer, in a window you control.</p>
+<div class="flow-row">
+<div class="step"><span class="num">1</span><h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg><span data-i18n="home.how1_h">The website</span></h3><p data-i18n="home.how1">Prepares the document and sends only its hash, a short fingerprint. The document stays with the site.</p></div>
+<svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M6 14l6 6 6-6"/></svg>
+<div class="local" role="group" aria-labelledby="local-l">
+<p class="local-label" id="local-l"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span data-i18n="home.how_local">On your computer: the PIN never leaves it</span></p>
+<div class="step"><span class="num">2</span><h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4h6v3a2 2 0 1 0 0 4v0h3v9H6v-5a2 2 0 1 0 0-4V7h3z"/></svg><span data-i18n="home.how2_h">The extension</span></h3><p data-i18n="home.how2">Passes the request from the browser to the WebeSign app. It never sees your PIN or your keys.</p></div>
+<svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M6 14l6 6 6-6"/></svg>
+<div class="step"><span class="num">3</span><h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18M8 14l3 3 5-5"/></svg><span data-i18n="home.how3_h">The WebeSign app</span></h3><p data-i18n="home.how3">Shows who is asking and a verification code. You choose the certificate and confirm.</p></div>
+<svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M6 14l6 6 6-6"/></svg>
+<div class="step"><span class="num">4</span><h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="7" rx="1"/><rect x="5" y="9" width="14" height="13" rx="2"/><path d="M10 5h.01M14 5h.01M12 13v3M10.5 16h3"/></svg><span data-i18n="home.how4_h">Your system or token</span></h3><p data-i18n="home.how4">Windows, macOS or the token driver signs the hash. If a PIN is needed, you type it there.</p></div>
+</div>
+</div>
+<p class="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H4M10 6l-6 6 6 6"/></svg><span data-i18n="home.how_back">The signature and your public certificate go back to the website, which builds the signed document.</span></p>
+<p class="muted" data-i18n="home.how_note">The document never leaves the website. Any signature format, for any country, can be built on top: PAdES, CAdES, XAdES, JAdES.</p>
+</section>
+
+<section aria-labelledby="works-h">
+<h2 id="works-h" data-i18n="home.works_h">Works where you do</h2>
+<p class="section-lead" data-i18n="home.works_lead">No list of approved models: if your operating system or your token's driver can use a certificate, WebeSign can sign with it.</p>
+<div class="works">
+<div><h3 data-i18n="home.browsers_h">Browsers</h3><ul class="badges"><li>Chrome</li><li>Edge</li><li>Firefox</li><li>Opera</li><li>Brave</li><li>Safari</li></ul></div>
+<div><h3 data-i18n="home.os_h">Operating systems</h3><ul class="badges"><li>Windows</li><li>macOS</li><li>Linux</li></ul></div>
+<div><h3 data-i18n="home.certs_h">Certificates</h3><ul class="badges"><li data-i18n="home.cert_card">Smart cards</li><li data-i18n="home.cert_token">USB tokens</li><li data-i18n="home.cert_os">Installed certificates</li></ul></div>
+</div>
+<p class="muted"><span data-i18n="home.compat_note">Status per browser, system and device, including what is still being tested:</span> <a href="https://github.com/diagnos-tech/web-esign/blob/main/docs/compatibility.md" data-i18n="home.compat_link">compatibility table</a></p>
+</section>
+
+<section aria-labelledby="promise-h">
+<h2 id="promise-h" data-i18n="home.promise_h">What we promise</h2>
+<div class="cards">
+<article class="card"><h3 data-i18n="home.p1_h">Your PIN never passes through the browser</h3><p data-i18n="home.p1">The PIN is typed in the app or in the operating system window, never in a web page and never in the extension.</p></article>
+<article class="card"><h3 data-i18n="home.p2_h">Each website needs your permission</h3><p data-i18n="home.p2">A website sees nothing about your certificates until you allow it, and you can revoke that at any time in the app.</p></article>
+<article class="card"><h3 data-i18n="home.p3_h">Every signature asks you first</h3><p data-i18n="home.p3">Even for a website you allowed, each signature opens the app's window with a verification code you can compare with the site.</p></article>
+<article class="card"><h3 data-i18n="home.p4_h">Only a hash is exchanged</h3><p data-i18n="home.p4">The app receives a fingerprint of the document, not the document. Nothing runs in the background and no network port is opened.</p></article>
+</div>
+<p><a href="privacy.html" data-i18n="home.privacy_link">Read the privacy page</a></p>
+</section>
+
+<section class="faq" aria-labelledby="faq-h">
+<h2 id="faq-h" data-i18n="home.faq_h">Questions</h2>
+<details><summary data-i18n="home.faq_q1">Is it really free?</summary><p data-i18n="home.faq_a1">Yes, for everyone, with no account. The app and the extension are free software (GPL-3.0-or-later); the libraries for developers are Apache-2.0, so any website or program can use them.</p></details>
+<details><summary data-i18n="home.faq_q2">Which certificates work?</summary><p data-i18n="home.faq_a2">Any certificate your operating system or your token's driver can use: USB tokens, smart cards and certificates installed on the computer (for example from a .pfx file). There is no list of approved models.</p></details>
+<details><summary data-i18n="home.faq_q3">Can a website see my PIN, my keys or my other certificates?</summary><p data-i18n="home.faq_a3">No. The PIN is typed in the app or the system window, and the private key never leaves your computer or your token. A website only receives the certificate you choose and the signature you confirm.</p></details>
+<details><summary data-i18n="home.faq_q4">Why do Windows and macOS warn when I install it?</summary><p data-i18n="home.faq_a4">Prerelease builds are not code-signed yet. The download page says what to click, and how to check each file against the published SHA256SUMS.</p></details>
+<details><summary data-i18n="home.faq_q5">Which signature formats does it support?</summary><p data-i18n="home.faq_a5">WebeSign returns a raw signature and the certificate; the website builds the format it needs (PAdES, CAdES, XAdES or JAdES), for any country's rules.</p></details>
+<details><summary data-i18n="home.faq_q6">Does it work on phones?</summary><p data-i18n="home.faq_a6">No. WebeSign runs on computers with Windows, macOS or Linux, where tokens and smart cards are plugged in.</p></details>
+<details><summary data-i18n="home.faq_q7">Is something always running in the background?</summary><p data-i18n="home.faq_a7">No. The browser starts the app only when a website asks for a signature, and the app opens no network port.</p></details>
+</section>
 </main>
-<footer class="foot"><span data-i18n="foot.license">Free software (GPL-3.0-or-later; SDK and clients Apache-2.0)</span> · <a href="https://github.com/diagnos-tech/web-esign" data-i18n="foot.source">Source code</a></footer>
+<footer class="foot wide">
+<p><strong>WebeSign</strong> · <span data-i18n="foot.license">Free software (GPL-3.0-or-later; SDK and clients Apache-2.0)</span></p>
+<nav aria-label="Footer"><a href="https://github.com/diagnos-tech/web-esign" data-i18n="foot.source">Source code</a><a href="https://github.com/diagnos-tech/web-esign/blob/main/LICENSE" data-i18n="foot.license_link">License</a><a href="https://github.com/diagnos-tech/web-esign/blob/main/SECURITY.md" data-i18n="foot.security">Security</a><a href="privacy.html" data-i18n="nav.privacy">Privacy</a></nav>
+</footer>
 </body>
 </html>

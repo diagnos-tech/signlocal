@@ -267,12 +267,40 @@ help = "Help"
 
 [onboarding]
 title = "Getting started"
+# {done} and {total} count the steps of "Getting started".
+progress = "{done} of {total} done"
+# Steps already done, shown as short check marks.
 step_app = "App installed"
 step_extension = "Browser extension"
+step_card_service = "Card service running"
 step_cert = "Certificate found"
 step_test = "Test signature"
-test_button = "Test a signature"
+# Opens the site's test page; same words as the popup's and the site's
+# “Test your setup”.
+test_button = "Test your setup"
 dismiss = "Hide"
+# Shown instead of the checklist once everything a signature needs is there.
+ready_title = "You're ready to sign"
+ready_body = "Try it once: the test page signs a sample message and shows the same verification code as this app."
+# Steps still to do: a title that says what to do, then why.
+todo_app = "Connect the app to your browsers"
+todo_app_body = "Your browsers can't find the WebeSign app yet."
+todo_extension = "Add the browser extension"
+# {browsers} is a comma-separated list of browser names.
+todo_extension_body = "Not connected yet in {browsers}."
+# Opens the site's /activate/ page; same words as the popup's link.
+activate = "Already installed? Finish setting up"
+todo_card_service = "Start the card service"
+# {command} is a shell command; do not translate it.
+todo_card_service_body = "Tokens and cards need it. Run in a terminal: {command}"
+copy_command = "Copy command"
+# {device} is a device name, e.g. "SafeNet eToken 5110".
+todo_driver = "Install the driver for {device}"
+# {driver} is the vendor's software, e.g. "SafeNet Authentication Client".
+todo_driver_body = "Its certificates show up once {driver} is installed."
+todo_driver_body_generic = "Its certificates show up once the vendor's software is installed."
+todo_cert = "Connect your certificate"
+todo_test_body = "Sign a sample message to see how signing works."
 
 [browsers]
 subtitle = "Where the extension is installed and connected to the app."

@@ -1,3 +1,3 @@
 # safari/Extension
 
-- `SafariWebExtensionHandler.swift` — relays native messages to the app over the app-group socket
+- `SafariWebExtensionHandler.swift` — the appex's principal class: hands each Safari message to the relay, returns its reply

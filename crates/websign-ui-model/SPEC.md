@@ -290,9 +290,16 @@ protocol code (`PinIncorrect`, `PinLocked`, `TokenRemoved`, `DriverFailure`,
 
 ### 3.2 Onboarding (ux §8.2)
 
-app always Done; extension Done if connected, Attention if a problem,
-Pending otherwise; certificate Done if usable > 0 else Pending; test Done if
-done else Pending; `visible` = not dismissed and not all Done.
+app Done unless its registration is missing in every browser and no
+extension is connected (then Attention); extension Done if connected,
+Attention if a problem, Pending otherwise; card service (Linux only, else
+absent) Done if running else Attention; driver (only while a connected
+device waits for its driver) Attention; certificate Done if usable > 0 else
+Pending; test Done if done else Pending. `steps()` lists the present steps
+in that order. `ready` = app, extension and certificate Done and the card
+service not stopped (a missing driver for one device does not stop a
+certificate that works). `visible` = not dismissed and not (`ready` and the
+test done).
 
 ### 3.3 Report (ux §8.7)
 

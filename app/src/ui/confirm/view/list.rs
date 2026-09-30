@@ -111,9 +111,13 @@ fn disabled_group(
         icons::EXPAND
     };
     let last = !s.session.disabled_open && !more_below;
-    if possible::compact_row(ui, icon, &title, None, last).clicked() {
+    let toggle = possible::compact_row(ui, icon, &title, None, last);
+    if toggle.clicked() {
         s.session.disabled_open = !s.session.disabled_open;
     }
+    let open = s.session.disabled_open;
+    ui.ctx()
+        .accesskit_node_builder(toggle.id, |node| node.set_expanded(open));
     if s.session.disabled_open {
         for (index, row) in disabled.iter().enumerate() {
             let mut position = Position::of(index + 1, disabled.len() + 1);

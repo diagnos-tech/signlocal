@@ -7,7 +7,8 @@ pub const PRODUCT_NAME: &str = "WebeSign";
 pub const SLUG: &str = "websign";
 
 /// One-line English description.
-pub const TAGLINE: &str = "Sign with your digital certificate on any website or app.";
+pub const TAGLINE: &str =
+    "Use your smart card, USB token, or OS certificate to sign on any website.";
 
 /// Source repository URL.
 pub const REPOSITORY: &str = "https://github.com/diagnos-tech/web-esign";

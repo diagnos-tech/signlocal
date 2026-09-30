@@ -16,7 +16,7 @@ Plain HTML with English text and no framework. `assets/i18n.js` swaps in the vis
 ```sh
 sh site/build-sdk.sh                  # after any change under sdk/src
 python3 -m http.server -d site 8000   # then open http://localhost:8000/
-bun test site/tests                   # key extractor and verifier
+bun test site/tests                   # key extractor, verifier and locale keys
 ```
 
 ## Deploy

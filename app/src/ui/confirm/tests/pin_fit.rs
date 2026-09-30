@@ -2,8 +2,9 @@
 //! the code card and a long list, the rows give up height so the field sits
 //! inside the visible body, above the footer, without scrolling the body;
 //! after a failure the whole PIN block (with the line under the field)
-//! stays visible too. Where this OS asks for the card's PIN in its own
-//! window, that card shows no field of ours at all.
+//! stays visible too, and so does the error notice above it. Where this OS
+//! asks for the card's PIN in its own window, that card shows no field of
+//! ours at all.
 
 use egui::Rect;
 use egui::accesskit::Role;
@@ -110,6 +111,42 @@ fn the_whole_pin_block_stays_visible_after_a_failure() {
                 body.contains_rect(block),
                 "{name}, {theme}: the PIN block ({block:?}) is cut off ({body:?})"
             );
+        }
+    }
+}
+
+#[test]
+fn the_error_notice_stays_whole_above_the_pin_block() {
+    for (dark, theme) in THEMES {
+        let cases = [
+            ("error-driver", "The token driver failed"),
+            ("error-unsupported", "This certificate can't sign that way"),
+        ];
+        for (name, title) in cases {
+            let (_, scene) = SCENES
+                .into_iter()
+                .find(|(scene, _)| *scene == name)
+                .expect("a known scene");
+            let mut rig = Rig::new(dark);
+            scene(&mut rig);
+            let body = rig.visible_body();
+            let notice = rig
+                .harness
+                .get_by(|node| {
+                    node.role() == Role::Alert
+                        && node.label().is_some_and(|label| label.starts_with(title))
+                })
+                .rect();
+            assert!(
+                body.contains_rect(notice),
+                "{name}, {theme}: the notice ({notice:?}) is cut off ({body:?})"
+            );
+            if let Some(field) = rig.harness.query_by_role(Role::PasswordInput) {
+                assert!(
+                    body.contains_rect(field.rect()),
+                    "{name}, {theme}: the PIN field is cut off"
+                );
+            }
         }
     }
 }

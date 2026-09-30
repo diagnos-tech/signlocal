@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  The Safari appex. Safari loads only sandboxed app extensions; the bundled
+  host inherits this sandbox (safari-host.entitlements), so everything the
+  host needs is granted here (safari/SPEC.md §4).
+-->
+<plist version="1.0">
+<dict>
+	<key>com.apple.security.app-sandbox</key>
+	<true/>
+	<!-- PC/SC (readers, ATR) and PKCS#11 modules that talk to the card from our process. -->
+	<key>com.apple.security.smartcard</key>
+	<true/>
+	<!-- USB listing (VID:PID) for the device hints in diagnostics. -->
+	<key>com.apple.security.device.usb</key>
+	<true/>
+	<!--
+	  Read-only: where token vendors install PKCS#11 modules (for example
+	  SafeSign's libaetpkss.dylib inside tokenadmin.app, OpenSC under
+	  /Library or Homebrew). Allowed outside the Mac App Store, which this
+	  build is not.
+	-->
+	<key>com.apple.security.temporary-exception.files.absolute-path.read-only</key>
+	<array>
+		<string>/Applications/</string>
+		<string>/Library/</string>
+		<string>/usr/local/lib/</string>
+		<string>/opt/homebrew/lib/</string>
+	</array>
+</dict>
+</plist>

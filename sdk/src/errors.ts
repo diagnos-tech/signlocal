@@ -1,55 +1,74 @@
 /** Typed errors: every rejection of the SDK is a {@link WebSignError}. */
 
 import type { ErrorCode, ErrorDetails } from "./generated/index.js";
+import { HINTS } from "./hints.js";
+import { HOMEPAGE } from "./project.js";
 
-export type { ErrorCode };
+export type { ErrorCode, ErrorDetails };
 
-/** A failed SDK call. `code` is stable; `message` is for developers, in English. */
+/**
+ * A failed SDK call. Every promise of the SDK rejects with one, never with
+ * anything else.
+ *
+ * - `code` is stable: switch on it.
+ * - `message` says what happened, `hint` what to do next; both are English,
+ *   for developers, and never contain personal data.
+ * - `docsUrl` explains the code on the project site.
+ * - For the person, show `errorText(error, locale)` from
+ *   `@websign/sdk/messages`: localized title and next step.
+ *
+ * @example
+ * try {
+ *   await sign({ hash: "SHA-256", prepare });
+ * } catch (error) {
+ *   if (!(error instanceof WebSignError)) throw error;
+ *   if (error.code === "UserCancelled") return; // nothing to show
+ *   console.warn(`${error.code}: ${error.message} ${error.hint} ${error.docsUrl}`);
+ * }
+ */
 export class WebSignError extends Error {
   override readonly name = "WebSignError";
+  /** What to do next, for the developer. People get `errorText()` instead. */
+  readonly hint: string;
+  /** The code's section on the project site (a stable anchor). */
+  readonly docsUrl: string;
 
   constructor(
+    /** Stable reason; one of the protocol catalog. */
     readonly code: ErrorCode,
     message: string,
+    /** Versions for the `*Outdated` codes, the native status for `DriverFailure`. */
     readonly details?: ErrorDetails,
   ) {
     super(message);
+    this.hint = HINTS[code];
+    this.docsUrl = `${HOMEPAGE}developers.html#error-${code}`;
   }
 }
 
 /**
- * Every code of the protocol catalog. A `Record` rather than a list so the
- * compiler fails when the generated `ErrorCode` gains or loses a member.
+ * Whether `error` is a {@link WebSignError}, optionally with one of `codes`.
+ * Narrows `error.code` in TypeScript, handy in a `catch (error: unknown)`.
+ *
+ * @example
+ * catch (error) {
+ *   if (isWebSignError(error, "UserCancelled", "Aborted")) return;
+ *   throw error;
+ * }
  */
-const KNOWN: Readonly<Record<ErrorCode, 0>> = {
-  ExtensionMissing: 0,
-  AppMissing: 0,
-  AppOutdated: 0,
-  ExtensionOutdated: 0,
-  ClientOutdated: 0,
-  InsecureOrigin: 0,
-  Aborted: 0,
-  UserCancelled: 0,
-  Timeout: 0,
-  NoCertificates: 0,
-  CertificateUnavailable: 0,
-  CertificateNotValid: 0,
-  InvalidRequest: 0,
-  UnsupportedAlgorithm: 0,
-  PinIncorrect: 0,
-  PinLocked: 0,
-  TokenRemoved: 0,
-  DriverFailure: 0,
-  Busy: 0,
-  Internal: 0,
-};
+export function isWebSignError<C extends ErrorCode = ErrorCode>(
+  error: unknown,
+  ...codes: readonly C[]
+): error is WebSignError & { readonly code: C } {
+  return error instanceof WebSignError && (!codes.length || codes.includes(error.code as C));
+}
 
 /**
  * `code` when it is in the catalog, else `Internal`: a site switching over
  * `error.code` must never meet a value outside the published union.
  */
 export function knownCode(code: string): ErrorCode {
-  return Object.hasOwn(KNOWN, code) ? (code as ErrorCode) : "Internal";
+  return Object.hasOwn(HINTS, code) ? (code as ErrorCode) : "Internal";
 }
 
 /** The rejection of a call whose `AbortSignal` fired. */

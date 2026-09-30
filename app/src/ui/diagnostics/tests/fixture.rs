@@ -71,6 +71,25 @@ pub fn facts() -> Facts {
     }
 }
 
+/// A first run on Linux: two browsers without the extension, the card
+/// service running, a token whose driver is missing, no certificate yet.
+pub fn first_run() -> Facts {
+    let mut devices = devices();
+    devices.pcscd_running = Some(true);
+    devices.readers.clear();
+    Facts {
+        browsers: vec![
+            browser(Browser::Chrome, "129.0.6668.59", None),
+            browser(Browser::Firefox, "131.0", None),
+        ],
+        devices,
+        drivers: Vec::new(),
+        certificates: from_candidates(&[], HashMap::new(), 0, now(), &TimeZone::UTC),
+        recent_errors: Vec::new(),
+        os: "Ubuntu 24.04.1 LTS (6.8.0-45-generic)".to_owned(),
+    }
+}
+
 fn browser(browser: Browser, version: &str, last_seen: Option<i64>) -> BrowserFact {
     let name = match browser {
         Browser::Edge => BrowserName::Edge,

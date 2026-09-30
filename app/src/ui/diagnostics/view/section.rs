@@ -6,6 +6,7 @@ use egui::{Frame, Label, Margin, Stroke, Ui};
 use crate::ui::icons::Icon;
 use crate::ui::theme::{self, metrics, typography};
 use crate::ui::widgets::list::{self, Position};
+use crate::ui::widgets::text;
 
 /// Space above a section label (`margin: 20px 0 8px`).
 const ABOVE: f32 = 20.0;
@@ -17,7 +18,7 @@ pub fn label(ui: &mut Ui, text: &str, icon: Option<Icon>) {
     ui.horizontal(|ui| {
         ui.spacing_mut().item_spacing.x = 6.0;
         if let Some(icon) = icon {
-            ui.label(icon.rich(metrics::ICON_SM, c.fg_muted));
+            text::icon(ui, icon, metrics::ICON_SM, c.fg_muted);
         }
         ui.label(typography::CAPTION.rich(text).color(c.fg_muted));
     });

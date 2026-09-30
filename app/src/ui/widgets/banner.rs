@@ -8,7 +8,10 @@
 //! below it, laid out by the window.
 
 use egui::accesskit::Role;
-use egui::{CornerRadius, Response, Sense, Stroke, StrokeKind, Ui, Vec2, Widget, pos2};
+use egui::{
+    CornerRadius, Response, Sense, Stroke, StrokeKind, Ui, Vec2, Widget, WidgetInfo, WidgetType,
+    pos2,
+};
 
 use super::text;
 use super::tone::Tone;
@@ -100,6 +103,9 @@ impl Widget for Banner<'_> {
         } else {
             Role::Status
         };
+        // `widget_info` gives the node its bounds, so a screen reader can
+        // show where the notice is; the role and name are ours.
+        response.widget_info(|| WidgetInfo::labeled(WidgetType::Label, true, &name));
         ui.ctx().accesskit_node_builder(response.id, |node| {
             // egui files a label's text as its value; an alert is named.
             node.clear_value();

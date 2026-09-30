@@ -72,6 +72,7 @@ describe("nothing leaks to other frames or the console (T1, T4, T5, T10)", () =>
         "certificates",
         "fingerprint",
         "installUrl",
+        "isWebSignError",
         "onChange",
         "sign",
         "status",

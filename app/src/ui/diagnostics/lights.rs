@@ -1,5 +1,5 @@
 //! The traffic lights of each tab and of the whole window (`docs/ux.md`
-//! §8.1), the tab the window opens on, and the "Getting started" strip
+//! §8.1), the tab the window opens on, and the "Getting started" checklist
 //! (§8.2), decided by `websign-ui-model` from the facts of a scan.
 
 use websign_i18n::{Key, k};
@@ -131,18 +131,22 @@ fn devices_facts(facts: &Facts) -> DevicesFacts {
     }
 }
 
-/// The "Getting started" strip.
+/// The "Getting started" checklist.
 pub fn getting_started(facts: &Facts, dismissed: bool, test_done: bool) -> Onboarding {
     let problem = facts
         .browsers
         .iter()
         .any(|browser| browser.registration != RegistrationState::Registered);
+    let devices = devices_facts(facts);
     onboarding(OnboardingFacts {
         any_extension_connected: facts.browsers.iter().any(|b| b.connection.is_some()),
         any_extension_problem: problem,
         usable_certificates: count(facts.certificates.list.usable.len()),
         test_signature_done: test_done,
         dismissed,
+        app_unreachable: browsers_facts(facts).registration_missing_everywhere,
+        card_service_running: facts.devices.pcscd_running,
+        devices_without_driver: devices.devices_without_certificates,
     })
 }
 

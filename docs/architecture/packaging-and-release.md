@@ -4,8 +4,8 @@
 
 | Channel | When | Windows | macOS | Linux | Extension |
 |---|---|---|---|---|---|
-| **direct** | now | zip + `install.ps1` (x64, arm64) | universal `.app` zip + `install.sh` (not sandboxed, so PKCS#11 works: D10) | `.deb`, `.rpm` (amd64, arm64), tar.gz + `install.sh` | unpacked zips (Chromium, Firefox) |
-| **store** | later (D10) | MSIX (Microsoft Store; `unvirtualizedResources`, proven in proof 1) | Mac App Store (sandbox, entitlements of proof 2) + Safari appex; PKCS#11-only tokens need the Add-on | APT/YUM repositories on GitHub Pages | Chrome Web Store, Edge Add-ons, AMO, Safari (inside the app) |
+| **direct** | now | zip + `install.ps1` (x64, arm64) | universal `.app` zip + `install.sh` (not sandboxed, so PKCS#11 works: D10), with the Safari appex inside | `.deb`, `.rpm` (amd64, arm64), tar.gz + `install.sh` | unpacked zips (Chromium, Firefox); Safari inside the `.app` (unsigned: Allow Unsigned Extensions) |
+| **store** | later (D10) | MSIX (Microsoft Store; `unvirtualizedResources`, proven in proof 1) | Mac App Store (sandbox, entitlements of proof 2) + the same Safari appex; PKCS#11-only tokens need the Add-on | APT/YUM repositories on GitHub Pages | Chrome Web Store, Edge Add-ons, AMO, Safari (inside the app) |
 
 Same code on both channels. Differences are detected at run time
 (`app/src/platform/channel.rs`: MSIX package identity, macOS sandbox
@@ -16,7 +16,7 @@ container) and reported as `AppInfo.channel`; there are no build forks.
 | File | Contents |
 |---|---|
 | `websign-<v>-windows-x64.zip`, `websign-<v>-windows-arm64.zip` | `websign.exe` (MSVC, `+crt-static`), `README.txt`, licenses |
-| `websign-<v>-macos-universal.zip` | `WebeSign.app` (arm64 + x86_64 `lipo`), ad-hoc signed |
+| `websign-<v>-macos-universal.zip` | `WebeSign.app` (arm64 + x86_64 `lipo`) with the Safari appex in `Contents/PlugIns` (§Safari appex), ad-hoc signed inside out |
 | `websign_<v>_amd64.deb`, `websign_<v>_arm64.deb` | `/usr/bin/websign`, desktop entry, icons, system manifests via postinst |
 | `websign-<v>-1.x86_64.rpm`, `websign-<v>-1.aarch64.rpm` | same layout |
 | `websign-<v>-linux-x64.tar.gz`, `websign-<v>-linux-arm64.tar.gz` | binary + desktop entry + icons, for `install.sh` and other distros |
@@ -26,6 +26,35 @@ container) and reported as `AppInfo.channel`; there are no build forks.
 
 Built by `cargo xtask package --target <triple>` (nfpm for deb/rpm), on the
 native runner of each OS; the release job assembles and publishes.
+
+### Safari appex
+
+`cargo xtask package --target universal-apple-darwin` (`xtask/src/package/safari.rs`)
+adds the app extension Safari requires ([`safari/SPEC.md`](../../safari/SPEC.md)):
+
+```
+WebeSign.app/Contents/
+  MacOS/websign                                  the app (Chrome, Edge, Brave, Firefox, CLI)
+  PlugIns/WebeSignExtension.appex/Contents/
+    Info.plist                                   packaging/macos/Extension-Info.plist.in
+    MacOS/WebeSignExtension                      safari/Relay + safari/Extension, swiftc per slice, lipo
+    MacOS/websign                                copy of the app binary, started per Safari session
+    Resources/                                   extension/.output/safari-mv3 (the WXT safari build)
+```
+
+- The WXT safari build must exist first (`WEBSIGN_CHANNEL=direct bunx wxt build
+  -b safari` in `extension/`); packaging fails with that command otherwise.
+- Signed inside out, never `--deep` (which would drop the appex's
+  entitlements): the host copy with `packaging/macos/safari-host.entitlements`
+  (sandbox + inherit), the appex with `safari-extension.entitlements`
+  (sandbox, smart cards, USB, read-only PKCS#11 locations), then the app
+  without entitlements. Safari loads only sandboxed app extensions; the app
+  itself stays unsandboxed for the other browsers (D10).
+- The appex needs no app group and no Team ID: it starts its own host
+  instead of talking to a running app, so the ad-hoc build works as is.
+- CI: `.github/workflows/safari.yml` packages the app and inspects all of the
+  above; loading it into Safari is the manual script of
+  [`docs/compatibility.md`](../compatibility.md) §Safari.
 
 ## Install locations
 
@@ -84,7 +113,7 @@ Direct builds are not code-signed yet (costs and accounts pending, brief
 | Linux | nothing (packages are unsigned; `apt install ./websign_<v>_amd64.deb`, `dnf install ./websign-<v>-1.x86_64.rpm`) | — |
 | Chrome / Edge / Brave | the extension is not in the stores yet | `chrome://extensions` → Developer mode → **Load unpacked** → the unzipped `websign-extension-<v>-chromium` folder. The development key pins the ID the app allows. |
 | Firefox | release Firefox refuses unsigned add-ons | `about:debugging` → This Firefox → **Load Temporary Add-on** (lasts until restart), or Firefox Developer/Nightly/ESR with `xpinstall.signatures.required = false`. `TODO(gustavo)`: sign on AMO as *unlisted* (free, automatic) to remove this step. |
-| Safari | not available in direct builds | — (store channel) |
+| Safari | Safari loads unsigned extensions only with **Settings → Developer → Allow unsigned extensions**, which it turns off at every quit | [`install.md`](../install.md) §Safari. `TODO(gustavo)`: Developer ID signing and notarization remove this step. |
 
 ## Release workflow
 
@@ -100,7 +129,9 @@ Direct builds are not code-signed yet (costs and accounts pending, brief
    of the supported distributions, so it is the Linux floor; deb and rpm with the pinned, hash-checked nfpm;
    tar.gz), Windows x64 and arm64 on
    `windows-latest` (arm64 cross-compiled by MSVC), the universal `.app` on
-   `macos-latest` (lipo, ad-hoc signature; `LSMinimumSystemVersion` 13.0, the
+   `macos-latest` (lipo, the Safari appex from `swiftc` and the WXT safari
+   build, which the job builds first with `WEBSIGN_CHANNEL=direct bunx wxt
+   build -b safari`; ad-hoc signature; `LSMinimumSystemVersion` 13.0, the
    macOS floor of [`compatibility.md`](compatibility.md)). Every release binary is checked
    for the `e2e` marker. The extension zips are the `direct` channel
    (`WEBSIGN_CHANNEL=direct bun run zip`, development key). The e2e suite

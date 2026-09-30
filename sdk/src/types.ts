@@ -2,19 +2,65 @@
 
 import type { CurveName, EidasType, KeyStorage } from "./generated/index.js";
 
-/** A hash the digest was computed with. */
+export type { CurveName, EidasType, KeyStorage };
+
+/**
+ * A hash the digest was computed with.
+ *
+ * @example
+ * const hash: HashAlgorithm = "SHA-256";
+ */
 export type HashAlgorithm = "SHA-256" | "SHA-384" | "SHA-512";
+
+/**
+ * Digest bytes per hash: what `prepare` must return.
+ *
+ * @example
+ * const length: DigestLength<"SHA-384"> = 48;
+ */
+export type DigestLength<H extends HashAlgorithm = HashAlgorithm> = {
+  "SHA-256": 32;
+  "SHA-384": 48;
+  "SHA-512": 64;
+}[H];
 
 /**
  * A signature scheme. RSASSA-PSS uses MGF1 with the same hash and a salt as long
  * as the digest. EdDSA is not offered: it signs messages, not hashes.
+ *
+ * @example
+ * sign({ hash: "SHA-256", algorithm: ["ECDSA", "RSASSA-PSS"], prepare });
  */
 export type SignatureAlgorithm = "ECDSA" | "RSASSA-PKCS1-v1_5" | "RSASSA-PSS";
 
-/** The public key. */
-export type KeyDescription = { type: "RSA"; bits: number } | { type: "EC"; curve: CurveName };
+/**
+ * Bytes the SDK accepts: a `Uint8Array` (only its view is read) or an
+ * `ArrayBuffer`, such as `crypto.subtle.digest()` returns. The SDK always
+ * gives bytes back as `Uint8Array`.
+ *
+ * @example
+ * const digest: Bytes = await crypto.subtle.digest("SHA-256", data);
+ */
+export type Bytes = Uint8Array | ArrayBuffer;
 
-/** What the certificate declares; the app never claims legal qualification. */
+/**
+ * The public key.
+ *
+ * @example
+ * const label = key.type === "RSA" ? `RSA ${key.bits}` : `EC ${key.curve}`;
+ */
+export type KeyDescription =
+  | { readonly type: "RSA"; readonly bits: number }
+  | { readonly type: "EC"; readonly curve: CurveName };
+
+/**
+ * What the certificate declares; the app never claims legal qualification.
+ * Your site decides which profiles it accepts.
+ *
+ * @example
+ * const qualified =
+ *   /^A[34]$/.test(profile.icpBrasil ?? "") || (profile.eidas?.qualified && profile.eidas.qscd);
+ */
 export interface CertificateProfile {
   /** ICP-Brasil class ("A3", "S1", "T3"…), "ICP-Brasil" when unknown, absent when not ICP-Brasil. */
   readonly icpBrasil?: string;
@@ -24,19 +70,27 @@ export interface CertificateProfile {
     readonly qscd: boolean;
     readonly types: readonly EidasType[];
   };
+  /** Where the private key lives, as far as the key store can tell. */
   readonly keyStorage: KeyStorage;
 }
 
-/** A certificate the person chose. */
+/**
+ * A certificate the person chose (never the list of the computer).
+ *
+ * @example
+ * const [certificate] = await certificates();
+ * greet.textContent = `Signing as ${certificate.displayName}, valid until ${certificate.notAfter.toLocaleDateString()}`;
+ */
 export interface Certificate {
-  /** DER bytes. */
+  /** DER bytes: what CMS `certificates` and signing-certificate-v2 need. */
   readonly der: Uint8Array;
   /** Issuers, nearest first, leaf excluded; best effort, may be empty. */
   readonly chain: readonly Uint8Array[];
-  /** SHA-256 of `der`, 64 lowercase hex digits. */
+  /** SHA-256 of `der`, 64 lowercase hex digits. Pass it to `sign({ certificate })`. */
   readonly fingerprint: string;
   /** Holder name as the app shows it. */
   readonly displayName: string;
+  /** Issuer common name, else organization. */
   readonly issuerName: string;
   readonly notBefore: Date;
   readonly notAfter: Date;
@@ -46,50 +100,104 @@ export interface Certificate {
   readonly profile: CertificateProfile;
 }
 
-/** Passed to `prepare`, with the certificate. */
-export interface PrepareContext {
-  readonly hash: HashAlgorithm;
+/**
+ * Passed to `prepare`, with the certificate. Narrowed to what you asked: with
+ * `hash: "SHA-384"` and `algorithm: "ECDSA"`, `context.hash` is `"SHA-384"` and
+ * `context.algorithm` is `"ECDSA"`.
+ *
+ * @example
+ * prepare: (certificate, { hash, algorithm }) => digestOfSignedAttributes(certificate, hash, algorithm)
+ */
+export interface PrepareContext<
+  H extends HashAlgorithm = HashAlgorithm,
+  A extends SignatureAlgorithm = SignatureAlgorithm,
+> {
+  readonly hash: H;
   /** The algorithm the signature will use (for CMS signatureAlgorithm / algorithm protection). */
-  readonly algorithm: SignatureAlgorithm;
+  readonly algorithm: A;
 }
 
-/** Options of {@link sign}. */
-export interface SignOptions {
-  readonly hash: HashAlgorithm;
+/**
+ * Returns the digest to sign with `certificate`: exactly {@link DigestLength}
+ * bytes for the hash. May run more than once if the person switches
+ * certificate; only the last digest is signed. Throwing aborts the request.
+ *
+ * @example
+ * const prepare: Prepare<"SHA-256"> = async (certificate, { hash }) =>
+ *   crypto.subtle.digest(hash, signedAttributesFor(certificate));
+ */
+export type Prepare<
+  H extends HashAlgorithm = HashAlgorithm,
+  A extends SignatureAlgorithm = SignatureAlgorithm,
+> = (certificate: Certificate, context: PrepareContext<H, A>) => Bytes | Promise<Bytes>;
+
+/**
+ * Options of {@link sign}.
+ *
+ * @example
+ * const options: SignOptions<"SHA-256", "ECDSA"> = {
+ *   hash: "SHA-256",
+ *   algorithm: "ECDSA",
+ *   prepare: (certificate) => digestFor(certificate),
+ *   signal: AbortSignal.timeout(120_000),
+ * };
+ */
+export interface SignOptions<
+  H extends HashAlgorithm = HashAlgorithm,
+  A extends SignatureAlgorithm = SignatureAlgorithm,
+> {
+  /** The hash `prepare` computes. */
+  readonly hash: H;
   /** Acceptable algorithm(s), preferred first. Default: ECDSA for EC keys, PKCS#1 v1.5 for RSA. */
-  readonly algorithm?: SignatureAlgorithm | readonly SignatureAlgorithm[];
+  readonly algorithm?: A | readonly A[];
   /** Preselect a certificate (from an earlier `certificates()`), by object or fingerprint. */
   readonly certificate?: Certificate | string;
-  /**
-   * Returns the digest to sign for `certificate` (exactly 32/48/64 bytes for
-   * SHA-256/384/512). May run more than once if the person switches
-   * certificate; only the last digest is signed. Throwing aborts the request.
-   */
-  readonly prepare: (
-    certificate: Certificate,
-    context: PrepareContext,
-  ) => Uint8Array | ArrayBuffer | Promise<Uint8Array | ArrayBuffer>;
+  /** Builds the digest once the certificate is known. See {@link Prepare}. */
+  readonly prepare: Prepare<H, A>;
   /** Aborts the request (the window closes; the promise rejects with `Aborted`). */
   readonly signal?: AbortSignal;
 }
 
-/** The result of {@link sign}. */
-export interface SignResult {
+/**
+ * The result of {@link sign}: everything a CMS SignerInfo needs.
+ *
+ * @example
+ * const { signature, certificate, algorithm, digest } = await sign({ hash: "SHA-256", prepare });
+ */
+export interface SignResult<
+  H extends HashAlgorithm = HashAlgorithm,
+  A extends SignatureAlgorithm = SignatureAlgorithm,
+> {
+  /** The certificate that signed; the one `prepare` last received. */
   readonly certificate: Certificate;
-  readonly hash: HashAlgorithm;
-  readonly algorithm: SignatureAlgorithm;
+  readonly hash: H;
+  readonly algorithm: A;
   /** RSA: the signature block. ECDSA: raw r‖s (IEEE P1363), each half padded to the curve size. */
   readonly signature: Uint8Array;
+  /** The digest that was signed: what `prepare` returned for `certificate`. */
+  readonly digest: Uint8Array;
 }
 
-/** Options of {@link certificates}. */
+/**
+ * Options of {@link certificates}.
+ *
+ * @example
+ * await certificates({ algorithm: "ECDSA", signal: controller.signal });
+ */
 export interface CertificateOptions {
   /** Only certificates whose key can produce one of these. */
   readonly algorithm?: SignatureAlgorithm | readonly SignatureAlgorithm[];
+  /** Aborts the request (the window closes; the promise rejects with `Aborted`). */
   readonly signal?: AbortSignal;
 }
 
-/** What {@link status} reports. Never opens a window. */
+/**
+ * What {@link status} reports. Never opens a window.
+ *
+ * @example
+ * const { ready, problem } = await status();
+ * if (!ready) show(errorText(problem, navigator.language));
+ */
 export interface Status {
   readonly extension: { readonly installed: boolean; readonly version?: string };
   readonly app: {
@@ -100,11 +208,34 @@ export interface Status {
   };
   /** The person ticked "Remember this site": `certificates()` answers without a window. */
   readonly remembered: boolean;
-  /** Extension and app present and compatible. */
+  /** Extension and app present and compatible: `sign()` can work. */
   readonly ready: boolean;
+  /**
+   * Why not ready, as the error `sign()` would reject with (absent when
+   * ready). Pass it to `errorText()` for a localized explanation.
+   */
+  readonly problem?: StatusProblem;
 }
 
-/** The verification code the app shows next to its Sign button. */
+/**
+ * The reasons {@link Status} can be not ready.
+ *
+ * @example
+ * if (status.problem === "ExtensionMissing") link.href = installUrl();
+ */
+export type StatusProblem =
+  | "ExtensionMissing"
+  | "ExtensionOutdated"
+  | "ClientOutdated"
+  | "AppMissing"
+  | "AppOutdated";
+
+/**
+ * The verification code the app shows next to its Sign button.
+ *
+ * @example
+ * const { text, colorIndex, cells } = fingerprint(result.digest);
+ */
 export interface VerificationCode {
   /** First 8 digest bytes, uppercase hex, 4 groups of 4: "7F3A 9C21 E0B4 55D8". */
   readonly text: string;

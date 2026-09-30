@@ -89,3 +89,32 @@ fn an_extension_problem_keeps_the_strip_visible_even_with_the_rest_done() {
     };
     assert!(onboarding(facts).visible);
 }
+
+#[test]
+fn ready_means_everything_a_signature_needs_is_there() {
+    let ready = OnboardingFacts {
+        any_extension_connected: true,
+        usable_certificates: 1,
+        ..facts()
+    };
+    let strip = onboarding(ready);
+    assert!(strip.ready);
+    assert!(strip.visible, "until the test signature");
+
+    for missing in [
+        OnboardingFacts {
+            usable_certificates: 0,
+            ..ready
+        },
+        OnboardingFacts {
+            any_extension_connected: false,
+            ..ready
+        },
+        OnboardingFacts {
+            card_service_running: Some(false),
+            ..ready
+        },
+    ] {
+        assert!(!onboarding(missing).ready, "{missing:?}");
+    }
+}

@@ -9,27 +9,44 @@ import type {
   SignatureAlgorithmName,
 } from "./generated/index.js";
 import { ask, connect, readReply } from "./request.js";
-import type { Certificate, PrepareContext, SignOptions, SignResult } from "./types.js";
+import type {
+  Certificate,
+  HashAlgorithm,
+  Prepare,
+  PrepareContext,
+  SignatureAlgorithm,
+  SignOptions,
+  SignResult,
+} from "./types.js";
 import { checkAlgorithms, checkFingerprint, checkHash } from "./validate.js";
 
 /**
- * Signs a digest the page prepares for the certificate the person chooses.
+ * Signs a digest your page prepares for the certificate the person chooses.
  * One confirmation window per call: the certificate is chosen there and
  * `prepare` runs afterwards, because PAdES/CAdES put the certificate inside
  * the signed attributes. `prepare` runs again if the person switches
  * certificate; only the digest of the last one is signed.
  *
+ * The types follow your options: `sign({ hash: "SHA-384", algorithm: "ECDSA", … })`
+ * gives `prepare` a context whose `hash` is `"SHA-384"` and `algorithm` is
+ * `"ECDSA"`, and resolves with a result typed the same way.
+ *
  * @example
- * const { signature, certificate } = await sign({
+ * const { signature, certificate, algorithm } = await sign({
  *   hash: "SHA-256",
- *   prepare: (certificate, { algorithm }) => digestOfSignedAttributes(certificate, algorithm),
+ *   prepare: (certificate, { hash, algorithm }) =>
+ *     crypto.subtle.digest(hash, signedAttributesFor(certificate, algorithm)),
  * });
  *
  * @throws {WebSignError} `InvalidRequest` (bad options or digest length),
  * `Aborted` (signal fired or `prepare` threw; the original is `cause`),
- * `ExtensionMissing`, `ClientOutdated`, `UserCancelled`, `PinLocked`, `Timeout`…
+ * `ExtensionMissing`, `AppMissing`, `UserCancelled`, `PinLocked`, `Timeout`…
+ * Each error's `hint` says what to do.
  */
-export async function sign(options: SignOptions): Promise<SignResult> {
+export async function sign<
+  H extends HashAlgorithm,
+  A extends SignatureAlgorithm = SignatureAlgorithm,
+>(options: SignOptions<H, A>): Promise<SignResult<H, A>> {
   if (typeof options !== "object" || options === null) {
     throw new WebSignError(
       "InvalidRequest",
@@ -45,7 +62,9 @@ export async function sign(options: SignOptions): Promise<SignResult> {
       "prepare must be a function returning the digest to sign.",
     );
   }
-  const { prepare, signal } = options;
+  // checkNeed guarantees the context matches H and A before prepare runs.
+  const prepare = options.prepare as unknown as Prepare;
+  const { signal } = options;
   await connect(signal);
 
   // `run` ends the request: on the caller's signal, or when a digest cannot be sent.
@@ -54,6 +73,8 @@ export async function sign(options: SignOptions): Promise<SignResult> {
   signal?.addEventListener("abort", stop, { once: true });
   let failure: unknown;
   let latest = 0;
+  // The digest last sent: the app signs the latest `seq` only, so this is what it signed.
+  let sent = new Uint8Array();
   let open = true;
 
   const answer = async (need: NeedDigest, id: string): Promise<void> => {
@@ -67,6 +88,7 @@ export async function sign(options: SignOptions): Promise<SignResult> {
       const digest = await callPrepare(prepare, chosen, { hash, algorithm: need.algorithm });
       if (!current()) return;
       const bytes = toDigestBytes(digest, hash);
+      sent = bytes.slice();
       follow(id, { type: "sign.digest", seq: need.seq, digest: toBase64(bytes) });
     } catch (error) {
       if (!current()) return;
@@ -85,7 +107,8 @@ export async function sign(options: SignOptions): Promise<SignResult> {
       hash: reply.hash,
       algorithm: reply.algorithm,
       signature: fromBase64(reply.signature),
-    }));
+      digest: sent,
+    })) as SignResult<H, A>;
   } catch (error) {
     throw failure ?? error;
   } finally {
@@ -113,7 +136,7 @@ function begin(
  * message: site errors may quote the document being signed.
  */
 async function callPrepare(
-  prepare: SignOptions["prepare"],
+  prepare: Prepare,
   certificate: Certificate,
   context: PrepareContext,
 ): Promise<unknown> {
@@ -122,7 +145,7 @@ async function callPrepare(
   } catch (cause) {
     const error = new WebSignError(
       "Aborted",
-      "prepare() threw, so the request was cancelled; the original error is the cause.",
+      "prepare() threw, so the request was cancelled; see cause.",
     );
     error.cause = cause;
     throw error;

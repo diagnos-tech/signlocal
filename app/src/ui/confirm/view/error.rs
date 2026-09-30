@@ -35,6 +35,9 @@ pub fn show(ui: &mut Ui, s: &mut Screen<'_>, failure: &Failure) {
     }
     let tr = s.tr;
     ui.add_space(metrics::SPACE_2);
+    // One row for every action and the "Technical details" toggle: at
+    // 480 × 600 the notice, the code and the PIN block must all fit, and a
+    // line per action would push the notice's title out of view.
     // `horizontal_wrapped`, not a wrapping layout: that one would claim
     // the whole height left in the body and push the list off screen.
     ui.horizontal_wrapped(|ui| {
@@ -73,28 +76,36 @@ pub fn show(ui: &mut Ui, s: &mut Screen<'_>, failure: &Failure) {
                 s.input(UserInput::OpenDiagnostics);
             }
         }
+        if text.technical.is_some() {
+            toggle(ui, s);
+        }
     });
-    if let Some(detail) = &text.technical {
+    if let Some(detail) = &text.technical
+        && s.session.technical_open
+    {
         technical(ui, s, detail);
     }
 }
 
-/// "Technical details", collapsed; open, the code in mono and "Copy".
-fn technical(ui: &mut Ui, s: &mut Screen<'_>, detail: &str) {
-    let c = theme::colors(ui.ctx());
+/// "Technical details", collapsed until pressed.
+fn toggle(ui: &mut Ui, s: &mut Screen<'_>) {
     let label = s.tr.tr(k::COMMON_TECHNICAL_DETAILS).to_string();
     let icon = if s.session.technical_open {
         icons::COLLAPSE
     } else {
         icons::EXPAND
     };
-    let toggle = Button::ghost(&label).icon(icon).size(Size::Small).show(ui);
+    let open = s.session.technical_open;
+    let toggle = Button::ghost(&label).icon(icon).expanded(open).show(ui);
     if toggle.response.clicked() {
         s.session.technical_open = !s.session.technical_open;
     }
-    if !s.session.technical_open {
-        return;
-    }
+}
+
+/// The open "Technical details": the code in mono and "Copy".
+fn technical(ui: &mut Ui, s: &mut Screen<'_>, detail: &str) {
+    let c = theme::colors(ui.ctx());
+    ui.add_space(metrics::SPACE_1);
     ui.horizontal(|ui| {
         ui.spacing_mut().item_spacing = Vec2::splat(metrics::SPACE_2);
         ui.add(egui::Label::new(typography::MONO.rich(detail).color(c.fg_muted)).selectable(true));

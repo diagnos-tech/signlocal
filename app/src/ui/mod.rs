@@ -5,6 +5,8 @@
 //! `docs/ux.md` §11), [`fonts`] (Inter and JetBrains Mono, embedded),
 //! [`icons`] (Phosphor) and [`widgets`] (one custom widget per file).
 
+#[cfg(test)]
+mod audit;
 pub mod bridge;
 pub mod confirm;
 pub mod diagnostics;

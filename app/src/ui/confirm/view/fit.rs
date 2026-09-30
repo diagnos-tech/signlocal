@@ -4,8 +4,9 @@
 //! block, which the window waits for, and the "Remember" block, whose help
 //! text says what ticking it grants. At 480 × 600 a long list and a tall
 //! header can push them out of view. The list gives way instead: its scroll
-//! box shrinks to one row and then below it, so the list scrolls inside
-//! itself while the body stays still. Only when not even half a row fits (an
+//! box shrinks to one row and then below it (always ending between two
+//! lines of a row), so the list scrolls inside itself while the body stays
+//! still. Only when not even half a row fits (an
 //! error notice and the code card above the list) does the body scroll to
 //! them, each time one of them changes (and to the field when it gets focus
 //! out of view).
@@ -22,10 +23,35 @@ use crate::ui::theme::metrics;
 /// A shortened box hides at least this much of a row, so what is left of
 /// it reads as "more below" rather than as a clipping mistake.
 const CUT_AT_LEAST: f32 = 0.4 * metrics::ROW_CERT;
-/// A shortened box shows at least this much of its last, partial row.
+/// A shortened box shows at least this much of the row after its last
+/// whole one: its top and the start of its name, which read as "more
+/// below"; less reads as a clipping mistake.
 const PEEK_AT_LEAST: f32 = 16.0;
-/// The shortest box: under this the list is no longer usable.
-const SHORTEST: f32 = 0.5 * metrics::ROW_CERT;
+/// Where the name, detail and third lines of a certificate row end
+/// (`widgets/cert_row`). Past the name line, a box ends between two lines:
+/// a cut through the detail or the third line reads as a mistake.
+const LINE_ENDS: [f32; 3] = [30.0, 46.0, 62.0];
+/// The shortest box: one row's name line; under this the list is no longer
+/// usable.
+const SHORTEST: f32 = LINE_ENDS[0];
+
+/// `height` shortened so that the row after the last whole one shows only
+/// a peek of its name or ends between two of its lines.
+fn between_lines(height: f32) -> f32 {
+    let partial = height % metrics::ROW_CERT;
+    let kept = if partial < PEEK_AT_LEAST {
+        0.0
+    } else if partial < LINE_ENDS[0] {
+        partial
+    } else {
+        LINE_ENDS
+            .into_iter()
+            .rev()
+            .find(|end| partial >= *end)
+            .unwrap_or(0.0)
+    };
+    height - partial + kept
+}
 
 /// What the body measured for the request on screen (`Session::fit`).
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
@@ -79,16 +105,7 @@ impl Fit {
         if room >= wanted {
             return wanted;
         }
-        let height = room.min(wanted - CUT_AT_LEAST);
-        // A few pixels of the next row read as a clipping mistake, not as
-        // "more below": whole rows then.
-        let sliver = height % metrics::ROW_CERT;
-        let height = if height >= metrics::ROW_CERT && sliver < PEEK_AT_LEAST {
-            height - sliver
-        } else {
-            height
-        };
-        height.max(SHORTEST)
+        between_lines(room.min(wanted - CUT_AT_LEAST)).max(SHORTEST)
     }
 
     /// Measures this pass from the body's `top` and the rows' box height,
@@ -147,5 +164,21 @@ impl Fit {
             viewport: self.viewport,
             ..Fit::default()
         };
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_partial_row_ends_between_two_of_its_lines() {
+        let row = metrics::ROW_CERT;
+        assert_eq!(between_lines(50.0), 46.0, "not through the third line");
+        assert_eq!(between_lines(row + 10.0), row, "not a sliver of the next row");
+        assert_eq!(between_lines(row + 40.0), row + 30.0);
+        assert_eq!(between_lines(row + 23.0), row + 23.0, "a peek of the next name");
+        assert_eq!(between_lines(2.0 * row), 2.0 * row);
+        assert_eq!(between_lines(row + 65.0), row + 62.0);
     }
 }

@@ -29,7 +29,12 @@ fn a_digest_timeout_says_the_site_did_not_respond() {
     rig.open(request(SIGN, caller, false));
     rig.list(vec![ana_a3()], Vec::new());
     rig.finish(Finish::DigestTimeout);
-    rig.harness.get_by_label_contains("The site didn't respond");
-    rig.harness
-        .get_by_label_contains("app.diagnos.health didn't prepare the document");
+    // One status announces the title and the text together.
+    let status = rig.harness.get_by_role(Role::Status);
+    let spoken = status.accesskit_node().label().unwrap_or_default();
+    assert!(
+        spoken.starts_with("The site didn't respond")
+            && spoken.contains("app.diagnos.health didn't prepare the document"),
+        "{spoken}"
+    );
 }

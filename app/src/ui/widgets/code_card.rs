@@ -4,6 +4,10 @@
 //! identicon's and the code's places and "Preparing the document…" the help
 //! line's, so the card keeps its height when the code arrives.
 //!
+//! Compact, the help line gives its room back: under an error notice the
+//! person has already read it, and the notice and the PIN block must fit
+//! the 480 × 600 window (`docs/ux.md` §4.6, §4.8).
+//!
 //! The code is selectable (Ctrl/⌘+C copies it) and its accessible name is
 //! the spelled-out form the caller passes (`code.a11y`: "7 F 3 A, 9 C 2 1…"),
 //! because screen readers would otherwise read "7F3A" as a word.
@@ -20,8 +24,10 @@ use crate::ui::theme::{self, metrics, typography};
 const LINE_GAP: f32 = 2.0;
 /// The label line: as tall as the badge it holds.
 const HEADING_HEIGHT: f32 = 20.0;
-/// Label (20) + code (24) + help (16) lines and their two gaps.
-const TEXT_HEIGHT: f32 = HEADING_HEIGHT + 24.0 + 16.0 + 2.0 * LINE_GAP;
+/// Label (20) and code (24) lines and their gap.
+const COMPACT_TEXT_HEIGHT: f32 = HEADING_HEIGHT + 24.0 + LINE_GAP;
+/// The compact lines plus the help (16) line and its gap.
+const TEXT_HEIGHT: f32 = COMPACT_TEXT_HEIGHT + 16.0 + LINE_GAP;
 /// About the width of "7F3A 9C21 E0B4 55D8" in `text-code`.
 const CODE_WIDTH: f32 = 180.0;
 
@@ -45,6 +51,9 @@ pub struct CodeCard<'a> {
     pub hash: &'a str,
     pub help: &'a str,
     pub state: CodeState<'a>,
+    /// Without the help line (while an error notice is shown). "Preparing
+    /// the document…" stays: it is the only sign that something happens.
+    pub compact: bool,
 }
 
 impl CodeCard<'_> {
@@ -62,8 +71,15 @@ impl CodeCard<'_> {
                 // the text block's known height.
                 ui.horizontal_top(|ui| {
                     ui.spacing_mut().item_spacing = Vec2::new(metrics::SPACE_4, 0.0);
+                    let compact =
+                        self.compact && matches!(self.state, CodeState::Ready { .. });
+                    let text_height = if compact {
+                        COMPACT_TEXT_HEIGHT
+                    } else {
+                        TEXT_HEIGHT
+                    };
                     ui.vertical(|ui| {
-                        ui.add_space((TEXT_HEIGHT - metrics::IDENTICON) / 2.0);
+                        ui.add_space((text_height - metrics::IDENTICON) / 2.0);
                         match self.state {
                             CodeState::Ready { code, .. } => ui.add(Identicon::new(code)),
                             CodeState::Preparing { .. } => {
@@ -75,6 +91,9 @@ impl CodeCard<'_> {
                         ui.spacing_mut().item_spacing = Vec2::new(0.0, LINE_GAP);
                         self.heading(ui);
                         self.code(ui);
+                        if compact {
+                            return;
+                        }
                         let (note, color) = match self.state {
                             CodeState::Ready { .. } => (self.help, c.fg_subtle),
                             CodeState::Preparing { preparing } => (preparing, c.fg_muted),

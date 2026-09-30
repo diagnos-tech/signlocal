@@ -110,3 +110,19 @@ describe("fingerprint() verification code", () => {
     });
   }
 });
+
+describe("fingerprint() input", () => {
+  it("accepts an ArrayBuffer and a subarray view like a Uint8Array", async () => {
+    const digest = await sha("SHA-256", "abc");
+    const padded = new Uint8Array(40);
+    padded.set(digest, 5);
+    expect(fingerprint(digest.buffer as ArrayBuffer)).toEqual(fingerprint(digest));
+    expect(fingerprint(padded.subarray(5, 37))).toEqual(fingerprint(digest));
+  });
+
+  it("rejects anything but bytes with InvalidRequest", () => {
+    expect(() => fingerprint("7F3A9C21E0B455D8" as unknown as Uint8Array)).toThrow(
+      expect.objectContaining({ code: "InvalidRequest" }),
+    );
+  });
+});

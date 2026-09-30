@@ -23,6 +23,7 @@ describe("without a window (server-side rendering)", () => {
       app: { installed: false, outdated: false },
       remembered: false,
       ready: false,
+      problem: "ExtensionMissing",
     });
   });
 

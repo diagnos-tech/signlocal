@@ -12,6 +12,7 @@ mod faq;
 mod header;
 mod help;
 mod onboarding;
+mod onboarding_steps;
 mod presence;
 mod row;
 mod section;

@@ -12,5 +12,6 @@
 - `accesskit.rs` — Header sentence, radio rows with full names, PIN without value, alerts, Tab order (§14).
 - `open_time.rs` — Frames laid out within 300 ms of `Open` (timing printed).
 - `remember_fit.rs` — Under a long list the body's top block and "Remember" stay whole, the body unscrolled, choosing and before Continue (§4.5, §4.10).
-- `pin_fit.rs` — Our PIN field stays visible above the footer, the body unscrolled, under a long list; the whole PIN block stays visible after a failure (§4.6).
+- `pin_fit.rs` — Our PIN field stays visible above the footer, the body unscrolled, under a long list; the whole PIN block and the error notice stay visible after a failure (§4.6, §4.8).
 - `paths.rs` — "View in system" asks the host for the selected certificate; "Try through the token driver" shows the driver's PIN field first (§5.11, §5.12).
+- `tree.rs` — The whole AccessKit tree of every state: each node a screen reader reaches is named in words and has bounds (§14).

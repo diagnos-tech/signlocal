@@ -1,7 +1,6 @@
-import { discover, send } from "./channel.js";
+import { discover, PROTOCOL_VERSION, send } from "./channel.js";
 import type { PageReply } from "./generated/index.js";
-import { isCompatible } from "./request.js";
-import type { Status } from "./types.js";
+import type { Status, StatusProblem } from "./types.js";
 
 /**
  * The extension answers `status` itself; this only bounds a hung extension.
@@ -11,20 +10,27 @@ import type { Status } from "./types.js";
  */
 const STATUS_TIMEOUT_MS = 10_000;
 
+type Extension = Status["extension"];
 type AppState = Status["app"];
 
-function build(extension: Status["extension"], app: AppState, remembered = false): Status {
-  return {
-    extension,
-    app,
-    remembered,
-    ready: extension.installed && app.installed && !app.outdated,
-  };
-}
-
+const NO_EXTENSION: Extension = { installed: false };
 const NO_APP: AppState = { installed: false, outdated: false };
 
-function fromReply(extension: Status["extension"], reply: PageReply | undefined): Status {
+/** The status, with `ready` and `problem` derived so they can never disagree. */
+function build(
+  extension: Extension,
+  app: AppState,
+  remembered = false,
+  // Only an incompatible protocol range passes this; the rest follows from the facts.
+  protocol?: StatusProblem,
+): Status {
+  const problem: StatusProblem | undefined = !extension.installed
+    ? "ExtensionMissing"
+    : (protocol ?? (!app.installed ? "AppMissing" : app.outdated ? "AppOutdated" : undefined));
+  return { extension, app, remembered, ready: !problem, ...(problem && { problem }) };
+}
+
+function fromReply(extension: Extension, reply: PageReply | undefined): Status {
   if (reply?.type === "status") {
     const { app, appOutdated, remembered } = reply;
     const state = app ? { installed: true, version: app.version } : { installed: false };
@@ -41,14 +47,23 @@ function fromReply(extension: Status["extension"], reply: PageReply | undefined)
 
 /**
  * The state of the extension and the app, without opening any window. Never
- * rejects: whatever is missing shows as `installed: false`.
+ * rejects: whatever is missing shows as `installed: false`, and `problem`
+ * names the first thing to fix. Call it on load to show or hide your Sign
+ * button; {@link onChange} tells you when it changes.
+ *
+ * @example
+ * const { ready, problem } = await status();
+ * button.hidden = !ready;
+ * if (problem === "ExtensionMissing") installLink.href = installUrl();
  */
 export async function status(): Promise<Status> {
   try {
     const announcement = await discover();
-    if (announcement === null) return build({ installed: false }, NO_APP);
+    if (announcement === null) return build(NO_EXTENSION, NO_APP);
     const extension = { installed: true, version: announcement.extension.version };
-    if (!isCompatible(announcement)) return build(extension, NO_APP);
+    const { min, max } = announcement.protocols;
+    if (min > PROTOCOL_VERSION) return build(extension, NO_APP, false, "ClientOutdated");
+    if (max < PROTOCOL_VERSION) return build(extension, NO_APP, false, "ExtensionOutdated");
 
     const timeout = new AbortController();
     const timer = setTimeout(() => timeout.abort(), STATUS_TIMEOUT_MS);
@@ -62,6 +77,6 @@ export async function status(): Promise<Status> {
     }
     return fromReply(extension, replies.at(-1));
   } catch {
-    return build({ installed: false }, NO_APP);
+    return build(NO_EXTENSION, NO_APP);
   }
 }

@@ -49,8 +49,13 @@ pub fn show(
     if response.clicked() && !selected {
         s.input(UserInput::Select(fingerprint));
     }
-    if shown.details.is_some_and(|details| details.clicked()) {
-        s.session.details_open = !s.session.details_open;
+    if let Some(details) = &shown.details {
+        if details.clicked() {
+            s.session.details_open = !s.session.details_open;
+        }
+        let open = s.session.details_open;
+        ui.ctx()
+            .accesskit_node_builder(details.id, |node| node.set_expanded(open));
     }
     if shown.enter {
         s.session.focus = Some(match s.view.pin {

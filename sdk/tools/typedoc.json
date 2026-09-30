@@ -1,0 +1,25 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "name": "@websign/sdk",
+  "entryPoints": ["../src/index.ts", "../src/messages.ts", "../src/testing/index.ts"],
+  "tsconfig": "../tsconfig.build.json",
+  "out": "../../site/api",
+  "readme": "api-index.md",
+  "customCss": "api-theme.css",
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "includeVersion": true,
+  "hideGenerator": true,
+  "githubPages": false,
+  "cleanOutputDir": true,
+  "sourceLinkTemplate": "https://github.com/diagnos-tech/web-esign/blob/main/{path}#L{line}",
+  "disableGit": true,
+  "basePath": "../..",
+  "navigationLinks": {
+    "Quickstart": "../developers.html",
+    "Examples": "https://github.com/diagnos-tech/web-esign/tree/main/examples/web",
+    "Source": "https://github.com/diagnos-tech/web-esign/tree/main/sdk"
+  },
+  "sort": ["kind", "instance-first", "source-order"],
+  "treatWarningsAsErrors": true
+}

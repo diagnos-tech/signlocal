@@ -1,4 +1,5 @@
-//! The universal `.app`: both slices joined by `lipo`, ad-hoc signed, zipped.
+//! The universal `.app`: both slices joined by `lipo`, the Safari appex
+//! embedded, ad-hoc signed inside out, zipped.
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -6,11 +7,11 @@ use std::process::Command;
 use super::stage::{fresh, licenses, render_template};
 use super::target::MACOS_SLICES;
 use super::tool::run;
-use super::{Context, archive, build, names};
+use super::{Context, archive, build, macos_sign, names, safari};
 
-/// Builds `WebeSign.app` into `websign-<v>-macos-universal.zip`. The signature
-/// is ad-hoc (`-`): it gives the bundle an identity for the URL scheme and the
-/// keychain, but is not notarization (unsigned-build notice, docs/install.md).
+/// Builds `WebeSign.app` into `websign-<v>-macos-universal.zip`, with the
+/// Safari appex in `Contents/PlugIns` (`safari/SPEC.md`). Signatures are ad
+/// hoc for now (`macos_sign.rs`).
 pub fn app(context: &Context) -> Result<PathBuf, String> {
     let project = &context.project;
     let stage = fresh(context, "macos")?;
@@ -37,12 +38,8 @@ pub fn app(context: &Context) -> Result<PathBuf, String> {
 
     write_info_plist(context, &contents.join("Info.plist"))?;
     licenses(context, &contents.join("Resources/licenses"))?;
-    run(
-        Command::new("codesign")
-            .args(["--force", "--deep", "--sign", "-"])
-            .arg(&bundle),
-        "codesign comes with the Xcode command line tools",
-    )?;
+    safari::embed(context, &contents, &executable)?;
+    macos_sign::sign(context, &bundle, None)?;
 
     let out = context
         .out

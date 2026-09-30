@@ -1,0 +1,154 @@
+# The Safari web extension on macOS, as far as a runner can prove it
+# (docs/compatibility.md §Safari): the relay's unit tests with fake hosts, the
+# packaged WebeSign.app with its appex (layout, Info.plist keys, both CPU
+# slices, signatures and entitlements), and the real bundled host answering
+# `hello` through the relay. Loading the extension into Safari needs a person
+# (safaridriver cannot install extensions): the manual script is in
+# docs/compatibility.md.
+name: safari
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: safari-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  # Only the default branch writes caches, so pull requests cannot evict them.
+  SAVE_CACHE: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+
+jobs:
+  relay:
+    name: relay tests (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        # Linux too: the relay is platform-neutral, and a second Foundation
+        # catches code that only works by accident on one.
+        os: [macos-latest, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - name: Swift version
+        run: swift --version
+      - name: Relay tests (fake hosts)
+        run: swift test --package-path safari
+
+  app:
+    name: app with the Safari appex (macos)
+    runs-on: macos-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.11"
+      - name: Install the extension's dependencies
+        timeout-minutes: 10
+        run: bun install --frozen-lockfile
+      - name: Safari build of the extension (direct channel)
+        working-directory: extension
+        env:
+          WEBSIGN_CHANNEL: direct
+        run: bunx wxt build -b safari
+      - name: Install the pinned toolchain
+        run: rustup toolchain install || rustup show
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: safari
+          save-if: ${{ env.SAVE_CACHE }}
+      - name: Package the universal app
+        timeout-minutes: 75
+        # Matches LSMinimumSystemVersion in packaging/macos/*.plist.in.
+        env:
+          MACOSX_DEPLOYMENT_TARGET: "13.0"
+        run: cargo xtask package --target universal-apple-darwin --format app --out dist
+      - name: Unpack
+        run: |
+          mkdir dist/unpacked
+          ditto -x -k dist/websign-*-macos-universal.zip dist/unpacked
+          find dist/unpacked -maxdepth 6 | sort
+      - name: Bundle layout, Info.plist keys and CPU slices
+        shell: bash
+        run: |
+          set -euo pipefail
+          app=dist/unpacked/WebeSign.app
+          appex="$app/Contents/PlugIns/WebeSignExtension.appex"
+          info="$appex/Contents/Info.plist"
+          for binary in "$app/Contents/MacOS/websign" "$appex/Contents/MacOS/WebeSignExtension" \
+                        "$appex/Contents/MacOS/websign"; do
+            test -x "$binary" || { echo "::error::missing $binary"; exit 1; }
+            lipo "$binary" -verify_arch arm64 x86_64
+          done
+          plutil -lint "$app/Contents/Info.plist" "$info"
+          expect() {
+            local got
+            got=$(plutil -extract "$2" raw -o - "$1")
+            [[ $got == "$3" ]] || { echo "::error::$1 $2 is '$got', expected '$3'"; exit 1; }
+          }
+          app_id=$(plutil -extract CFBundleIdentifier raw -o - "$app/Contents/Info.plist")
+          appex_id=$(plutil -extract CFBundleIdentifier raw -o - "$info")
+          [[ $appex_id == "$app_id".* ]] || { echo "::error::$appex_id does not extend $app_id"; exit 1; }
+          expect "$info" CFBundlePackageType 'XPC!'
+          expect "$info" NSExtension.NSExtensionPointIdentifier com.apple.Safari.web-extension
+          expect "$info" NSExtension.NSExtensionPrincipalClass SafariWebExtensionHandler
+          expect "$info" WebeSignHostExecutable websign
+          # The principal class exists under its Objective-C name, and the
+          # entry point is Foundation's extension main.
+          nm "$appex/Contents/MacOS/WebeSignExtension" > symbols.txt
+          grep -qF "_OBJC_CLASS_\$_SafariWebExtensionHandler" symbols.txt
+          grep -q ' U _NSExtensionMain$' symbols.txt
+          # The resources are the WXT safari build, with nothing Chromium-only.
+          python3 - "$appex/Contents/Resources/manifest.json" <<'EOF'
+          import json, sys
+          manifest = json.load(open(sys.argv[1]))
+          assert manifest["manifest_version"] == 3, manifest
+          assert "nativeMessaging" in manifest["permissions"], manifest
+          assert "key" not in manifest, "a Chromium key leaked into the Safari build"
+          EOF
+      - name: Signatures and entitlements
+        shell: bash
+        run: |
+          set -euo pipefail
+          app=dist/unpacked/WebeSign.app
+          appex="$app/Contents/PlugIns/WebeSignExtension.appex"
+          codesign --verify --deep --strict --verbose=2 "$app"
+          entitlement() {
+            codesign -d --entitlements - --xml "$1" 2>/dev/null > entitlements.plist
+            plutil -extract "$2" raw -o - entitlements.plist
+          }
+          [[ $(entitlement "$appex" com.apple.security.app-sandbox) == true ]]
+          [[ $(entitlement "$appex" com.apple.security.smartcard) == true ]]
+          [[ $(entitlement "$appex/Contents/MacOS/websign" com.apple.security.inherit) == true ]]
+          # The app's own binary serves Chrome and Firefox outside any sandbox.
+          codesign -d --entitlements - --xml "$app" > app-entitlements.plist 2>/dev/null || true
+          if grep -q app-sandbox app-entitlements.plist; then
+            echo "::error::the app itself must not be sandboxed (D10)"; exit 1
+          fi
+      - name: The bundled host answers hello through the relay
+        run: |
+          WEBSIGN_TEST_APPEX="$PWD/dist/unpacked/WebeSign.app/Contents/PlugIns/WebeSignExtension.appex" \
+            swift test --package-path safari --filter BundledHostTests
+      # Informational: registration with PlugInKit needs a signed, launched
+      # app on some macOS versions, so a runner's answer is not a verdict.
+      - name: PlugInKit sees the appex (informational)
+        continue-on-error: true
+        run: |
+          pluginkit -a "dist/unpacked/WebeSign.app/Contents/PlugIns/WebeSignExtension.appex"
+          pluginkit -m -v -p com.apple.Safari.web-extension
+      - uses: actions/upload-artifact@v4
+        with:
+          name: websign-macos-with-safari
+          path: dist/websign-*-macos-universal.zip
+          if-no-files-found: error
+          retention-days: 7

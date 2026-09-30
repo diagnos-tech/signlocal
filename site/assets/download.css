@@ -1,0 +1,21 @@
+/* Download page: numbered steps, OS and browser tabs, checksum blocks. */
+.dl h2 { display: flex; align-items: center; gap: 12px; margin-top: 48px; }
+.dl h2 .n { flex: none; display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--ws-accent); color: var(--ws-on-accent); font-size: 1rem; }
+.dl h3 { margin: 20px 0 4px; }
+.dl ol.how { padding-left: 1.4em; }
+.dl ol.how li { margin: 6px 0; }
+.dl .tip { border-left: 3px solid var(--ws-warning-border); padding: 4px 0 4px 12px; color: var(--ws-fg-muted); margin: 12px 0; }
+.dl table { border-collapse: collapse; width: 100%; font-size: .95rem; margin: 8px 0; }
+.dl th, .dl td { text-align: left; border-bottom: 1px solid var(--ws-border); padding: 8px 8px 8px 0; vertical-align: top; }
+.dl td code { overflow-wrap: anywhere; }
+.table-wrap { overflow-x: auto; }
+
+/* Tabs: every panel shows until tabs.js marks the container .tabs-on. */
+[role=tablist] { display: none; }
+.tabs-on [role=tablist] { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--ws-border); margin: 16px 0 0; }
+[role=tab] { font: inherit; font-weight: 600; color: var(--ws-fg-muted); background: none; border: 0; border-bottom: 3px solid transparent; padding: 8px 12px; margin-bottom: -1px; cursor: pointer; border-radius: var(--ws-radius-sm) var(--ws-radius-sm) 0 0; }
+[role=tab]:hover { color: var(--ws-fg); background: var(--ws-bg-hover); }
+[role=tab][aria-selected=true] { color: var(--ws-accent-fg); border-bottom-color: var(--ws-accent); }
+.panel { padding: 8px 0 0; }
+.tabs-on .panel > .panel-h { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.detected { font-size: .9rem; color: var(--ws-fg-subtle); margin: 8px 0 0; }

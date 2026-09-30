@@ -1,5 +1,6 @@
 // Picks the language (?lang, then the saved choice, then the browser), loads
-// locales/<lang>.json and fills every [data-i18n] element. English text is in
+// locales/<lang>.json and fills every [data-i18n] element (and the aria-label
+// of every [data-i18n-label] one). English text is in
 // the HTML, so the page reads correctly without JavaScript. Pages that build
 // text in script listen for the "websign:i18n" event on document.
 (function () {
@@ -39,6 +40,11 @@
         document.querySelectorAll("[data-i18n]").forEach(function (el) {
           var text = dict[el.getAttribute("data-i18n")];
           if (text) el.textContent = text;
+        });
+        // Names that exist only for assistive technology (a tab list's label).
+        document.querySelectorAll("[data-i18n-label]").forEach(function (el) {
+          var text = dict[el.getAttribute("data-i18n-label")];
+          if (text) el.setAttribute("aria-label", text);
         });
         if (select) select.value = lang;
         document.dispatchEvent(new CustomEvent("websign:i18n", { detail: { lang: lang } }));

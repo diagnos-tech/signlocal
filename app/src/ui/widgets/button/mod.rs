@@ -33,6 +33,7 @@ pub struct Button<'a> {
     enabled: bool,
     armed: bool,
     busy: bool,
+    expanded: Option<bool>,
 }
 
 impl<'a> Button<'a> {
@@ -45,6 +46,7 @@ impl<'a> Button<'a> {
             enabled: true,
             armed: true,
             busy: false,
+            expanded: None,
         }
     }
 
@@ -85,6 +87,15 @@ impl<'a> Button<'a> {
     /// Shows a spinner before the label ("Signing…") and ignores input.
     pub fn busy(mut self, busy: bool) -> Self {
         self.busy = busy;
+        self
+    }
+}
+
+impl Button<'_> {
+    /// A disclosure ("Technical details", "Details"): screen readers hear
+    /// whether what it shows is open.
+    pub fn expanded(mut self, open: bool) -> Self {
+        self.expanded = Some(open);
         self
     }
 }
@@ -137,6 +148,10 @@ impl Button<'_> {
         let enter = interactive && keys::take_enter(ui, id);
         let response = ui.interact(rect, id, sense);
         response.widget_info(|| WidgetInfo::labeled(WidgetType::Button, interactive, self.label));
+        if let Some(open) = self.expanded {
+            ui.ctx()
+                .accesskit_node_builder(id, |node| node.set_expanded(open));
+        }
 
         let shown = motion::animate(
             ui.ctx(),

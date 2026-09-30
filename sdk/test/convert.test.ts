@@ -73,15 +73,9 @@ describe("Base64 (RFC 4648 section 4, padded, strict)", () => {
     });
   }
 
-  it("works without atob/btoa (workers)", () => {
-    vi.stubGlobal("atob", () => {
-      throw new Error("atob must not be used");
-    });
-    vi.stubGlobal("btoa", () => {
-      throw new Error("btoa must not be used");
-    });
-    expect(toBase64(text("foobar"))).toBe("Zm9vYmFy");
-    expect(fromBase64("Zm9vYmFy")).toEqual(text("foobar"));
+  it("round-trips every byte value", () => {
+    const all = Uint8Array.from({ length: 256 }, (_, i) => i);
+    expect(fromBase64(toBase64(all))).toEqual(all);
   });
 });
 

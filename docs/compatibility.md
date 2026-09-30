@@ -58,6 +58,50 @@ Behavior that only real devices can confirm; tick each one in the PR that record
 | Ubuntu 24.04 | Firefox (Snap, portal) | .deb | | | | |
 | Fedora | Firefox (rpm) | .rpm | | | | |
 
+## Safari (macOS)
+
+Safari cannot be automated end to end: `safaridriver` drives pages but cannot install or enable an
+extension, and an unsigned one needs **Allow unsigned extensions**, which asks for a password. So the
+`safari` workflow proves everything up to Safari, and a person proves the rest with the script below.
+
+What CI proves on every push (`.github/workflows/safari.yml`):
+
+- The relay (`safari/Relay`) with fake hosts on macOS and Linux: framing, strict message shapes, sessions,
+  polling, profiles, host exit, broken framing, backlog and session limits, idle reaping, a host that
+  ignores SIGTERM being killed, and the client message types equal to the generated protocol.
+- `cargo xtask package --target universal-apple-darwin` builds `WebeSign.app` with
+  `Contents/PlugIns/WebeSignExtension.appex`: both CPU slices of the app, the appex and its host copy;
+  the Safari extension point, principal class and host keys in the appex's `Info.plist`; the WXT safari
+  build as its resources (MV3, `nativeMessaging`, no Chromium key); a strict signature check of the
+  whole bundle; the appex sandboxed with the smart-card entitlement, its host copy inheriting it, the
+  app itself not sandboxed.
+- The packaged host binary, started with the arguments the appex uses, answers `hello` through the relay.
+- PlugInKit registration is printed for information only.
+
+Manual script (a Mac with Safari 17 or later; takes about five minutes):
+
+1. Install the build under test with [`install.md`](install.md) (macOS), then follow its
+   [Safari](install.md#safari) steps 1–4. Record: WebeSign listed in **Settings → Extensions** after
+   opening the app once.
+2. Open the site's test page (`/test/`) in Safari. The page reports the extension and the app as
+   ready. Record "Host starts".
+3. Sign with a Keychain certificate (a `.p12` imported into the login keychain): the WebeSign window
+   opens in front, says "via Safari", shows the site and the verification code the page shows. Sign.
+   The page verifies the signature. Record "Signs (Keychain)".
+4. Repeat with a token that macOS sees through CryptoTokenKit, then with a PKCS#11-only driver if you
+   have one. Record the PIN dialog's behavior.
+5. Tick "Remember this site", sign again: no window when the certificate is remembered.
+6. Leave the page idle for two minutes, then sign again (the session was closed and reopens).
+7. Quit Safari, reopen it: the extension is off until **Allow unsigned extensions** is turned on again;
+   then sign once more.
+8. Run `websign doctor --json` and attach it, as for the other rows.
+
+| macOS | Safari | Build | Listed after opening the app | Host starts | Signs (Keychain) | Signs (CTK token) | PKCS#11 token | Remember site | After idle / relaunch | Date · who |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 15 | 18 | direct, unsigned (ad hoc) | | | | | | | | |
+| 14 | 17 | direct, unsigned (ad hoc) | | | | | | | | |
+| 13 | 17 | direct, unsigned (ad hoc) | | | | | | | | |
+
 ## CI (software keys)
 
 The `ci` workflow runs the key-store contract suite on every push: SoftHSM2 on Linux, CNG and

@@ -1,5 +1,6 @@
 /** The digest step of `sign()`: what the app asks for and what `prepare` returns. */
 
+import { viewOf } from "./convert.js";
 import { WebSignError } from "./errors.js";
 import type { HashName, NeedDigest, SignatureAlgorithmName } from "./generated/index.js";
 import { ALGORITHMS, DIGEST_LENGTH } from "./validate.js";
@@ -13,11 +14,7 @@ import { ALGORITHMS, DIGEST_LENGTH } from "./validate.js";
  * @throws {WebSignError} `InvalidRequest` for anything but a right-sized `Uint8Array`/`ArrayBuffer`.
  */
 export function toDigestBytes(value: unknown, hash: HashName): Uint8Array {
-  const bytes = ArrayBuffer.isView(value)
-    ? new Uint8Array(value.buffer, value.byteOffset, value.byteLength)
-    : value instanceof ArrayBuffer
-      ? new Uint8Array(value)
-      : undefined;
+  const bytes = viewOf(value);
   if (bytes === undefined) {
     throw new WebSignError(
       "InvalidRequest",

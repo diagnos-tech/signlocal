@@ -4,11 +4,6 @@ import { type Announcement, discover, notify, PROTOCOL_VERSION, send } from "./c
 import { abortedError, knownCode, malformedReply, WebSignError } from "./errors.js";
 import type { PageReply, PageRequest } from "./generated/index.js";
 
-/** Whether this SDK's protocol version is inside what the extension speaks. */
-export function isCompatible({ protocols }: Announcement): boolean {
-  return protocols.min <= PROTOCOL_VERSION && PROTOCOL_VERSION <= protocols.max;
-}
-
 /** `promise`, or `Aborted` as soon as `signal` fires. */
 function untilAborted<T>(promise: Promise<T>, signal: AbortSignal | undefined): Promise<T> {
   if (signal === undefined) return promise;
@@ -34,21 +29,21 @@ export async function connect(signal?: AbortSignal): Promise<Announcement> {
   if (announcement === null) {
     throw new WebSignError(
       "ExtensionMissing",
-      "The WebeSign extension did not announce itself. Is it installed and enabled for this site? Send the person to installUrl().",
+      "The WebeSign extension did not answer: it is not installed, or disabled for this site.",
     );
   }
   const { min, max } = announcement.protocols;
   if (min > PROTOCOL_VERSION) {
     throw new WebSignError(
       "ClientOutdated",
-      `The extension speaks protocol ${min}-${max}; this @websign/sdk speaks ${PROTOCOL_VERSION}. Update @websign/sdk.`,
+      `The extension speaks protocol ${min}-${max}; this @websign/sdk speaks ${PROTOCOL_VERSION}.`,
       { installed: String(PROTOCOL_VERSION), required: String(min) },
     );
   }
   if (max < PROTOCOL_VERSION) {
     throw new WebSignError(
       "ExtensionOutdated",
-      `The extension speaks protocol ${min}-${max}; this @websign/sdk needs ${PROTOCOL_VERSION}. The person must update the extension.`,
+      `The extension speaks protocol ${min}-${max}; this @websign/sdk needs ${PROTOCOL_VERSION}.`,
       { installed: String(max), required: String(PROTOCOL_VERSION) },
     );
   }
