@@ -5,7 +5,7 @@ use std::time::{Duration, Instant};
 use super::machine::{ConfirmModel, ConfirmState};
 use super::port::{OpenRequest, UiCommand};
 use super::slot::CodeSlot;
-use crate::certs::{CertCandidate, ListContext, RowStatus, build_cert_list};
+use crate::certs::{CertCandidate, CertList, ListContext, RowStatus, build_cert_list};
 use crate::possible::PossibleCard;
 
 /// Applies `command`. Commands for a request that is not on screen are stale
@@ -23,7 +23,10 @@ pub(super) fn apply(model: &mut ConfirmModel, command: UiCommand, now: Instant) 
         UiCommand::DigestPending { key, fingerprint }
             if model.is_current(key) && model.state == ConfirmState::Choosing =>
         {
-            if model.list.as_ref().and_then(|list| list.selected) == Some(fingerprint) {
+            // Before Continue the window has not released the certificate,
+            // so no digest can be pending for it (D11).
+            let selected = model.list.as_ref().and_then(|list| list.selected);
+            if selected == Some(fingerprint) && model.code != CodeSlot::Hint {
                 model.code = CodeSlot::Preparing(now);
             }
         }
@@ -32,12 +35,16 @@ pub(super) fn apply(model: &mut ConfirmModel, command: UiCommand, now: Instant) 
             fingerprint,
             code,
         } if model.is_current(key) => {
+            // Only a digest the window is waiting for counts: one for a
+            // certificate no longer selected is stale, and one before a new
+            // caller pressed Continue was never asked for (D11).
             let selected = model.list.as_ref().and_then(|list| list.selected);
-            let waiting = matches!(model.state, ConfirmState::Choosing | ConfirmState::Ready);
+            let waiting = matches!(model.state, ConfirmState::Choosing | ConfirmState::Ready)
+                && model.code != CodeSlot::Hint;
             if waiting && selected == Some(fingerprint) {
                 model.code = CodeSlot::Ready(code);
                 model.state = ConfirmState::Ready;
-                model.arming.rearm(now);
+                model.rearm(now);
             }
         }
         UiCommand::Signing { key } if model.is_current(key) => model.signing_started(),
@@ -58,9 +65,16 @@ impl ConfirmModel {
         self.deadline = Some(now + Duration::from_secs(u64::from(request.timeout_secs)));
         self.request = Some(request);
         self.state = ConfirmState::LoadingCerts;
-        self.arming.rearm(now);
+        // The next request of a queue re-arms a focused window at once; a
+        // window that is only being shown waits for `Focus(true)`.
+        self.rearm(now);
     }
 
+    /// A fresh listing. While searching (loading or empty) the list is built
+    /// from scratch; once rows are on screen it is merged, so nothing moves
+    /// under the pointer (`docs/ux.md` §5.9). Any row that becomes able to
+    /// sign (a token inserted or plugged back in) re-arms the button, because
+    /// what sits under the pointer changed (§4.7).
     fn certificates(
         &mut self,
         candidates: &[CertCandidate],
@@ -73,7 +87,7 @@ impl ConfirmModel {
         }
         self.possible = possible;
         let searching = matches!(self.state, ConfirmState::LoadingCerts | ConfirmState::Empty);
-        let before = self.list.as_ref().map_or(0, |list| list.usable.len());
+        let before = self.list.as_ref().map_or(0, usable_count);
         let list = match self.list.take() {
             Some(mut list) if !searching => {
                 list.append(candidates, context);
@@ -81,24 +95,17 @@ impl ConfirmModel {
             }
             _ => build_cert_list(candidates, context),
         };
-        let list = self.list.insert(list);
-        let first_usable = list
-            .usable
-            .iter()
-            .find(|row| row.status == RowStatus::Usable)
-            .map(|row| row.candidate.fingerprint);
-        if list.selected.is_none() {
-            list.selected = first_usable;
-        }
-        let grew = list.usable.len() > before;
+        let after = usable_count(&list);
+        let has_selection = list.selected.is_some();
+        self.list = Some(list);
         if searching {
-            if first_usable.is_some() {
+            if has_selection {
                 self.enter_choosing(now);
             } else {
                 self.state = ConfirmState::Empty;
             }
-        } else if grew {
-            self.arming.rearm(now);
+        } else if after > before {
+            self.rearm(now);
         }
     }
 
@@ -110,4 +117,12 @@ impl ConfirmModel {
             self.state = ConfirmState::Signing;
         }
     }
+}
+
+/// Rows that can sign right now, wherever they sit.
+fn usable_count(list: &CertList) -> usize {
+    list.usable
+        .iter()
+        .filter(|row| row.status == RowStatus::Usable)
+        .count()
 }

@@ -17,10 +17,25 @@ fn choosing() -> Window {
 
 #[test]
 fn the_code_card_is_preparing_and_there_is_no_continue_step() {
-    let view = choosing().view();
+    let mut w = Window::new();
+    w.open(request(KEY, sign_mode(), true));
+    w.wait(100).certificates(pair(), context());
+    let view = w.view();
     assert_eq!(view.state, ConfirmState::Choosing);
     assert_eq!(view.code, CodeCard::Preparing { skeleton: false });
-    assert_ne!(view.footer.primary, PrimaryButton::Continue);
+    assert_eq!(view.footer.primary, PrimaryButton::Sign);
+    assert!(!view.footer.primary_enabled);
+}
+
+#[test]
+fn the_skeleton_appears_after_150_ms_without_a_digest() {
+    let mut w = Window::new();
+    w.open(request(KEY, sign_mode(), true));
+    w.wait(100).certificates(pair(), context());
+    w.wait(149);
+    assert_eq!(w.view().code, CodeCard::Preparing { skeleton: false });
+    w.wait(1);
+    assert_eq!(w.view().code, CodeCard::Preparing { skeleton: true });
 }
 
 #[test]

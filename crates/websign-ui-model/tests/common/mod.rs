@@ -4,7 +4,9 @@
 #![allow(dead_code, unused_imports)]
 
 pub mod cert;
+pub mod report;
 pub mod session;
 
 pub use cert::*;
+pub use report::*;
 pub use session::*;

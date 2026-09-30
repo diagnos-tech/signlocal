@@ -136,7 +136,16 @@ fn appending_to_an_empty_list_selects_like_a_fresh_build() {
     assert_eq!(list.selected, None);
     list.append(&[bia(), ana()], &context());
     assert_eq!(usable(&list), vec![fp(1), fp(2)]);
-    // SPEC: "The selection never moves by itself" - but a list with no
-    // selection has nothing to keep, so the first usable row is chosen.
+    // A list with no selection has no choice of the person to keep, so the
+    // first usable row is chosen, as a fresh build would.
+    assert_eq!(list.selected, Some(fp(1)));
+}
+
+#[test]
+fn a_row_missing_from_a_later_listing_stays_as_it_was() {
+    let mut list = list_of(&[ana(), bia()]);
+    list.append(&[bia()], &context());
+    assert_eq!(usable(&list), vec![fp(1), fp(2)]);
+    assert_eq!(status(&list, fp(1)), RowStatus::Usable);
     assert_eq!(list.selected, Some(fp(1)));
 }

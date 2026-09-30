@@ -9,6 +9,7 @@ use websign_core::present::holder::display_name;
 use super::badge::badge;
 use super::candidate::CertCandidate;
 use super::location::location;
+use super::order::ListContext;
 use super::row::{CertRow, RowStatus};
 use super::validity::validity_label;
 
@@ -16,13 +17,14 @@ use super::validity::validity_label;
 pub(super) fn make_row(
     candidate: &CertCandidate,
     status: RowStatus,
-    today: Date,
+    context: &ListContext,
 ) -> Option<CertRow> {
     let info = candidate.info.as_ref().ok()?;
+    let zone = &context.time_zone;
     let (validity, _tone) = validity_label(
-        local_date(info.not_before),
-        local_date(info.not_after),
-        today,
+        local_date(info.not_before, zone),
+        local_date(info.not_after, zone),
+        context.today,
     );
     let issuer = info
         .issuer
@@ -43,11 +45,11 @@ pub(super) fn make_row(
     })
 }
 
-/// The calendar date of `unix_secs` in the computer's time zone; instants
-/// outside the representable range clamp to the nearest date.
-fn local_date(unix_secs: i64) -> Date {
+/// The calendar date of `unix_secs` in `zone`; instants outside the
+/// representable range clamp to the nearest date.
+fn local_date(unix_secs: i64, zone: &TimeZone) -> Date {
     match Timestamp::from_second(unix_secs) {
-        Ok(instant) => instant.to_zoned(TimeZone::system()).date(),
+        Ok(instant) => instant.to_zoned(zone.clone()).date(),
         Err(_) if unix_secs < 0 => Date::MIN,
         Err(_) => Date::MAX,
     }

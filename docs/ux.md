@@ -1621,7 +1621,7 @@ Days = difference between **local calendar dates**, not 24 h periods.
 
 Input: Ana's A3 through Windows **and** through the driver (same DER); Ana's A1; the clinic's A1; an old expired A3;
 the Cartão de Cidadão login certificate with its signing sibling; a certificate with no private key.
-Expected output: 3 usable (A3 through Windows with `also_via_driver`, Ana's A1, the clinic's A1), 1 disabled
+Expected output: 4 usable (A3 through Windows with `also_via_driver`, the Cartão de Cidadão signing certificate, Ana's A1, the clinic's A1), 1 disabled
 (expired A3), hidden: the Cartão de Cidadão login and the one with no key. With "last used on this site" = Ana's A1,
 it comes first and selected; inserting a new token while the window is open adds the row at the end without moving the
 selection.

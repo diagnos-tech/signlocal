@@ -6,6 +6,7 @@ pub mod arming;
 mod build;
 pub mod cancel;
 mod commands;
+mod decide;
 mod helpers;
 mod inputs;
 pub mod machine;

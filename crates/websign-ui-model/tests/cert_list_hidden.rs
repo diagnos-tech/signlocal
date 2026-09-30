@@ -118,7 +118,7 @@ fn one_acceptable_purpose_keeps_the_certificate() {
 
 #[test]
 fn an_unknown_purpose_is_not_foreign() {
-    // SPEC: hidden only when *every* OID is in the foreign set.
+    // Hidden only when *every* OID is in the foreign set.
     let c = with_info(candidate(1, "Ana"), |i| {
         i.extended_key_usage = vec!["1.2.3.4.5".to_owned(), SERVER_AUTH.to_owned()];
     });
@@ -181,82 +181,4 @@ fn a_hidden_certificate_is_never_shown_as_disabled_even_when_expired() {
     let mut c = with_info(candidate(1, "Ana"), |i| i.not_after = noon(2020, 1, 1));
     c.has_private_key = false;
     assert_eq!(hidden_alone(c), Some(HiddenReason::NoPrivateKey));
-}
-
-/// A card's signing certificate and its login sibling on the same device.
-fn signing_and_login(device_a: &str, device_b: &str) -> [CertCandidate; 2] {
-    let signing = {
-        let mut c = candidate(1, "Joao Pereira");
-        c.device = token(device_a);
-        c
-    };
-    let login = {
-        let mut c = with_info(candidate(2, "Joao Pereira"), |i| {
-            i.key_usage = Some(usage(true, false, false))
-        });
-        c.device = token(device_b);
-        c
-    };
-    [signing, login]
-}
-
-#[test]
-fn the_login_sibling_of_a_signing_certificate_on_the_same_device_is_hidden() {
-    let candidates = signing_and_login("Card", "Card");
-    let list = build_cert_list(&candidates, &context());
-    assert_eq!(usable(&list), vec![fp(1)]);
-    assert_eq!(
-        hidden_reason(&list, fp(2)),
-        Some(HiddenReason::LoginSibling)
-    );
-}
-
-#[test]
-fn login_certificates_on_another_device_are_kept() {
-    let candidates = signing_and_login("Card A", "Card B");
-    let list = build_cert_list(&candidates, &context());
-    assert_eq!(list.usable.len(), 2);
-    assert!(list.hidden.is_empty());
-}
-
-#[test]
-fn login_certificates_of_another_holder_are_kept() {
-    let [signing, mut login] = signing_and_login("Card", "Card");
-    login = with_info(login, |i| {
-        i.subject.common_name = Some("Maria Silva".to_owned())
-    });
-    let list = build_cert_list(&[signing, login], &context());
-    assert_eq!(list.usable.len(), 2);
-}
-
-#[test]
-fn a_login_certificate_alone_is_kept() {
-    let [_, login] = signing_and_login("Card", "Card");
-    let list = build_cert_list(&[login], &context());
-    assert_eq!(usable(&list), vec![fp(2)]);
-}
-
-#[test]
-fn two_signing_certificates_of_one_holder_are_both_kept() {
-    let mut a = candidate(1, "Joao Pereira");
-    a.device = token("Card");
-    let mut b = candidate(2, "Joao Pereira");
-    b.device = token("Card");
-    let list = build_cert_list(&[a, b], &context());
-    assert_eq!(list.usable.len(), 2);
-}
-
-#[test]
-fn unsupported_key_wins_over_login_sibling() {
-    let [signing, mut login] = signing_and_login("Card", "Card");
-    login = with_info(login, |i| {
-        i.key = PublicKeyKind::Unsupported {
-            oid: "1.2.3".to_owned(),
-        }
-    });
-    let list = build_cert_list(&[signing, login], &context());
-    assert_eq!(
-        hidden_reason(&list, fp(2)),
-        Some(HiddenReason::UnsupportedKey)
-    );
 }

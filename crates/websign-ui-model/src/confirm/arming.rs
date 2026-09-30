@@ -3,8 +3,9 @@
 //! The button accepts a click only when the press **and** the release happen
 //! after [`ARMING_DELAY`] of the window being visible and focused, measured
 //! from the last event that re-arms (focus regained, certificate changed,
-//! digest changed, next request in the queue). Keys other than Esc are
-//! ignored while unarmed.
+//! digest changed, next request in the queue). While unarmed, every input
+//! that could approve something is ignored; leaving (Esc, Cancel, close)
+//! never waits for arming.
 
 use std::time::{Duration, Instant};
 

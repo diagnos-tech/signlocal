@@ -10,14 +10,19 @@ use crate::certs::{CertRow, DisabledReason, RowStatus};
 
 /// The success screen stays this long; the result is already sent.
 pub(super) const SUCCESS_HOLD: Duration = Duration::from_millis(900);
-/// "{site} cancelled the request." stays this long.
-pub(super) const SITE_CANCELLED_HOLD: Duration = Duration::from_millis(1500);
+/// "{site} cancelled the request." and "The request expired" stay this long
+/// (`docs/ux.md` §4.8), long enough to read why the window is closing.
+pub(super) const NOTICE_HOLD: Duration = Duration::from_millis(1500);
 
-/// Failures the person can retry with the same certificate.
+/// Failures whose banner offers "Try again" with the same certificate
+/// (`docs/ux.md` §15): a token plugged back in or a driver hiccup can
+/// succeed on a second attempt. `Internal` offers "Copy details" and
+/// "Open diagnostics" instead: repeating an unexpected failure only repeats
+/// it.
 pub(super) fn is_retryable(failure: &Failure) -> bool {
     matches!(
         failure,
-        Failure::TokenRemoved | Failure::DriverFailure { .. } | Failure::Internal { .. }
+        Failure::TokenRemoved | Failure::DriverFailure { .. }
     )
 }
 
@@ -66,9 +71,12 @@ impl ConfirmModel {
             }
             Finish::SiteCancelled => {
                 self.state = ConfirmState::SiteCancelled;
-                self.hold_until = Some(now + SITE_CANCELLED_HOLD);
+                self.hold_until = Some(now + NOTICE_HOLD);
             }
-            Finish::Timeout => self.state = ConfirmState::Timeout,
+            Finish::Timeout => {
+                self.state = ConfirmState::Timeout;
+                self.hold_until = Some(now + NOTICE_HOLD);
+            }
             Finish::Aborted => self.reset(),
         }
     }

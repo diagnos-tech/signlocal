@@ -1,14 +1,11 @@
 //! SPEC §2.2 and ux §4.8, §4.11: how a request ends (success hold, site
-//! gave up, timeout, errors and their recovery).
+//! gave up, timeout, abort).
 
 mod common;
 
 use common::*;
-use websign_protocol::ErrorCode;
-use websign_protocol::types::SignatureAlgorithmName;
-use websign_ui_model::confirm::port::{Failure, Finish, RequestKey, UiCommand};
-use websign_ui_model::confirm::view::PrimaryButton;
-use websign_ui_model::confirm::{ConfirmState, Intent, UserInput};
+use websign_ui_model::confirm::port::{Finish, RequestKey, UiCommand};
+use websign_ui_model::confirm::{ConfirmState, UserInput};
 
 fn signing() -> Window {
     let mut w = ready_remembered(pair(), context());
@@ -102,134 +99,39 @@ fn a_site_can_give_up_in_any_state() {
 }
 
 #[test]
-fn a_timeout_finish_shows_the_timeout_state() {
+fn a_timeout_shows_its_notice_for_1500_ms_then_closes() {
     let mut w = ready_remembered(pair(), context());
     w.finish(Finish::Timeout);
     assert_eq!(w.state(), ConfirmState::Timeout);
+    assert_eq!(w.model.next_deadline(w.now), Some(w.now + ms(1_500)));
+    w.wait(1_499);
+    w.tick();
+    assert_eq!(w.state(), ConfirmState::Timeout);
+    w.wait(1);
+    w.tick();
+    assert_eq!(w.state(), ConfirmState::Idle);
 }
 
 #[test]
-fn escape_after_a_finish_notice_reports_a_plain_cancel() {
+fn an_aborted_request_leaves_without_a_notice() {
+    let mut w = ready_remembered(pair(), context());
+    w.finish(Finish::Aborted);
+    assert_eq!(w.state(), ConfirmState::Idle);
+}
+
+#[test]
+fn hide_empties_the_window_from_any_state() {
+    let mut w = signing();
+    w.apply(UiCommand::Hide);
+    assert_eq!(w.state(), ConfirmState::Idle);
+    assert_eq!(w.input(UserInput::Escape), vec![]);
+}
+
+#[test]
+fn escape_on_a_finish_notice_closes_it_without_a_cancel() {
+    // The request is already answered: there is nothing left to cancel.
     let mut w = ready_remembered(pair(), context());
     w.finish(Finish::SiteCancelled);
-    assert_eq!(
-        w.input(UserInput::Escape),
-        vec![Intent::Cancel(ErrorCode::UserCancelled)]
-    );
-}
-
-#[test]
-fn failures_other_than_pin_ones_become_error_states_with_their_code() {
-    let cases = [
-        (Failure::TokenRemoved, ErrorCode::TokenRemoved),
-        (
-            Failure::DriverFailure {
-                driver: "eTPKCS11.dll".to_owned(),
-                native: "CKR_DEVICE_ERROR (0x00000030)".to_owned(),
-                alternate: false,
-            },
-            ErrorCode::DriverFailure,
-        ),
-        (
-            Failure::UnsupportedAlgorithm {
-                algorithm: SignatureAlgorithmName::Ecdsa,
-            },
-            ErrorCode::UnsupportedAlgorithm,
-        ),
-        (
-            Failure::CertificateUnavailable,
-            ErrorCode::CertificateUnavailable,
-        ),
-        (
-            Failure::Internal {
-                detail: "bug".to_owned(),
-            },
-            ErrorCode::Internal,
-        ),
-    ];
-    for (failure, code) in cases {
-        let mut w = signing();
-        w.fail(failure.clone());
-        assert_eq!(w.state(), ConfirmState::Error { code }, "{failure:?}");
-        assert_eq!(w.view().banner, Some(failure.clone()), "{failure:?}");
-    }
-}
-
-#[test]
-fn a_recoverable_error_offers_try_again_and_signs_again() {
-    let failure = Failure::DriverFailure {
-        driver: "eTPKCS11.dll".to_owned(),
-        native: "CKR_DEVICE_ERROR (0x00000030)".to_owned(),
-        alternate: false,
-    };
-    let mut w = signing();
-    w.fail(failure);
-    w.wait(1_000);
-    assert_eq!(w.view().footer.primary, PrimaryButton::Retry);
-    assert_eq!(
-        w.click(),
-        vec![Intent::Sign {
-            fingerprint: fp(1),
-            via: 0,
-            remember: false
-        }]
-    );
-    assert_eq!(w.state(), ConfirmState::Signing);
-}
-
-#[test]
-fn a_driver_failure_with_an_alternate_path_can_retry_through_the_driver() {
-    // SPEC: `via` 0 is the primary path; the alternate is index 1.
-    let failure = Failure::DriverFailure {
-        driver: "Windows".to_owned(),
-        native: "NTE_FAIL".to_owned(),
-        alternate: true,
-    };
-    let mut candidates = pair();
-    candidates[0].alternates = vec![driver("eTPKCS11.dll")];
-    let mut w = ready_remembered(candidates, context());
-    w.click();
-    w.signing().fail(failure);
-    w.wait(1_000);
-    assert_eq!(
-        w.input(UserInput::UseAlternatePath),
-        vec![Intent::Sign {
-            fingerprint: fp(1),
-            via: 1,
-            remember: false
-        }]
-    );
-    assert_eq!(w.state(), ConfirmState::Signing);
-}
-
-#[test]
-fn another_certificate_can_be_chosen_after_an_error() {
-    let mut w = signing();
-    w.fail(Failure::TokenRemoved);
-    w.wait(1_000);
-    assert_eq!(
-        w.input(UserInput::Select(fp(2))),
-        vec![Intent::Selected(fp(2))]
-    );
-    assert_eq!(w.state(), ConfirmState::Choosing);
-}
-
-#[test]
-fn an_error_is_cleared_by_the_next_selection() {
-    let mut w = signing();
-    w.fail(Failure::TokenRemoved);
-    w.wait(1_000);
-    w.input(UserInput::Select(fp(2)));
-    assert_eq!(w.view().banner, None);
-}
-
-#[test]
-fn rescan_and_diagnostics_are_forwarded_when_armed() {
-    let mut w = ready_remembered(pair(), context());
-    assert_eq!(w.input(UserInput::Rescan), vec![Intent::Rescan]);
-    assert!(diagnostics_intent(&w.input(UserInput::OpenDiagnostics)));
-}
-
-fn diagnostics_intent(intents: &[Intent]) -> bool {
-    matches!(intents, [Intent::OpenDiagnostics(_)])
+    assert_eq!(w.input(UserInput::Escape), vec![]);
+    assert_eq!(w.state(), ConfirmState::Idle);
 }

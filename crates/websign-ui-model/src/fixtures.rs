@@ -1,6 +1,7 @@
 //! Test candidates and contexts shared by the unit tests.
 
 use jiff::civil::date;
+use jiff::tz::TimeZone;
 use websign_core::{
     CertInfo, DistinguishedName, Fingerprint, IcpBrasil, IcpLevel, KeyUsage, PublicKeyKind,
     SignatureAlgorithm,
@@ -65,6 +66,7 @@ pub fn candidate(seed: u8, cn: &str) -> CertCandidate {
 pub fn context() -> ListContext {
     ListContext {
         today: date(2026, 9, 29),
+        time_zone: TimeZone::UTC,
         now: NOW,
         accepted: Vec::new(),
         last_used_here: None,

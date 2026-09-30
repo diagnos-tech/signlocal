@@ -26,7 +26,7 @@ pub struct ReportInput {
     pub certificates: CertificateCounts,
     /// `"n/a"` outside the macOS store build.
     pub complement: String,
-    /// Newest last, at most 20.
+    /// Newest last; only the newest 20 are printed.
     pub recent_errors: Vec<ErrorLine>,
 }
 
@@ -52,6 +52,8 @@ pub enum DeviceLine {
     Reader {
         /// Already anonymized (no serial number).
         name: String,
+        /// Any hex spelling (`3BD518…`, `3b d5 …`, `3B:D5:…`); printed as
+        /// upper-case bytes joined by `:`.
         atr: Option<String>,
         certs: u32,
     },
@@ -75,9 +77,10 @@ pub struct CertificateCounts {
     pub hidden_expired: u32,
     pub hidden_login_only: u32,
     pub hidden_other: u32,
-    /// `("icp-brasil-a3", 1)`, sorted by name.
+    /// `("icp-brasil-a3", 1)`, printed in the order given (the producer
+    /// decides; the ux example lists A3 before A1).
     pub kinds: Vec<(String, u32)>,
-    /// `("rsa-2048", 3)`, sorted by name.
+    /// `("rsa-2048", 3)`, printed in the order given.
     pub keys: Vec<(String, u32)>,
     pub expiring_within_30_days: u32,
 }

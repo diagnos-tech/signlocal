@@ -43,6 +43,7 @@ pub enum ConfirmState {
     },
     /// "{site} cancelled the request." for 1.5 s.
     SiteCancelled,
+    /// "The request expired" for 1.5 s.
     Timeout,
 }
 
@@ -55,7 +56,9 @@ pub enum UserInput {
     /// Pointer down / up on the primary button.
     PrimaryPress,
     PrimaryRelease,
-    /// Enter in the PIN field or on the focused primary button.
+    /// Enter in the PIN field or on the focused primary button. The app never
+    /// sends it for Enter on a list row, which only moves focus (`docs/ux.md`
+    /// §4.9); the model accepts it only as "Sign".
     Enter,
     Escape,
     CancelButton,
@@ -111,9 +114,12 @@ pub struct ConfirmModel {
     pub(super) via: usize,
     /// When the request times out.
     pub(super) deadline: Option<Instant>,
-    /// When the success or site-cancelled screen closes.
+    /// When the success, site-cancelled or timeout notice closes.
     pub(super) hold_until: Option<Instant>,
-    pub(super) cancel_sent: bool,
+    /// The window has keyboard focus. Arming only counts while it does
+    /// (`docs/ux.md` §4.7), so a request that opens behind another window
+    /// stays unarmed until the person brings it forward.
+    pub(super) focused: bool,
     /// Choose mode: the decision was sent and the answer is pending.
     pub(super) chosen: bool,
 }
@@ -141,7 +147,7 @@ impl ConfirmModel {
             via: 0,
             deadline: None,
             hold_until: None,
-            cancel_sent: false,
+            focused: false,
             chosen: false,
         }
     }
@@ -162,8 +168,9 @@ impl ConfirmModel {
         inputs::handle(self, input, now)
     }
 
-    /// Advances timers (success hold, site-cancelled hold) and returns
-    /// decisions they produced.
+    /// Closes a result notice whose hold is over. Returns the decisions the
+    /// timers produced; none today, since every result is sent before its
+    /// notice shows, but the renderer's loop stays the same if one appears.
     pub fn tick(&mut self, now: Instant) -> Vec<Intent> {
         timers::tick(self, now)
     }
@@ -182,6 +189,10 @@ impl ConfirmModel {
 
 #[cfg(test)]
 mod edge_tests;
+#[cfg(test)]
+mod error_tests;
+#[cfg(test)]
+mod pin_and_list_tests;
 #[cfg(test)]
 mod rig;
 #[cfg(test)]

@@ -4,8 +4,9 @@
 - `build.rs` — Describing the window at one instant (`docs/ux.md` §4.2–§4.11).
 - `cancel.rs` — Which error a caller receives when the person closes the window (`docs/ux.md` §15): the code of the last blocking condition on screen (`NoCertificates`, `PinLocked`, `CertificateUnavailable`), else `UserCancelled`.
 - `commands.rs` — Host commands: what the window does when the engine speaks.
+- `decide.rs` — The decisions only the primary button and Enter can produce: Continue, Sign, Try again, the alternate path, Choose.
 - `helpers.rs` — Small questions the transitions ask of the model.
-- `inputs.rs` — What the person does: clicks, keys, selection, closing.
+- `inputs.rs` — What the person does: focus, clicks, keys, selection, closing; what arming gates and what it never gates.
 - `machine.rs` — The confirmation window's state machine (`docs/ux.md` §4.8).
 - `machine/` — Unit tests of the state machine with a scripted clock.
 - `mod.rs` — The confirmation window: its contract with the host ([`port`]) and its state machine ([`machine`], `docs/ux.md` §4.8), with the anti-accident rules ([`arming`], §4.7) and the cancel-code rule ([`cancel`], §15).

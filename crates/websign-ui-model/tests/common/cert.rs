@@ -30,8 +30,7 @@ pub fn today() -> Date {
     date(2026, 9, 29)
 }
 
-/// Unix seconds of noon UTC on the given date. Noon keeps the local calendar
-/// date stable in every time zone the tests could run in.
+/// Unix seconds of noon UTC on the given date (the test context uses UTC).
 pub fn noon(year: i16, month: i8, day: i8) -> i64 {
     date(year, month, day)
         .at(12, 0, 0, 0)
@@ -145,6 +144,7 @@ pub fn app_pin(length: Option<(u32, u32)>) -> PinMode {
 pub fn context() -> ListContext {
     ListContext {
         today: today(),
+        time_zone: TimeZone::UTC,
         now: now(),
         accepted: Vec::new(),
         last_used_here: None,

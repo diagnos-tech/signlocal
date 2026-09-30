@@ -1,26 +1,35 @@
 # crates/websign-ui-model/tests
 
-- `common/` — shared builders: certificates, candidates, list contexts, fake-clock confirmation window
-- `SPEC-QUESTIONS.md` — ambiguities in the spec and the reading each test chose
+- `common/` — shared builders: certificates, candidates, list contexts, report inputs, fake-clock confirmation window
 - `cert_badge.rs` — badge rules and their priority
-- `cert_location.rs` — "where the certificate is" phrases and the via-driver flag
-- `cert_validity.rs` — validity label and tone table, calendar-day arithmetic
 - `cert_filter.rs` — filter field matching (text, accents, document digits)
-- `cert_list_hidden.rs` — hidden reasons, their priority, the login sibling rule
-- `cert_list_disabled.rs` — disabled reasons, their priority, ordering of disabled rows
-- `cert_list_order.rs` — usable ordering, initial selection, row fields
-- `cert_list_vector.rs` — the ux 16.6 vector end to end
 - `cert_list_append.rs` — merging a new listing into an open window (nothing moves)
+- `cert_list_disabled.rs` — disabled reasons, their priority, ordering of disabled rows
+- `cert_list_hidden.rs` — hidden reasons and their priority
+- `cert_list_login_sibling.rs` — the login sibling rule and what "same device" means
+- `cert_list_order.rs` — usable ordering and initial selection
+- `cert_list_vector.rs` — the ux 16.6 vector end to end
+- `cert_location.rs` — "where the certificate is" phrases and the via-driver flag
+- `cert_row_fields.rs` — the lines of a row: name, issuer, document, badge, location
+- `cert_validity.rs` — validity label and tone table, calendar-day arithmetic, the context time zone
 - `confirm_arming.rs` — the Arming type with instants
-- `confirm_arming_events.rs` — re-arm events, ignored input while unarmed, Esc and Enter rules
+- `confirm_arming_events.rs` — what arms and re-arms the button, focus, input ignored while unarmed
 - `confirm_cancel_codes.rs` — cancel_code per state and banner_code per failure
-- `confirm_flow_new_caller.rs` — Continue step, digest, sign, certificate change
-- `confirm_flow_remembered.rs` — remembered caller flow and the preparing skeleton
-- `confirm_pin.rs` — PIN field, wrong PIN, lockout, OS prompt, PIN pad, unlocked token
-- `confirm_outcomes.rs` — success hold, site gave up, timeout, errors and retries
-- `confirm_empty_and_live.rs` — empty state, possible cards, tokens inserted and removed
 - `confirm_choose_mode.rs` — Choose mode and the remember box
-- `confirm_view_and_timers.rs` — header, queue, countdown, next_deadline
-- `diagnostics_status.rs` — traffic lights, overall light, onboarding strip
-- `diagnostics_report.rs` — golden Copy diagnostics text and its variants
+- `confirm_deadlines.rs` — next_deadline: arming, holds, countdown, skeleton
+- `confirm_empty_and_live.rs` — empty state, possible cards, tokens inserted and removed
+- `confirm_errors.rs` — failures while signing, Try again, the alternate path
+- `confirm_escape_and_enter.rs` — leaving always works; Enter only ever signs
+- `confirm_flow_new_caller.rs` — Continue step, digest, sign
+- `confirm_flow_remembered.rs` — remembered caller flow and the preparing skeleton
+- `confirm_outcomes.rs` — success hold, site gave up, timeout, abort, hide
+- `confirm_pin.rs` — PIN field limits, OS prompt, PIN pad, unlocked token
+- `confirm_pin_errors.rs` — wrong PIN messages and the locked PIN
+- `confirm_selection_change.rs` — changing the certificate, stale digests
+- `confirm_view_and_timers.rs` — header, queue line, footer countdown
+- `diagnostics_onboarding.rs` — the "Getting started" strip
+- `diagnostics_report.rs` — golden Copy diagnostics text as a whole
+- `diagnostics_report_edges.rs` — ATR spelling, empty tallies, the 20-error cap
+- `diagnostics_report_lines.rs` — each line of the report: browsers, devices, modules, counts, errors
+- `diagnostics_status.rs` — traffic lights and the overall light
 - `time_relative.rs` — relative times

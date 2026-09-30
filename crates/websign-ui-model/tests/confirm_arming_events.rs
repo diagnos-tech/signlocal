@@ -1,12 +1,10 @@
-//! ux §4.7 and SPEC §2.2: what re-arms the primary button, what is ignored
-//! while unarmed, and the Esc / Enter rules.
+//! ux §4.7 and SPEC §2.2: what arms and re-arms the primary button, and
+//! what is ignored while unarmed.
 
 mod common;
 
 use common::*;
-use websign_protocol::ErrorCode;
-use websign_ui_model::certs::PinMode;
-use websign_ui_model::confirm::port::{Failure, UiCommand};
+use websign_ui_model::confirm::port::UiCommand;
 use websign_ui_model::confirm::{ConfirmState, Intent, UserInput};
 
 fn sign(fingerprint: u8) -> Intent {
@@ -73,8 +71,7 @@ fn changing_the_certificate_re_arms() {
 
 #[test]
 fn a_new_digest_for_the_same_certificate_re_arms() {
-    // ux §4.7: "the digest changes" re-arms. SPEC lists only Choosing ->
-    // Ready; a second DigestReady while Ready is assumed to behave the same.
+    // ux §4.7: "the digest changes" re-arms, also while already Ready.
     let mut w = ready_remembered(pair(), context());
     w.digest(fp(1), "AAAA BBBB CCCC DDDD");
     w.wait(300);
@@ -111,7 +108,8 @@ fn a_queue_update_does_not_re_arm() {
 
 #[test]
 fn a_new_open_re_arms_without_another_focus_event() {
-    // SPEC §2.2: "a `Queue` update does not re-arm, a new `Open` does".
+    // The next request is new content under the pointer: a focused window
+    // re-arms on `Open`, while a mere `Queue` update does not.
     let mut w = ready_remembered(pair(), context());
     assert_eq!(w.click(), vec![sign(1)]);
     w.signing()
@@ -145,98 +143,33 @@ fn keys_and_clicks_are_discarded_while_unarmed() {
 }
 
 #[test]
-fn enter_signs_only_once_armed() {
+fn a_window_that_never_got_focus_never_arms() {
+    // The 600 ms count from visible *and* focused: a window shown behind
+    // the browser cannot be approved by a click that only brings it forward.
     let mut w = Window::new();
-    w.open(request(KEY, sign_mode(), true));
+    w.apply(UiCommand::Open(request(KEY, sign_mode(), true)));
     w.wait(10).certificates(pair(), context());
     w.digest(fp(1), "7F3A 9C21 E0B4 55D8");
-    w.wait(599);
+    w.wait(5_000);
+    assert!(!w.view().footer.primary_enabled);
+    assert_eq!(w.click(), vec![]);
     assert_eq!(w.input(UserInput::Enter), vec![]);
-    w.wait(1);
-    assert_eq!(w.input(UserInput::Enter), vec![sign(1)]);
+    w.input(UserInput::Focus(true));
+    assert_eq!(w.click(), vec![], "focus starts the count");
+    w.wait(600);
+    assert_eq!(w.click(), vec![sign(1)]);
 }
 
 #[test]
-fn escape_cancels_even_while_unarmed() {
-    let mut w = Window::new();
-    w.open(request(KEY, sign_mode(), true));
-    w.wait(10).certificates(pair(), context());
-    w.digest(fp(1), "7F3A 9C21 E0B4 55D8");
-    w.wait(50);
-    assert_eq!(
-        w.input(UserInput::Escape),
-        vec![Intent::Cancel(ErrorCode::UserCancelled)]
-    );
-}
-
-#[test]
-fn escape_cancels_from_loading_and_choosing() {
-    let mut w = Window::new();
-    w.open(request(KEY, sign_mode(), false));
-    assert_eq!(
-        w.input(UserInput::Escape),
-        vec![Intent::Cancel(ErrorCode::UserCancelled)]
-    );
-    w.wait(10).certificates(pair(), context());
-    assert_eq!(
-        w.input(UserInput::Escape),
-        vec![Intent::Cancel(ErrorCode::UserCancelled)]
-    );
-}
-
-#[test]
-fn cancel_and_close_buttons_send_the_same_code_when_armed() {
-    for input in [UserInput::CancelButton, UserInput::CloseButton] {
-        let mut w = ready_remembered(pair(), context());
-        assert_eq!(
-            w.input(input.clone()),
-            vec![Intent::Cancel(ErrorCode::UserCancelled)],
-            "{input:?}"
-        );
-    }
-}
-
-#[test]
-fn escape_with_nothing_on_screen_does_nothing() {
-    let mut w = Window::new();
-    assert_eq!(w.input(UserInput::Escape), vec![]);
-}
-
-#[test]
-fn escape_reports_the_blocking_condition_on_screen() {
-    // Empty -> NoCertificates.
-    let mut w = Window::new();
-    w.open(request(KEY, sign_mode(), false));
-    w.wait(10).certificates(vec![], context());
-    assert_eq!(w.state(), ConfirmState::Empty);
-    assert_eq!(
-        w.input(UserInput::Escape),
-        vec![Intent::Cancel(ErrorCode::NoCertificates)]
-    );
-
-    // Unavailable certificate -> CertificateUnavailable.
+fn a_token_that_comes_back_re_arms() {
     let mut w = ready_remembered(pair(), context());
-    w.click();
-    w.signing().fail(Failure::CertificateUnavailable);
-    assert_eq!(
-        w.input(UserInput::Escape),
-        vec![Intent::Cancel(ErrorCode::CertificateUnavailable)]
-    );
-}
-
-#[test]
-fn a_token_pin_keeps_the_same_arming_rules() {
-    let token = pin_token(
-        1,
-        "Ana",
-        PinMode::App {
-            length: Some((4, 16)),
-            count_low: false,
-            final_try: false,
-            locked: false,
-        },
-    );
-    let mut w = ready_remembered(vec![token], context());
-    w.input(UserInput::PinLength(6));
-    assert_eq!(w.input(UserInput::Enter), vec![sign(1)]);
+    let mut gone = pair();
+    gone[0].removed = true;
+    w.certificates(gone, context());
+    assert!(!w.view().footer.primary_enabled);
+    w.wait(1_000).certificates(pair(), context());
+    w.wait(599);
+    assert_eq!(w.click(), vec![]);
+    w.wait(1);
+    assert_eq!(w.click(), vec![sign(1)]);
 }

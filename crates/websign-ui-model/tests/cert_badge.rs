@@ -53,7 +53,7 @@ fn spanish_dnie_by_issuer_organization_ignoring_case_and_accents() {
 
 #[test]
 fn a_longer_organization_is_not_the_dnie() {
-    // SPEC: the organization must *equal* the name.
+    // The organization must *equal* the name, not merely contain it.
     let info = issuer(
         info(1, "Juan"),
         None,
@@ -134,7 +134,7 @@ fn qualified_without_sscd_is_eidas() {
 
 #[test]
 fn sscd_without_compliance_is_generic() {
-    // SPEC: rules 5 and 6 both require `compliance`.
+    // Rules 5 and 6 both require `compliance`.
     let mut info = info(1, "Ana");
     info.qualified = qualified(false, true);
     assert_eq!(badge(&info), Badge::Generic);

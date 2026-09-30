@@ -13,7 +13,7 @@ const COUNTDOWN: Duration = Duration::from_secs(30);
 pub(super) fn tick(model: &mut ConfirmModel, now: Instant) -> Vec<Intent> {
     let holding = matches!(
         model.state,
-        ConfirmState::Success | ConfirmState::SiteCancelled
+        ConfirmState::Success | ConfirmState::SiteCancelled | ConfirmState::Timeout
     );
     if holding && model.hold_until.is_some_and(|end| now >= end) {
         model.reset();
@@ -28,10 +28,7 @@ pub(super) fn next_deadline(model: &ConfirmModel, now: Instant) -> Option<Instan
     if model.state != ConfirmState::Idle {
         candidates.extend(model.arming.armed_at());
     }
-    if matches!(
-        model.state,
-        ConfirmState::Success | ConfirmState::SiteCancelled
-    ) {
+    if !model.on_screen() {
         candidates.extend(model.hold_until);
     }
     if model.on_screen() {

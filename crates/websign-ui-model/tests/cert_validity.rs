@@ -1,7 +1,11 @@
 //! SPEC §1.3 and ux §16.5: the validity line and its tone.
 
+mod common;
+
+use common::*;
 use jiff::civil::{Date, date};
-use websign_ui_model::certs::{Tone, ValidityLabel, validity_label};
+use jiff::tz::{TimeZone, offset};
+use websign_ui_model::certs::{Tone, ValidityLabel, build_cert_list, validity_label};
 
 const TODAY: Date = date(2026, 9, 29);
 const LONG_AGO: Date = date(2025, 1, 1);
@@ -100,4 +104,22 @@ fn the_day_after_expiry_is_expired() {
         result,
         (ValidityLabel::ExpiredOn(date(2026, 9, 28)), Tone::Danger)
     );
+}
+
+#[test]
+fn rows_use_the_calendar_date_of_the_context_time_zone() {
+    // 2026-09-30 01:00 UTC is still 2026-09-29 in São Paulo (UTC-3).
+    let expires = date(2026, 9, 30)
+        .at(1, 0, 0, 0)
+        .to_zoned(TimeZone::UTC)
+        .unwrap()
+        .timestamp()
+        .as_second();
+    let candidates = [with_info(candidate(1, "Ana"), |i| i.not_after = expires)];
+    let mut ctx = context();
+    let utc = build_cert_list(&candidates, &ctx);
+    assert_eq!(row(&utc, fp(1)).validity, ValidityLabel::ExpiresTomorrow);
+    ctx.time_zone = TimeZone::fixed(offset(-3));
+    let sao_paulo = build_cert_list(&candidates, &ctx);
+    assert_eq!(row(&sao_paulo, fp(1)).validity, ValidityLabel::ExpiresToday);
 }

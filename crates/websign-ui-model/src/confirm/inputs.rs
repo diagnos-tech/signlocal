@@ -7,20 +7,29 @@ use websign_core::Fingerprint;
 
 use super::cancel::cancel_code;
 use super::machine::{ConfirmModel, ConfirmState, Intent, UserInput};
-use super::outcome::is_retryable;
-use super::port::{Failure, Mode};
-use super::slot::CodeSlot;
 use super::view::PinBlock;
 use crate::certs::RowStatus;
 
-/// Applies `input`. Everything except Esc, focus changes and PIN typing is
-/// discarded while the window is unarmed, so a keystroke or click meant for
-/// the site never becomes a decision here.
+/// Applies `input`.
+///
+/// Leaving is never gated: Esc, Cancel and the close button work at any
+/// moment, armed or not, because a person must always be able to say no.
+/// Arming only guards decisions that grant something (Continue, Sign, Use
+/// this certificate, Remember) and the other clicks and keys of the window,
+/// so a keystroke or double-click meant for the site never lands here
+/// (`docs/ux.md` §4.7). Focus changes and PIN typing are always taken: they
+/// decide nothing.
 pub(super) fn handle(model: &mut ConfirmModel, input: UserInput, now: Instant) -> Vec<Intent> {
     let armed = model.arming.is_armed(now);
     match input {
-        UserInput::Focus(true) => model.arming.rearm(now),
-        UserInput::Focus(false) => model.arming.disarm(),
+        UserInput::Focus(true) => {
+            model.focused = true;
+            model.arming.rearm(now);
+        }
+        UserInput::Focus(false) => {
+            model.focused = false;
+            model.arming.disarm();
+        }
         UserInput::PinLength(length) => model.pin_len = length,
         UserInput::PrimaryPress => model.arming.press(now),
         UserInput::PrimaryRelease => {
@@ -31,7 +40,7 @@ pub(super) fn handle(model: &mut ConfirmModel, input: UserInput, now: Instant) -
         UserInput::Escape | UserInput::CancelButton | UserInput::CloseButton => {
             return model.close();
         }
-        UserInput::Enter if armed => return model.activate(now),
+        UserInput::Enter if armed => return model.enter(),
         UserInput::Select(fingerprint) if armed => return model.select(fingerprint, now),
         UserInput::Remember(checked) if armed => model.set_remember(checked),
         UserInput::Rescan if armed && model.on_screen() => return model.rescan(),
@@ -45,56 +54,6 @@ pub(super) fn handle(model: &mut ConfirmModel, input: UserInput, now: Instant) -
 }
 
 impl ConfirmModel {
-    /// Enter or a valid click on the primary button.
-    fn activate(&mut self, now: Instant) -> Vec<Intent> {
-        let (Some(mode), Some(fingerprint)) = (self.mode(), self.selected_usable()) else {
-            return Vec::new();
-        };
-        match (mode, &self.state) {
-            (Mode::Choose, ConfirmState::Choosing) if !self.chosen => {
-                self.chosen = true;
-                vec![Intent::Choose {
-                    fingerprint,
-                    remember: self.remember_wanted(),
-                }]
-            }
-            (Mode::Sign { .. }, ConfirmState::Choosing) if self.code == CodeSlot::Hint => {
-                self.code = CodeSlot::Preparing(now);
-                vec![Intent::Continue(fingerprint)]
-            }
-            (Mode::Sign { .. }, ConfirmState::Ready | ConfirmState::PinError)
-                if self.can_sign() =>
-            {
-                self.begin_signing(fingerprint)
-            }
-            (Mode::Sign { .. }, ConfirmState::Error { .. })
-                if self.banner.as_ref().is_some_and(is_retryable) && self.can_sign() =>
-            {
-                self.begin_signing(fingerprint)
-            }
-            _ => Vec::new(),
-        }
-    }
-
-    fn begin_signing(&mut self, fingerprint: Fingerprint) -> Vec<Intent> {
-        self.state = ConfirmState::Signing;
-        self.pin_error = None;
-        self.banner = None;
-        vec![Intent::Sign {
-            fingerprint,
-            via: self.via,
-            remember: self.remember_wanted(),
-        }]
-    }
-
-    /// "Remember this site" only counts for a caller that could still be
-    /// remembered.
-    fn remember_wanted(&self) -> bool {
-        self.request
-            .as_ref()
-            .is_some_and(|request| self.remember && !request.remembered && request.can_remember)
-    }
-
     fn set_remember(&mut self, checked: bool) {
         if self
             .request
@@ -130,27 +89,8 @@ impl ConfirmModel {
         self.pin_error = None;
         self.banner = None;
         self.via = 0;
-        self.arming.rearm(now);
+        self.rearm(now);
         vec![Intent::Selected(fingerprint)]
-    }
-
-    /// "Try through the token driver": sign again over the first alternate path.
-    fn use_alternate_path(&mut self) -> Vec<Intent> {
-        let offered = matches!(
-            self.banner,
-            Some(Failure::DriverFailure {
-                alternate: true,
-                ..
-            })
-        );
-        let Some(fingerprint) = self
-            .selected_usable()
-            .filter(|_| offered && self.can_sign())
-        else {
-            return Vec::new();
-        };
-        self.via = 1;
-        self.begin_signing(fingerprint)
     }
 
     fn rescan(&mut self) -> Vec<Intent> {
@@ -162,6 +102,14 @@ impl ConfirmModel {
     }
 
     /// Esc, Cancel or the close button.
+    ///
+    /// Every press while a request waits sends a cancel, even a repeated one:
+    /// the host drops a cancel for a request that already ended, and a
+    /// second press must never be swallowed if the first was lost. On a
+    /// result screen the request is already answered, so closing only hides
+    /// the notice. While the OS or a PIN pad signs, nothing can abort the
+    /// operation (their dialogs have their own Cancel), so the key is ignored
+    /// and the button reads "Please wait…".
     fn close(&mut self) -> Vec<Intent> {
         match self.state {
             ConfirmState::Idle => Vec::new(),
@@ -170,11 +118,7 @@ impl ConfirmModel {
                 Vec::new()
             }
             ConfirmState::Signing if !self.cancel_allowed() => Vec::new(),
-            _ if self.cancel_sent => Vec::new(),
-            _ => {
-                self.cancel_sent = true;
-                vec![Intent::Cancel(cancel_code(&self.state))]
-            }
+            _ => vec![Intent::Cancel(cancel_code(&self.state))],
         }
     }
 

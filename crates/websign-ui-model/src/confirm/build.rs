@@ -45,6 +45,9 @@ pub(super) fn view(model: &ConfirmModel, now: Instant) -> ConfirmView {
     }
 }
 
+/// The header of the request on screen. An idle window is hidden and never
+/// rendered, so its header is a blank desktop caller rather than an
+/// `Option` every renderer would have to unwrap.
 fn header(model: &ConfirmModel) -> HeaderView {
     match &model.request {
         Some(request) => HeaderView {

@@ -4,6 +4,7 @@
 use std::cmp::Reverse;
 
 use jiff::civil::Date;
+use jiff::tz::TimeZone;
 use websign_core::{Fingerprint, SignatureAlgorithm};
 
 use super::build_row::make_row;
@@ -16,8 +17,13 @@ use super::text::fold;
 /// What the list depends on besides the candidates.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ListContext {
-    /// Local date for validity labels.
+    /// Today's date in [`Self::time_zone`], for validity labels.
     pub today: Date,
+    /// The zone that turns certificate instants into calendar dates
+    /// (`docs/ux.md` §16.5: days are local calendar dates). The host passes
+    /// `TimeZone::system()`; tests pass a fixed zone so they do not depend on
+    /// the machine running them.
+    pub time_zone: TimeZone,
     /// Unix seconds, for validity checks.
     pub now: i64,
     /// Algorithms the request accepts, preferred first; empty = any.
@@ -83,7 +89,7 @@ pub(super) fn classify(
         }
         let Ok(info) = &candidate.info else { continue };
         let status = row_status(candidate, info, context);
-        let Some(row) = make_row(candidate, status, context.today) else {
+        let Some(row) = make_row(candidate, status, context) else {
             continue;
         };
         match status {
@@ -125,5 +131,7 @@ fn sort_key(row: &CertRow, context: &ListContext) -> SortKey {
     (2, 0, hardware_rank, fold(&row.name), Reverse(not_after))
 }
 
+#[cfg(test)]
+mod hide_and_append_tests;
 #[cfg(test)]
 mod tests;

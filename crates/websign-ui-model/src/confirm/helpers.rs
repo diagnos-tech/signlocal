@@ -13,9 +13,22 @@ impl ConfirmModel {
     /// Forgets the request and returns to `Idle`. Focus and arming survive:
     /// they belong to the window, not to the request.
     pub(super) fn reset(&mut self) {
-        let arming = self.arming;
+        let (arming, focused) = (self.arming, self.focused);
         *self = ConfirmModel::new();
         self.arming = arming;
+        self.focused = focused;
+    }
+
+    /// Restarts the arming delay because new content sits under the pointer.
+    /// The 600 ms count from the window being visible *and* focused
+    /// (`docs/ux.md` §4.7), so an unfocused window stays unarmed until
+    /// `Focus(true)`: a click that only brings it forward never approves.
+    pub(super) fn rearm(&mut self, now: Instant) {
+        if self.focused {
+            self.arming.rearm(now);
+        } else {
+            self.arming.disarm();
+        }
     }
 
     /// Whether `key` is the request on screen.
