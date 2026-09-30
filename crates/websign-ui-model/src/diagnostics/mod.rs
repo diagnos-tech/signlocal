@@ -1,6 +1,7 @@
 //! The diagnostics window's decisions (`docs/ux.md` §8): traffic lights, the
 //! first-steps strip, and the exact "Copy diagnostics" text.
 
+pub mod atr_mask;
 pub mod onboarding;
 pub mod report;
 mod report_lines;

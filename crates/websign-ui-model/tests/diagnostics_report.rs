@@ -16,7 +16,7 @@ browsers:
   firefox 131.0 · extension 1.4.2 · host registered · last ping 2026-09-28T20:40Z
 devices:
   usb 0529:0620 safenet-etoken-5110 · certs 0
-  reader \"Identiv uTrust 2700 R\" · atr 3B:D5:18:FF:81:91:FE:1F:C3:80:73:C8:21:10:0A · certs 1
+  reader \"Identiv uTrust 2700 R\" · atr 3B:D5:18:FF:81:91:FE:1F:C3:..:..:..:..:..:.. · certs 1
 pkcs11:
   %ProgramFiles%\\OpenSC Project\\OpenSC\\pkcs11\\opensc-pkcs11.dll · loaded · slots 1 · tokens 1
   %USERPROFILE%\\Downloads\\wdpkcs_icp.dll · failed: file not found (user-added)

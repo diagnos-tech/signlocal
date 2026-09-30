@@ -1,5 +1,6 @@
 //! One formatter per section of the diagnostics report.
 
+use super::atr_mask::mask_atr;
 use super::report::{
     BrowserLine, CertificateCounts, DeviceLine, ErrorLine, ModuleLine, ReportInput,
 };
@@ -52,26 +53,20 @@ pub(super) fn device(line: &DeviceLine) -> String {
             "usb {vid_pid} {} · certs {certs}",
             hint_id.as_deref().unwrap_or("unknown")
         ),
-        DeviceLine::Reader { name, atr, certs } => format!(
-            "reader \"{name}\" · atr {} · certs {certs}",
-            atr.as_deref().map_or_else(|| "none".to_owned(), atr_text)
-        ),
+        DeviceLine::Reader {
+            name,
+            hint_id,
+            atr,
+            certs,
+        } => {
+            let card = match (hint_id, atr) {
+                (Some(id), _) => format!("card {id}"),
+                (None, Some(atr)) => format!("atr {}", mask_atr(atr)),
+                (None, None) => "atr none".to_owned(),
+            };
+            format!("reader \"{name}\" · {card} · certs {certs}")
+        }
     }
-}
-
-/// Hex bytes separated by `:`; text that is not whole hex bytes is kept as is.
-fn atr_text(atr: &str) -> String {
-    let hex: String = atr.chars().filter(|c| !matches!(c, ':' | ' ')).collect();
-    if hex.is_empty() || !hex.len().is_multiple_of(2) || !hex.chars().all(|c| c.is_ascii_hexdigit())
-    {
-        return atr.to_owned();
-    }
-    let bytes: Vec<String> = hex
-        .as_bytes()
-        .chunks(2)
-        .map(|pair| String::from_utf8_lossy(pair).to_uppercase())
-        .collect();
-    bytes.join(":")
 }
 
 pub(super) fn module(line: &ModuleLine) -> String {

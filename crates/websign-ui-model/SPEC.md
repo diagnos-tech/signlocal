@@ -268,7 +268,8 @@ browsers:
   {name} {version|?} · extension {extension_version|not seen} · host {registered|not registered}[ · last ping {last_ping}]
 devices:
   usb {vid_pid} {hint_id|unknown} · certs {n}
-  reader "{name}" · atr {ATR with ':' every byte|none} · certs {n}
+  reader "{name}" · card {hint_id} · certs {n}
+  reader "{name}" · atr {masked ATR|N bytes|unreadable|none} · certs {n}
 pkcs11:
   {path} · loaded · slots {s} · tokens {t}[ (user-added)]
   {path} · failed: {reason}[ (user-added)]
@@ -283,10 +284,30 @@ recent errors (last 20):
 
 Empty sections print `  none`; empty `kinds` or `keys` print `none`.
 `kinds` and `keys` keep the order they are given (the ux example lists A3
-before A1). The ATR is accepted in any hex spelling (`3BD518…`, `3b d5 …`,
-`3B:D5:…`) and printed as upper-case bytes joined by `:`; text that is not
-whole hex bytes is printed as given. Only the newest 20 errors are printed,
+before A1). A reader whose card matched a device
+(`hint_id`) prints `card {hint_id}` and never its ATR. Otherwise the ATR is
+accepted in any hex spelling (`3BD518…`, `3b d5 …`, `3B:D5:…`) and printed by
+`diagnostics::atr_mask::mask_atr` (§3.4). Only the newest 20 errors are printed,
 oldest first. The golden test is the example of ux §8.7.
+
+### 3.4 `atr_mask::mask_atr` (ux §8.7)
+
+Historical bytes can hold a chip serial number, so they never leave the
+model. The ATR is parsed per ISO/IEC 7816-3: TS (`3B`/`3F`), T0 (high nibble
+Y1, low nibble K), then TA/TB/TC/TD groups while the TD's high nibble is
+non-zero, then K historical bytes, then TCK unless every offered protocol is
+T=0. Output, first rule that applies:
+
+| Input | Output |
+|---|---|
+| Not whole hex bytes (`:` and spaces ignored) | `unreadable` (never echoed) |
+| Exactly one well-formed ATR | upper-case bytes joined by `:` through the last interface byte, then `..` per historical byte and for TCK |
+| Whole hex bytes that do not parse (bad TS, truncated, trailing bytes) | `{n} bytes` (`1 byte`) |
+
+`3BD518FF8191FE1FC38073C821100A` → `3B:D5:18:FF:81:91:FE:1F:C3:..:..:..:..:..:..`;
+`3B02AABB` → `3B:02:..:..`; `3BD518FF8191FE1FC38073C8` → `12 bytes`. Vectors:
+every ATR of `devices.json` (wildcards as `00`) keeps a prefix and masks the
+rest; cut by one byte it prints its length; no input panics.
 
 ## 4. `time::relative`
 

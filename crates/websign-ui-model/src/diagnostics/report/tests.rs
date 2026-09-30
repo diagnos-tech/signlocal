@@ -41,6 +41,7 @@ fn example() -> ReportInput {
             },
             DeviceLine::Reader {
                 name: "Identiv uTrust 2700 R".into(),
+                hint_id: None,
                 atr: Some("3B:D5:18:FF:81:91:FE:1F:C3:80:73:C8:21:10:0A".into()),
                 certs: 1,
             },
@@ -90,7 +91,7 @@ browsers:
   firefox 131.0 · extension 1.4.2 · host registered · last ping 2026-09-28T20:40Z
 devices:
   usb 0529:0620 safenet-etoken-5110 · certs 0
-  reader \"Identiv uTrust 2700 R\" · atr 3B:D5:18:FF:81:91:FE:1F:C3:80:73:C8:21:10:0A · certs 1
+  reader \"Identiv uTrust 2700 R\" · atr 3B:D5:18:FF:81:91:FE:1F:C3:..:..:..:..:..:.. · certs 1
 pkcs11:
   %ProgramFiles%\\OpenSC Project\\OpenSC\\pkcs11\\opensc-pkcs11.dll · loaded · slots 1 · tokens 1
   %USERPROFILE%\\Downloads\\wdpkcs_icp.dll · failed: file not found (user-added)
@@ -129,7 +130,7 @@ fn empty_sections_say_none_and_unknowns_have_placeholders() {
 }
 
 #[test]
-fn only_the_newest_twenty_errors_and_raw_atr_is_grouped() {
+fn only_the_newest_twenty_errors_and_a_card_is_shown_masked() {
     let mut input = example();
     input.recent_errors = (0..25)
         .map(|n| ErrorLine {
@@ -142,12 +143,13 @@ fn only_the_newest_twenty_errors_and_raw_atr_is_grouped() {
         .collect();
     input.devices = vec![DeviceLine::Reader {
         name: "R".into(),
-        atr: Some("3bd518".into()),
+        hint_id: None,
+        atr: Some("3b00".into()),
         certs: 0,
     }];
     let text = render(&input);
     assert!(!text.contains("  t4 sign"));
     assert!(text.contains("  t5 sign Internal app\n"));
     assert!(text.ends_with("  t24 sign Internal app\n"));
-    assert!(text.contains("atr 3B:D5:18 · certs 0"));
+    assert!(text.contains("atr 3B:00 · certs 0"));
 }

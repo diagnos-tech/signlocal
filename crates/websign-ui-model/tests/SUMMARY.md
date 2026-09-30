@@ -1,6 +1,7 @@
 # crates/websign-ui-model/tests
 
 - `common/` — shared builders: certificates, candidates, list contexts, report inputs, fake-clock confirmation window
+- `atr_mask_devices.rs` — `mask_atr` on every ATR of `devices.json`.
 - `cert_badge.rs` — badge rules and their priority
 - `cert_filter.rs` — filter field matching (text, accents, document digits)
 - `cert_list_append.rs` — merging a new listing into an open window (nothing moves)
@@ -29,7 +30,7 @@
 - `confirm_view_and_timers.rs` — header, queue line, footer countdown
 - `diagnostics_onboarding.rs` — the "Getting started" strip
 - `diagnostics_report.rs` — golden Copy diagnostics text as a whole
-- `diagnostics_report_edges.rs` — ATR spelling, empty tallies, the 20-error cap
+- `diagnostics_report_edges.rs` — masked ATR, known-card line, empty tallies, the 20-error cap
 - `diagnostics_report_lines.rs` — each line of the report: browsers, devices, modules, counts, errors
 - `diagnostics_status.rs` — traffic lights and the overall light
 - `time_relative.rs` — relative times

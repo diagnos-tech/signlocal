@@ -5,6 +5,7 @@ use websign_ui_model::diagnostics::report::{
 };
 
 pub const ATR: &str = "3B:D5:18:FF:81:91:FE:1F:C3:80:73:C8:21:10:0A";
+pub const ATR_MASKED: &str = "3B:D5:18:FF:81:91:FE:1F:C3:..:..:..:..:..:..";
 
 pub fn s(text: &str) -> String {
     text.to_owned()
@@ -52,6 +53,7 @@ pub fn example() -> ReportInput {
             },
             DeviceLine::Reader {
                 name: s("Identiv uTrust 2700 R"),
+                hint_id: None,
                 atr: Some(s(ATR)),
                 certs: 1,
             },

@@ -41,7 +41,8 @@ pub struct BrowserLine {
     pub last_ping: Option<String>,
 }
 
-/// `usb 0529:0620 safenet-etoken-5110 · certs 0` or a reader line with ATR.
+/// `usb 0529:0620 safenet-etoken-5110 · certs 0` or a reader line with the
+/// card it holds.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DeviceLine {
     Usb {
@@ -52,8 +53,12 @@ pub enum DeviceLine {
     Reader {
         /// Already anonymized (no serial number).
         name: String,
-        /// Any hex spelling (`3BD518…`, `3b d5 …`, `3B:D5:…`); printed as
-        /// upper-case bytes joined by `:`.
+        /// The `devices.json` id the card matched, if any. A known card is
+        /// printed by this id and its ATR is left out.
+        hint_id: Option<String>,
+        /// Any hex spelling (`3BD518…`, `3b d5 …`, `3B:D5:…`). Only printed
+        /// for an unknown card, and then with the historical bytes masked
+        /// (see [`mask_atr`](super::atr_mask::mask_atr)).
         atr: Option<String>,
         certs: u32,
     },

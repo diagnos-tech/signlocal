@@ -1,5 +1,5 @@
-//! SPEC §3.3: normalization and limits of the "Copy diagnostics" text (ATR
-//! spelling, empty tallies, the 20-error cap).
+//! SPEC §3.3: normalization and limits of the "Copy diagnostics" text (masked
+//! ATR, empty tallies, the 20-error cap).
 
 mod common;
 
@@ -8,10 +8,11 @@ use websign_ui_model::diagnostics::report::{
     CertificateCounts, DeviceLine, ErrorLine, ReportInput, render,
 };
 
-fn reader_line(atr: &str) -> String {
+fn reader_line(hint_id: Option<&str>, atr: &str) -> String {
     let text = render(&ReportInput {
         devices: vec![DeviceLine::Reader {
             name: s("Identiv uTrust 2700 R"),
+            hint_id: hint_id.map(s),
             atr: Some(s(atr)),
             certs: 1,
         }],
@@ -22,21 +23,38 @@ fn reader_line(atr: &str) -> String {
 }
 
 #[test]
-fn an_atr_is_printed_as_upper_case_bytes_separated_by_colons() {
-    let expected = format!(r#"  reader "Identiv uTrust 2700 R" · atr {ATR} · certs 1"#);
+fn an_unknown_card_is_shown_with_its_historical_bytes_masked() {
+    let expected = format!(r#"  reader "Identiv uTrust 2700 R" · atr {ATR_MASKED} · certs 1"#);
     for spelling in [
         ATR,
         "3BD518FF8191FE1FC38073C821100A",
         "3b d5 18 ff 81 91 fe 1f c3 80 73 c8 21 10 0a",
     ] {
-        assert_eq!(reader_line(spelling), expected, "{spelling}");
+        assert_eq!(reader_line(None, spelling), expected, "{spelling}");
     }
 }
 
 #[test]
-fn an_atr_that_is_not_whole_hex_bytes_is_printed_as_given() {
+fn a_known_card_is_shown_by_its_device_and_never_by_its_atr() {
+    let line = reader_line(Some("safenet-etoken-5110"), ATR);
+    assert_eq!(
+        line,
+        r#"  reader "Identiv uTrust 2700 R" · card safenet-etoken-5110 · certs 1"#
+    );
+}
+
+#[test]
+fn an_atr_that_cannot_be_parsed_is_reduced_to_its_length() {
+    let truncated = "3BD518FF8191FE1FC38073C8";
+    assert!(reader_line(None, truncated).contains("atr 12 bytes ·"));
+}
+
+#[test]
+fn text_that_is_not_hex_bytes_is_never_echoed() {
     for odd in ["3BD", "not an atr"] {
-        assert!(reader_line(odd).contains(&format!("atr {odd} ·")), "{odd}");
+        let line = reader_line(None, odd);
+        assert!(line.contains("atr unreadable ·"), "{odd}");
+        assert!(!line.contains(odd), "{odd}");
     }
 }
 

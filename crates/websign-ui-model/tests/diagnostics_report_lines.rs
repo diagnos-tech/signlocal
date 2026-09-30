@@ -82,6 +82,7 @@ fn a_usb_device_without_a_hint_is_unknown() {
 fn a_reader_without_a_card_has_no_atr() {
     let lines = device_lines(vec![DeviceLine::Reader {
         name: s("ACS ACR39U"),
+        hint_id: None,
         atr: None,
         certs: 0,
     }]);
