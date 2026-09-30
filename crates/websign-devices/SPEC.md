@@ -15,7 +15,9 @@ without the CCID class: some tokens are HID); `pcsc::scan()`.
 
 - A thread loops on `SCardGetStatusChange` with every current reader plus
   `\\?PnP?\Notification`, timeout 5 s (infinite wait breaks on some pcsc-lite
-  versions).
+  versions). A service that does not know the PnP pseudo-reader
+  (`UnknownReader` on a zero-timeout probe) is watched without it; the
+  timeout re-list then catches reader changes.
 - Emits `ReaderAdded/ReaderRemoved` when the reader set changes,
   `CardInserted/CardRemoved` on `SCARD_STATE_PRESENT` edges (ATR included on
   insert).
@@ -43,4 +45,23 @@ without the CCID class: some tokens are HID); `pcsc::scan()`.
 - `confident = true` when a hint exists and no listed certificate reports
   an unknown device (`DeviceLink` absent for some hardware key); otherwise
   `false` (shown only in diagnostics).
+- A USB device whose hint is `kind: "reader"` is never confident: a reader
+  says nothing about the card in it. The card itself is judged by its ATR in
+  the reader candidate, so the confirmation window never shows "possible
+  certificate" for an empty or unrelated reader.
 - Order: USB first (by VID:PID), then readers (by name).
+
+### Pending contract change (apply after the host merges)
+
+`LinkedDevices` cannot express "a listed certificate has an unknown device
+link", so today `confident` is `hint.is_some()` (and not a reader). Proposed,
+additive: `pub struct LinkedDevices { pub readers: Vec<String>, pub
+token_models: Vec<String>, pub unknown_links: bool }` (derive `Default`
+keeps `false`); the host sets `unknown_links = true` when any listed
+hardware-key certificate has no `DeviceLink`; `possible_devices` then
+returns `confident: false` for every entry. Also worth deciding then:
+`token_models` holds PKCS#11 `CK_TOKEN_INFO.model` strings, which rarely
+equal the commercial `hint.name` (`"eToken"` vs `"SafeNet eToken 5110"`), so
+a token that did bring certificates can still be listed through its USB
+entry; matching on the anonymized reader/slot name the token shares with its
+USB product would be more reliable.

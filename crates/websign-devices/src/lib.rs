@@ -15,6 +15,7 @@
     warn(clippy::unwrap_used, clippy::expect_used, clippy::panic)
 )]
 
+mod atr;
 pub mod hints;
 pub mod monitor;
 pub mod pcsc;
@@ -38,6 +39,18 @@ impl Snapshot {
     /// Scans USB (smart card class and devices known to `devices.json`) and
     /// PC/SC readers.
     pub fn scan() -> Snapshot {
-        todo!("SPEC.md §1")
+        let known = hints::DeviceDatabase::embedded()
+            .inspect_err(|error| log::warn!("{error}"))
+            .ok();
+        let usb = usb::scan_where(|device| {
+            device.smart_card
+                || known
+                    .as_ref()
+                    .is_some_and(|db| db.by_usb(&device.id()).is_some())
+        });
+        Snapshot {
+            usb,
+            readers: pcsc::scan(),
+        }
     }
 }

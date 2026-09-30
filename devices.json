@@ -6,17 +6,755 @@
       "id": "safenet-etoken-5110",
       "name": "SafeNet eToken 5110",
       "kind": "token",
-      "match": { "usb": ["0529:0620"], "atr": [] },
+      "match": {
+        "usb": [
+          "0529:0620"
+        ],
+        "atr": [
+          "3BFF9600008131FE4380318065B0855956FB120FFE82900000"
+        ]
+      },
       "driver": {
         "name": "SafeNet Authentication Client",
-        "download": {},
+        "download": {
+          "windows": "https://cpl.thalesgroup.com/access-management/security-applications/authentication-client-token-management",
+          "macos": "https://cpl.thalesgroup.com/access-management/security-applications/authentication-client-token-management",
+          "linux": "https://cpl.thalesgroup.com/access-management/security-applications/authentication-client-token-management"
+        },
         "pkcs11": {
-          "windows": "eTPKCS11.dll",
+          "windows": "%SystemRoot%\\System32\\eTPKCS11.dll",
           "macos": "/usr/local/lib/libeTPkcs11.dylib",
-          "linux": "/usr/lib/libeTPkcs11.so"
+          "linux": "/usr/lib/libeToken.so"
         }
       },
-      "pinUnlock": { "tool": "SafeNet Authentication Client" }
+      "pinUnlock": {
+        "tool": "SafeNet Authentication Client"
+      }
+    },
+    {
+      "id": "safenet-etoken-5110-fips",
+      "name": "SafeNet eToken 5110+ FIPS",
+      "kind": "token",
+      "match": {
+        "usb": [
+          "08e6:34cf"
+        ],
+        "atr": [
+          "3BFF9600008131FE4380318065B0846566FB12017882900085"
+        ]
+      },
+      "driver": {
+        "name": "SafeNet Authentication Client",
+        "download": {
+          "windows": "https://cpl.thalesgroup.com/access-management/security-applications/authentication-client-token-management",
+          "macos": "https://cpl.thalesgroup.com/access-management/security-applications/authentication-client-token-management",
+          "linux": "https://cpl.thalesgroup.com/access-management/security-applications/authentication-client-token-management"
+        },
+        "pkcs11": {
+          "windows": "%SystemRoot%\\System32\\eTPKCS11.dll",
+          "macos": "/usr/local/lib/libeTPkcs11.dylib",
+          "linux": "/usr/lib/libeToken.so"
+        }
+      },
+      "pinUnlock": {
+        "tool": "SafeNet Authentication Client"
+      }
+    },
+    {
+      "id": "safenet-etoken-5300",
+      "name": "SafeNet eToken 5300",
+      "kind": "token",
+      "match": {
+        "usb": [
+          "08e6:34cc"
+        ],
+        "atr": []
+      },
+      "driver": {
+        "name": "SafeNet Authentication Client",
+        "download": {
+          "windows": "https://cpl.thalesgroup.com/access-management/security-applications/authentication-client-token-management",
+          "macos": "https://cpl.thalesgroup.com/access-management/security-applications/authentication-client-token-management",
+          "linux": "https://cpl.thalesgroup.com/access-management/security-applications/authentication-client-token-management"
+        },
+        "pkcs11": {
+          "windows": "%SystemRoot%\\System32\\eTPKCS11.dll",
+          "macos": "/usr/local/lib/libeTPkcs11.dylib",
+          "linux": "/usr/lib/libeToken.so"
+        }
+      },
+      "pinUnlock": {
+        "tool": "SafeNet Authentication Client"
+      }
+    },
+    {
+      "id": "safenet-etoken-5110-cc",
+      "name": "SafeNet eToken 5110 CC",
+      "kind": "token",
+      "match": {
+        "usb": [],
+        "atr": [
+          "3B7F96000080318065B085050039120FFE829000"
+        ]
+      },
+      "driver": {
+        "name": "IDPrime PKCS#11 (SafeNet Authentication Client 10.8 R2 or newer)",
+        "download": {
+          "windows": "https://cpl.thalesgroup.com/access-management/security-applications/authentication-client-token-management",
+          "macos": "https://cpl.thalesgroup.com/access-management/security-applications/authentication-client-token-management",
+          "linux": "https://cpl.thalesgroup.com/access-management/security-applications/authentication-client-token-management"
+        },
+        "pkcs11": {
+          "windows": "%ProgramFiles%\\SafeNet\\Authentication\\SAC\\x64\\IDPrimePKCS1164.dll",
+          "linux": "/usr/lib/libIDPrimePKCS11.so"
+        }
+      },
+      "pinUnlock": {
+        "tool": "SafeNet Authentication Client"
+      }
+    },
+    {
+      "id": "safenet-etoken-pro-java",
+      "name": "SafeNet eToken PRO Java",
+      "kind": "token",
+      "match": {
+        "usb": [],
+        "atr": [
+          "3BD5180081313A7D8073C8211030"
+        ]
+      },
+      "driver": {
+        "name": "SafeNet Authentication Client",
+        "download": {
+          "windows": "https://cpl.thalesgroup.com/access-management/security-applications/authentication-client-token-management",
+          "macos": "https://cpl.thalesgroup.com/access-management/security-applications/authentication-client-token-management",
+          "linux": "https://cpl.thalesgroup.com/access-management/security-applications/authentication-client-token-management"
+        },
+        "pkcs11": {
+          "windows": "%SystemRoot%\\System32\\eTPKCS11.dll",
+          "macos": "/usr/local/lib/libeTPkcs11.dylib",
+          "linux": "/usr/lib/libeToken.so"
+        }
+      },
+      "pinUnlock": {
+        "tool": "SafeNet Authentication Client"
+      }
+    },
+    {
+      "id": "gd-starsign-crypto-usb-token",
+      "name": "G+D StarSign Crypto USB Token",
+      "kind": "token",
+      "match": {
+        "usb": [
+          "1059:0017",
+          "1059:0019"
+        ],
+        "atr": [
+          "3BFD1800008131FE4553434536302D43433038312D46C2",
+          "3BF81800008031FE450073C8401300900092"
+        ]
+      },
+      "driver": {
+        "name": "SafeSign Identity Client",
+        "download": {
+          "windows": "https://safesign.gdamericadosul.com.br/download",
+          "macos": "https://safesign.gdamericadosul.com.br/download",
+          "linux": "https://safesign.gdamericadosul.com.br/download"
+        },
+        "pkcs11": {
+          "windows": "%SystemRoot%\\System32\\aetpkss1.dll",
+          "macos": "/usr/local/lib/libaetpkss.dylib",
+          "linux": "/usr/lib/libaetpkss.so"
+        }
+      },
+      "pinUnlock": {
+        "tool": "SafeSign Identity Client"
+      }
+    },
+    {
+      "id": "gd-safesign-card",
+      "name": "G+D SafeSign smart card",
+      "kind": "card",
+      "match": {
+        "usb": [],
+        "atr": [
+          "3B7418000073667465"
+        ]
+      },
+      "driver": {
+        "name": "SafeSign Identity Client",
+        "download": {
+          "windows": "https://safesign.gdamericadosul.com.br/download",
+          "macos": "https://safesign.gdamericadosul.com.br/download",
+          "linux": "https://safesign.gdamericadosul.com.br/download"
+        },
+        "pkcs11": {
+          "windows": "%SystemRoot%\\System32\\aetpkss1.dll",
+          "macos": "/usr/local/lib/libaetpkss.dylib",
+          "linux": "/usr/lib/libaetpkss.so"
+        }
+      }
+    },
+    {
+      "id": "feitian-epass2003",
+      "name": "Feitian ePass2003",
+      "kind": "token",
+      "match": {
+        "usb": [
+          "096e:0807",
+          "096e:080a"
+        ],
+        "atr": [
+          "3B9F958131FE9F006646530501001171DF0000........"
+        ]
+      },
+      "driver": {
+        "name": "Feitian ePass2003 Castle",
+        "download": {
+          "windows": "https://www.ftsafe.com/Support/Resources",
+          "macos": "https://www.ftsafe.com/Support/Resources",
+          "linux": "https://www.ftsafe.com/Support/Resources"
+        },
+        "pkcs11": {
+          "windows": "%SystemRoot%\\System32\\eps2003csp11.dll",
+          "macos": "/usr/local/lib/libcastle.1.0.0.dylib"
+        }
+      }
+    },
+    {
+      "id": "watchdata-proxkey",
+      "name": "Watchdata ProxKey / WatchKey",
+      "kind": "token",
+      "match": {
+        "usb": [
+          "163c:0407",
+          "163c:0417",
+          "163c:0418",
+          "163c:0406",
+          "163c:0a03"
+        ],
+        "atr": [
+          "3B6E00005744361969869302............",
+          "3B6D000057443641018693............"
+        ]
+      },
+      "driver": {
+        "name": "Watchdata ICP",
+        "pkcs11": {
+          "windows": "%SystemRoot%\\System32\\Watchdata\\Watchdata ICP CSP v1.0\\WDPKCS.dll",
+          "linux": "/usr/lib/watchdata/ICP/lib/libwdpkcs_icp.so"
+        }
+      }
+    },
+    {
+      "id": "dexon-dxtoken",
+      "name": "Dexon DXToken",
+      "kind": "token",
+      "match": {
+        "usb": [
+          "0483:a389",
+          "0483:a40b"
+        ],
+        "atr": [
+          "3B6B0000805A4458544F4B454E3031",
+          "3B6E0000803108721422574458544B4E3031"
+        ]
+      },
+      "driver": {
+        "name": "DXSafe",
+        "download": {
+          "windows": "https://www.dexon.ind.br/downloads",
+          "macos": "https://www.dexon.ind.br/downloads",
+          "linux": "https://www.dexon.ind.br/downloads"
+        }
+      }
+    },
+    {
+      "id": "athena-idprotect-key-v2",
+      "name": "Athena IDProtect Key v2",
+      "kind": "token",
+      "match": {
+        "usb": [
+          "0dc3:0900"
+        ],
+        "atr": [
+          "3BD518FF8191FE1FC38073C8211309"
+        ]
+      },
+      "driver": {
+        "name": "IDProtect Client",
+        "pkcs11": {
+          "windows": "%SystemRoot%\\System32\\asepkcs.dll",
+          "macos": "/Library/Application Support/Athena/libASEP11.dylib",
+          "linux": "/usr/lib/x64-athena/libASEP11.so"
+        }
+      }
+    },
+    {
+      "id": "bit4id-tokenme",
+      "name": "Bit4id tokenME",
+      "kind": "token",
+      "match": {
+        "usb": [
+          "25dd:2341",
+          "25dd:2371"
+        ],
+        "atr": [
+          "3B9F118131FE9F006B42495434494420332E30009000CF"
+        ]
+      },
+      "driver": {
+        "name": "Bit4id middleware",
+        "download": {
+          "windows": "https://cdn.bit4id.com/es/middleware.htm",
+          "macos": "https://cdn.bit4id.com/es/middleware.htm",
+          "linux": "https://cdn.bit4id.com/es/middleware.htm"
+        },
+        "pkcs11": {
+          "windows": "%SystemRoot%\\System32\\bit4ipki.dll",
+          "macos": "/Library/bit4id/pkcs11/libbit4ipki.dylib",
+          "linux": "/usr/lib/libbit4ipki.so"
+        }
+      }
+    },
+    {
+      "id": "bit4id-iam-cryptokey",
+      "name": "Bit4id IAm / CryptoKey / Digital DNA",
+      "kind": "token",
+      "match": {
+        "usb": [
+          "25dd:2221",
+          "25dd:1201",
+          "25dd:2321",
+          "25dd:2351",
+          "25dd:2354",
+          "25dd:2362"
+        ],
+        "atr": []
+      },
+      "driver": {
+        "name": "Bit4id middleware",
+        "download": {
+          "windows": "https://cdn.bit4id.com/es/middleware.htm",
+          "macos": "https://cdn.bit4id.com/es/middleware.htm",
+          "linux": "https://cdn.bit4id.com/es/middleware.htm"
+        },
+        "pkcs11": {
+          "windows": "%SystemRoot%\\System32\\bit4ipki.dll",
+          "macos": "/Library/bit4id/pkcs11/libbit4ipki.dylib",
+          "linux": "/usr/lib/libbit4ipki.so"
+        }
+      }
+    },
+    {
+      "id": "longmai-mtoken-cryptoid",
+      "name": "Longmai mToken CryptoID",
+      "kind": "token",
+      "match": {
+        "usb": [],
+        "atr": [
+          "3B9F118131FE9F006A6D546F6B656E2D46000081900079"
+        ]
+      },
+      "driver": {
+        "name": "mToken CryptoID middleware"
+      }
+    },
+    {
+      "id": "yubikey-piv",
+      "name": "YubiKey (PIV)",
+      "kind": "token",
+      "match": {
+        "usb": [
+          "1050:0407",
+          "1050:0404"
+        ],
+        "atr": [
+          "3BF81300008131FE15597562696B657934D4"
+        ]
+      },
+      "driver": {
+        "name": "Yubico PIV Tool (ykcs11)",
+        "pkcs11": {
+          "windows": "%ProgramFiles%\\Yubico\\Yubico PIV Tool\\bin\\libykcs11.dll",
+          "macos": "/usr/local/lib/libykcs11.dylib",
+          "linux": "/usr/local/lib/libykcs11.so"
+        }
+      },
+      "macos": {
+        "cryptotokenkit": true
+      }
+    },
+    {
+      "id": "br-card-gemalto-top-dl-v2",
+      "name": "A3 card, Gemalto TOP DL v2 (e-CPF)",
+      "kind": "card",
+      "match": {
+        "usb": [],
+        "atr": [
+          "3B7D96000080318065B0831111E583009000"
+        ]
+      },
+      "driver": {
+        "name": "Gemalto Classic Client",
+        "pkcs11": {
+          "linux": "/usr/lib/pkcs11/libgclib.so",
+          "windows": "%SystemRoot%\\System32\\gclib.dll"
+        }
+      }
+    },
+    {
+      "id": "br-card-ypsid-certisign",
+      "name": "A3 card, Sagem YpsID (e-CNPJ)",
+      "kind": "card",
+      "match": {
+        "usb": [],
+        "atr": [
+          "3B7D180002805759505349443033837F9000"
+        ]
+      },
+      "driver": {
+        "name": "SafeSign Identity Client",
+        "download": {
+          "windows": "https://safesign.gdamericadosul.com.br/download",
+          "macos": "https://safesign.gdamericadosul.com.br/download",
+          "linux": "https://safesign.gdamericadosul.com.br/download"
+        },
+        "pkcs11": {
+          "windows": "%SystemRoot%\\System32\\aetpkss1.dll",
+          "macos": "/usr/local/lib/libaetpkss.dylib",
+          "linux": "/usr/lib/libaetpkss.so"
+        }
+      }
+    },
+    {
+      "id": "br-card-ypsid-safeweb",
+      "name": "A3 card, Morpho YpsID (e-CPF)",
+      "kind": "card",
+      "match": {
+        "usb": [],
+        "atr": [
+          "3B7D180002805759505349443034837F9000"
+        ]
+      },
+      "driver": {
+        "name": "SafeSign Identity Client",
+        "download": {
+          "windows": "https://safesign.gdamericadosul.com.br/download",
+          "macos": "https://safesign.gdamericadosul.com.br/download",
+          "linux": "https://safesign.gdamericadosul.com.br/download"
+        },
+        "pkcs11": {
+          "windows": "%SystemRoot%\\System32\\aetpkss1.dll",
+          "macos": "/usr/local/lib/libaetpkss.dylib",
+          "linux": "/usr/lib/libaetpkss.so"
+        }
+      }
+    },
+    {
+      "id": "br-card-cosmo-v7",
+      "name": "A3 card, Oberthur Cosmo v7 (e-CNPJ)",
+      "kind": "card",
+      "match": {
+        "usb": [],
+        "atr": [
+          "3BDD18008131FE4580F9A000000077010800079000FE"
+        ]
+      },
+      "driver": {
+        "name": "Oberthur AWP",
+        "pkcs11": {
+          "windows": "%SystemRoot%\\System32\\OcsCryptoki.dll",
+          "linux": "/usr/local/AWP/lib/libOcsCryptoki.so"
+        }
+      }
+    },
+    {
+      "id": "br-card-serasa",
+      "name": "A3 card, Serasa",
+      "kind": "card",
+      "match": {
+        "usb": [],
+        "atr": [
+          "3B3BF71800008031FE45736674652D"
+        ]
+      },
+      "driver": {
+        "name": "SafeSign Identity Client",
+        "download": {
+          "windows": "https://safesign.gdamericadosul.com.br/download",
+          "macos": "https://safesign.gdamericadosul.com.br/download",
+          "linux": "https://safesign.gdamericadosul.com.br/download"
+        },
+        "pkcs11": {
+          "windows": "%SystemRoot%\\System32\\aetpkss1.dll",
+          "macos": "/usr/local/lib/libaetpkss.dylib",
+          "linux": "/usr/lib/libaetpkss.so"
+        }
+      }
+    },
+    {
+      "id": "br-card-ecpf-generic",
+      "name": "A3 card, e-CPF (generic chip)",
+      "kind": "card",
+      "match": {
+        "usb": [],
+        "atr": [
+          "3B6800000073C84012009000"
+        ]
+      },
+      "driver": {
+        "name": "SafeSign Identity Client",
+        "download": {
+          "windows": "https://safesign.gdamericadosul.com.br/download",
+          "macos": "https://safesign.gdamericadosul.com.br/download",
+          "linux": "https://safesign.gdamericadosul.com.br/download"
+        },
+        "pkcs11": {
+          "windows": "%SystemRoot%\\System32\\aetpkss1.dll",
+          "macos": "/usr/local/lib/libaetpkss.dylib",
+          "linux": "/usr/lib/libaetpkss.so"
+        }
+      }
+    },
+    {
+      "id": "pt-cartao-de-cidadao",
+      "name": "Cartão de Cidadão (Portugal)",
+      "kind": "card",
+      "match": {
+        "usb": [],
+        "atr": [
+          "3B7D95000080318065B08311....83009000",
+          "3B6B00000031C064080461120F9000",
+          "3BFF9600008131FE4380318065B085040120120FFF829000D0"
+        ]
+      },
+      "driver": {
+        "name": "Autenticação.Gov",
+        "download": {
+          "windows": "https://www.autenticacao.gov.pt/web/guest/cc-aplicacao",
+          "macos": "https://www.autenticacao.gov.pt/web/guest/cc-aplicacao",
+          "linux": "https://www.autenticacao.gov.pt/web/guest/cc-aplicacao"
+        },
+        "pkcs11": {
+          "windows": "%SystemRoot%\\System32\\pteidpkcs11.dll",
+          "macos": "/usr/local/lib/libpteidpkcs11.dylib",
+          "linux": "/usr/local/lib/libpteidpkcs11.so"
+        }
+      },
+      "macos": {
+        "cryptotokenkit": true
+      }
+    },
+    {
+      "id": "es-dnie",
+      "name": "DNIe (Spain)",
+      "kind": "card",
+      "match": {
+        "usb": [],
+        "atr": [
+          "3B7F380000006A444E496510024C340113039000",
+          "3B7F380000006A444E496520024C340113039000",
+          "3B7F960000006A444E4965200101550410039000",
+          "3B888001E1F35E1177810000A2"
+        ]
+      },
+      "driver": {
+        "name": "DNIe PKCS#11 module",
+        "download": {
+          "windows": "https://www.dnielectronico.es/PortalDNIe/PRF1_Cons02.action?pag=REF_1112",
+          "macos": "https://www.dnielectronico.es/PortalDNIe/PRF1_Cons02.action?pag=REF_1112",
+          "linux": "https://www.dnielectronico.es/PortalDNIe/PRF1_Cons02.action?pag=REF_1112"
+        },
+        "pkcs11": {
+          "windows": "%SystemRoot%\\System32\\DNIe_P11_x64.dll",
+          "macos": "/Library/Libpkcs11-dnie/lib/libpkcs11-dnie.so",
+          "linux": "/usr/lib/libpkcs11-dnie.so"
+        }
+      }
+    },
+    {
+      "id": "es-fnmt-ceres",
+      "name": "FNMT-RCM CERES card (Spain)",
+      "kind": "card",
+      "match": {
+        "usb": [],
+        "atr": [
+          "3B7F960000006A464E4D54030411430430039000",
+          "3BEF..0040148025434552455357....0101039000"
+        ]
+      },
+      "driver": {
+        "name": "FNMT DNIe PKCS#11 module",
+        "pkcs11": {
+          "linux": "/opt/FNMTpkcs11dnie/lib/libpkcs11-dnie.so"
+        }
+      }
+    },
+    {
+      "id": "reader-gemalto-pc-twin-reader",
+      "name": "Gemalto PC Twin Reader",
+      "kind": "reader",
+      "match": {
+        "usb": [
+          "08e6:3437"
+        ],
+        "atr": []
+      }
+    },
+    {
+      "id": "reader-gemalto-usb-gempc-pinpad-reader",
+      "name": "Gemalto USB GemPC Pinpad reader",
+      "kind": "reader",
+      "match": {
+        "usb": [
+          "08e6:3478"
+        ],
+        "atr": []
+      }
+    },
+    {
+      "id": "reader-gemalto-gempc-express",
+      "name": "Gemalto GemPC Express",
+      "kind": "reader",
+      "match": {
+        "usb": [
+          "08e6:34ec"
+        ],
+        "atr": []
+      }
+    },
+    {
+      "id": "reader-omnikey-cardman-3121",
+      "name": "OMNIKEY CardMan 3121",
+      "kind": "reader",
+      "match": {
+        "usb": [
+          "076b:3021"
+        ],
+        "atr": []
+      }
+    },
+    {
+      "id": "reader-omnikey-cardman-5321",
+      "name": "OMNIKEY CardMan 5321",
+      "kind": "reader",
+      "match": {
+        "usb": [
+          "076b:5321"
+        ],
+        "atr": []
+      }
+    },
+    {
+      "id": "reader-acs-acr38u",
+      "name": "ACS ACR38U",
+      "kind": "reader",
+      "match": {
+        "usb": [
+          "072f:90cc"
+        ],
+        "atr": []
+      }
+    },
+    {
+      "id": "reader-acs-acr39u",
+      "name": "ACS ACR39U",
+      "kind": "reader",
+      "match": {
+        "usb": [
+          "072f:b100"
+        ],
+        "atr": []
+      }
+    },
+    {
+      "id": "reader-scm-scr-3310",
+      "name": "SCM SCR 3310",
+      "kind": "reader",
+      "match": {
+        "usb": [
+          "04e6:5116"
+        ],
+        "atr": []
+      }
+    },
+    {
+      "id": "reader-identiv-utrust-2900-r",
+      "name": "Identiv uTrust 2900 R",
+      "kind": "reader",
+      "match": {
+        "usb": [
+          "04e6:5811"
+        ],
+        "atr": []
+      }
+    },
+    {
+      "id": "reader-identiv-utrust-2910-r",
+      "name": "Identiv uTrust 2910 R",
+      "kind": "reader",
+      "match": {
+        "usb": [
+          "04e6:5812"
+        ],
+        "atr": []
+      }
+    },
+    {
+      "id": "reader-cherry-smartterminal-st-2xxx",
+      "name": "Cherry SmartTerminal ST-2xxx",
+      "kind": "reader",
+      "match": {
+        "usb": [
+          "046a:003e"
+        ],
+        "atr": []
+      }
+    },
+    {
+      "id": "reader-bit4id-minilector-s",
+      "name": "Bit4id miniLector-s",
+      "kind": "reader",
+      "match": {
+        "usb": [
+          "25dd:1101"
+        ],
+        "atr": []
+      }
+    },
+    {
+      "id": "reader-bit4id-minilector-evo",
+      "name": "Bit4id miniLector EVO",
+      "kind": "reader",
+      "match": {
+        "usb": [
+          "25dd:3111"
+        ],
+        "atr": []
+      }
+    },
+    {
+      "id": "reader-feitian-r502",
+      "name": "Feitian R502",
+      "kind": "reader",
+      "match": {
+        "usb": [
+          "096e:060d"
+        ],
+        "atr": []
+      }
+    },
+    {
+      "id": "reader-feitian-ir301",
+      "name": "Feitian iR301",
+      "kind": "reader",
+      "match": {
+        "usb": [
+          "096e:0619"
+        ],
+        "atr": []
+      }
     }
   ]
 }

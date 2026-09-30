@@ -7,7 +7,14 @@
 //! HID tokens) are caught by the periodic re-scan the host does while a
 //! window is open.
 
-use std::sync::mpsc::Sender;
+mod session;
+mod tracker;
+
+use std::sync::mpsc::{self, Sender};
+use std::sync::{Arc, Mutex};
+use std::thread::{self, JoinHandle};
+
+use pcsc::Context;
 
 /// Something changed that may change the certificate list.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -34,7 +41,36 @@ pub enum DeviceEvent {
 /// Stops the monitor thread when dropped.
 #[derive(Debug)]
 pub struct MonitorHandle {
-    _private: (),
+    stop: Option<Sender<()>>,
+    slot: Arc<ContextSlot>,
+    thread: Option<JoinHandle<()>>,
+}
+
+/// The PC/SC context the thread is currently blocked in, so dropping the
+/// handle can interrupt the wait instead of waiting for its timeout.
+#[derive(Default)]
+pub(crate) struct ContextSlot(Mutex<Option<Context>>);
+
+impl std::fmt::Debug for ContextSlot {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("ContextSlot")
+    }
+}
+
+impl ContextSlot {
+    pub(crate) fn set(&self, context: Option<Context>) {
+        if let Ok(mut slot) = self.0.lock() {
+            *slot = context;
+        }
+    }
+
+    fn cancel(&self) {
+        if let Ok(slot) = self.0.lock()
+            && let Some(context) = slot.as_ref()
+        {
+            let _ = context.cancel();
+        }
+    }
 }
 
 /// Starts watching. Events go to `events` until the handle is dropped or the
@@ -42,6 +78,29 @@ pub struct MonitorHandle {
 /// every few seconds and reports [`DeviceEvent::ServiceChanged`] when it
 /// appears.
 pub fn start(events: Sender<DeviceEvent>) -> MonitorHandle {
-    let _ = events;
-    todo!("SPEC.md §2")
+    let (stop, stopped) = mpsc::channel();
+    let slot = Arc::new(ContextSlot::default());
+    let worker_slot = Arc::clone(&slot);
+    let thread = thread::Builder::new()
+        .name("device-monitor".to_owned())
+        .spawn(move || session::run(events, stopped, &worker_slot))
+        .inspect_err(|error| log::warn!("device monitor could not start: {error}"))
+        .ok();
+    MonitorHandle {
+        stop: Some(stop),
+        slot,
+        thread,
+    }
+}
+
+impl Drop for MonitorHandle {
+    fn drop(&mut self) {
+        // Hang up first so the thread sees the request even if the cancel
+        // lands between two of its PC/SC calls.
+        self.stop.take();
+        self.slot.cancel();
+        if let Some(thread) = self.thread.take() {
+            let _ = thread.join();
+        }
+    }
 }

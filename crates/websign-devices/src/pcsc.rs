@@ -137,7 +137,7 @@ fn describe(error: Error) -> String {
 }
 
 /// Uppercase hex without separators, the form ATRs are stored and matched in.
-fn hex_upper(bytes: &[u8]) -> String {
+pub(crate) fn hex_upper(bytes: &[u8]) -> String {
     use std::fmt::Write as _;
     bytes
         .iter()

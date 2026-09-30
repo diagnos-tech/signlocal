@@ -100,18 +100,93 @@ pub struct HintsError(pub String);
 impl DeviceDatabase {
     /// Parses the embedded file.
     pub fn embedded() -> Result<DeviceDatabase, HintsError> {
-        todo!("SPEC.md §3")
+        serde_json::from_str(DEVICES_JSON).map_err(|error| HintsError(error.to_string()))
     }
 
     /// The entry matching a USB VID:PID (`"0529:0620"`), if any.
     pub fn by_usb(&self, vid_pid: &str) -> Option<&DeviceHint> {
-        let _ = vid_pid;
-        todo!("SPEC.md §3")
+        let vid_pid = vid_pid.trim();
+        self.devices.iter().find(|device| {
+            device
+                .matches
+                .usb
+                .iter()
+                .any(|known| known.eq_ignore_ascii_case(vid_pid))
+        })
     }
 
     /// The first entry whose ATR pattern matches `atr` (uppercase hex).
     pub fn by_atr(&self, atr: &str) -> Option<&DeviceHint> {
-        let _ = atr;
-        todo!("SPEC.md §3")
+        self.devices.iter().find(|device| {
+            device
+                .matches
+                .atr
+                .iter()
+                .any(|pattern| crate::atr::matches(pattern, atr))
+        })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn database() -> DeviceDatabase {
+        DeviceDatabase::embedded().expect("the embedded devices.json parses")
+    }
+
+    #[test]
+    fn the_embedded_file_parses_and_has_unique_ids() {
+        let db = database();
+        assert_eq!(db.version, 1);
+        let mut ids: Vec<_> = db.devices.iter().map(|device| device.id.as_str()).collect();
+        let total = ids.len();
+        ids.sort_unstable();
+        ids.dedup();
+        assert_eq!(ids.len(), total);
+    }
+
+    #[test]
+    fn usb_ids_match_exactly_and_ignore_case() {
+        let db = database();
+        let hint = db.by_usb("0529:0620").expect("eToken 5110 is known");
+        assert_eq!(hint.id, "safenet-etoken-5110");
+        assert_eq!(db.by_usb("0529:0620"), db.by_usb(" 0529:0620 "));
+        assert_eq!(
+            db.by_usb("163C:0407").map(|d| d.id.as_str()),
+            Some("watchdata-proxkey")
+        );
+        assert!(db.by_usb("0529:062").is_none());
+        assert!(db.by_usb("dead:beef").is_none());
+        assert!(db.by_usb("").is_none());
+    }
+
+    #[test]
+    fn atr_patterns_match_with_wildcards_and_first_entry_wins() {
+        let db = database();
+        let card: &str = "3B7D95000080318065B08311AABB83009000";
+        assert_eq!(
+            db.by_atr(card).map(|d| d.id.as_str()),
+            Some("pt-cartao-de-cidadao")
+        );
+        let exact = "3BFF9600008131FE4380318065B0855956FB120FFE82900000";
+        assert_eq!(
+            db.by_atr(exact).map(|d| d.id.as_str()),
+            Some("safenet-etoken-5110")
+        );
+        assert!(db.by_atr("3B00").is_none());
+        assert!(db.by_atr("").is_none());
+    }
+
+    #[test]
+    fn every_entry_is_well_formed() {
+        for device in database().devices {
+            for usb in &device.matches.usb {
+                assert_eq!(usb, &usb.to_ascii_lowercase(), "{}", device.id);
+            }
+            for atr in &device.matches.atr {
+                assert!(atr.len().is_multiple_of(2), "{}: odd ATR length", device.id);
+            }
+        }
     }
 }

@@ -70,9 +70,15 @@ pub struct UsbScan {
 
 /// Lists the USB devices; only smart card readers and tokens unless `all`.
 pub fn scan(all: bool) -> UsbScan {
+    scan_where(|device| all || device.smart_card)
+}
+
+/// Lists the USB devices `keep` accepts; the rest are only counted. Lets a
+/// caller add devices it knows by ID (some tokens are HID, not CCID).
+pub fn scan_where(keep: impl Fn(&UsbDevice) -> bool) -> UsbScan {
     log::trace!("USB: enumerating devices");
     match enumerate() {
-        Ok(devices) => select(devices, all),
+        Ok(devices) => select(devices, keep),
         Err(problem) => UsbScan {
             devices: Vec::new(),
             hidden: 0,
@@ -81,12 +87,10 @@ pub fn scan(all: bool) -> UsbScan {
     }
 }
 
-fn select(mut devices: Vec<UsbDevice>, all: bool) -> UsbScan {
+fn select(mut devices: Vec<UsbDevice>, keep: impl Fn(&UsbDevice) -> bool) -> UsbScan {
     devices.sort_by_key(|device| (!device.smart_card, device.vendor_id, device.product_id));
     let total = devices.len();
-    if !all {
-        devices.retain(|device| device.smart_card);
-    }
+    devices.retain(keep);
     UsbScan {
         hidden: total - devices.len(),
         devices,
@@ -163,12 +167,12 @@ mod tests {
             device((0x0529, 0x0620), &[0x0B]),
             device((0x1d6b, 0x0002), &[0x09]),
         ];
-        let scan = select(devices.clone(), false);
+        let scan = select(devices.clone(), |device| device.smart_card);
         assert_eq!(scan.devices.len(), 1);
         assert_eq!(scan.devices[0].id(), "0529:0620");
         assert_eq!(scan.hidden, 2);
 
-        let all = select(devices, true);
+        let all = select(devices, |_| true);
         assert_eq!((all.devices.len(), all.hidden), (3, 0));
         assert!(all.devices[0].smart_card, "smart card devices come first");
     }
