@@ -35,6 +35,7 @@ pub mod preregister;
 pub mod registry;
 pub mod status;
 pub mod system;
+mod uninstall;
 pub mod url_scheme;
 mod windows;
 
@@ -127,7 +128,9 @@ pub fn run(request: &Request) -> Result<Report, RegistrationError> {
     Ok(Report { host, results })
 }
 
-/// Every place to register or unregister for `request` on this OS.
+/// Every place to register or unregister for `request` on this OS. An
+/// uninstall of some browsers leaves out the locations that other browsers
+/// share (see [`uninstall`]).
 pub fn plan(request: &Request) -> Result<Vec<Target>, RegistrationError> {
     let browsers = browsers::selected(&request.browsers);
     if let Some(dir) = &request.user_data_dir {
@@ -148,22 +151,41 @@ pub fn plan(request: &Request) -> Result<Vec<Target>, RegistrationError> {
             &dir.join("NativeMessagingHosts"),
         )]);
     }
+    let build = target_builder(request)?;
+    Ok(match request.action {
+        Action::Install => build(&browsers),
+        Action::Uninstall => uninstall::exclusive(&browsers, build),
+    })
+}
+
+type TargetBuilder = Box<dyn Fn(&[Browser]) -> Vec<Target>>;
+
+/// The per-OS target list as a function of the browsers, with the home
+/// folder and the like resolved once so it can be evaluated for several
+/// browser subsets.
+fn target_builder(request: &Request) -> Result<TargetBuilder, RegistrationError> {
     if request.scope == Scope::System {
         if !cfg!(target_os = "linux") {
             return Err(RegistrationError::Unsupported(
                 "system-wide registration is only used on Linux".into(),
             ));
         }
-        let lib_dirs = [Path::new("/usr/lib"), Path::new("/usr/lib64")];
-        return Ok(system::targets(&browsers, &lib_dirs));
+        return Ok(Box::new(|browsers| {
+            system::targets(browsers, &[Path::new("/usr/lib"), Path::new("/usr/lib64")])
+        }));
     }
     if cfg!(target_os = "linux") {
         let home = real_home()?;
-        Ok(linux::targets(&browsers, &home, &linux::config_home(&home)))
+        let config = linux::config_home(&home);
+        Ok(Box::new(move |browsers| {
+            linux::targets(browsers, &home, &config)
+        }))
     } else if cfg!(target_os = "macos") {
-        Ok(macos::targets(&browsers, &real_home()?))
+        let home = real_home()?;
+        Ok(Box::new(move |browsers| macos::targets(browsers, &home)))
     } else if cfg!(windows) {
-        Ok(windows::targets(&browsers, &manifest_dir(request)?))
+        let dir = manifest_dir(request)?;
+        Ok(Box::new(move |browsers| windows::targets(browsers, &dir)))
     } else {
         Err(RegistrationError::Unsupported(
             "native messaging registration is not implemented for this operating system".into(),

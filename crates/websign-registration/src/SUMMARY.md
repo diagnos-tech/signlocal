@@ -7,6 +7,7 @@
 - `registry/` — in-memory and real implementations of the registry trait
 - `status/` — reading registrations back: manifest judgement, files, registry
 - `system/` — tests of the Linux system-wide locations
+- `uninstall/` — tests of the shared-location rule on every OS
 - `url_scheme/` — the `websign:` handler per OS
 - `browsers.rs` — The browsers the host can be registered with.
 - `destination.rs` — One place a browser looks for the host, and how to write or remove it.
@@ -21,5 +22,6 @@
 - `registry.rs` — The Windows registry behind a trait, so Windows logic is tested on every OS; writes only `HKCU`.
 - `status.rs` — Reads registrations back, for diagnostics ("Chrome can't find the app") and for the repair button.
 - `system.rs` — System-wide manifest locations on Linux, written by the deb/rpm post-install step.
+- `uninstall.rs` — Which locations a partial uninstall may remove: those no remaining browser shares (Chrome's key or folder used by Brave, Opera, Vivaldi).
 - `url_scheme.rs` — The `websign:` URL scheme, so the website's `/activate` page can start the app once to register it.
 - `windows.rs` — How Windows browsers find hosts: the `HKCU` keys each browser reads, in order, whose default value is the path of a manifest file.

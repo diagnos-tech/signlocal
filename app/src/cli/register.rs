@@ -17,7 +17,9 @@ pub struct RegisterArgs {
     /// Browser to register with (repeatable). Default: all.
     #[arg(long = "browser", value_enum, value_name = "BROWSER")]
     pub browsers: Vec<BrowserArg>,
-    /// Remove the registration instead of writing it.
+    /// Remove the registration instead of writing it. With `--browser`, a
+    /// location that another browser still uses (Chrome's key or folder,
+    /// which Brave, Opera and Vivaldi share) is kept.
     #[arg(long)]
     pub uninstall: bool,
     /// Where manifests go.

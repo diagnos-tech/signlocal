@@ -95,8 +95,17 @@ path. Status also reads the folders a browser falls back to: Edge reads
   Edge: Edge's, Chromium's, Chrome's (documented); Brave and Vivaldi: their
   vendor key, Chromium's, Chrome's; Opera: Chromium's, Chrome's; Firefox:
   Mozilla's. Registration writes Edge's own key only (documented to win) and
-  every key of the others, which document none. `--uninstall --browser
-  <name>` therefore also removes the shared Chromium and Chrome keys.
+  every key of the others, which document none.
+- Partial uninstall (`--uninstall --browser <name>`, repeatable) removes a
+  location (registry key or manifest file) only when no browser outside the
+  selection maps to it: the locations of the selected browsers minus those of
+  all the others, compared by manifest path or by registry key (case-
+  insensitive). So `--browser brave` leaves Chromium's and Chrome's keys,
+  Opera leaves Google Chrome's folder (Linux, macOS), and the system folder
+  `/etc/opt/chrome` stays while Chrome, Brave, Opera or Vivaldi remains. A
+  shared location goes once every browser that uses it is selected; no
+  `--browser` (or `all`) removes everything. The rule applies to every
+  scope and OS and does not depend on which browsers are installed.
 - §3 on Windows reads keys in that order and the first key found decides. A browser with several channels is `Registered` when any
   channel is; otherwise the first problem in reading order is reported.
 - §3 reads `HKCU` only, although browsers fall back to `HKLM`: the app
