@@ -10,6 +10,7 @@
 //! ([`serial`]), taken here and only here so it is never nested.
 
 mod algorithm;
+mod capabilities;
 mod chain;
 mod errors;
 mod identities;
@@ -28,8 +29,8 @@ use identities::{Identity, Scope};
 use serial::serialized;
 
 use super::{
-    DeviceLink, FoundKey, Keystore, KeystoreError, Opened, Options, PinPrompt, SignRequest,
-    Signature,
+    DeviceLink, FoundKey, KeyCapabilities, Keystore, KeystoreError, Opened, Options, PinPrompt,
+    SignRequest, Signature,
 };
 
 /// Adds the keychain-file source and the CryptoTokenKit source to `opened`.
@@ -95,7 +96,8 @@ impl Keystore for MacKeystore {
             if found.identities.is_empty() {
                 return Err(first);
             }
-            // TODO(gustavo): surface as a diagnostics entry (`Keystore::warnings`).
+            // Only logged: the Keystore trait has no channel for partial
+            // failures yet, so diagnostics cannot show them.
             log::warn!(
                 "{}: {} identities could not be read (first: {first})",
                 self.name(),
@@ -137,6 +139,16 @@ impl Keystore for MacKeystore {
             .get(&wanted)
             .ok_or(KeystoreError::NotFound)?;
         serialized(|| sign::sign(identity, &key.cert_der, request))
+    }
+
+    fn capabilities(&mut self, key: &FoundKey) -> KeyCapabilities {
+        if key.locator != locator(&key.cert_der) {
+            return KeyCapabilities::NONE;
+        }
+        match self.identities.get(&key.locator) {
+            Some(identity) => serialized(|| capabilities::of_identity(identity)),
+            None => KeyCapabilities::NONE,
+        }
     }
 
     fn chain(&mut self, key: &FoundKey) -> Vec<Vec<u8>> {

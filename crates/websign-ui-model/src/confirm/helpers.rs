@@ -56,10 +56,23 @@ impl ConfirmModel {
         self.request.as_ref().map(|request| request.mode)
     }
 
-    pub(super) fn is_remembered(&self) -> bool {
+    /// Whether the caller's consent covers `fingerprint`: the host
+    /// releases it without Continue.
+    pub(super) fn is_consented(&self, fingerprint: Option<Fingerprint>) -> bool {
+        let (Some(request), Some(fingerprint)) = (&self.request, fingerprint) else {
+            return false;
+        };
+        request.consented.contains(&fingerprint)
+    }
+
+    /// "Remember" can still add something: the caller may be remembered
+    /// and the selected certificate is not covered yet.
+    pub(super) fn may_remember(&self) -> bool {
+        let selected = self.list.as_ref().and_then(|list| list.selected);
         self.request
             .as_ref()
-            .is_some_and(|request| request.remembered)
+            .is_some_and(|request| request.can_remember)
+            && !self.is_consented(selected)
     }
 
     /// The selected row, wherever it sits.
@@ -80,13 +93,14 @@ impl ConfirmModel {
     }
 
     /// Enters `Choosing` with the code card in its starting state: choose
-    /// mode has no code, a remembered caller's digest is already on its way,
-    /// anyone else must press Continue first.
+    /// mode has no code, the digest of a consented certificate is already on
+    /// its way, any other certificate needs Continue first.
     pub(super) fn enter_choosing(&mut self, now: Instant) {
         self.state = ConfirmState::Choosing;
         self.chosen = false;
+        let selected = self.list.as_ref().and_then(|list| list.selected);
         self.code = match self.mode() {
-            Some(Mode::Sign { .. }) if self.is_remembered() => CodeSlot::Preparing(now),
+            Some(Mode::Sign { .. }) if self.is_consented(selected) => CodeSlot::Preparing(now),
             Some(Mode::Sign { .. }) => CodeSlot::Hint,
             _ => CodeSlot::None,
         };

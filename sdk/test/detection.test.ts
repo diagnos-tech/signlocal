@@ -175,12 +175,12 @@ describe("status()", () => {
     expect(status.ready).toBe(false);
   });
 
-  it("gives up after 5 s when the extension never answers status, and still resolves", async () => {
+  it("gives up after 10 s when the extension never answers status, and still resolves", async () => {
     const env = await loadSdk();
     const s = settle(env.sdk.status());
     await flush();
     const id = env.script.only("status").id;
-    await vi.advanceTimersByTimeAsync(4999);
+    await vi.advanceTimersByTimeAsync(9999);
     expect(s.outcome()).toBeUndefined();
     await vi.advanceTimersByTimeAsync(1);
     const status = expectValue(s.outcome());

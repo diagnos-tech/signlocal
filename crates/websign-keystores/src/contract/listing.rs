@@ -1,4 +1,5 @@
-//! Checks on `list`: `lists-expected`, `list-is-quiet`, `provider-is-anonymous`.
+//! Checks on `list` (and `capabilities`, which must be as quiet):
+//! `lists-expected`, `list-is-quiet`, `provider-is-anonymous`.
 
 use std::collections::BTreeSet;
 
@@ -63,8 +64,10 @@ fn list(keystore: &mut dyn Keystore, report: &mut Report) -> Vec<FoundKey> {
     }
 }
 
-/// Listing must not have logged in: a token the app unlocks reports locked.
+/// Listing and reading capabilities must not have logged in: a token the
+/// app unlocks reports locked.
 fn check_not_logged_in(keystore: &mut dyn Keystore, key: &FoundKey, report: &mut Report) {
+    keystore.capabilities(key);
     if !matches!(key.pin, PinPrompt::App { .. }) {
         return;
     }

@@ -172,6 +172,7 @@ export function route(
     document: sender.document,
     reply,
     conn: null,
+    ...(request.type === "sign.begin" ? { hash: request.hash } : {}),
   };
   entries.set(id, entry);
   void start(sender, id, request, entry).catch((error) => {

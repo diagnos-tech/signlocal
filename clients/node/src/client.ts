@@ -1,12 +1,19 @@
 /** One connection to the app. */
 
 import { decodeCertificate } from "./certificate.js";
-import { WebSignError } from "./errors.js";
-import type { CertificateFilter, DiagnosticsTab, StatusReply } from "./generated/index.js";
+import { aborted, WebSignError } from "./errors.js";
+import type { DiagnosticsTab, StatusReply } from "./generated/index.js";
 import { findExecutable } from "./locate.js";
 import { Session } from "./session.js";
 import { runSign } from "./sign.js";
-import type { Certificate, ConnectOptions, SignOptions, SignResult } from "./types.js";
+import type {
+  Certificate,
+  CertificateOptions,
+  ConnectOptions,
+  SignOptions,
+  SignResult,
+} from "./types.js";
+import { checkAlgorithms } from "./validate.js";
 import { CLIENT_NAME, VERSION } from "./version.js";
 
 /**
@@ -44,16 +51,28 @@ export class WebSign {
   /**
    * `choose`: the person picks a certificate (or a remembered program gets
    * the ones it used before). Never the machine's whole list. `der` and
-   * `chain` are decoded to bytes.
+   * `chain` are decoded to bytes. Same options as `@websign/sdk`.
    */
-  async certificates(filter?: CertificateFilter): Promise<Certificate[]> {
-    const algorithms = filter?.algorithms ? [...new Set(filter.algorithms)] : [];
-    const fields = algorithms.length > 0 ? { filter: { algorithms } } : {};
-    const reply = await this.session.request("choose", fields).result;
-    if (reply.type !== "choose.result" || !Array.isArray(reply.certificates)) {
-      throw unexpected(reply.type, "choose");
+  async certificates(options: CertificateOptions = {}): Promise<Certificate[]> {
+    const algorithms = checkAlgorithms(options.algorithm);
+    const { signal } = options;
+    if (signal?.aborted) throw aborted(signal.reason);
+    const exchange = this.session.request("choose", algorithms ? { filter: { algorithms } } : {});
+    const onAbort = () => exchange.fail(aborted(signal?.reason));
+    signal?.addEventListener("abort", onAbort, { once: true });
+    try {
+      const reply = await exchange.result;
+      if (reply.type !== "choose.result" || !Array.isArray(reply.certificates)) {
+        throw unexpected(reply.type, "choose");
+      }
+      // The app reports an empty choice as NoCertificates; an empty list would be a bug there.
+      if (reply.certificates.length === 0) {
+        throw new WebSignError("NoCertificates", "no certificate was chosen");
+      }
+      return reply.certificates.map(decodeCertificate);
+    } finally {
+      signal?.removeEventListener("abort", onAbort);
     }
-    return reply.certificates.map(decodeCertificate);
   }
 
   /**

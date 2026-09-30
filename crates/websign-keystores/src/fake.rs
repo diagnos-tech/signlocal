@@ -6,7 +6,9 @@ use std::time::Duration;
 
 use websign_core::SourceKind;
 
-use crate::{FoundKey, Keystore, KeystoreError, PinPrompt, PinState, SignRequest, Signature};
+use crate::{
+    FoundKey, KeyCapabilities, Keystore, KeystoreError, PinPrompt, PinState, SignRequest, Signature,
+};
 
 /// Lists `keys`, signs by echoing the key's locator, and counts calls.
 #[derive(Debug, Default)]
@@ -14,6 +16,8 @@ pub struct FakeKeystore {
     pub name: String,
     pub keys: Vec<FoundKey>,
     pub fail_list: bool,
+    /// What every key can sign with; `None` keeps the trait's default.
+    pub capabilities: Option<KeyCapabilities>,
     pub lists: Rc<Cell<usize>>,
     pub ended: Rc<Cell<usize>>,
 }
@@ -71,6 +75,10 @@ impl Keystore for FakeKeystore {
 
     fn chain(&mut self, key: &FoundKey) -> Vec<Vec<u8>> {
         vec![key.locator.clone().into_bytes()]
+    }
+
+    fn capabilities(&mut self, _key: &FoundKey) -> KeyCapabilities {
+        self.capabilities.unwrap_or(KeyCapabilities::ALL)
     }
 
     fn pin_state(&mut self, _key: &FoundKey) -> Option<PinState> {

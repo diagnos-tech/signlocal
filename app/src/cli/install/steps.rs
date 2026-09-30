@@ -35,7 +35,6 @@ pub fn request(action: Action, system: bool, dry_run: bool) -> Request {
         scope: if system { Scope::System } else { Scope::User },
         browsers: Vec::new(),
         user_data_dir: None,
-        extension_ids: Vec::new(),
         manifest_dir: None,
         host: None,
         dry_run,

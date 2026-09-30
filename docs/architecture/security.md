@@ -30,7 +30,7 @@ names the file or crate that must enforce it and the test that proves it.
 | # | Threat | Mitigation | Where | Proof |
 |---|---|---|---|---|
 | T1 | A page impersonates another site | Origin from the browser's `MessageSender`, never the payload; the window shows the registrable domain emphasized, punycode for IDN, alerts for IP/localhost; `http:` (non-local), `file:`, `data:`, extension origins refused | extension `background/origin.ts`; `websign-core::present::origin`; host `caller.rs` | origin vectors (`docs/ux.md` §16.2); e2e insecure-origin test |
-| T2 | Another extension or program talks to the app via native messaging | Manifests list only our extension IDs (`allowed_origins`/`allowed_extensions`); the app re-checks the launch origin against `project.toml` | `websign-registration::manifest`, `websign-host::launch` | manifest unit tests; launch tests |
+| T2 | Another extension or program talks to the app via native messaging | Manifests list only our extension IDs (`allowed_origins`/`allowed_extensions`); the app re-checks the launch origin against `project.toml`. Weak spot: the development ID is derived from a published key (see "The development key") | `websign-registration::manifest`, `websign-host::launch` | manifest unit tests; launch tests |
 | T3 | Click-jacking / accidental confirmation | Our own window (the page cannot draw in it); primary button arms after 600 ms visible and focused, re-arms on any change; press **and** release after arming; input discarded while unarmed; initial focus never on Sign; Enter in a list row never signs | `websign-ui-model::confirm::arming`, `machine` | arming unit tests; egui_kittest tests |
 | T4 | Digest swapped or truncated | Exact length per hash; verification code on both sides (window and page via `fingerprint()`); digest bound to the certificate by `seq` | protocol, host `flow/sign.rs`, SDK | protocol vectors; flow scenario tests |
 | T5 | Site harvests the holder's identity | `certificates()` returns only the chosen certificate (D2); `sign.need_digest` releases the certificate only after "Continue" unless the caller is remembered (D11); remembering is opt-in, disabled for IP/IDN, revocable | host flows, ui-model | flow scenario tests "new site cancels before Continue → caller got nothing" |
@@ -46,6 +46,31 @@ names the file or crate that must enforce it and the test that proves it.
 | T15 | Store sandbox escapes (later channel) | macOS entitlements limited to `NativeMessagingHosts` folders; Safari socket peer checked by code-signing requirement | `packaging/macos`, `safari/` | review; store review |
 | T16 | One tab reads, feeds or cancels another tab's request over the shared native port | Native ids are `<tab>.<frame>.<pageId>` with tab and frame from `MessageSender`; app messages go only to the exact id's entry and back to that tab and frame; continuations (`sign.digest`, `cancel`) resolve only within the sender's own ids; replies carry the requesting document's token, so a reply racing a navigation is dropped instead of reaching the next page | extension `background/requests.ts`, `router.ts`, `content/relay.ts` | router and relay tests ("one shared port, isolated tabs", "drops a reply meant for another document") |
 | T17 | The extension itself becomes an attack surface | Permission `nativeMessaging` only (no host permissions, no web-accessible resources, no `externally_connectable`); extension pages under `default-src 'none'; script-src 'self'` CSP, no remote code, no `eval`; the content script posts only to `location.origin` and runs only on secure contexts; no logging | `extension/build/manifest.ts`, `entrypoints/content.ts` | manifest tests |
+
+## The development key
+
+Direct (unpacked) Chromium builds carry `project.toml`'s `dev_key` as the
+manifest `key`. Chromium derives an unpacked extension's ID from that key, so
+every copy gets `dev_id` on every machine, and the native messaging manifests
+allow `dev_id` next to the store IDs. The key is public (it is in this
+repository and in every release zip), so the ID is not proof of origin: any
+unpacked extension that sets the same `key` gets `dev_id` and may start the
+app and talk to it like ours. Loading it takes Developer mode and a manual
+**Load unpacked**, which is the bar this risk rests on today.
+
+Such an extension fills `web.origin` itself, so it can claim any site,
+including one the person remembered, whose certificate is then released
+without **Continue** (D11). It still cannot sign without the person's
+confirmation in our window (T3, T13).
+
+Mitigations:
+- Store builds (`WEBSIGN_CHANNEL=store`) never carry the key; the stores
+  assign and sign their IDs (`extension/build/manifest.ts`, tested).
+- Once the store IDs exist, direct builds either move to a key whose private
+  and public halves stay in a CI secret (a new `dev_id`), or stop being
+  published, and `dev_id` leaves the release manifests.
+- `TODO(gustavo)`: decide whether to rotate or withdraw the development key
+  when the store listing exists.
 
 ## Out of scope
 

@@ -9,8 +9,5 @@ license = "Apache-2.0"
 repository.workspace = true
 publish.workspace = true
 
-[build-dependencies]
-toml.workspace = true
-
 [lints]
 workspace = true

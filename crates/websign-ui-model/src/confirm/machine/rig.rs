@@ -19,6 +19,13 @@ pub struct Rig {
     pub ms: u64,
 }
 
+/// A remembered caller's consent covers every fixture certificate (seeds
+/// below 32); a new caller's covers none.
+pub fn consent_of(remembered: bool) -> Vec<websign_core::Fingerprint> {
+    let seeds = if remembered { 0..32 } else { 0..0 };
+    seeds.map(fingerprint).collect()
+}
+
 pub fn request(mode: Mode, remembered: bool) -> OpenRequest {
     OpenRequest {
         key: KEY,
@@ -28,9 +35,11 @@ pub fn request(mode: Mode, remembered: bool) -> OpenRequest {
                 name: "App".into(),
                 detail: "path".into(),
                 verified: true,
+                runs_scripts: false,
             },
         },
         remembered,
+        consented: consent_of(remembered),
         can_remember: true,
         position: (1, 1),
         timeout_secs: 300,

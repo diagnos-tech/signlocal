@@ -16,7 +16,8 @@ try {
     hash: "SHA-256",
     signal: AbortSignal.timeout(120_000),
     // Runs once the person picked a certificate (again if they switch). For
-    // CMS/PAdES, hash the signed attributes built from `certificate.der` here.
+    // CMS/PAdES, use `prepare: (certificate, { algorithm }) => ...` and hash
+    // the signed attributes built from `certificate.der` and `algorithm`.
     prepare: () => createHash("sha256").update(document).digest(),
   });
   console.log(certificate.displayName, algorithm, signature.byteLength);
@@ -27,11 +28,19 @@ try {
 
 ## Good to know
 
+- Same mental model as the web SDK (`@websign/sdk`): the same `sign({ hash,
+  algorithm, certificate, prepare, signal })` options, `prepare(certificate,
+  { hash, algorithm })`, the same `Certificate` shape (`notBefore`/`notAfter`
+  are `Date`s) and the same error codes. `algorithm` is one name or a list in
+  preference order; `certificate` preselects by `Certificate` or fingerprint.
+
 - Errors are `WebSignError` with a stable `code` (`UserCancelled`, `AppMissing`,
   `Timeout`, `PinLocked`, ...): branch on `code`, not on `message`.
 - `prepare` throwing, an aborted `signal` or a wrong-length digest cancels the
   request in the app; you get `Aborted` (the thrown error as `cause`) or
-  `InvalidRequest`.
+  `InvalidRequest`. So does an app that asks for another hash or an
+  algorithm outside the ones you accepted (`InvalidRequest`, before `prepare`
+  runs).
 - `WebSign.connect({ executable })` or `WEBSIGN_EXECUTABLE` pins the binary;
   otherwise `findExecutable()` searches `PATH` and the per-OS install
   locations.
@@ -41,7 +50,7 @@ try {
   for your CMS/PAdES code; `signature` is raw (RSA block, ECDSA `r || s`).
 - An idle connection does not keep your program running; still, `close()` it.
 - Node ≥ 20.19, Bun or Electron; ESM, and `require()` works too.
-- Also: `status()`, `certificates(filter?)`, `openDiagnostics(tab?)`.
+- Also: `status()`, `certificates({ algorithm?, signal? })`, `openDiagnostics(tab?)`.
 
 ## Development
 

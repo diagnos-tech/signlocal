@@ -1,52 +1,18 @@
 //! One connection to the app.
 
-use std::path::PathBuf;
 use std::time::Instant;
 
 use websign_protocol::messages::{
     Cancel, Choose, ClientMessage, DiagnosticsTab, Done, OpenDiagnostics, Status, StatusReply,
 };
-use websign_protocol::types::{
-    Certificate, CertificateFilter, FingerprintHex, HashName, SignatureAlgorithmName,
-};
-use websign_protocol::{AppMessage, ClientEnvelope, RequestId};
+use websign_protocol::types::{Certificate, CertificateFilter, SignatureAlgorithmName};
+use websign_protocol::{AppMessage, ClientEnvelope, ErrorCode, RequestId};
 
 use crate::error::ClientError;
 use crate::handshake;
+use crate::options::{ConnectOptions, unique};
 use crate::session::{Expect, Session, Wait};
 use crate::timing::Timing;
-
-/// How to start the app.
-#[derive(Debug, Clone, Default)]
-pub struct ConnectOptions {
-    /// Use this executable instead of [`crate::find_executable`].
-    pub executable: Option<PathBuf>,
-    /// Sent in `hello` (logs only); defaults to `"websign-client"` and this
-    /// crate's version.
-    pub client_name: Option<String>,
-    pub client_version: Option<String>,
-}
-
-/// What to sign.
-#[derive(Debug, Clone)]
-pub struct SignOptions {
-    pub hash: HashName,
-    /// Acceptable algorithms, preferred first; empty = any.
-    pub algorithms: Vec<SignatureAlgorithmName>,
-    /// Preselect this certificate.
-    pub certificate: Option<FingerprintHex>,
-}
-
-impl SignOptions {
-    /// Any algorithm, no preselection.
-    pub fn new(hash: HashName) -> SignOptions {
-        SignOptions {
-            hash,
-            algorithms: Vec::new(),
-            certificate: None,
-        }
-    }
-}
 
 /// A running `websign connect` child and its negotiated protocol.
 ///
@@ -93,13 +59,23 @@ impl Client {
     }
 
     /// `choose`: the certificate the person picks (or the ones this program
-    /// already used, when remembered).
+    /// already used, when remembered). `algorithms` narrows the choice to
+    /// keys that can produce one of them; empty = any.
     pub fn certificates(
         &mut self,
-        filter: Option<CertificateFilter>,
+        algorithms: &[SignatureAlgorithmName],
     ) -> Result<Vec<Certificate>, ClientError> {
+        let filter = unique(algorithms).map(|algorithms| CertificateFilter {
+            algorithms: Some(algorithms),
+        });
         let id = self.send_request(ClientMessage::Choose(Choose { web: None, filter }))?;
         match self.next_message(&id)? {
+            AppMessage::ChooseResult(result) if result.certificates.is_empty() => {
+                Err(ClientError::App {
+                    code: ErrorCode::NoCertificates,
+                    message: "no certificate was chosen".into(),
+                })
+            }
             AppMessage::ChooseResult(result) => Ok(result.certificates),
             other => Err(self.unexpected(&other)),
         }

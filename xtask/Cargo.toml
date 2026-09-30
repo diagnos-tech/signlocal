@@ -11,6 +11,8 @@ publish = false
 websign-i18n.workspace = true
 # The Info.plist URL-scheme declaration, so packaging and the app share it.
 websign-registration.workspace = true
+# Protocol limits the extension must share (`gen` limits).
+websign-protocol.workspace = true
 clap.workspace = true
 serde.workspace = true
 serde_json.workspace = true

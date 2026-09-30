@@ -1,5 +1,6 @@
 # crates/websign-core/src/present
 
+- `caller/` — the interpreters, shells and terminal hosts that are never remembered
 - `holder/` — display name and title-casing of the holder
 - `origin/` — origin parsing, host classification and eTLD+1 split
 - `tests/` — unit tests of the text rules over the `docs/ux.md` §16 vectors

@@ -37,5 +37,6 @@ fn label(name: &str, detail: &str, verified: bool) -> CallerLabel {
         name: name.to_owned(),
         detail: detail.to_owned(),
         verified,
+        runs_scripts: false,
     }
 }

@@ -88,6 +88,9 @@ blocked_http = "This site doesn't use a secure connection (https). For your safe
 signed_by = "Signed by {signer}"
 # Under a desktop program's name when its signature could not be verified.
 unverified = "Unverified program. Only continue if you started it yourself."
+# Headline instead of the program name when it is an interpreter or shell
+# (node, python, bash, PowerShell…): {program} is its name.
+script_run_by = "A script run by {program}"
 
 [code]
 label = "Verification code"
@@ -197,8 +200,10 @@ locked_body_generic = "The token locked after too many wrong attempts. Unlock it
 [consent]
 remember = "Remember this site on this computer"
 remember_app = "Remember this program on this computer"
-remember_help = "It will be able to see which certificate you use without asking. Every signature still asks for your confirmation."
+remember_help = "It will be able to see the certificate you choose now without asking. Every signature still asks for your confirmation."
 remember_disabled = "Numeric or special-character addresses can't be remembered."
+# Under the disabled checkbox when the caller is an interpreter or shell.
+remember_disabled_script = "Programs that run scripts can't be remembered: it would allow every script they run."
 select_shares = "The site will receive the name, type, issuer and validity of the chosen certificate. Nothing is signed now."
 
 [action]
@@ -425,6 +430,12 @@ body = "This site doesn't use https. For your safety, WebeSign won't sign for it
 [errors.timeout]
 title = "The request expired"
 body = "Nobody answered for 5 minutes. Go back to the site and try again."
+
+# The site did not send the document to sign within 60 s. {site} is the
+# host or program name.
+[errors.digest_timeout]
+title = "The site didn't respond"
+body = "{site} didn't prepare the document within 60 seconds. Go back to the site and try again."
 
 [errors.no_certificates]
 title = "No certificates found"

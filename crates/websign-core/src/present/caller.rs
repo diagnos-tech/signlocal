@@ -4,6 +4,8 @@
 //! program says): executable path, product name from the executable's
 //! metadata, and the code-signing identity when the OS can verify one.
 
+mod script_hosts;
+
 use std::path::PathBuf;
 
 use super::visible::visible;
@@ -38,6 +40,9 @@ pub struct CallerLabel {
     /// False when no signer was verified: the window warns
     /// "Unverified program".
     pub verified: bool,
+    /// The program is an interpreter, shell or terminal host
+    /// ([`runs_scripts`]): the window says "a script run by {name}".
+    pub runs_scripts: bool,
 }
 
 /// Longest product name shown, ellipsis included: the window has room for
@@ -49,15 +54,24 @@ const MAX_NAME_CHARS: usize = 64;
 /// Every text comes from the calling program's own metadata, so control and
 /// bidirectional formatting characters are removed before it is shown.
 pub fn caller_label(caller: &DesktopCaller) -> CallerLabel {
-    let label = raw_label(caller);
+    let (name, detail, verified) = raw_label(caller);
     CallerLabel {
-        name: visible(&label.name),
-        detail: visible(&label.detail),
-        verified: label.verified,
+        name: visible(&name),
+        detail: visible(&detail),
+        verified,
+        runs_scripts: runs_scripts(caller),
     }
 }
 
-fn raw_label(caller: &DesktopCaller) -> CallerLabel {
+/// Whether `caller` runs code it did not ship (`node`, `python`, `bash`,
+/// `powershell`, a terminal host…). Such a caller is never remembered:
+/// its consent would cover every script on the computer.
+pub fn runs_scripts(caller: &DesktopCaller) -> bool {
+    script_hosts::is_script_host(&caller.executable)
+}
+
+/// Name, detail and whether a signer was verified, before cleaning.
+fn raw_label(caller: &DesktopCaller) -> (String, String, bool) {
     let name = caller
         .product_name
         .as_deref()
@@ -65,24 +79,12 @@ fn raw_label(caller: &DesktopCaller) -> CallerLabel {
         .filter(|name| !name.is_empty())
         .map_or_else(|| file_name(caller), |name| shorten(&name));
     match &caller.signer {
-        Some(CodeSigner::Authenticode { subject }) => CallerLabel {
-            name,
-            detail: subject.clone(),
-            verified: true,
-        },
+        Some(CodeSigner::Authenticode { subject }) => (name, subject.clone(), true),
         Some(CodeSigner::Apple {
             team_id,
             identifier,
-        }) => CallerLabel {
-            name,
-            detail: format!("{identifier} ({team_id})"),
-            verified: true,
-        },
-        None => CallerLabel {
-            name,
-            detail: caller.executable.display().to_string(),
-            verified: false,
-        },
+        }) => (name, format!("{identifier} ({team_id})"), true),
+        None => (name, caller.executable.display().to_string(), false),
     }
 }
 

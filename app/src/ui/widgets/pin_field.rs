@@ -6,14 +6,16 @@
 //! undo history. This field reads keystrokes straight into the caller's
 //! `Zeroizing` buffer and wipes egui's copies ([`pin_keys`]), has no
 //! clipboard and no IME, and gives AccessKit a `PasswordInput` with no value
-//! at all: not the PIN, not even its length. Enter reports `submitted`; the
-//! window decides whether that signs.
+//! at all: not the PIN, not even its length. While it has the keyboard
+//! focus in a focused window, it keeps [`secure_input`] on (macOS). Enter
+//! reports `submitted`; the window decides whether that signs.
 
 use egui::accesskit::Role;
 use egui::{Id, Rect, Response, Sense, Ui, Vec2, WidgetInfo, WidgetType, pos2, vec2};
 use zeroize::Zeroizing;
 
 use super::{field, focus, pin_buffer, pin_keys, text};
+use crate::platform::secure_input;
 use crate::ui::icons;
 use crate::ui::theme::{self, metrics, typography};
 
@@ -81,6 +83,9 @@ impl PinField<'_> {
         let field = ui.interact(input_rect, self.id, sense);
         if field.clicked() {
             field.request_focus();
+        }
+        if self.enabled && field.has_focus() && ui.input(|input| input.focused) {
+            secure_input::request(ui.ctx());
         }
         let typed = if self.enabled && field.has_focus() {
             let (pin, max) = (&mut *self.pin, self.max_chars);

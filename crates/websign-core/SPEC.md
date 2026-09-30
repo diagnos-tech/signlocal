@@ -531,6 +531,18 @@ The full CPF never appears in any output of this crate.
 - Signed: `detail` = the signer (`Authenticode.subject`, or
   `Apple.identifier` + ` (` + `team_id` + `)`), `verified = true`.
 - Unsigned: `detail` = the executable path, `verified = false`.
+- `runs_scripts` = `runs_scripts(caller)` (below).
+
+`runs_scripts(caller) -> bool`: the executable's file
+name, lowercased, without `.exe` and without a trailing version
+(`python3.12` → `python`), is one of the interpreters, shells and terminal
+hosts listed in `present/caller/script_hosts.rs` (`node`, `deno`, `bun`,
+`python`, `py`, `ruby`, `perl`, `php`, `java`, `osascript`, `wscript`,
+`cscript`, `sh`, `bash`, `zsh`, `fish`, `cmd`, `powershell`, `pwsh`,
+`WindowsTerminal`, `OpenConsole`, `conhost`, `Terminal`, …). Such a caller is
+only the runtime of whatever script asks, so the host never remembers it
+(`can_remember = false`, stored consent ignored) and the window names it as
+"a script run by {name}". The list lives only there.
 
 `consent_key(caller) -> String`:
 

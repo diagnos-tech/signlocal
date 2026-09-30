@@ -67,3 +67,8 @@ export function withCause(error: WebSignError, cause: unknown): WebSignError {
   error.cause = cause;
   return error;
 }
+
+/** `Aborted` for a caller's `AbortSignal` or a throwing `prepare`, the original as `cause`. */
+export function aborted(cause: unknown): WebSignError {
+  return withCause(new WebSignError("Aborted", "the caller cancelled the request"), cause);
+}

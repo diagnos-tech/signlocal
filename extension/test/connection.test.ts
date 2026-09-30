@@ -92,14 +92,37 @@ describe("connect: failures", () => {
     await expect(mod.connect()).rejects.toMatchObject({ code: "AppMissing" });
   });
 
-  it("Internal when the app stays silent for 3 s", async () => {
+  it("AppMissing when a first-launched app stays silent for 8 s", async () => {
     const pending = mod.connect();
-    const failure = expect(pending).rejects.toMatchObject({ code: "Internal" });
-    await vi.advanceTimersByTimeAsync(2999);
+    const failure = expect(pending).rejects.toMatchObject({ code: "AppMissing" });
+    await vi.advanceTimersByTimeAsync(7999);
     await settle();
     expect(fakeBrowser.ports[0]?.disconnect).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(1);
     await failure;
+  });
+
+  it("gives an app that answered before only 3 s", async () => {
+    const first = await connectAnswered();
+    first.port.drop();
+    await first.connection.closed;
+    const pending = mod.connect();
+    const failure = expect(pending).rejects.toMatchObject({ code: "AppMissing" });
+    await vi.advanceTimersByTimeAsync(2999);
+    await settle();
+    expect(fakeBrowser.ports[1]?.disconnect).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
+    await failure;
+  });
+
+  it("Internal when the hello reply answers another id", async () => {
+    const pending = mod.connect();
+    const failure = expect(pending).rejects.toMatchObject({ code: "Internal" });
+    await settle();
+    const port = fakeBrowser.ports[0] as FakePort;
+    port.receive(helloEnvelope("not-our-hello"));
+    await failure;
+    expect(port.disconnect).toHaveBeenCalled();
   });
 
   it("opens a fresh port after a failed attempt", async () => {

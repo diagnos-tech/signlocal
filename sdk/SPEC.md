@@ -84,7 +84,8 @@ outdated:false}, remembered:false, ready:false}`. Incompatible protocol →
 §3. Else send `status`; reply `status` (`PageStatus`) → map; `error
 AppMissing` → `app.installed=false`; other errors → `app.installed=true,
 outdated = code === "AppOutdated"`. The extension answers `status` itself,
-so no reply within 5 s means it hung: abort (posting `cancel`) and report the
+so no reply within 10 s (the extension needs up to 8 s + 1.5 s for an app's
+first start) means it hung: abort (posting `cancel`) and report the
 app as not installed. `ready = extension.installed && app.installed &&
 !app.outdated`.
 
@@ -138,8 +139,9 @@ Browser from the last announcement, else from `navigator.userAgentData`/UA
 (never throws, also without `navigator`): Chrome/Chromium/Brave/Opera/Vivaldi
 → `https://chromewebstore.google.com/detail/<CHROME_WEB_STORE_ID>` when set;
 Edge → `https://microsoftedge.microsoft.com/addons/detail/<EDGE_ADDONS_ID>`
-when set; Firefox → `https://addons.mozilla.org/firefox/addon/websign/`;
-otherwise, and while an ID is empty → `HOMEPAGE + "download"`. Constants come
+when set; Firefox → `https://addons.mozilla.org/firefox/addon/<FIREFOX_AMO_SLUG>/`
+when set (an unpublished slug can be claimed by anyone, so it is never
+guessed); otherwise, and while an ID is empty → `HOMEPAGE + "download.html"`. Constants come
 from the generated `project.ts`. Synchronous; posts nothing.
 
 ## 10. `onChange(listener)`

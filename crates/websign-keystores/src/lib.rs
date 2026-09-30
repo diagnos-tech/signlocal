@@ -21,6 +21,7 @@
     warn(clippy::unwrap_used, clippy::expect_used, clippy::panic)
 )]
 
+mod capabilities;
 pub mod contract;
 #[cfg(test)]
 mod fake;
@@ -36,6 +37,7 @@ pub mod windows;
 
 use log::trace;
 
+pub use capabilities::KeyCapabilities;
 pub use hub::{KeyRef, KeystoreHub};
 pub use model::{
     DeviceLink, FoundKey, KeystoreError, NcryptPreference, Options, PinPrompt, PinState,
@@ -69,6 +71,14 @@ pub trait Keystore {
     fn chain(&mut self, key: &FoundKey) -> Vec<Vec<u8>> {
         let _ = key;
         Vec::new()
+    }
+
+    /// Which algorithms the store can produce with `key` (`SPEC.md` §1 rule
+    /// 10). Never prompts, never logs in; the host intersects it with what
+    /// the key type allows. The default suits sources that cannot tell.
+    fn capabilities(&mut self, key: &FoundKey) -> KeyCapabilities {
+        let _ = key;
+        KeyCapabilities::ALL
     }
 
     /// The PIN state of `key`'s token, without logging in. `None` for keys

@@ -68,11 +68,7 @@ pub(super) fn handle(model: &mut ConfirmModel, input: UserInput, now: Instant) -
 
 impl ConfirmModel {
     fn set_remember(&mut self, checked: bool) {
-        if self
-            .request
-            .as_ref()
-            .is_some_and(|request| !request.remembered && request.can_remember)
-        {
+        if self.may_remember() {
             self.remember = checked;
         }
     }

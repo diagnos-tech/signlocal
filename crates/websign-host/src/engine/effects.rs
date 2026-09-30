@@ -1,6 +1,5 @@
 //! Doing what a flow asked for, and what follows when it ends.
 
-use websign_protocol::limits::DIGEST_TIMEOUT;
 use websign_protocol::{AppEnvelope, AppMessage, ErrorCode, RequestId, WireError};
 use websign_ui_model::confirm::port::RequestKey;
 
@@ -74,14 +73,14 @@ impl Engine {
         self.ports.keys.send(command);
     }
 
-    /// After anything happened to `key`: track the digest deadline; when the
-    /// request is done, forget it and let the next one on.
+    /// After anything happened to `key`: track the digest and chain waits;
+    /// when the request is done, forget it and let the next one on.
     fn settle(&mut self, key: RequestKey) {
         let now = self.ports.clock.now();
         let Some(request) = self.requests.get_mut(&key) else {
             return;
         };
-        request.track_digest(now, DIGEST_TIMEOUT);
+        request.track_waits(now);
         if request.is_done() {
             self.finish(key);
         }

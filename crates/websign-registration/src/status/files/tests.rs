@@ -13,7 +13,7 @@ const HOST: &str = "/usr/bin/websign";
 
 fn register(home: &Path, browsers: &[Browser], host: &str) {
     let host = PathBuf::from(host);
-    let origins = crate::manifest::allowed_origins(&[]).unwrap();
+    let origins = crate::manifest::allowed_origins();
     let context = Context {
         host: &host,
         origins: &origins,

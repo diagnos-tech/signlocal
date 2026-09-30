@@ -78,6 +78,9 @@ blocked_http = "Diese Website verwendet keine sichere Verbindung (https). Zu Ihr
 signed_by = "Signiert von {signer}"
 # Under a desktop program's name when its signature could not be verified.
 unverified = "Nicht verifiziertes Programm. Fahren Sie nur fort, wenn Sie es selbst gestartet haben."
+# Headline instead of the program name when it is an interpreter or shell
+# (node, python, bash, PowerShell…): {program} is its name.
+script_run_by = "Ein Skript, ausgeführt von {program}"
 
 [code]
 label = "Prüfcode"
@@ -187,8 +190,10 @@ locked_body_generic = "Der Token wurde nach zu vielen Fehlversuchen gesperrt. En
 [consent]
 remember = "Diese Website auf diesem Computer merken"
 remember_app = "Dieses Programm auf diesem Computer merken"
-remember_help = "Sie kann dann sehen, welches Zertifikat Sie verwenden, ohne nachzufragen. Jede Signatur erfordert weiterhin Ihre Bestätigung."
+remember_help = "Sie kann dann das jetzt gewählte Zertifikat sehen, ohne nachzufragen. Jede Signatur erfordert weiterhin Ihre Bestätigung."
 remember_disabled = "Numerische Adressen oder Adressen mit Sonderzeichen können nicht gemerkt werden."
+# Under the disabled checkbox when the caller is an interpreter or shell.
+remember_disabled_script = "Programme, die Skripte ausführen, können nicht gemerkt werden: Jedes Skript, das sie ausführen, wäre erlaubt."
 select_shares = "Die Website erhält Name, Art, Aussteller und Gültigkeit des gewählten Zertifikats. Es wird jetzt nichts signiert."
 
 [action]
@@ -415,6 +420,12 @@ body = "Diese Website verwendet kein https. Zu Ihrer Sicherheit signiert WebeSig
 [errors.timeout]
 title = "Die Anfrage ist abgelaufen"
 body = "Innerhalb von 5 Minuten hat niemand geantwortet. Kehren Sie zur Website zurück und versuchen Sie es erneut."
+
+# The site did not send the document to sign within 60 s. {site} is the
+# host or program name.
+[errors.digest_timeout]
+title = "Die Website hat nicht geantwortet"
+body = "{site} hat das Dokument nicht innerhalb von 60 Sekunden vorbereitet. Kehren Sie zur Website zurück und versuchen Sie es erneut."
 
 [errors.no_certificates]
 title = "Keine Zertifikate gefunden"

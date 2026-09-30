@@ -1,6 +1,6 @@
 //! Who is asking, established by the transport — never by the payload.
 
-use websign_core::present::caller::{DesktopCaller, consent_key};
+use websign_core::present::caller::{DesktopCaller, consent_key, runs_scripts};
 use websign_core::present::origin::{FormattedOrigin, OriginError, format_origin};
 use websign_protocol::types::{BrowserInfo, WebContext};
 
@@ -44,11 +44,13 @@ impl Caller {
         }
     }
 
-    /// Whether "Remember" may be offered (not for IP or IDN origins).
+    /// Whether "Remember" may be offered: not for IP or IDN origins, and
+    /// not for interpreters and shells, whose consent would cover every
+    /// script they run.
     pub fn can_remember(&self) -> bool {
         match self {
             Caller::Web { origin, .. } => origin.can_remember,
-            Caller::Desktop(_) => true,
+            Caller::Desktop(program) => !runs_scripts(program),
         }
     }
 }

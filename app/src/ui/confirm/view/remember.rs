@@ -1,6 +1,7 @@
 //! "Remember this site / program on this computer" (`docs/ux.md` §4.10):
 //! unchecked by default; disabled, with the reason, for numeric and IDN
-//! addresses; absent for callers already remembered.
+//! addresses and for interpreters and shells; absent when the selected
+//! certificate is already in the caller's consent.
 
 use egui::Ui;
 use websign_i18n::k;
@@ -23,7 +24,13 @@ pub fn show(ui: &mut Ui, s: &mut Screen<'_>) {
     .to_string();
     let (checked, enabled, help) = match s.view.remember {
         RememberBox::Enabled { checked } => (checked, true, tr.tr(k::CONSENT_REMEMBER_HELP)),
-        RememberBox::Disabled => (false, false, tr.tr(k::CONSENT_REMEMBER_DISABLED)),
+        RememberBox::Disabled => {
+            let reason = match s.view.header.caller {
+                CallerView::Web { .. } => k::CONSENT_REMEMBER_DISABLED,
+                CallerView::Desktop { .. } => k::CONSENT_REMEMBER_DISABLED_SCRIPT,
+            };
+            (false, false, tr.tr(reason))
+        }
         RememberBox::Hidden => return,
     };
     let response = checkbox::show(ui, checked, enabled, &label, &help.to_string());

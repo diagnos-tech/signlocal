@@ -27,6 +27,19 @@ pub struct ConfirmView {
     pub footer: FooterView,
     /// "Looking for certificates…", only in `LoadingCerts`.
     pub loading: Option<LoadingView>,
+    /// In `Timeout`: which wait ran out, so the notice blames the right
+    /// party.
+    pub expiry: Option<Expiry>,
+}
+
+/// Which wait ran out.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Expiry {
+    /// Nobody decided within the decision timeout (5 minutes).
+    Decision,
+    /// The site did not prepare the document within the digest timeout
+    /// (60 s).
+    Digest,
 }
 
 /// The list's place while the key stores are read (`docs/ux.md` §4.8).

@@ -14,15 +14,24 @@ export { WebSign } from "./client.js";
 export { WebSignError } from "./errors.js";
 export type {
   AppInfo,
-  CertificateFilter,
   CertificateProfile,
+  CurveName,
   DiagnosticsTab,
+  EidasType,
   ErrorCode,
   ErrorDetails,
-  HashName,
   KeyDescription,
-  SignatureAlgorithmName,
+  KeyStorage,
   StatusReply,
 } from "./generated/index.js";
 export { findExecutable } from "./locate.js";
-export type { Certificate, ConnectOptions, SignOptions, SignResult } from "./types.js";
+export type {
+  Certificate,
+  CertificateOptions,
+  ConnectOptions,
+  HashAlgorithm,
+  PrepareContext,
+  SignatureAlgorithm,
+  SignOptions,
+  SignResult,
+} from "./types.js";

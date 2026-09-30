@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validatePageRequest } from "../src/shared/validate";
+import { digestFitsHash, validatePageRequest } from "../src/shared/validate";
 
 const digest = (chars: number): string => `${"A".repeat(chars - 1)}=`;
 const fingerprint = "ab".repeat(32);
@@ -163,5 +163,18 @@ describe("validatePageRequest: the page cannot smuggle fields", () => {
   it("ignores inherited properties", () => {
     const input = Object.create({ type: "status" }) as unknown;
     expect(validatePageRequest(input)).toBeNull();
+  });
+});
+
+describe("digestFitsHash", () => {
+  it.each([
+    ["SHA-256", 44],
+    ["SHA-384", 64],
+    ["SHA-512", 88],
+  ] as const)("%s takes exactly %i Base64 characters", (hash, length) => {
+    expect(digestFitsHash(hash, digest(length))).toBe(true);
+    for (const other of [44, 64, 88].filter((n) => n !== length)) {
+      expect(digestFitsHash(hash, digest(other))).toBe(false);
+    }
   });
 });

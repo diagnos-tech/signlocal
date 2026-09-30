@@ -69,9 +69,9 @@ fn classify(
         },
         CTK_DOMAIN => match code {
             tk::CANCELED_BY_USER => KeystoreError::Cancelled,
-            // TODO(gustavo): confirm with a real token which userInfo entry
-            // carries the attempts left; until then a blocked PIN may be
-            // reported as WrongPin.
+            // Hardware check (docs/compatibility.md): which userInfo entry
+            // carries the attempts left is unconfirmed on real tokens, so a
+            // blocked PIN may still be reported as WrongPin.
             tk::AUTHENTICATION_FAILED if (details.remaining_attempts)() == Some(0) => {
                 KeystoreError::PinLocked
             }

@@ -10,7 +10,7 @@ async function connected(rules: Rule[]) {
 }
 
 describe("certificates are decoded at the boundary", () => {
-  it("certificates() returns der and chain as bytes, other fields as sent", async () => {
+  it("certificates() returns der and chain as bytes, validity as Date, other fields as sent", async () => {
     const { websign } = await connected([
       { on: "choose", do: [send({ type: "choose.result", certificates: [withBytes] })] },
     ]);
@@ -22,7 +22,9 @@ describe("certificates are decoded at the boundary", () => {
       [1, 2, 3],
       [4, 5, 6],
     ]);
-    const { der: _der, chain: _chain, ...rest } = withBytes;
+    expect(certificate?.notBefore).toEqual(new Date(withBytes.notBefore * 1000));
+    expect(certificate?.notAfter).toEqual(new Date(withBytes.notAfter * 1000));
+    const { der: _der, chain: _chain, notBefore: _nb, notAfter: _na, ...rest } = withBytes;
     expect(certificate).toMatchObject(rest);
   });
 
@@ -73,6 +75,7 @@ describe("certificates are decoded at the boundary", () => {
     ["non-canonical der", { ...CERTIFICATE, der: "AQI" }],
     ["a chain entry that is not Base64", { ...CERTIFICATE, chain: ["**"] }],
     ["a missing chain", { ...CERTIFICATE, chain: undefined }],
+    ["a validity date that is not a number", { ...CERTIFICATE, notAfter: "soon" }],
   ])("certificates() rejects Internal on %s", async (_name, certificate) => {
     const { websign } = await connected([
       { on: "choose", do: [send({ type: "choose.result", certificates: [certificate] })] },

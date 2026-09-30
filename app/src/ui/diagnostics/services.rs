@@ -63,7 +63,6 @@ impl Os for RealOs {
             scope: Scope::User,
             browsers: vec![BrowserChoice::All],
             user_data_dir: None,
-            extension_ids: Vec::new(),
             manifest_dir: None,
             host: None,
             dry_run: false,

@@ -36,7 +36,7 @@ const fn constant(
     }
 }
 
-const CONSTANTS: [Constant; 9] = [
+const CONSTANTS: [Constant; 10] = [
     constant(
         "PRODUCT_NAME",
         "product",
@@ -74,6 +74,12 @@ const CONSTANTS: [Constant; 9] = [
         "Edge Add-ons product ID; empty until published.",
     ),
     constant(
+        "FIREFOX_AMO_SLUG",
+        "extension",
+        "firefox_amo_slug",
+        "addons.mozilla.org listing slug; empty until published.",
+    ),
+    constant(
         "MIN_APP_VERSION",
         "extension",
         "min_app_version",
@@ -99,7 +105,12 @@ const TARGETS: [(&str, Option<&[&str]>); 3] = [
     ("clients/node/src/generated/project.ts", None),
     (
         "sdk/src/project.ts",
-        Some(&["CHROME_WEB_STORE_ID", "EDGE_ADDONS_ID", "HOMEPAGE"]),
+        Some(&[
+            "CHROME_WEB_STORE_ID",
+            "EDGE_ADDONS_ID",
+            "FIREFOX_AMO_SLUG",
+            "HOMEPAGE",
+        ]),
     ),
 ];
 
@@ -159,6 +170,7 @@ firefox_id = "f@x"
 dev_id = "abc"
 chrome_web_store_id = ""
 edge_addons_id = ""
+firefox_amo_slug = ""
 min_app_version = "0.1.0"
 dev_key = "K"
 "#;

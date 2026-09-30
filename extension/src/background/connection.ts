@@ -1,6 +1,8 @@
 /**
  * The native messaging port: opened on demand, `hello` first, kept open
- * while used, closed after EXTENSION_IDLE_CLOSE (60 s) without traffic.
+ * while used, closed after EXTENSION_IDLE_CLOSE (60 s) without traffic. The
+ * first `hello` of a background's life gets FIRST_HELLO_TIMEOUT_MS, later
+ * ones HELLO_TIMEOUT_MS (limits.ts says why).
  * Promotes the proven logic of docs/prototypes/kit/extension/native-host.js.
  *
  * Starting the app costs a process launch (and a driver load), so the port
@@ -11,7 +13,12 @@
 import { browser } from "wxt/browser";
 import type { AppEnvelope, ClientEnvelope, HelloReason, HelloReply } from "../generated";
 import { NATIVE_HOST } from "../generated";
-import { HELLO_TIMEOUT_MS, IDLE_CLOSE_MS, PROTOCOL_VERSION } from "../shared/limits";
+import {
+  FIRST_HELLO_TIMEOUT_MS,
+  HELLO_TIMEOUT_MS,
+  IDLE_CLOSE_MS,
+  PROTOCOL_VERSION,
+} from "../shared/limits";
 import { AppError, closedCode } from "./app-error";
 import { detectBrowser } from "./browser";
 
@@ -31,6 +38,8 @@ const FINAL_TYPES = new Set(["hello", "status", "choose.result", "sign.result", 
 const CONTINUATIONS = new Set(["sign.digest", "cancel"]);
 
 let active: Promise<Connection> | null = null;
+/** Whether the app has completed a `hello` since this background started. */
+let answeredBefore = false;
 
 /** Anything that looks like an envelope; content is checked by whoever reads it. */
 function isEnvelope(value: unknown): value is AppEnvelope {
@@ -97,11 +106,16 @@ function open(reason: HelloReason, forget: () => void): Promise<Connection> {
 
     const accept = (message: AppEnvelope) => {
       if (message.type === "hello") {
+        if (message.id !== HELLO_ID) {
+          fail(new AppError("Internal", "the app answered a hello we did not send"));
+          return;
+        }
         if (message.protocol !== PROTOCOL_VERSION) {
           fail(new AppError("Internal", "the app chose a protocol version we do not speak"));
           return;
         }
         ready = true;
+        answeredBefore = true;
         clearTimeout(helloTimer);
         openIds.delete(HELLO_ID);
         armIdle();
@@ -155,9 +169,12 @@ function open(reason: HelloReason, forget: () => void): Promise<Connection> {
       end(why);
       if (!wasReady) reject(new AppError(closedCode(heard), why));
     });
+    // A host that started but never said a word is as unusable as a missing
+    // one, and the remedy is the same (install or repair the app), so it is
+    // reported like a host that closed silently: AppMissing, not Internal.
     helloTimer = setTimeout(
-      () => fail(new AppError("Internal", "the app did not respond")),
-      HELLO_TIMEOUT_MS,
+      () => fail(new AppError(closedCode(heard), "the app did not respond")),
+      answeredBefore ? HELLO_TIMEOUT_MS : FIRST_HELLO_TIMEOUT_MS,
     );
     void detectBrowser().then((identity) => {
       if (ended) return;

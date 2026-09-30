@@ -115,8 +115,7 @@ impl Engine {
             .iter()
             .filter(|(_, request)| {
                 let decided = request.deadline().is_some_and(|deadline| now >= deadline);
-                let digest = request.digest_wait.is_some_and(|(_, at)| now >= at);
-                decided || digest
+                decided || request.wait_expired(now)
             })
             .map(|(key, _)| *key)
             .collect();
@@ -124,7 +123,13 @@ impl Engine {
             let effects = self
                 .requests
                 .get_mut(&key)
-                .map(|request| request.end(ErrorCode::Timeout))
+                .map(|request| {
+                    if request.deadline().is_some_and(|deadline| now >= deadline) {
+                        request.end(ErrorCode::Timeout)
+                    } else {
+                        request.expire_waits(now)
+                    }
+                })
                 .unwrap_or_default();
             self.perform(key, effects);
         }

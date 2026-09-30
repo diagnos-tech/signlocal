@@ -6,7 +6,8 @@ edition.workspace = true
 rust-version.workspace = true
 license = "Apache-2.0"
 repository.workspace = true
-# Publishing is a release decision; the crate is ready for crates.io.
+# Publishing is a release decision; websign-protocol and websign-project must
+# be published first (both are self-contained).
 publish.workspace = true
 keywords = ["signature", "pkcs11", "smartcard", "pades", "icp-brasil"]
 categories = ["cryptography", "api-bindings"]

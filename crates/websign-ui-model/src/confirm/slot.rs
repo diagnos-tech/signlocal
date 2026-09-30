@@ -13,7 +13,8 @@ pub(super) const SKELETON_DELAY: Duration = Duration::from_millis(150);
 pub(super) enum CodeSlot {
     /// Nothing to show yet, or choose mode.
     None,
-    /// A caller that is not remembered has not pressed Continue (D11).
+    /// The selected certificate is not in the caller's consent and the
+    /// person has not pressed Continue (D11).
     Hint,
     /// The digest was asked for at this instant.
     Preparing(Instant),

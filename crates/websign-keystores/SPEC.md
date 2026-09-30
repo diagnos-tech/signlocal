@@ -125,7 +125,8 @@ cost. Otherwise, only for hardware keys of Microsoft's minidriver providers
 they answer from the card's public container map, never show UI and never
 need the PIN, which keeps §1 rule 1. Third-party providers are never asked
 while listing. → `Reader { name: anonymous_reader_name }`; unknown → `None`.
-`TODO(gustavo)`: confirm with real cards that the query adds no UI or delay.
+Hardware check (docs/compatibility.md): confirm with real cards that the
+query adds no UI or delay.
 
 ### 4.4 `chain` (NEW)
 
@@ -162,7 +163,8 @@ network evaluation, leaf excluded, at most 8.
 ### 5.4 PIN blocked (NEW)
 
 `TKErrorCodeAuthenticationFailed` with zero remaining attempts in `userInfo`
-→ `PinLocked` (`TODO(gustavo)`: confirm with a real token).
+→ `PinLocked` (hardware check in docs/compatibility.md: confirm with a real
+token which `userInfo` entry carries the attempts left).
 
 ## 6. `KeystoreHub` (NEW)
 

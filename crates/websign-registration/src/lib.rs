@@ -68,8 +68,6 @@ pub struct Request {
     /// `--user-data-dir=<DIR>`), for tests that must not touch real profiles.
     /// Not usable on Windows.
     pub user_data_dir: Option<PathBuf>,
-    /// Extra Chromium extension IDs to allow (tests, forks).
-    pub extension_ids: Vec<String>,
     /// Windows: folder for the manifest files the registry keys point to
     /// (default `%LOCALAPPDATA%\<slug>\NativeMessagingHosts`).
     pub manifest_dir: Option<PathBuf>,
@@ -86,8 +84,6 @@ pub enum RegistrationError {
     Unsupported(String),
     #[error("{0}")]
     Environment(String),
-    #[error("invalid extension ID: {0}")]
-    ExtensionId(String),
 }
 
 /// What happened at each target.
@@ -114,8 +110,7 @@ pub fn run(request: &Request) -> Result<Report, RegistrationError> {
         Some(host) => host.clone(),
         None => host_binary()?,
     };
-    let origins = manifest::allowed_origins(&request.extension_ids)
-        .map_err(|error| RegistrationError::ExtensionId(format!("{error:#}")))?;
+    let origins = manifest::allowed_origins();
     let context = destination::Context {
         host: &host,
         origins: &origins,

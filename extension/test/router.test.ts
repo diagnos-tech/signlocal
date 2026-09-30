@@ -75,6 +75,35 @@ describe("route: forwarding", () => {
     ]);
   });
 
+  it("forwards a digest whose length fits the request's hash", async () => {
+    await send({ type: "sign.begin", hash: "SHA-512" });
+    await send({ type: "sign.digest", seq: 1, digest: `${"A".repeat(86)}==` });
+    expect(conn.sent.map((m) => m.type)).toEqual(["sign.begin", "sign.digest"]);
+    expect(replies).toEqual([]);
+  });
+
+  it.each([
+    ["SHA-384", `${"A".repeat(43)}=`],
+    ["SHA-256", `${"A".repeat(86)}==`],
+  ] as const)("ends a %s request whose digest has another hash's length", async (hash, digest) => {
+    await send({ type: "sign.begin", hash });
+    await send({ type: "sign.digest", seq: 1, digest });
+    expect(conn.sent.map((m) => [m.type, m.id])).toEqual([
+      ["sign.begin", "5.0.p1"],
+      ["cancel", "5.0.p1"],
+    ]);
+    expect(replies).toMatchObject([{ type: "error", code: "InvalidRequest" }]);
+    await send({ type: "sign.digest", seq: 1, digest: `${"A".repeat(62)}==` });
+    expect(conn.sent).toHaveLength(2);
+  });
+
+  it("drops a digest sent for a request that is not a signature", async () => {
+    await send({ type: "choose" });
+    await send({ type: "sign.digest", seq: 1, digest: `${"A".repeat(43)}=` });
+    expect(conn.sent.map((m) => m.type)).toEqual(["choose", "cancel"]);
+    expect(replies).toMatchObject([{ type: "error", code: "InvalidRequest" }]);
+  });
+
   it("keeps the same page id in different frames or tabs apart", async () => {
     await send({ type: "choose" }, "p1", sender(5, 0));
     await send({ type: "choose" }, "p1", sender(5, 2));
@@ -186,7 +215,7 @@ describe("route: status is answered by the extension", () => {
 });
 
 describe("route: status when the app stays silent", () => {
-  it("answers with the hello's app and remembered false after 1.5 s (inside the SDK's 5 s)", async () => {
+  it("answers with the hello's app and remembered false after 1.5 s (inside the SDK's 10 s)", async () => {
     vi.useFakeTimers();
     try {
       router.route(sender(), "p1", { type: "status" }, reply);

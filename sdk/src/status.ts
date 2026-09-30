@@ -3,8 +3,13 @@ import type { PageReply } from "./generated/index.js";
 import { isCompatible } from "./request.js";
 import type { Status } from "./types.js";
 
-/** The extension answers `status` itself; this only bounds a hung extension. */
-const STATUS_TIMEOUT_MS = 5000;
+/**
+ * The extension answers `status` itself; this only bounds a hung extension.
+ * It outlasts the extension's worst case, the 8 s it gives an app launched
+ * for the first time plus the 1.5 s it waits for the app's answer, so a slow
+ * but healthy first start is not reported as a missing app.
+ */
+const STATUS_TIMEOUT_MS = 10_000;
 
 type AppState = Status["app"];
 

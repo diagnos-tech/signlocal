@@ -25,13 +25,26 @@ Same search order as the Node client §1.
   `n1`, `n2`, …; one request open at a time. A reply for another id, an
   unexpected message type, a broken pipe → `Connection`, after which the
   client refuses every call.
+- Options mirror the SDK's in Rust types: `SignOptions { hash, algorithms,
+  certificate }` with builders `algorithm(a)`, `algorithms(iter)`,
+  `certificate(&Certificate)` (sends its fingerprint) and
+  `fingerprint(FingerprintHex)`. `algorithms` is a set in preference order:
+  duplicates dropped (order kept), empty = absent (the app's default
+  preference, any algorithm accepted). `certificates(&[algorithm])` sends
+  `choose` with the same set as its filter (empty = no filter); an empty
+  `choose.result` → `App { NoCertificates }`.
 - `sign`: `sign.begin`; for each `need_digest`: a `hash` other than the
-  requested one → `cancel`, `Connection`; call `prepare(&certificate,
-  algorithm)`; `Err(e)` → `cancel`, `Prepare(e)`; digest length ≠
-  `hash.digest_len()` → `cancel`, `App { InvalidRequest }`; else
-  `sign.digest`. Final `sign.result` → `Ok`; `error` → `App`. After a
-  `cancel` the client waits at most 5 s in total for the request's final
-  message, else the connection is abandoned (`Connection` on the next call).
+  requested one, or an `algorithm` outside a non-empty requested set →
+  `cancel`, `App { InvalidRequest }`, `prepare` not called; call
+  `prepare(&certificate, PrepareContext { hash, algorithm })`; `Err(e)` →
+  `cancel`, `Prepare(e)`; digest length ≠ `hash.digest_len()` → `cancel`,
+  `App { InvalidRequest }`; else `sign.digest`. Final `sign.result` → `Ok`;
+  `error` → `App`. After a `cancel` the client waits at most 5 s in total
+  for the request's final message, else the connection is abandoned
+  (`Connection` on the next call).
+- Public surface: `ErrorCode`, the certificate and status types and
+  everything the crate docs' examples use are re-exported, so callers need
+  no direct `websign-protocol` dependency.
 - `Drop`: close stdin, wait up to 5 s, then kill; never blocks longer.
 - Errors and `Debug` never contain the executable path, digests or
   certificate bodies (`Certificate`'s own `Debug` is the protocol crate's).

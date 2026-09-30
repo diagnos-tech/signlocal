@@ -75,7 +75,13 @@ describe("manifestFor", () => {
 describe("content script registration (SPEC §1)", () => {
   it("matches secure contexts only, in all frames, at document_start", () => {
     expect([...(content.matches as string[])].sort()).toEqual(
-      ["http://127.0.0.1/*", "http://[::1]/*", "http://localhost/*", "https://*/*"].sort(),
+      [
+        "http://*.localhost/*",
+        "http://127.0.0.1/*",
+        "http://[::1]/*",
+        "http://localhost/*",
+        "https://*/*",
+      ].sort(),
     );
     expect(content.allFrames).toBe(true);
     expect(content.runAt).toBe("document_start");

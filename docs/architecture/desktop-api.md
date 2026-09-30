@@ -29,7 +29,7 @@ macOS: `/Applications/WebeSign.app/Contents/MacOS/websign` — see
 | `websign` (no arguments) | open diagnostics (what the app menu entry runs) | window |
 | `websign install [--browser B]… [--system] [--dry-run] [--json]` | register with browsers, the `websign:` scheme, extension pre-registration (Windows), app-menu entry (Linux) | text or JSON report |
 | `websign uninstall [--purge] [--system] [--dry-run] [--json]` | undo `install` (`--purge` also deletes settings and remembered sites) | text or JSON |
-| `websign register [--browser B]… [--uninstall] [--scope user\|system] [--user-data-dir DIR] [--extension-id ID]… [--manifest-dir DIR] [--dry-run] [--json]` | manifests only (tests, support) | one line per target |
+| `websign register [--browser B]… [--uninstall] [--scope user\|system] [--user-data-dir DIR] [--manifest-dir DIR] [--dry-run] [--json]` | manifests only (tests, support) | one line per target |
 | `websign doctor [--json]` | the "Copy diagnostics" report | text (docs/ux.md §8.7) or JSON |
 | `websign diagnostics [--tab browsers\|devices\|certificates\|help]` | open the diagnostics window | window |
 | `websign sign --hash H (--digest D \| --digest-file PATH\|-) [--algorithm A]… [--certificate FP]` | one signature | JSON (§3) |
@@ -47,6 +47,10 @@ Browsers `B`: `all`, `chrome`, `chromium`, `edge`, `brave`, `vivaldi`, `opera`,
 
 The app also repeats `register` silently on every start of the diagnostics
 window, so a browser installed later is picked up without reinstalling.
+
+Manifests allow only the extension IDs in `project.toml`; there is no flag to
+add others, because the app refuses to serve any other ID (T2 in
+[security.md](security.md)).
 
 ## 3. JSON output of `sign` and `choose`
 
@@ -120,6 +124,14 @@ programs.
 
 ## 7. Client libraries
 
+Both libraries follow the web SDK's model ([web-api.md](web-api.md)): the
+same options (`hash`, `algorithm` as one name or a preference-ordered set,
+`certificate` to preselect by certificate or fingerprint), `prepare`
+receiving the certificate plus `{ hash, algorithm }`, and the same error
+codes. Each checks every `sign.need_digest` before `prepare` runs: a hash
+other than the requested one, or an algorithm outside the requested set,
+cancels the request with `InvalidRequest`.
+
 ### `@websign/desktop` (Apache-2.0, zero runtime deps)
 
 ```ts
@@ -128,45 +140,54 @@ import { WebSign } from "@websign/desktop";
 const websign = await WebSign.connect();            // AppMissing if not installed
 const result = await websign.sign({
   hash: "SHA-256",
-  prepare: async (certificate, algorithm) => digestFor(certificate.der, algorithm),
+  algorithm: ["ECDSA", "RSASSA-PSS"],               // optional; one name or a list
+  prepare: async (certificate, { algorithm }) => digestFor(certificate.der, algorithm),
 });
 await websign.close();
 ```
 
-Also `status()`, `certificates(filter?)`, `openDiagnostics(tab?)`,
-`findExecutable()`. Types are the generated protocol types, except that the
-Base64 fields are decoded once on arrival: `Certificate.der`/`chain` and
-`SignResult.signature` are `Uint8Array`. ESM, `require()` too, Node ≥ 20.19. Contract: [`clients/node/SPEC.md`](../../clients/node/SPEC.md).
+Also `status()`, `certificates({ algorithm?, signal? })`,
+`openDiagnostics(tab?)`, `findExecutable()`. The public types are the SDK's
+(`Certificate`, `SignOptions`, `SignResult`, `PrepareContext`,
+`HashAlgorithm`, `SignatureAlgorithm`): `Certificate.der`/`chain` and
+`SignResult.signature` are `Uint8Array`, `notBefore`/`notAfter` are `Date`.
+ESM, `require()` too, Node ≥ 20.19. Contract:
+[`clients/node/SPEC.md`](../../clients/node/SPEC.md).
 
 ### `websign-client` (Rust, Apache-2.0)
 
 ```rust
-use websign_client::{Client, HashName, SignOptions};
+use websign_client::{Client, HashName, SignOptions, SignatureAlgorithmName};
 
 let mut client = Client::connect()?;                 // ClientError::AppMissing if not installed
-let result = client.sign(SignOptions::new(HashName::Sha256), |certificate, algorithm| {
-    Ok(digest_for(certificate.der.as_bytes(), algorithm)) // Err(String) cancels in the app
+let options = SignOptions::new(HashName::Sha256).algorithm(SignatureAlgorithmName::Ecdsa);
+let result = client.sign(options, |certificate, context| {
+    Ok(digest_for(certificate.der.as_bytes(), context.algorithm)) // Err(String) cancels in the app
 })?;
 let signature: &[u8] = result.signature.as_bytes();
 // Dropping `client` closes the app's stdin and reaps it.
 ```
 
-Also `status()`, `certificates(filter)`, `open_diagnostics(tab)`,
-`find_executable()`, `connect_with(ConnectOptions)`. Types are the protocol
-crate's; Base64 fields are decoded on arrival: `Certificate.der`/`chain` and
-`SignResult.signature` are `Base64Bytes` (`as_bytes() -> &[u8]`,
-`into_bytes() -> Vec<u8>`). `Client` is `Send`; `ClientError` is
-`Send + Sync` with `code()` returning the protocol's `ErrorCode`. Blocking
-API over `std::process`; depends on the Apache-2.0 crates `websign-protocol`
-(the wire contract) and `websign-project` (product name and executable
-name). Contract: [`clients/rust/SPEC.md`](../../clients/rust/SPEC.md).
+Also `status()`, `certificates(&[algorithm])`, `open_diagnostics(tab)`,
+`find_executable()`, `connect_with(ConnectOptions)`; `SignOptions` builders
+`algorithms([..])`, `certificate(&chosen)`, `fingerprint(fp)`. Types are the
+protocol crate's, re-exported (with `ErrorCode`): Base64 fields are decoded
+on arrival (`Certificate.der`/`chain` and `SignResult.signature` are
+`Base64Bytes`, `as_bytes() -> &[u8]`), `not_before`/`not_after` are Unix
+seconds. `Client` is `Send`; `ClientError` is `Send + Sync` with `code()`
+returning the protocol's `ErrorCode`. Blocking API over `std::process`;
+depends on the Apache-2.0 crates `websign-protocol` (the wire contract) and
+`websign-project` (product and executable names), both self-contained and
+publishable. Contract: [`clients/rust/SPEC.md`](../../clients/rust/SPEC.md).
 
 ## 8. The `websign:` URL scheme
 
 `websign:activate` (from the website's `/activate` page) registers the app
 with every browser and opens diagnostics with "Getting started". It exists
-because store packages run no install scripts. Any other `websign:` URL only
-opens diagnostics; URLs never carry data the app acts on.
+because store packages run no install scripts. Any other `websign:` URL
+silently repairs the registrations that exist and opens diagnostics; URLs
+never carry data the app acts on. Both paths do the same work whether the URL
+arrives as an argument or as an event.
 
 Windows and Linux pass the URL as the last argument. macOS delivers it as an
 Apple Event (`kAEGetURL`), which the app handles once it has finished

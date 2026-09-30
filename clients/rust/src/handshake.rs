@@ -6,9 +6,9 @@ use websign_protocol::{
     AppMessage, ClientEnvelope, ErrorCode, ProtocolRange, RequestId, negotiate,
 };
 
-use crate::client::ConnectOptions;
 use crate::error::ClientError;
 use crate::locate::find_executable;
+use crate::options::ConnectOptions;
 use crate::session::{Expect, Session, Wait};
 use crate::timing::Timing;
 

@@ -60,8 +60,6 @@ fn register_flags() {
         "system",
         "--user-data-dir",
         "/tmp/p",
-        "--extension-id",
-        "abcdefghijklmnopabcdefghijklmnop",
         "--manifest-dir",
         "/tmp/m",
         "--dry-run",
@@ -73,7 +71,6 @@ fn register_flags() {
     assert_eq!(args.browsers, [BrowserArg::All]);
     assert_eq!(args.scope, ScopeArg::System);
     assert!(args.uninstall && args.dry_run && args.json);
-    assert_eq!(args.extension_ids.len(), 1);
     let Some(Command::Register(args)) = parse(&["register"]).unwrap() else {
         panic!("register");
     };

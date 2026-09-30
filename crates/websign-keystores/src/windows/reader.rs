@@ -26,9 +26,9 @@ pub fn device_link(location: &KeyLocation) -> Option<DeviceLink> {
     let name = match location.qualified_reader() {
         Some(reader) => reader.to_owned(),
         None if is_minidriver(location) => {
-            // TODO(gustavo): confirm with SafeNet, SafeSign, ePass2003 and
-            // Watchdata cards that this query shows no UI and adds no
-            // noticeable delay to listing.
+            // Hardware check (docs/compatibility.md): SafeNet, SafeSign,
+            // ePass2003 and Watchdata cards must show no UI and add no
+            // noticeable delay to listing here.
             if location.is_cng() {
                 reader_query::ksp_reader(location)?
             } else {

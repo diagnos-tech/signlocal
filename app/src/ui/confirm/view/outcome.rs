@@ -7,6 +7,7 @@ use egui::{Align, Layout, Ui, Vec2, WidgetInfo, WidgetType};
 use websign_i18n::k;
 use websign_ui_model::confirm::ConfirmState;
 use websign_ui_model::confirm::port::Mode;
+use websign_ui_model::confirm::view::Expiry;
 
 use super::Screen;
 use crate::ui::confirm::words;
@@ -43,6 +44,17 @@ pub fn show(ui: &mut Ui, s: &mut Screen<'_>) {
                 .arg("site", &site)
                 .to_string(),
             None,
+        ),
+        // The site's `prepare` hung, not the person: say so.
+        _ if s.view.expiry == Some(Expiry::Digest) => (
+            icons::EXPIRES_SOON,
+            c.warning,
+            tr.tr(k::ERRORS_DIGEST_TIMEOUT_TITLE).to_string(),
+            Some(
+                tr.tr(k::ERRORS_DIGEST_TIMEOUT_BODY)
+                    .arg("site", &site)
+                    .to_string(),
+            ),
         ),
         _ => (
             icons::EXPIRES_SOON,

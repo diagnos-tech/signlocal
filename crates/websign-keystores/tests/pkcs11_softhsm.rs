@@ -16,7 +16,7 @@ mod on_token {
     use websign_core::{Fingerprint, HashAlgorithm, SignatureAlgorithm, SourceKind};
     use websign_keystores::contract::{self, Fixture};
     use websign_keystores::{
-        DeviceLink, FoundKey, Keystore, KeystoreError, PinPrompt, SignRequest,
+        DeviceLink, FoundKey, KeyCapabilities, Keystore, KeystoreError, PinPrompt, SignRequest,
     };
 
     use crate::support::softhsm::SoftHsm;
@@ -144,6 +144,22 @@ mod on_token {
 
         keystore.end_sessions();
         assert!(!keystore.pin_state(&key).expect("PIN state").unlocked);
+    }
+
+    #[test]
+    #[ignore = "needs the SoftHSM2 token of softhsm_token"]
+    fn capabilities_come_from_the_mechanisms_without_a_login() {
+        let Some(token) = token() else { return };
+        let mut keystore = token.keystore();
+        let key = listed(keystore.as_mut(), &token.key("rsa-2048"));
+        // SoftHSM2 signs with CKM_RSA_PKCS, CKM_RSA_PKCS_PSS and CKM_ECDSA.
+        assert_eq!(keystore.capabilities(&key), KeyCapabilities::ALL);
+        assert!(!keystore.pin_state(&key).expect("PIN state").unlocked);
+        let nowhere = FoundKey {
+            locator: "not a locator".to_owned(),
+            ..key
+        };
+        assert_eq!(keystore.capabilities(&nowhere), KeyCapabilities::NONE);
     }
 
     #[test]

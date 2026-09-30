@@ -1,6 +1,7 @@
 //! `websign:activate` from the website's `/activate` page: register with
 //! every browser (stores run no install scripts), then open diagnostics with
-//! "Getting started". Any other `websign:` URL only opens diagnostics.
+//! "Getting started". Any other `websign:` URL repairs the registrations
+//! that exist, then opens diagnostics.
 //!
 //! A web page can open this URL without asking, so the worst it may cause
 //! is what the person could do from the app menu: registration repair and a
@@ -16,10 +17,7 @@ use crate::launch::UrlAction;
 /// Handles the URL action the OS passed.
 pub fn run(action: UrlAction) -> ExitCode {
     log::info!("started for a websign: URL ({action:?})");
-    match action {
-        UrlAction::Activate => super::install::activate_silently(),
-        UrlAction::Diagnostics => super::install::repair_silently(),
-    }
+    register(action);
     // Diagnostics shows "Getting started" while anything is left to do.
     super::diagnostics::open(None)
 }
@@ -39,14 +37,21 @@ pub fn on_url_event(url: &str) {
     let worker = std::thread::Builder::new()
         .name("url-event".to_owned())
         .spawn(move || {
-            if action == UrlAction::Activate {
-                super::install::activate_silently();
-            }
+            register(action);
             if open_window && let Err(error) = ProcessLauncher.open_diagnostics(None) {
                 log::warn!("url event: diagnostics did not start: {error}");
             }
         });
     if worker.is_err() {
         log::warn!("url event: no thread to handle it");
+    }
+}
+
+/// The registration work `action` asks for, the same for an argument and an
+/// event.
+fn register(action: UrlAction) {
+    match action {
+        UrlAction::Activate => super::install::activate_silently(),
+        UrlAction::Diagnostics => super::install::repair_silently(),
     }
 }

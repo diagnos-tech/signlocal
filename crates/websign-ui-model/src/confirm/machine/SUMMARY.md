@@ -1,5 +1,6 @@
 # crates/websign-ui-model/src/confirm/machine
 
+- `consent_tests.rs` — Per-certificate consent (D11): only consented certificates skip Continue; the remember box and the two timeouts.
 - `edge_tests.rs` — Result screens, the timeout countdown, the repaint deadlines and "View in system".
 - `error_tests.rs` — Errors and their recovery, queue and stale commands, the remember box.
 - `pin_and_list_tests.rs` — PIN outcomes, the empty list, choose mode, PIN blocks, a token removed while selected.

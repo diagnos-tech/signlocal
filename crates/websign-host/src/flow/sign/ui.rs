@@ -28,12 +28,16 @@ impl SignFlow {
         }
     }
 
-    /// The selection moved. A remembered caller gets the new certificate's
-    /// digest request at once; anyone else must press "Continue" again,
-    /// because each certificate is its own disclosure (D11).
+    /// The selection moved. A certificate in the caller's consent gets its
+    /// digest request at once; any other must wait for "Continue", because
+    /// each certificate is its own disclosure (D11): arrowing through the
+    /// list must never hand a site the rows it passes.
     fn selected(&mut self, fingerprint: Fingerprint) -> Vec<Effect> {
         let holds_it = match &self.state {
-            SignState::AwaitingDigest {
+            SignState::Releasing {
+                fingerprint: held, ..
+            }
+            | SignState::AwaitingDigest {
                 fingerprint: held, ..
             }
             | SignState::Ready {
@@ -45,7 +49,7 @@ impl SignFlow {
         if holds_it || !self.is_usable(&fingerprint) {
             return Vec::new();
         }
-        if self.remembered {
+        if self.is_consented(&fingerprint) {
             self.release(fingerprint)
         } else {
             self.state = SignState::Selecting {

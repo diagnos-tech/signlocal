@@ -38,12 +38,20 @@ pub fn caller() -> CallerView {
     }
 }
 
+/// A remembered caller's consent covers every fixture certificate
+/// (`fp(n)` for n below 32); a new caller's covers none.
+pub fn consent_of(remembered: bool) -> Vec<Fingerprint> {
+    let seeds = if remembered { 0..32 } else { 0..0 };
+    seeds.map(super::cert::fp).collect()
+}
+
 pub fn request(key: RequestKey, mode: Mode, remembered: bool) -> OpenRequest {
     OpenRequest {
         key,
         mode,
         caller: caller(),
         remembered,
+        consented: consent_of(remembered),
         can_remember: true,
         position: (1, 1),
         timeout_secs: 300,

@@ -9,6 +9,7 @@
 
 mod acquire;
 mod aes_reopen;
+mod capabilities;
 mod capi;
 mod cert_context;
 mod chain;

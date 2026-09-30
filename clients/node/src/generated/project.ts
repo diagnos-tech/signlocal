@@ -18,6 +18,9 @@ export const CHROME_WEB_STORE_ID = "";
 /** Edge Add-ons product ID; empty until published. */
 export const EDGE_ADDONS_ID = "";
 
+/** addons.mozilla.org listing slug; empty until published. */
+export const FIREFOX_AMO_SLUG = "";
+
 /** Oldest app version the extension accepts. */
 export const MIN_APP_VERSION = "0.1.0";
 

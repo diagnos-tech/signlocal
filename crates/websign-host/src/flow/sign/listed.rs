@@ -14,9 +14,12 @@ impl SignFlow {
     /// preselection (`sign.begin.certificate`, then the certificate last used
     /// here, then the first usable) is the window's own.
     ///
-    /// The first listing moves to `Selecting`, and for a remembered caller
-    /// releases the preselected certificate at once. Later ones only refresh
-    /// the window: the person's selection and any pending digest stay.
+    /// The first listing moves to `Selecting`, and releases the preselected
+    /// certificate at once only when the caller's consent covers it: a
+    /// remembered site preselects whatever the list rules pick (another
+    /// person's token on a shared computer, say), and that one waits for
+    /// Continue (D11). Later listings only refresh the window: the person's
+    /// selection and any pending digest stay.
     pub fn on_listed(&mut self, snapshot: &KeySnapshot, context: ListContext) -> Vec<Effect> {
         if matches!(self.state, SignState::Queued | SignState::Done) {
             return Vec::new();
@@ -29,7 +32,7 @@ impl SignFlow {
             self.state = SignState::Selecting {
                 selected: preselected,
             };
-            if let (true, Some(fingerprint)) = (self.remembered, preselected) {
+            if let Some(fingerprint) = preselected.filter(|fp| self.is_consented(fp)) {
                 effects.extend(self.release(fingerprint));
             }
         }

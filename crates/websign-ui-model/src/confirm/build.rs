@@ -44,6 +44,7 @@ pub(super) fn view(model: &ConfirmModel, now: Instant) -> ConfirmView {
             primary_first: cfg!(target_os = "windows"),
         },
         loading: loading(model, now),
+        expiry: model.expiry.filter(|_| model.state == ConfirmState::Timeout),
     }
 }
 
@@ -82,6 +83,7 @@ fn header(model: &ConfirmModel) -> HeaderView {
                     name: String::new(),
                     detail: String::new(),
                     verified: false,
+                    runs_scripts: false,
                 },
             },
             remembered: false,
@@ -112,8 +114,9 @@ fn code_card(model: &ConfirmModel, now: Instant) -> CodeCard {
 }
 
 fn remember_box(model: &ConfirmModel) -> RememberBox {
+    let selected = model.list.as_ref().and_then(|list| list.selected);
     match &model.request {
-        Some(request) if request.remembered => RememberBox::Hidden,
+        Some(_) if model.is_consented(selected) => RememberBox::Hidden,
         Some(request) if !request.can_remember => RememberBox::Disabled,
         Some(_) => RememberBox::Enabled {
             checked: model.remember,

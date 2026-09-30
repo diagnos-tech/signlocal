@@ -289,20 +289,41 @@ pub fn desktop(name: &str, verified: bool) -> CallerView {
             name: name.to_owned(),
             detail: "Diagnos Health Ltda".to_owned(),
             verified,
+            runs_scripts: false,
         },
     }
 }
 
+/// An interpreter as the caller: "A script run by {name}".
+pub fn script(name: &str) -> CallerView {
+    CallerView::Desktop {
+        label: CallerLabel {
+            name: name.to_owned(),
+            detail: format!("/usr/bin/{name}"),
+            verified: false,
+            runs_scripts: true,
+        },
+    }
+}
+
+/// A remembered caller's consent covers every fixture certificate; a new
+/// caller's covers none.
 pub fn request(mode: Mode, caller: CallerView, remembered: bool) -> OpenRequest {
     let can_remember = match &caller {
         CallerView::Web { origin, .. } => origin.can_remember,
-        CallerView::Desktop { .. } => true,
+        CallerView::Desktop { label } => !label.runs_scripts,
+    };
+    let consented = if remembered {
+        (0..=u8::MAX).map(fingerprint).collect()
+    } else {
+        Vec::new()
     };
     OpenRequest {
         key: KEY,
         mode,
         caller,
         remembered,
+        consented,
         can_remember,
         position: (1, 1),
         timeout_secs: 300,

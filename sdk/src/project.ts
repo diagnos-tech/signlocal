@@ -6,5 +6,8 @@ export const CHROME_WEB_STORE_ID = "";
 /** Edge Add-ons product ID; empty until published. */
 export const EDGE_ADDONS_ID = "";
 
+/** addons.mozilla.org listing slug; empty until published. */
+export const FIREFOX_AMO_SLUG = "";
+
 /** The project's site; its download page lists every way to install. */
 export const HOMEPAGE = "https://diagnos-tech.github.io/web-esign/";

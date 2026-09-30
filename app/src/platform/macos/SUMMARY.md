@@ -9,6 +9,7 @@
 - `mod.rs` — MacOS implementations of the [`crate::platform`] functions.
 - `objc.rs` — Typed `objc_msgSend` calls, run-time class definition and an autorelease pool guard, without a binding crate.
 - `peer.rs` — The audit token of the process at the other end of stdin, when stdin is a Unix socket.
+- `secure_input.rs` — Carbon's `EnableSecureEventInput`/`DisableSecureEventInput`, balanced by an RAII guard.
 - `settings.rs` — Reduce motion (`NSWorkspace`) and dark mode (`AppleInterfaceStyle`).
 - `system_ui.rs` — `SFCertificatePanel`, `.pfx` import through Keychain Access (with `file_picker`'s panel), URLs.
 - `url_events.rs` — The `kAEGetURL` Apple Event handler, installed when AppKit posts "will finish launching".

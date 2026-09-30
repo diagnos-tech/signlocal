@@ -15,7 +15,7 @@ fn host() -> PathBuf {
 
 fn install(registry: &MemoryRegistry, folder: &Path, browsers: &[Browser]) {
     let host = host();
-    let origins = crate::manifest::allowed_origins(&[]).unwrap();
+    let origins = crate::manifest::allowed_origins();
     let context = Context {
         host: &host,
         origins: &origins,

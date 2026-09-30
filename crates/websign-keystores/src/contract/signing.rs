@@ -1,4 +1,5 @@
-//! Checks on `sign` and `chain` for one key: `signs-every-combination`,
+//! Checks on `sign`, `capabilities` and `chain` for one key:
+//! `signs-every-combination`, `advertised-algorithms-sign`,
 //! `rejects-wrong-length`, `vanished-key`, `chain-best-effort`.
 
 use std::panic::{self, AssertUnwindSafe};
@@ -44,6 +45,17 @@ fn every_combination(
             format!("no algorithm for key {:?}", info.key),
         );
     }
+    let advertised = keystore.capabilities(key);
+    if !algorithms
+        .iter()
+        .any(|&algorithm| advertised.supports(algorithm))
+    {
+        report.fail(
+            "advertised-algorithms-sign",
+            Some(key),
+            "the store advertises nothing this key can do",
+        );
+    }
     let verifiable = match info.key {
         PublicKeyKind::Ec { curve } => curve.has_verifier(),
         _ => true,
@@ -70,9 +82,15 @@ fn every_combination(
                     }
                 }
                 Ok(_) => {}
-                // Legacy CSPs cannot do PSS (`SPEC.md` §4.2); every key can
-                // do PKCS#1 v1.5 or ECDSA.
-                Err(KeystoreError::Unsupported(_)) if algorithm == SignatureAlgorithm::RsaPss => {}
+                // What the host offers must sign (`SPEC.md` §1 rule 10).
+                Err(error) if advertised.supports(algorithm) => report.fail(
+                    "advertised-algorithms-sign",
+                    Some(key),
+                    format!("{label} is advertised but fails: {error}"),
+                ),
+                // A store may refuse what it does not advertise (PSS through
+                // legacy CAPI, `SPEC.md` §4.2), but only as `Unsupported`.
+                Err(KeystoreError::Unsupported(_)) => {}
                 Err(error) => report.fail(CHECK, Some(key), format!("{label}: {error}")),
             }
         }

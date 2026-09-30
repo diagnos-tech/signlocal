@@ -4,11 +4,12 @@ use std::path::PathBuf;
 
 use cryptoki::context::Pkcs11;
 
+use super::capabilities::SlotCapabilities;
 use super::locator::Locator;
 use super::sessions::Sessions;
 use super::signing::{self, Module};
 use super::{chain, finder, listing, objects, pin_state};
-use crate::{FoundKey, Keystore, KeystoreError, PinState, SignRequest, Signature};
+use crate::{FoundKey, KeyCapabilities, Keystore, KeystoreError, PinState, SignRequest, Signature};
 use log::trace;
 
 /// A module that is loaded and initialized; its tokens are read on demand.
@@ -17,6 +18,7 @@ use log::trace;
 pub struct Pkcs11Keystore {
     // First, so parked sessions log out before anything else is dropped.
     sessions: Sessions,
+    capabilities: SlotCapabilities,
     pkcs11: Pkcs11,
     module_file: String,
     path: PathBuf,
@@ -34,6 +36,7 @@ impl Pkcs11Keystore {
     pub fn new(pkcs11: Pkcs11, module_file: String, path: PathBuf) -> Self {
         Self {
             sessions: Sessions::default(),
+            capabilities: SlotCapabilities::default(),
             pkcs11,
             module_file,
             path,
@@ -58,6 +61,7 @@ impl Keystore for Pkcs11Keystore {
     }
 
     fn list(&mut self) -> Result<Vec<FoundKey>, KeystoreError> {
+        self.capabilities.clear();
         listing::list(&self.pkcs11, &self.name(), &self.module_file)
     }
 
@@ -81,6 +85,10 @@ impl Keystore for Pkcs11Keystore {
                 Vec::new()
             }
         }
+    }
+
+    fn capabilities(&mut self, key: &FoundKey) -> KeyCapabilities {
+        self.capabilities.of(&self.pkcs11, key)
     }
 
     fn pin_state(&mut self, key: &FoundKey) -> Option<PinState> {

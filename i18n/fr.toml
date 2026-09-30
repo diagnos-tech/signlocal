@@ -78,6 +78,9 @@ blocked_http = "Ce site n’utilise pas de connexion sécurisée (https). Pour v
 signed_by = "Signé par {signer}"
 # Under a desktop program's name when its signature could not be verified.
 unverified = "Programme non vérifié. Ne continuez que si vous l’avez lancé vous-même."
+# Headline instead of the program name when it is an interpreter or shell
+# (node, python, bash, PowerShell…): {program} is its name.
+script_run_by = "Un script exécuté par {program}"
 
 [code]
 label = "Code de vérification"
@@ -187,8 +190,10 @@ locked_body_generic = "Le jeton s’est bloqué après trop d’essais erronés.
 [consent]
 remember = "Mémoriser ce site sur cet ordinateur"
 remember_app = "Mémoriser ce programme sur cet ordinateur"
-remember_help = "Il pourra voir quel certificat vous utilisez sans demander. Chaque signature reste soumise à votre confirmation."
+remember_help = "Il pourra voir le certificat que vous choisissez maintenant sans demander. Chaque signature reste soumise à votre confirmation."
 remember_disabled = "Les adresses numériques ou contenant des caractères spéciaux ne peuvent pas être mémorisées."
+# Under the disabled checkbox when the caller is an interpreter or shell.
+remember_disabled_script = "Les programmes qui exécutent des scripts ne peuvent pas être mémorisés : chaque script qu’ils exécutent serait autorisé."
 select_shares = "Le site recevra le nom, le type, l’émetteur et la validité du certificat choisi. Rien n’est signé pour le moment."
 
 [action]
@@ -415,6 +420,12 @@ body = "Ce site n’utilise pas https. Pour votre sécurité, WebeSign ne signer
 [errors.timeout]
 title = "La demande a expiré"
 body = "Personne n’a répondu pendant 5 minutes. Retournez sur le site et réessayez."
+
+# The site did not send the document to sign within 60 s. {site} is the
+# host or program name.
+[errors.digest_timeout]
+title = "Le site n’a pas répondu"
+body = "{site} n’a pas préparé le document en 60 secondes. Retournez sur le site et réessayez."
 
 [errors.no_certificates]
 title = "Aucun certificat trouvé"

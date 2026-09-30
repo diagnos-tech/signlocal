@@ -15,10 +15,46 @@ use crate::ports::KeyCommand;
 use websign_ui_model::confirm::port::Failure;
 
 impl SignFlow {
-    /// Asks the caller for the digest to sign with `fingerprint`: the
-    /// certificate leaves the app here, so this only runs for a remembered
-    /// caller or after "Continue" (D11).
+    /// Releases `fingerprint` to the caller: the certificate leaves the app
+    /// here, so this only runs for a certificate in the caller's consent or
+    /// after "Continue" (D11).
+    ///
+    /// `sign.need_digest` carries the issuer chain, which a first release
+    /// has not read yet: the flow asks for it and waits in `Releasing`
+    /// until it arrives or [`super::CHAIN_WAIT`] passes
+    /// ([`SignFlow::chain_wait_over`]), so a site's `prepare` sees the
+    /// chain it needs to build the signature.
     pub(super) fn release(&mut self, fingerprint: Fingerprint) -> Vec<Effect> {
+        if self.chains.contains_key(&fingerprint) {
+            return self.need_digest(fingerprint);
+        }
+        let Some(listing) = &self.listing else {
+            return Vec::new();
+        };
+        if listing.usable(&fingerprint).is_none() {
+            return Vec::new();
+        }
+        let tag = self.next_tag();
+        self.chain_lookups.insert(tag, fingerprint);
+        self.state = SignState::Releasing { tag, fingerprint };
+        vec![
+            Effect::Ui(UiCommand::DigestPending {
+                key: self.key,
+                fingerprint,
+            }),
+            Effect::Keys(KeyCommand::Chain {
+                tag,
+                key: KeyRef {
+                    fingerprint,
+                    path: 0,
+                },
+            }),
+        ]
+    }
+
+    /// Sends `sign.need_digest` for `fingerprint` with the chain known so
+    /// far (none when its lookup is still running).
+    pub(super) fn need_digest(&mut self, fingerprint: Fingerprint) -> Vec<Effect> {
         let Some(listing) = &self.listing else {
             return Vec::new();
         };
@@ -31,32 +67,22 @@ impl SignFlow {
         let (Some(algorithm), Some(certificate)) = (algorithm, certificate) else {
             return self.fail_internal("the selected certificate cannot be described");
         };
+        let announced = matches!(self.state, SignState::Releasing { .. });
         self.seq += 1;
         self.state = SignState::AwaitingDigest {
             seq: self.seq,
             fingerprint,
         };
-        let mut effects = vec![
-            Effect::Send(AppMessage::NeedDigest(NeedDigest {
-                seq: self.seq,
-                certificate,
-                hash: self.request.hash,
-                algorithm: algorithm_name(algorithm),
-            })),
-            Effect::Ui(UiCommand::DigestPending {
+        let mut effects = vec![Effect::Send(AppMessage::NeedDigest(NeedDigest {
+            seq: self.seq,
+            certificate,
+            hash: self.request.hash,
+            algorithm: algorithm_name(algorithm),
+        }))];
+        if !announced {
+            effects.push(Effect::Ui(UiCommand::DigestPending {
                 key: self.key,
                 fingerprint,
-            }),
-        ];
-        if !self.chains.contains_key(&fingerprint) {
-            let tag = self.next_tag();
-            self.chain_lookups.insert(tag, fingerprint);
-            effects.push(Effect::Keys(KeyCommand::Chain {
-                tag,
-                key: KeyRef {
-                    fingerprint,
-                    path: 0,
-                },
             }));
         }
         effects

@@ -83,7 +83,7 @@ impl ChooseFlow {
         self.windowed = !self.answers_without_window();
         let mut effects = Vec::new();
         if self.windowed {
-            let open = presentation.open(self.key, Mode::Choose, false);
+            let open = presentation.open(self.key, Mode::Choose, false, Vec::new());
             effects.push(Effect::Ui(UiCommand::Open(open)));
         }
         effects.push(Effect::Keys(KeyCommand::List { refresh: false }));

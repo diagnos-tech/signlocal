@@ -13,8 +13,11 @@ use super::fallback::{self, BridgeRefusals};
 use super::key_info::KeyLocation;
 use super::store::CertStore;
 use super::thumbprint::Thumbprint;
-use super::{NAME, chain, listing, request, window};
-use crate::{FoundKey, Keystore, KeystoreError, NcryptPreference, Options, SignRequest, Signature};
+use super::{NAME, capabilities, chain, listing, request, window};
+use crate::{
+    FoundKey, KeyCapabilities, Keystore, KeystoreError, NcryptPreference, Options, SignRequest,
+    Signature,
+};
 use log::trace;
 
 /// `CurrentUser\MY`, plus every key opened so far by locator.
@@ -122,6 +125,19 @@ impl Keystore for WindowsKeystore {
             api,
             elapsed: started.elapsed(),
         })
+    }
+
+    /// From the key's provider and the preference its next signature will
+    /// use, so a key that fell back to CAPI stops offering PSS.
+    fn capabilities(&mut self, key: &FoundKey) -> KeyCapabilities {
+        let Some(location) = find_same(&self.store, key)
+            .ok()
+            .and_then(|cert| KeyLocation::of(&cert))
+        else {
+            return KeyCapabilities::NONE;
+        };
+        let preference = self.refusals.preference(&key.locator, self.preference);
+        capabilities::for_key(&location, preference)
     }
 
     fn chain(&mut self, key: &FoundKey) -> Vec<Vec<u8>> {

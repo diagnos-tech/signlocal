@@ -1,22 +1,24 @@
 import { describe, expect, it, vi } from "vitest";
-import { CHROME_WEB_STORE_ID, EDGE_ADDONS_ID, HOMEPAGE } from "../src/project";
+import { CHROME_WEB_STORE_ID, EDGE_ADDONS_ID, FIREFOX_AMO_SLUG, HOMEPAGE } from "../src/project";
 import { loadSdk, useFakeEnvironment } from "./helpers/env";
 import { flush } from "./helpers/fake-script";
 
 useFakeEnvironment();
 
-const AMO = "https://addons.mozilla.org/firefox/addon/websign/";
-const DOWNLOAD = `${HOMEPAGE}download`;
-// While a store ID in project.toml is empty, that store falls back to the download page (SPEC §7).
+const DOWNLOAD = `${HOMEPAGE}download.html`;
+// While a store ID in project.toml is empty, that store falls back to the download page (SPEC §9).
 const CHROME = CHROME_WEB_STORE_ID
   ? `https://chromewebstore.google.com/detail/${CHROME_WEB_STORE_ID}`
   : DOWNLOAD;
 const EDGE = EDGE_ADDONS_ID
   ? `https://microsoftedge.microsoft.com/addons/detail/${EDGE_ADDONS_ID}`
   : DOWNLOAD;
+const AMO = FIREFOX_AMO_SLUG
+  ? `https://addons.mozilla.org/firefox/addon/${FIREFOX_AMO_SLUG}/`
+  : DOWNLOAD;
 
 describe("installUrl()", () => {
-  it("Firefox announced -> AMO", async () => {
+  it("Firefox announced -> AMO (download page while unlisted)", async () => {
     const env = await loadSdk({ browser: "firefox" });
     env.script.announce();
     expect(env.sdk.installUrl()).toBe(AMO);
@@ -97,5 +99,32 @@ describe("installUrl()", () => {
     expect(typeof env.sdk.installUrl()).toBe("string");
     await flush();
     expect(env.win.posted).toEqual([]);
+  });
+});
+
+describe("installUrl() with published listings", () => {
+  it("links each store only by the ID project.toml names", async () => {
+    vi.doMock("../src/project", () => ({
+      CHROME_WEB_STORE_ID: "chromeid",
+      EDGE_ADDONS_ID: "edgeid",
+      FIREFOX_AMO_SLUG: "our-slug",
+      HOMEPAGE: "https://h.example/",
+    }));
+    try {
+      const urls: Record<string, string> = {};
+      for (const browser of ["chrome", "edge", "firefox", "safari"]) {
+        const env = await loadSdk({ browser });
+        env.script.announce();
+        urls[browser] = env.sdk.installUrl();
+      }
+      expect(urls).toEqual({
+        chrome: "https://chromewebstore.google.com/detail/chromeid",
+        edge: "https://microsoftedge.microsoft.com/addons/detail/edgeid",
+        firefox: "https://addons.mozilla.org/firefox/addon/our-slug/",
+        safari: "https://h.example/download.html",
+      });
+    } finally {
+      vi.doUnmock("../src/project");
+    }
   });
 });

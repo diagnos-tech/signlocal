@@ -4,7 +4,7 @@ mod common;
 
 use std::time::{Duration, Instant};
 
-use websign_client::{ClientError, HashName, SignOptions};
+use websign_client::{ClientError, ErrorCode, HashName, SignOptions};
 
 use common::{Fake, QUICK_GRACE, connect};
 
@@ -52,7 +52,7 @@ fn exiting_in_the_middle_of_a_signature_is_a_connection_error() {
 }
 
 #[test]
-fn a_digest_request_for_another_hash_cancels_and_is_a_connection_error() {
+fn a_digest_request_for_another_hash_cancels_with_invalid_request_before_prepare() {
     let (_fake, mut client) = connect("other_hash");
     let mut prepared = false;
     let error = client
@@ -61,15 +61,17 @@ fn a_digest_request_for_another_hash_cancels_and_is_a_connection_error() {
             Ok(vec![0; 32])
         })
         .unwrap_err();
-    assert_connection_error(error);
+    assert_eq!(error.code(), ErrorCode::InvalidRequest, "{error:?}");
     assert!(!prepared);
+    // The app ended the cancelled request, so the connection is still good.
+    client.status().unwrap();
 }
 
 #[test]
 fn a_failed_connection_stays_failed() {
     let (_fake, mut client) = connect("garbage_after");
     let _ = client.status();
-    assert_connection_error(client.certificates(None).unwrap_err());
+    assert_connection_error(client.certificates(&[]).unwrap_err());
 }
 
 #[test]

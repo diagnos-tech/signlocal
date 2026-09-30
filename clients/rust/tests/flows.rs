@@ -2,9 +2,10 @@
 
 mod common;
 
-use websign_client::{ClientError, HashName, SignOptions};
-use websign_protocol::ErrorCode;
-use websign_protocol::messages::DiagnosticsTab;
+use websign_client::{
+    ClientError, DiagnosticsTab, ErrorCode, HashName, PrepareContext, SignOptions,
+    SignatureAlgorithmName,
+};
 
 use common::connect;
 
@@ -19,7 +20,7 @@ fn status_reports_the_app() {
 #[test]
 fn certificates_returns_the_chosen_ones() {
     let (_fake, mut client) = connect("ok");
-    let certificates = client.certificates(None).unwrap();
+    let certificates = client.certificates(&[]).unwrap();
     assert_eq!(certificates.len(), 1);
     assert_eq!(certificates[0].display_name, "Test Holder");
     // Decoded bytes, not Base64 text.
@@ -40,14 +41,21 @@ fn sign_hands_the_certificate_to_prepare_and_returns_the_result() {
     let result = client
         .sign(
             SignOptions::new(HashName::Sha256),
-            |certificate, algorithm| {
-                seen.push((certificate.display_name.clone(), algorithm));
+            |certificate, context| {
+                seen.push((certificate.display_name.clone(), context));
                 Ok(vec![7u8; 32])
             },
         )
         .unwrap();
     assert_eq!(seen.len(), 1);
     assert_eq!(seen[0].0, "Test Holder");
+    assert_eq!(
+        seen[0].1,
+        PrepareContext {
+            hash: HashName::Sha256,
+            algorithm: SignatureAlgorithmName::Ecdsa,
+        }
+    );
     assert_eq!(result.signature.as_bytes(), [7u8; 32]);
 }
 
@@ -55,7 +63,7 @@ fn sign_hands_the_certificate_to_prepare_and_returns_the_result() {
 fn the_connection_serves_several_requests() {
     let (_fake, mut client) = connect("ok");
     client.status().unwrap();
-    client.certificates(None).unwrap();
+    client.certificates(&[]).unwrap();
     client
         .sign(SignOptions::new(HashName::Sha384), |_, _| Ok(vec![1; 48]))
         .unwrap();
@@ -74,6 +82,38 @@ fn switching_certificate_runs_prepare_again_and_signs_the_last_digest() {
         .unwrap();
     assert_eq!(calls, 2);
     assert_eq!(result.signature.as_bytes(), [2u8; 32]);
+}
+
+#[test]
+fn a_certificate_from_certificates_preselects_it_and_an_accepted_algorithm_signs() {
+    let (_fake, mut client) = connect("ok");
+    let chosen = client
+        .certificates(&[SignatureAlgorithmName::Ecdsa, SignatureAlgorithmName::Ecdsa])
+        .unwrap();
+    let options = SignOptions::new(HashName::Sha256)
+        .algorithms([
+            SignatureAlgorithmName::RsaPss,
+            SignatureAlgorithmName::Ecdsa,
+        ])
+        .certificate(&chosen[0]);
+    assert_eq!(options.certificate.as_ref(), Some(&chosen[0].fingerprint));
+    client.sign(options, |_, _| Ok(vec![1; 32])).unwrap();
+}
+
+#[test]
+fn an_algorithm_outside_the_requested_set_cancels_before_prepare() {
+    let (_fake, mut client) = connect("cancel");
+    let mut prepared = false;
+    let options = SignOptions::new(HashName::Sha256).algorithm(SignatureAlgorithmName::RsaPss);
+    let error = client
+        .sign(options, |_, _| {
+            prepared = true;
+            Ok(vec![0; 32])
+        })
+        .unwrap_err();
+    assert_eq!(error.code(), ErrorCode::InvalidRequest);
+    assert!(!prepared);
+    client.status().unwrap();
 }
 
 #[test]

@@ -5,6 +5,7 @@ use websign_protocol::ErrorCode;
 use websign_ui_model::confirm::port::RequestKey;
 
 use super::Engine;
+use crate::caller::Caller;
 use crate::ports::unix_seconds;
 use crate::store::{ConsentRecord, ErrorRecord, StoreError};
 
@@ -15,10 +16,15 @@ pub(super) fn log_store(what: &str, error: &StoreError) {
 }
 
 impl Engine {
-    /// The remembered record of `consent_key`, read fresh: another process
-    /// or the diagnostics window may have revoked it a moment ago.
-    pub(super) fn consent_of(&mut self, consent_key: &str) -> Option<ConsentRecord> {
-        match self.ports.stores.consent().get(consent_key) {
+    /// The remembered record of `caller`, read fresh: another process or
+    /// the diagnostics window may have revoked it a moment ago. A caller
+    /// that cannot be remembered has none, even if an older version stored
+    /// one (an interpreter remembered before it was recognized as one).
+    pub(super) fn consent_of(&mut self, caller: &Caller) -> Option<ConsentRecord> {
+        if !caller.can_remember() {
+            return None;
+        }
+        match self.ports.stores.consent().get(&caller.consent_key()) {
             Ok(record) => record,
             Err(error) => {
                 log_store("consent store unavailable", &error);
@@ -27,20 +33,21 @@ impl Engine {
         }
     }
 
-    /// A ticked "Remember" grants consent (where allowed); otherwise the
-    /// use only refreshes a caller that is already remembered.
+    /// A ticked "Remember" adds this certificate to the caller's consent
+    /// (where allowed); otherwise the use only refreshes a certificate the
+    /// consent already covers: using a certificate never grants consent.
     pub(super) fn record_consent(&mut self, key: RequestKey, remember: bool, fingerprint: &str) {
         let Some(request) = self.requests.get(&key) else {
             return;
         };
         let consent_key = request.caller.consent_key();
-        let may_remember = remember && request.caller.can_remember();
+        let can_remember = request.caller.can_remember();
         let now = unix_seconds(self.ports.clock.wall());
         let consent = self.ports.stores.consent();
-        let result = if may_remember {
-            consent.remember(&consent_key, fingerprint, now)
-        } else {
-            consent.record_use(&consent_key, fingerprint, now)
+        let result = match (can_remember, remember) {
+            (false, _) => Ok(()),
+            (true, true) => consent.remember(&consent_key, fingerprint, now),
+            (true, false) => consent.record_use(&consent_key, fingerprint, now),
         };
         if let Err(error) = result {
             log_store("consent not saved", &error);

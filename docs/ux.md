@@ -191,9 +191,9 @@ new top-level window (usually the active monitor) applies.
 (taskbars cut titles at the end, where the registrable domain is); the registrable domain and the port are never
 cut, even if that exceeds 40.
 
-`TODO(gustavo)`: prove in Phase 0 whether Windows hands focus to the window when the host is already running
-(connection kept open). If it does not: window on top, `FlashWindowEx`, and the button's arming only starts
-when the user clicks the window (the first click only focuses, it triggers nothing).
+**Decision (focus on Windows):** Windows may refuse the foreground to a host that is already running (connection
+kept open). The window then stays on top and flashes in the taskbar (`FlashWindowEx`), and the button's arming
+only starts once the window has focus (the first click only focuses, it triggers nothing).
 
 ### 4.2 Anatomy (Sign mode)
 
@@ -546,8 +546,8 @@ A **new** site (no remembered permission) always sees the checkbox:
 - **Timeout**: 5 min without a decision → closes with `Timeout`. Countdown in the footer during the last 30 s.
 - **Site gave up**: the extension's port closes (tab closed or navigation) → `site_cancelled` state.
 
-`TODO(gustavo)`: batch signing (several reports, one confirmation with N codes) conflicts with "confirmation on
-every signature"; decide whether it goes in and with what limit.
+**Decision (D4):** no batch signing in v1 (several reports, one confirmation with N codes): it conflicts with
+"confirmation on every signature". The queue above is what a site that signs many documents gets.
 
 ---
 
@@ -1738,14 +1738,12 @@ selection.
 
 ## 17. Open items
 
-- `TODO(gustavo)`: approve the `sign({ prepare })` API and the semantics of `certificates()` (R1, R2) with the SDK track.
+Settled items (the `sign({ prepare })` API and `certificates()`, batch signing, PIN caching, Windows focus, the
+seven locales) are decisions D1, D2, D4 and D5 of [`plan.md`](plan.md) and the sections above. Still open:
+
 - `TODO(gustavo)`: Diagnos shows the verification code and the identicon next to "Waiting for confirmation" (R3).
-- `TODO(gustavo)`: window focus on Windows when the host is already running (§4.1); include in proof 1.
-- `TODO(gustavo)`: batch signing: in or out, and with what limit (§4.11).
 - `TODO(gustavo)`: policy filter requested by the site (e.g. ICP-Brasil only) (R6).
 - `TODO(gustavo)`: check ICP-Brasil policy OIDs against the current DOC-ICP-04 (§5.3).
-- `TODO(gustavo)`: keep the token authenticated during the session (without `CKA_ALWAYS_AUTHENTICATE`) or ask for the PIN on every signature (§4.6).
 - `TODO(gustavo)`: path for A1 (.pfx) on Linux (§8.5).
 - `TODO(gustavo)`: final logo (today `seal-check` in an `accent` square).
 - `TODO(gustavo)`: egui accessibility on Linux with Orca (§14).
-- `TODO(gustavo)`: es, fr, it, de, and pt-PT copy (format ready, §13.1).

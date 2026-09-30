@@ -8,6 +8,7 @@ pub mod file_picker;
 pub mod focus;
 pub mod motion;
 pub mod os_version;
+pub mod secure_input;
 pub mod system_ui;
 pub mod url_events;
 

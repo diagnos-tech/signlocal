@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { WebSign, WebSignError } from "../src/index";
-import { APP, CERTIFICATE, fake, helloRule, send } from "./support";
+import { APP, CERTIFICATE, eventually, fake, helloRule, send } from "./support";
 
 async function connected(rules: Parameters<typeof fake>[0]["rules"]) {
   const app = fake({ rules: [helloRule(), ...rules] });
@@ -51,22 +51,52 @@ describe("certificates", () => {
 
   it("deduplicates algorithms and keeps their order", async () => {
     const { app, websign } = await connected([reply]);
-    await websign.certificates({ algorithms: ["ECDSA", "RSASSA-PSS", "ECDSA"] });
+    await websign.certificates({ algorithm: ["ECDSA", "RSASSA-PSS", "ECDSA"] });
+    await websign.certificates({ algorithm: "ECDSA" });
     await websign.close();
     expect(app.received()[1]?.filter).toEqual({ algorithms: ["ECDSA", "RSASSA-PSS"] });
+    expect(app.received()[2]?.filter).toEqual({ algorithms: ["ECDSA"] });
   });
 
-  it("omits an empty filter (the protocol refuses empty algorithm lists)", async () => {
+  it("sends no filter without an algorithm", async () => {
     const { app, websign } = await connected([reply]);
     await websign.certificates({});
-    await websign.certificates({ algorithms: [] });
     await websign.close();
-    expect(
-      app
-        .received()
-        .slice(1)
-        .map((m) => "filter" in m),
-    ).toEqual([false, false]);
+    expect(app.received()[1]).toEqual({ v: 1, id: "n2", type: "choose" });
+  });
+
+  it("rejects InvalidRequest and sends nothing for an empty or unknown algorithm", async () => {
+    const { app, websign } = await connected([reply]);
+    for (const algorithm of [[], "DSA", ["ECDSA", "DSA"]]) {
+      await expect(websign.certificates({ algorithm } as never)).rejects.toMatchObject({
+        code: "InvalidRequest",
+      });
+    }
+    await websign.close();
+    expect(app.received()).toHaveLength(1);
+  });
+
+  it("rejects NoCertificates on an empty choice", async () => {
+    const { websign } = await connected([
+      { on: "choose", do: [send({ type: "choose.result", certificates: [] })] },
+    ]);
+    await expect(websign.certificates()).rejects.toMatchObject({ code: "NoCertificates" });
+    await websign.close();
+  });
+
+  it("sends cancel and rejects Aborted when the signal fires", async () => {
+    const { app, websign } = await connected([{ on: "choose", do: [] }]);
+    const controller = new AbortController();
+    const promise = websign.certificates({ signal: controller.signal });
+    await eventually(() => app.received().some((m) => m.type === "choose"));
+    const reason = new Error("stop");
+    controller.abort(reason);
+    await expect(promise).rejects.toMatchObject({ code: "Aborted", cause: reason });
+    await eventually(() => app.received().some((m) => m.type === "cancel"));
+    await websign.close();
+    await expect(websign.certificates({ signal: AbortSignal.abort() })).rejects.toMatchObject({
+      code: "Aborted",
+    });
   });
 
   it("maps UserCancelled and NoCertificates errors", async () => {

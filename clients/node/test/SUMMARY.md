@@ -2,7 +2,7 @@
 
 - `fixtures/` — `fake-websign.mjs`, a scripted stand-in for `websign connect`
 - `api.test.ts` — smoke test of the public surface
-- `certificate.test.ts` — `der`/`chain` decoded to bytes everywhere; garbled Base64 rejected
+- `certificate.test.ts` — `der`/`chain` decoded to bytes and validity to `Date` everywhere; garbled input rejected
 - `connect.test.ts` — connect, hello negotiation, misbehaving apps, process cleanup
 - `framing.test.ts` — frame encoding and incremental decoding
 - `lifetime.test.ts` — the event loop is held only while a request is open

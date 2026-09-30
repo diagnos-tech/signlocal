@@ -6,14 +6,19 @@
 //!   `extension/public/_locales/<xx_YY>/messages.json`;
 //! * `messages` — `i18n/*.toml` `[site.errors]` into `sdk/src/messages.gen.ts`;
 //! * `project` — `project.toml` into `project.ts` of the extension and the
-//!   Node client (IDs, `MIN_APP_VERSION`).
+//!   Node client (IDs, `MIN_APP_VERSION`), and into the Rust constants of
+//!   `crates/websign-project`;
+//! * `limits` — `websign-protocol` version, message sources, lengths and
+//!   timers into `extension/src/shared/limits.gen.ts`.
 //!
 //! The generators only build a [`Plan`]; `gen` writes it and
 //! `check generated` compares it, so both always agree.
 
+mod limits;
 mod locales;
 mod messages;
 mod project;
+mod project_rust;
 mod text;
 mod ts;
 
@@ -23,12 +28,12 @@ use crate::plan::Plan;
 use crate::root::repo_root;
 
 /// Generators that `--only` accepts.
-const GENERATORS: [&str; 4] = ["ts", "locales", "messages", "project"];
+const GENERATORS: [&str; 5] = ["ts", "locales", "messages", "project", "limits"];
 
 /// `cargo xtask gen`.
 #[derive(Debug, clap::Args)]
 pub struct GenArgs {
-    /// Only this generator: `ts`, `locales`, `messages`, `project`.
+    /// Only this generator: `ts`, `locales`, `messages`, `project`, `limits`.
     #[arg(long)]
     pub only: Option<String>,
 }
@@ -63,6 +68,10 @@ pub fn plan(root: &Path, only: Option<&str>) -> Result<Plan, String> {
     }
     if wanted("project") {
         plan.merge(project::plan(root)?);
+        plan.merge(project_rust::plan(root)?);
+    }
+    if wanted("limits") {
+        plan.merge(limits::plan()?);
     }
     Ok(plan)
 }

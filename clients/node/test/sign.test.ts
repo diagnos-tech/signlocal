@@ -5,12 +5,12 @@ import { CERTIFICATE, eventually, fake, helloRule, isAlive, type Rule, send } fr
 const digest32 = new Uint8Array(32).fill(7);
 const b64 = (bytes: Uint8Array) => Buffer.from(bytes).toString("base64");
 
-const needDigest = (seq: number, hash = "SHA-256") =>
+const needDigest = (seq: number, hash = "SHA-256", algorithm = "RSASSA-PKCS1-v1_5") =>
   send({
     type: "sign.need_digest",
     seq,
     hash,
-    algorithm: "RSASSA-PKCS1-v1_5",
+    algorithm,
     certificate: { ...CERTIFICATE, fingerprint: `${seq}`.repeat(64) },
   });
 
@@ -51,7 +51,7 @@ describe("sign", () => {
     expect(prepare).toHaveBeenCalledTimes(1);
     expect(prepare).toHaveBeenCalledWith(
       expect.objectContaining({ displayName: "Ana Beatriz Souza" }),
-      "RSASSA-PKCS1-v1_5",
+      { hash: "SHA-256", algorithm: "RSASSA-PKCS1-v1_5" },
     );
     expect(signed.signature).toBeInstanceOf(Uint8Array);
     expect([...signed.signature]).toEqual([1, 2, 3, 4]);
@@ -67,7 +67,7 @@ describe("sign", () => {
     const { app, websign } = await connected(happyRules);
     await websign.sign({
       hash: "SHA-256",
-      algorithms: ["ECDSA", "RSASSA-PKCS1-v1_5", "ECDSA"],
+      algorithm: ["ECDSA", "RSASSA-PKCS1-v1_5", "ECDSA"],
       certificate: "ab".repeat(32),
       prepare: () => digest32,
     });
@@ -75,6 +75,31 @@ describe("sign", () => {
     expect(app.received()[1]).toMatchObject({
       algorithms: ["ECDSA", "RSASSA-PKCS1-v1_5"],
       certificate: "ab".repeat(32),
+    });
+  });
+
+  it("accepts a single algorithm and a Certificate object to preselect", async () => {
+    const { app, websign } = await connected([
+      { on: "choose", do: [send({ type: "choose.result", certificates: [CERTIFICATE] })] },
+      ...happyRules,
+    ]);
+    const [chosen] = await websign.certificates();
+    if (chosen === undefined) throw new Error("no certificate");
+    await websign.sign({
+      hash: "SHA-256",
+      algorithm: "RSASSA-PKCS1-v1_5",
+      certificate: chosen,
+      prepare: () => digest32,
+    });
+    await websign.close();
+    const begin = app.received().find((m) => m.type === "sign.begin");
+    expect(begin).toEqual({
+      v: 1,
+      id: "n3",
+      type: "sign.begin",
+      hash: "SHA-256",
+      algorithms: ["RSASSA-PKCS1-v1_5"],
+      certificate: CERTIFICATE.fingerprint,
     });
   });
 
@@ -212,8 +237,11 @@ describe("sign input errors", () => {
     const bad = [
       { hash: "MD5", prepare },
       { hash: "SHA-256" },
-      { hash: "SHA-256", prepare, algorithms: [] },
-      { hash: "SHA-256", prepare, algorithms: ["DSA"] },
+      { hash: "SHA-256", prepare, algorithm: [] },
+      { hash: "SHA-256", prepare, algorithm: ["DSA"] },
+      { hash: "SHA-256", prepare, algorithm: "DSA" },
+      { hash: "SHA-256", prepare, certificate: "AB".repeat(32) },
+      { hash: "SHA-256", prepare, certificate: { fingerprint: "x" } },
     ];
     for (const options of bad) {
       const error = await failure(websign.sign(options as never));
@@ -252,6 +280,40 @@ describe("sign input errors", () => {
     expect(error.cause).toBe(boom);
     await websign.close();
     expect(app.received().at(-1)).toMatchObject({ type: "cancel", id: "n2" });
+  });
+
+  it.each([
+    ["another hash", needDigest(1, "SHA-384")],
+    ["an algorithm outside the requested set", needDigest(1, "SHA-256", "RSASSA-PSS")],
+  ])("cancels with InvalidRequest, before prepare, when the app asks for %s", async (_, need) => {
+    const { app, websign } = await connected([{ on: "sign.begin", do: [need] }]);
+    const prepare = vi.fn(() => digest32);
+    const error = await failure(
+      websign.sign({
+        hash: "SHA-256",
+        algorithm: ["RSASSA-PKCS1-v1_5", "ECDSA"],
+        prepare,
+      }),
+    );
+    expect(error.code).toBe("InvalidRequest");
+    expect(prepare).not.toHaveBeenCalled();
+    await eventually(() => app.received().some((m) => m.type === "cancel"));
+    await websign.close();
+    expect(app.received().map((m) => m.type)).toEqual(["hello", "sign.begin", "cancel"]);
+  });
+
+  it("accepts any known algorithm when none was requested", async () => {
+    const { websign } = await connected([
+      { on: "sign.begin", do: [needDigest(1, "SHA-256", "RSASSA-PSS")] },
+      { on: "sign.digest", do: [result] },
+    ]);
+    const prepare = vi.fn(() => digest32);
+    await websign.sign({ hash: "SHA-256", prepare });
+    await websign.close();
+    expect(prepare).toHaveBeenCalledWith(expect.anything(), {
+      hash: "SHA-256",
+      algorithm: "RSASSA-PSS",
+    });
   });
 
   it("rejects Internal when the app's digest request is malformed", async () => {

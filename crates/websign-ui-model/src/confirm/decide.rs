@@ -79,12 +79,10 @@ impl ConfirmModel {
         }]
     }
 
-    /// "Remember this site" only counts for a caller that could still be
-    /// remembered.
+    /// "Remember this site" only counts where it can still add the chosen
+    /// certificate to the caller's consent.
     fn remember_wanted(&self) -> bool {
-        self.request
-            .as_ref()
-            .is_some_and(|request| self.remember && !request.remembered && request.can_remember)
+        self.remember && self.may_remember()
     }
 
     /// "Try through the token driver": sign again over the first alternate

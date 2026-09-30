@@ -46,9 +46,18 @@ pub fn show(ui: &mut Ui, tr: &Catalog, caller: &CallerView, asks: &str, spoken: 
             if !label.verified {
                 warnings.push((icons::ATTENTION, tr.tr(k::CALLER_UNVERIFIED).to_string()));
             }
+            // An interpreter only runs the script that really asks, so the
+            // headline names the script's runner, not a program to trust.
+            let name = if label.runs_scripts {
+                tr.tr(k::CALLER_SCRIPT_RUN_BY)
+                    .arg("program", &label.name)
+                    .to_string()
+            } else {
+                label.name.clone()
+            };
             text::wrapped(
                 ui,
-                typography::HEADLINE.rich(&label.name).color(c.fg),
+                typography::HEADLINE.rich(name).color(c.fg),
                 ui.available_width(),
             )
         }

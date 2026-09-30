@@ -3,15 +3,11 @@
 
 use std::path::Path;
 
-use anyhow::{Context as _, bail};
+use anyhow::Context as _;
 use serde_json::json;
 
 use super::browsers::Family;
-use websign_project::{
-    CHROME_WEB_STORE_ID, EDGE_ADDONS_ID, EXTENSION_DEV_ID, FIREFOX_ID, NATIVE_HOST, PRODUCT_NAME,
-};
-
-use websign_project::is_chromium_extension_id;
+use websign_project::{FIREFOX_ID, NATIVE_HOST, PRODUCT_NAME, chromium_extension_ids};
 
 /// File name browsers expect on Linux and macOS.
 pub fn file_name() -> String {
@@ -38,27 +34,15 @@ pub fn render(family: Family, host_path: &Path, origins: &[String]) -> anyhow::R
     Ok(text)
 }
 
-/// The `chrome-extension://<id>/` origins the manifest allows: the
-/// development build, the store builds once they exist, and `extra`.
-pub fn allowed_origins(extra: &[String]) -> anyhow::Result<Vec<String>> {
-    let mut ids: Vec<&str> = vec![EXTENSION_DEV_ID];
-    ids.extend(
-        [CHROME_WEB_STORE_ID, EDGE_ADDONS_ID]
-            .into_iter()
-            .filter(|id| !id.is_empty()),
-    );
-    ids.extend(extra.iter().map(String::as_str));
-    let mut origins = Vec::new();
-    for id in ids {
-        if !is_chromium_extension_id(id) {
-            bail!("{id:?} is not a Chromium extension ID (32 letters from a to p)");
-        }
-        let origin = format!("chrome-extension://{id}/");
-        if !origins.contains(&origin) {
-            origins.push(origin);
-        }
-    }
-    Ok(origins)
+/// The `chrome-extension://<id>/` origins the manifest allows: exactly the
+/// `project.toml` IDs (the development build and the store builds once they
+/// exist). No other ID is ever listed: the app refuses to serve an extension
+/// whose ID is not in `project.toml` anyway (`app/src/launch.rs`).
+pub fn allowed_origins() -> Vec<String> {
+    chromium_extension_ids()
+        .into_iter()
+        .map(|id| format!("chrome-extension://{id}/"))
+        .collect()
 }
 
 #[cfg(test)]
@@ -75,7 +59,7 @@ mod tests {
 
     #[test]
     fn chromium_manifest_lists_origins_and_no_firefox_key() {
-        let origins = allowed_origins(&[]).unwrap();
+        let origins = allowed_origins();
         let manifest =
             parse(&render(Family::Chromium, &PathBuf::from("/opt/x/probe"), &origins).unwrap());
         assert_eq!(manifest["name"], NATIVE_HOST);
@@ -83,7 +67,7 @@ mod tests {
         assert_eq!(manifest["path"], "/opt/x/probe");
         assert_eq!(
             manifest["allowed_origins"][0],
-            format!("chrome-extension://{EXTENSION_DEV_ID}/")
+            format!("chrome-extension://{}/", websign_project::EXTENSION_DEV_ID)
         );
         assert!(manifest.get("allowed_extensions").is_none());
     }
@@ -97,22 +81,18 @@ mod tests {
     }
 
     #[test]
-    fn extra_ids_are_added_once_and_validated() {
-        let extra = "abcdefghijklmnopabcdefghijklmnop".to_owned();
-        let origins = allowed_origins(&[extra.clone(), extra.clone()]).unwrap();
-        assert_eq!(origins.iter().filter(|o| o.contains(&extra)).count(), 1);
-        assert!(allowed_origins(&["nope".to_owned()]).is_err());
-        assert!(
-            allowed_origins(&[EXTENSION_DEV_ID.to_owned()])
-                .unwrap()
-                .len()
-                == origins.len() - 1
-        );
+    fn origins_are_exactly_the_project_ids() {
+        let origins = allowed_origins();
+        assert_eq!(origins.len(), chromium_extension_ids().len());
+        for id in chromium_extension_ids() {
+            assert!(websign_project::is_chromium_extension_id(id));
+            assert!(origins.contains(&format!("chrome-extension://{id}/")));
+        }
     }
 
     #[test]
     fn origins_never_contain_wildcards() {
-        for origin in allowed_origins(&[]).unwrap() {
+        for origin in allowed_origins() {
             assert!(!origin.contains('*'), "Chrome rejects wildcards: {origin}");
             assert!(origin.ends_with('/'));
         }

@@ -3,7 +3,9 @@
 use websign_core::Fingerprint;
 
 use crate::inventory::Inventory;
-use crate::{KeystoreError, Opened, Options, PinState, SignRequest, Signature, open_all};
+use crate::{
+    KeyCapabilities, KeystoreError, Opened, Options, PinState, SignRequest, Signature, open_all,
+};
 
 /// One way to reach a certificate's key: its primary path (the OS when it
 /// has the key) or one of the alternates (a PKCS#11 module that sees the same
@@ -105,6 +107,20 @@ impl KeystoreHub {
             .get_mut(entry.store)
             .map(|keystore| keystore.chain(&entry.key))
             .unwrap_or_default()
+    }
+
+    /// What `key`'s path can sign with; nothing for an unknown key.
+    pub fn capabilities(&mut self, key: KeyRef) -> KeyCapabilities {
+        let Inventory { opened, entries } = self.listed();
+        let Some(entry) = resolve(entries, key) else {
+            return KeyCapabilities::NONE;
+        };
+        opened
+            .keystores
+            .get_mut(entry.store)
+            .map_or(KeyCapabilities::NONE, |keystore| {
+                keystore.capabilities(&entry.key)
+            })
     }
 
     /// PIN state of `key`'s token (`None` for OS-owned PINs).

@@ -2,10 +2,11 @@
 
 - `announce.test.ts` — Announcement posted to the page origin, synchronously.
 - `browser-name.test.ts` — Browser names from UA-CH brands and user agents.
-- `connection.test.ts` — Native port: hello, reasons, 3 s timeout, host missing, sharing, idle close with open requests, reconnect.
+- `background.test.ts` — Background wiring: the app is introduced only on install and update, never on browser startup.
+- `connection.test.ts` — Native port: hello and its id, reasons, 8 s first and 3 s later timeouts, host missing, sharing, idle close with open requests, reconnect.
 - `i18n.test.ts` — Popup message keys and placeholders per state, in all locales.
 - `manifest.test.ts` — Manifest per target and channel (permissions, pinned ID, CSP, Gecko) and content-script matches.
-- `origin.test.ts` — `webContext`: secure contexts, loopback http, stamped origins.
+- `origin.test.ts` — `webContext`: secure contexts, loopback http, stamped origins; every accepted loopback name is reachable by the content script.
 - `popup-handler.test.ts` — Background answers to the popup, sender checks and the "!" badge.
 - `popup-state.test.ts` — The six popup states derived from probe facts.
 - `popup-view.test.ts` — Popup DOM per state (happy-dom): texts, links, actions, focus and accessibility.

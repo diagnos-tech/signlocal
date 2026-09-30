@@ -15,7 +15,7 @@ use websign_protocol::messages::DiagnosticsTab;
 use super::arming::Arming;
 use super::port::{Failure, OpenRequest, UiCommand};
 use super::slot::CodeSlot;
-use super::view::{ConfirmView, PinError};
+use super::view::{ConfirmView, Expiry, PinError};
 use super::{build, commands, inputs, timers};
 use crate::certs::CertList;
 use crate::possible::PossibleCard;
@@ -136,6 +136,8 @@ pub struct ConfirmModel {
     pub(super) loading_since: Option<Instant>,
     /// The device the host says is slow to list ("Still reading {device}").
     pub(super) slow_device: Option<String>,
+    /// In `Timeout`: which wait ran out.
+    pub(super) expiry: Option<Expiry>,
 }
 
 impl Default for ConfirmModel {
@@ -166,6 +168,7 @@ impl ConfirmModel {
             settled: false,
             loading_since: None,
             slow_device: None,
+            expiry: None,
         }
     }
 
@@ -221,6 +224,8 @@ impl ConfirmModel {
     }
 }
 
+#[cfg(test)]
+mod consent_tests;
 #[cfg(test)]
 mod edge_tests;
 #[cfg(test)]

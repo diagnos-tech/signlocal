@@ -49,10 +49,7 @@ pub fn evaluate(
 
 fn allows_our_extension(json: &Value, family: Family) -> bool {
     let (key, ours): (&str, Vec<String>) = match family {
-        Family::Chromium => (
-            "allowed_origins",
-            manifest::allowed_origins(&[]).unwrap_or_default(),
-        ),
+        Family::Chromium => ("allowed_origins", manifest::allowed_origins()),
         Family::Firefox => ("allowed_extensions", vec![FIREFOX_ID.to_owned()]),
     };
     json.get(key)

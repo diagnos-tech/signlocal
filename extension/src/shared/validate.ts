@@ -7,15 +7,25 @@
  * unexamined.
  */
 
-import type { CertificateFilter, PageRequest, SignatureAlgorithmName } from "../generated";
+import type {
+  CertificateFilter,
+  HashName,
+  PageRequest,
+  SignatureAlgorithmName,
+} from "../generated";
 
 const HASHES = ["SHA-256", "SHA-384", "SHA-512"] as const;
 const ALGORITHMS: readonly SignatureAlgorithmName[] = ["ECDSA", "RSASSA-PKCS1-v1_5", "RSASSA-PSS"];
 const MAX_ALGORITHMS = 3;
 const MAX_SEQ = 2 ** 31;
 const FINGERPRINT = /^[0-9a-f]{64}$/;
-/** Text lengths of Base64 for 32, 48 and 64 bytes; the app checks canonical padding. */
-const DIGEST_LENGTHS = [44, 64, 88];
+/** Base64 text length of each hash's digest (32, 48, 64 bytes); the app checks the padding. */
+const DIGEST_TEXT_LENGTH: Readonly<Record<HashName, number>> = {
+  "SHA-256": 44,
+  "SHA-384": 64,
+  "SHA-512": 88,
+};
+const DIGEST_LENGTHS = Object.values(DIGEST_TEXT_LENGTH);
 const BASE64 = /^[A-Za-z0-9+/]+={0,2}$/;
 
 type Fields = Readonly<Record<string, unknown>>;
@@ -84,6 +94,15 @@ function signDigest(fields: Fields): PageRequest | null {
   if (typeof digest !== "string") return null;
   if (!DIGEST_LENGTHS.includes(digest.length) || !BASE64.test(digest)) return null;
   return { type: "sign.digest", seq, digest };
+}
+
+/**
+ * Whether `digest` has exactly the length of a `hash` digest. The shape
+ * check above cannot know the hash (it lives in the earlier `sign.begin`),
+ * so the background, which remembers it per request, checks this too.
+ */
+export function digestFitsHash(hash: HashName, digest: string): boolean {
+  return digest.length === DIGEST_TEXT_LENGTH[hash];
 }
 
 /** The request rebuilt field by field, or null when malformed. */

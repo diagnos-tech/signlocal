@@ -6,6 +6,7 @@
 //! is reported as a [`SourceFailure`] and never stops the others.
 
 mod always_authenticate;
+mod capabilities;
 mod cert_names;
 mod chain;
 mod ckr;

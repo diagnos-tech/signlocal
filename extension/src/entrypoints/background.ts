@@ -15,7 +15,10 @@ import type { HelloReason } from "../generated";
 import { MIN_APP_VERSION } from "../generated";
 import { isOlder } from "../shared/version";
 
-/** Tells the app this browser has the extension, then lets the port idle out. */
+/**
+ * Tells the app this browser has the extension, so it can check its browser
+ * registration once, then lets the port idle out.
+ */
 function introduce(reason: HelloReason): void {
   connect(reason).then(
     (conn) => showHealth(!isOlder(conn.hello.app.version, MIN_APP_VERSION)),
@@ -30,6 +33,11 @@ export default defineBackground(() => {
     return false;
   });
   watchTabs();
-  browser.runtime.onStartup.addListener(() => introduce("startup"));
-  browser.runtime.onInstalled.addListener(() => introduce("installed"));
+  // Only when the extension is installed or updated: starting the app on
+  // every browser launch (`onStartup`) would cost a process and a driver load
+  // each time for a check that only changes then. Otherwise the app starts
+  // lazily, when a page or the popup asks.
+  browser.runtime.onInstalled.addListener(({ reason }) => {
+    if (reason === "install" || reason === "update") introduce("installed");
+  });
 });

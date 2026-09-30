@@ -2,13 +2,14 @@
 
 use std::time::Instant;
 
+use websign_protocol::limits::DIGEST_TIMEOUT;
 use websign_protocol::{ErrorCode, RequestId};
 use websign_ui_model::certs::ListContext;
 use websign_ui_model::confirm::UiEvent;
 
 use crate::caller::Caller;
 use crate::flow::choose::{ChooseFlow, ChooseState};
-use crate::flow::sign::{SignFlow, SignState};
+use crate::flow::sign::{CHAIN_WAIT, SignFlow, SignState};
 use crate::flow::{Effect, Presentation};
 use crate::ports::{KeyReply, KeySnapshot};
 
@@ -30,6 +31,8 @@ pub(super) struct Request {
     pub queued: bool,
     /// The digest the caller owes, by `seq` and deadline.
     pub digest_wait: Option<(u32, Instant)>,
+    /// The issuer chain a release waits for, by lookup tag and deadline.
+    pub chain_wait: Option<(u64, Instant)>,
 }
 
 impl Request {
@@ -56,20 +59,40 @@ impl Request {
         }
     }
 
-    /// The digest deadline while a `sign.need_digest` is unanswered.
-    pub fn track_digest(&mut self, now: Instant, wait: std::time::Duration) {
-        let awaiting = match &self.flow {
+    /// The digest deadline while a `sign.need_digest` is unanswered, and
+    /// the chain deadline while a release waits for its chain.
+    pub fn track_waits(&mut self, now: Instant) {
+        let (awaiting, releasing) = match &self.flow {
             Flow::Sign(flow) => match flow.state {
-                SignState::AwaitingDigest { seq, .. } => Some(seq),
-                _ => None,
+                SignState::AwaitingDigest { seq, .. } => (Some(seq), None),
+                SignState::Releasing { tag, .. } => (None, Some(tag)),
+                _ => (None, None),
             },
-            Flow::Choose(_) => None,
+            Flow::Choose(_) => (None, None),
         };
-        self.digest_wait = match (awaiting, self.digest_wait) {
-            (Some(seq), Some((known, at))) if known == seq => Some((seq, at)),
-            (Some(seq), _) => Some((seq, now + wait)),
-            (None, _) => None,
+        self.digest_wait = keep_or_start(awaiting, self.digest_wait, now + DIGEST_TIMEOUT);
+        self.chain_wait = keep_or_start(releasing, self.chain_wait, now + CHAIN_WAIT);
+    }
+
+    /// The effects of the waits that ran out at `now`: a chain that took too
+    /// long is sent without, a digest that took too long ends the request.
+    pub fn expire_waits(&mut self, now: Instant) -> Vec<Effect> {
+        let Flow::Sign(flow) = &mut self.flow else {
+            return Vec::new();
         };
+        if self.digest_wait.is_some_and(|(_, at)| now >= at) {
+            return flow.digest_timed_out();
+        }
+        if self.chain_wait.is_some_and(|(_, at)| now >= at) {
+            return flow.chain_wait_over();
+        }
+        Vec::new()
+    }
+
+    /// Whether a wait of [`Request::track_waits`] ran out at `now`.
+    pub fn wait_expired(&self, now: Instant) -> bool {
+        self.digest_wait.is_some_and(|(_, at)| now >= at)
+            || self.chain_wait.is_some_and(|(_, at)| now >= at)
     }
 
     pub fn activate(&mut self, now: Instant, presentation: &Presentation) -> Vec<Effect> {
@@ -118,5 +141,19 @@ impl Request {
     pub fn needs_window(&self) -> bool {
         !self.queued
             && matches!(&self.flow, Flow::Choose(flow) if flow.state == ChooseState::Queued)
+    }
+}
+
+/// The deadline of the wait for `current`: kept while it is the same wait,
+/// started at `start` for a new one, cleared when nothing is awaited.
+fn keep_or_start<T: PartialEq + Copy>(
+    current: Option<T>,
+    known: Option<(T, Instant)>,
+    start: Instant,
+) -> Option<(T, Instant)> {
+    match (current, known) {
+        (Some(id), Some((was, at))) if was == id => Some((id, at)),
+        (Some(id), _) => Some((id, start)),
+        (None, _) => None,
     }
 }

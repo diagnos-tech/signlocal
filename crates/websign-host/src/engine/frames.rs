@@ -8,6 +8,7 @@ use websign_protocol::{
     refusal_version,
 };
 
+use super::present::parse_fingerprints;
 use super::request::Flow;
 use super::{Control, Engine};
 use crate::caller::Caller;
@@ -115,7 +116,7 @@ impl Engine {
     }
 
     fn on_status(&mut self, id: &RequestId, _status: &Status, caller: &Caller) {
-        let remembered = self.consent_of(&caller.consent_key()).is_some();
+        let remembered = self.consent_of(caller).is_some();
         let reply = StatusReply {
             app: self.config.app.clone(),
             remembered,
@@ -125,7 +126,7 @@ impl Engine {
 
     fn on_choose(&mut self, id: RequestId, request: Choose, caller: Caller) {
         let remembered = self
-            .consent_of(&caller.consent_key())
+            .consent_of(&caller)
             .map(|record| record.certificates)
             .unwrap_or_default();
         let key = self.new_key();
@@ -140,9 +141,11 @@ impl Engine {
     }
 
     fn on_sign_begin(&mut self, id: RequestId, request: SignBegin, caller: Caller) {
-        let remembered = self.consent_of(&caller.consent_key()).is_some();
+        let consented = self
+            .consent_of(&caller)
+            .map(|record| parse_fingerprints(record.certificates));
         let key = self.new_key();
-        let flow = SignFlow::new(key, request, remembered);
+        let flow = SignFlow::new(key, request, consented);
         self.enqueue(key, id, caller, Flow::Sign(Box::new(flow)));
     }
 

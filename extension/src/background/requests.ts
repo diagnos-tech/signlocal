@@ -5,8 +5,16 @@
  * its own requests: another tab's ids are outside its reach by construction.
  */
 
-import type { AppInfo, ClientEnvelope, ErrorCode, PageReply, PageRequest } from "../generated";
+import type {
+  AppInfo,
+  ClientEnvelope,
+  ErrorCode,
+  HashName,
+  PageReply,
+  PageRequest,
+} from "../generated";
 import { PROTOCOL_VERSION } from "../shared/limits";
+import { digestFitsHash } from "../shared/validate";
 import { AppError } from "./app-error";
 import type { Connection } from "./connection";
 
@@ -17,6 +25,8 @@ export interface Entry {
   readonly topOrigin: string;
   readonly document: string | undefined;
   readonly reply: (message: PageReply) => void;
+  /** The hash `sign.begin` declared; every digest for it must have its exact length. */
+  readonly hash?: HashName;
   /** Null while the connection is still opening. */
   conn: Connection | null;
   /** Set for `status`, which is answered even when the app stays silent. */
@@ -52,13 +62,29 @@ export function toError(error: unknown): PageReply {
   return details ? { type: "error", code, message, details } : { type: "error", code, message };
 }
 
-/** Sends a continuation (`sign.digest`, `cancel`) for a request that is still open. */
+/** Whether `request` is a digest that cannot belong to `entry`'s hash. */
+function wrongDigest(entry: Entry, request: PageRequest): boolean {
+  if (request.type !== "sign.digest") return false;
+  return entry.hash === undefined || !digestFitsHash(entry.hash, request.digest);
+}
+
+/**
+ * Sends a continuation (`sign.digest`, `cancel`) for a request that is still
+ * open. A digest that does not fit the request's hash ends the request
+ * here (the app would refuse it too, but nothing malformed travels further).
+ */
 export function continuation(id: string, request: PageRequest): void {
   const entry = entries.get(id);
   if (entry === undefined) return;
   if (entry.conn === null) {
     // Still connecting: nothing reached the app yet, so there is nothing to continue.
     finish(id, entry);
+    return;
+  }
+  if (wrongDigest(entry, request)) {
+    continuation(id, { type: "cancel" });
+    finish(id, entry);
+    entry.reply(failure("InvalidRequest", "the digest length does not match the request's hash"));
     return;
   }
   try {

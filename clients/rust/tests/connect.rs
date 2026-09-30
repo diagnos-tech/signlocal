@@ -5,8 +5,7 @@ mod common;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
-use websign_client::{Client, ClientError, ConnectOptions};
-use websign_protocol::ErrorCode;
+use websign_client::{Client, ClientError, ConnectOptions, ErrorCode};
 
 use common::{Fake, QUICK_GRACE, QUICK_HELLO};
 

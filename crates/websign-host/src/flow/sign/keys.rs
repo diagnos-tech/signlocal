@@ -15,14 +15,21 @@ use crate::flow::certificate::wire_certificate;
 use crate::ports::KeyReply;
 
 impl SignFlow {
-    /// The key store answered.
+    /// The key store answered. The chain a release waits for sends its
+    /// `sign.need_digest`.
     pub fn on_keys(&mut self, reply: &KeyReply) -> Vec<Effect> {
         match reply {
             KeyReply::Chain { tag, chain } => {
                 if let Some(fingerprint) = self.chain_lookups.remove(tag) {
                     self.chains.insert(fingerprint, chain.clone());
                 }
-                Vec::new()
+                match self.state {
+                    SignState::Releasing {
+                        tag: waiting,
+                        fingerprint,
+                    } if waiting == *tag => self.need_digest(fingerprint),
+                    _ => Vec::new(),
+                }
             }
             KeyReply::Signed { tag, result } => match self.state {
                 SignState::Signing { tag: current, .. } if current == *tag => {

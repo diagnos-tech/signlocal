@@ -30,7 +30,8 @@ fn caller_view(caller: &Caller) -> CallerView {
     }
 }
 
-fn parse_all(hex: impl IntoIterator<Item = String>) -> Vec<Fingerprint> {
+/// The fingerprints among `hex` that parse; a damaged entry is skipped.
+pub(super) fn parse_fingerprints(hex: impl IntoIterator<Item = String>) -> Vec<Fingerprint> {
     hex.into_iter()
         .filter_map(|text| text.parse::<Fingerprint>().ok())
         .collect()
@@ -52,7 +53,7 @@ impl Engine {
     /// read fresh because other processes change them.
     pub(super) fn list_context_for(&mut self, key: RequestKey) -> Option<ListContext> {
         let request = self.requests.get(&key)?;
-        let consent_key = request.caller.consent_key();
+        let caller = request.caller.clone();
         let (accepted, requested) = match &request.flow {
             Flow::Sign(flow) => (
                 flow.request.algorithms.clone().unwrap_or_default(),
@@ -71,10 +72,10 @@ impl Engine {
             ),
         };
         let last_used_here = self
-            .consent_of(&consent_key)
-            .and_then(|record| parse_all(record.certificates).into_iter().next());
+            .consent_of(&caller)
+            .and_then(|record| parse_fingerprints(record.certificates).into_iter().next());
         let recent = match self.ports.stores.usage().recent() {
-            Ok(recent) => parse_all(recent),
+            Ok(recent) => parse_fingerprints(recent),
             Err(error) => {
                 log_store("usage store unavailable", &error);
                 Vec::new()

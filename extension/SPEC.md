@@ -11,7 +11,8 @@ extension (`docs/prototypes/kit/extension/`) is proven reference code for
 MV3 for every target; permission `nativeMessaging` only (no
 `host_permissions`, no `web_accessible_resources`, no
 `externally_connectable`); content script on `https://*/*`,
-`http://localhost/*`, `http://127.0.0.1/*`, `http://[::1]/*`, all frames,
+`http://localhost/*`, `http://*.localhost/*`, `http://127.0.0.1/*`,
+`http://[::1]/*` (the loopback names §2.3 accepts, no more), all frames,
 `document_start`; Firefox `browser_specific_settings.gecko.id` from
 `project.toml`, minimum 121; `default_locale: en` with `_locales` generated
 from `i18n/`; name, description and toolbar title are `__MSG_…__`.
@@ -37,8 +38,8 @@ from `i18n/`; name, description and toolbar title are `__MSG_…__`.
   `runtime.connectNative(NATIVE_HOST)`; first message `hello` with `client
   {name:"websign-extension", version: manifest.version}`, `protocols
   {min:1,max:1}`, `browser {name, version, reason}` (`reason` of the call
-  that opened the port: `page`, `popup`, `startup`, `installed`). Concurrent
-  and later callers get the same connection until it closes; the next call
+  that opened the port: `page`, `popup`, `installed`; the protocol's
+  `startup` is unused). Concurrent and later callers get the same connection until it closes; the next call
   after a close or failed attempt opens a new port.
   **Why shared, not per request:** starting the app costs a process launch
   and a driver load, the app's queue and PKCS#11 session (PIN cache, D5)
@@ -48,22 +49,31 @@ from `i18n/`; name, description and toolbar title are `__MSG_…__`.
   receive another tab's or frame's request.
 - `connect()` rejects with an `AppError {code, message, details?}`:
   `connectNative` throwing or the port closing before any message →
-  `AppMissing` ("host not found"); no `hello` reply within 3 s, a first
-  message that is not `hello`, or an unknown protocol → `Internal`; an
+  `AppMissing` ("host not found"); no `hello` reply in time → `AppMissing`
+  too (a host that never speaks is, to the person, a broken install with
+  the same remedy); a `hello` reply with another id, a first message that
+  is not `hello`, or an unknown protocol → `Internal`; an
   `error` instead of `hello` → its code (`ClientOutdated` becomes
   `ExtensionOutdated`) and `details` (so `AppOutdated` carries
   `{installed, required}`). The router answers any other rejection with
   `Internal`.
 - Hello reply: `app.version` older than `MIN_APP_VERSION` → every page
   request gets `AppOutdated` with `details {installed, required}`.
+- `hello` deadline: 8 s until the app has answered once in this
+  background's life (a first launch after install or update may be scanned
+  by SmartScreen, Gatekeeper or an antivirus), then `APP_RESPONSE_TIMEOUT`
+  (3 s) from websign-protocol, via the generated `shared/limits.gen.ts`.
 - Idle close after 60 s without traffic and without open requests (a
   request is open from the message that starts it until `choose.result`,
   `sign.result`, `status`, `done` or `error` with its id).
 - Port disconnect: every open request gets `AppMissing` (never heard) or
   `Internal` (heard) — "the app closed the connection".
-- `runtime.onStartup` and `onInstalled`: connect with reason `startup` /
+- `onInstalled` with reason `install` or `update`: connect with reason
   `installed`, then let it idle out (this is how the app learns about every
-  browser with the extension).
+  browser with the extension and checks its registration). Not on
+  `runtime.onStartup`: starting the app at every browser launch would cost a
+  process and a driver load for a check that only changes on install or
+  update; otherwise the app starts when a page or the popup asks.
 
 ### 2.2 Router
 
@@ -103,7 +113,8 @@ from `i18n/`; name, description and toolbar title are `__MSG_…__`.
 
 `webContext(frameUrl, tabUrl)` from `MessageSender.url` (frame) and
 `sender.tab.url` (top): both must be secure contexts (`https:`, or `http:`
-for `localhost`, `*.localhost`, `127.0.0.0/8`, `[::1]`); return
+for `localhost`, `*.localhost`, `127.0.0.1`, `[::1]`: exactly the loopback
+hosts the content script matches, §1); return
 `{origin, topOrigin}` as `new URL(x).origin`; else `null` → the page gets
 `InsecureOrigin`. Requests from non-tab senders are ignored.
 

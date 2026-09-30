@@ -132,15 +132,24 @@ const ok = c.profile.icpBrasil?.match(/^A[34]$/) || (c.profile.eidas?.qualified 
   "Digest is 20 bytes; SHA-256 requires 32."). A `need_digest` whose hash or
   algorithm differs from what `sign()` asked is refused before `prepare`
   runs (`cancel` + `InvalidRequest`).
+- `AppMissing` also covers an app that starts but never answers the
+  extension's `hello` (8 s until it has answered once since the
+  extension's background started, 3 s after): to the person it is a broken install with the same remedy, so
+  it is not reported as `Internal`.
 - Protocol ranges: an extension that only speaks newer page protocols than
   the SDK rejects with `ClientOutdated` (update `@websign/sdk`); one that only
   speaks older ones with `ExtensionOutdated`. Nothing is posted in either case.
 - A reply the SDK cannot use (wrong kind, malformed, unknown error code) is
-  `Internal`. `status()` gives up after 5 s without an answer.
+  `Internal`. `status()` gives up after 10 s without an answer: the
+  extension answers within 9.5 s even when the app starts for the first
+  time (8 s for its `hello`, 1.5 s for its `status`).
 - Importing the SDK without a `window` (server-side rendering) is safe.
 - `installUrl()`: Chrome → Chrome Web Store, Edge → Edge Add-ons, Firefox →
   AMO, Safari/unknown → the project's download page (`project.toml`
-  `homepage`). Until the store IDs exist, all point to the download page.
+  `homepage` + `download.html`). Each store is linked only once its ID
+  (`chrome_web_store_id`, `edge_addons_id`, `firefox_amo_slug`) is set in
+  `project.toml`; until then it points to the download page. A guessed AMO
+  slug is never used: an unpublished slug can be claimed by anyone.
 - `@websign/sdk/messages` `errorText(code, locale)` returns title/body from
   `i18n/*.toml` `[site.errors]` for the closest of en, pt-BR, pt-PT, es, fr,
   it, de.

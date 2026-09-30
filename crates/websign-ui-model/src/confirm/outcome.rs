@@ -5,7 +5,7 @@ use std::time::{Duration, Instant};
 use super::machine::{ConfirmModel, ConfirmState};
 use super::pin::pin_error_of;
 use super::port::{Failure, Finish};
-use super::view::banner_code;
+use super::view::{Expiry, banner_code};
 use crate::certs::{CertRow, DisabledReason, RowStatus};
 
 /// The success screen stays this long; the result is already sent.
@@ -73,8 +73,13 @@ impl ConfirmModel {
                 self.state = ConfirmState::SiteCancelled;
                 self.hold_until = Some(now + NOTICE_HOLD);
             }
-            Finish::Timeout => {
+            Finish::Timeout | Finish::DigestTimeout => {
                 self.state = ConfirmState::Timeout;
+                self.expiry = Some(if finish == Finish::Timeout {
+                    Expiry::Decision
+                } else {
+                    Expiry::Digest
+                });
                 self.hold_until = Some(now + NOTICE_HOLD);
             }
             Finish::Aborted => self.reset(),

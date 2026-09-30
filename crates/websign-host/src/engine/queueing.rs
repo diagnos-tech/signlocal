@@ -25,6 +25,7 @@ impl Engine {
                         flow,
                         queued: true,
                         digest_wait: None,
+                        chain_wait: None,
                     },
                 );
                 if active {
@@ -53,6 +54,7 @@ impl Engine {
                 flow,
                 queued: false,
                 digest_wait: None,
+                chain_wait: None,
             },
         );
         self.activate(key);

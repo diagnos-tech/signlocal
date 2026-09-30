@@ -1,19 +1,24 @@
 //! The `sign.begin` flow (`docs/architecture/protocol.md` §Sign flow).
 //!
 //! ```text
-//! Queued ──front──▶ Listing ──listed──▶ Selecting ──release──▶ AwaitingDigest(seq)
-//!                                         ▲   │                  │  digest(seq)
-//!                                         │   └──switch cert─────┤
-//!                                         │                      ▼
-//!                                         └──switch cert──── Ready(seq) ──Sign──▶ Signing
-//!                                                                 ▲                 │
-//!                                                  PinIncorrect ──┘   ok ──▶ Done(result)
+//! Queued ──front──▶ Listing ──listed──▶ Selecting ──release──▶ [Releasing] ──▶ AwaitingDigest(seq)
+//!                                         ▲   │                                   │  digest(seq)
+//!                                         │   └──switch cert──────────────────────┤
+//!                                         │                                       ▼
+//!                                         └──switch cert──────────────────── Ready(seq) ──Sign──▶ Signing
+//!                                                                                  ▲                 │
+//!                                                                   PinIncorrect ──┘   ok ──▶ Done(result)
 //! any ──cancel / timeout / disconnect / error──▶ Done(error)
 //! ```
 //!
-//! "Release" is automatic for a remembered caller (the preselected
-//! certificate) and needs "Continue" otherwise (`docs/plan.md` D11).
+//! "Release" is automatic only for a certificate in the caller's consent
+//! record, and needs "Continue" for any other one, even from a remembered
+//! caller (`docs/plan.md` D11): on a shared computer, a site one person
+//! remembered must never see another person's certificate unasked.
+//! `Releasing` waits (at most [`CHAIN_WAIT`]) for the certificate's issuer
+//! chain, so `sign.need_digest` carries it.
 
+mod deadlines;
 mod digest;
 mod failures;
 mod keys;
@@ -23,7 +28,7 @@ mod signing;
 mod ui;
 
 use std::collections::HashMap;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use websign_core::{Fingerprint, SignatureAlgorithm};
 use websign_protocol::ErrorCode;
@@ -36,12 +41,20 @@ use super::listing::Listing;
 use super::{Effect, Presentation};
 use crate::ports::KeyCommand;
 
+/// How long a release waits for the issuer chain before `sign.need_digest`
+/// goes without it: key stores answer from memory, but a slow driver must
+/// not hold the site's `prepare` back.
+pub const CHAIN_WAIT: Duration = Duration::from_secs(2);
+
 /// Where a sign request is.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SignState {
     Queued,
     Listing,
     Selecting { selected: Option<Fingerprint> },
+    /// Released: the window shows "Preparing…" while the issuer chain
+    /// lookup `tag` runs; `sign.need_digest` follows it.
+    Releasing { tag: u64, fingerprint: Fingerprint },
     AwaitingDigest { seq: u32, fingerprint: Fingerprint },
     Ready { seq: u32, fingerprint: Fingerprint },
     Signing { tag: u64, fingerprint: Fingerprint },
@@ -53,7 +66,11 @@ pub enum SignState {
 pub struct SignFlow {
     pub key: RequestKey,
     pub request: SignBegin,
+    /// The caller has a consent record (the chip says "Allowed site").
     pub remembered: bool,
+    /// The certificates that record covers: the only ones released without
+    /// "Continue".
+    pub consented: Vec<Fingerprint>,
     pub state: SignState,
     /// When the person must have decided (`limits::DECISION_TIMEOUT` after
     /// the request reached the screen). See [`SignFlow::deadline_now`].
@@ -75,12 +92,14 @@ pub struct SignFlow {
 }
 
 impl SignFlow {
-    /// A queued request.
-    pub fn new(key: RequestKey, request: SignBegin, remembered: bool) -> SignFlow {
+    /// A queued request. `consented` is the caller's consent record: `None`
+    /// when it is not remembered, else the certificates it covers.
+    pub fn new(key: RequestKey, request: SignBegin, consented: Option<Vec<Fingerprint>>) -> SignFlow {
         SignFlow {
             key,
             request,
-            remembered,
+            remembered: consented.is_some(),
+            consented: consented.unwrap_or_default(),
             state: SignState::Queued,
             deadline: None,
             listing: None,
@@ -107,6 +126,7 @@ impl SignFlow {
                 self.key,
                 mode,
                 self.remembered,
+                self.consented.clone(),
             ))),
             Effect::Keys(KeyCommand::List { refresh: false }),
         ]
@@ -182,6 +202,11 @@ impl SignFlow {
             .copied()
             .map(signature_algorithm)
             .find(|algorithm| candidate.algorithms.contains(algorithm))
+    }
+
+    /// Whether the caller's consent covers `fingerprint`.
+    fn is_consented(&self, fingerprint: &Fingerprint) -> bool {
+        self.consented.contains(fingerprint)
     }
 
     fn next_tag(&mut self) -> u64 {

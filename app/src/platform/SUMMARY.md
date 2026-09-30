@@ -2,6 +2,7 @@
 
 - `linux/` — Linux implementations of the platform functions
 - `macos/` — macOS implementations of the platform functions
+- `secure_input/` — the balance logic behind secure keyboard entry
 - `windows/` — Windows implementations of the platform functions
 - `appearance.rs` — Light or dark as the OS is set, for where winit does not know (`docs/ux.md` §4.1).
 - `caller.rs` — Identifying the program that started `websign connect`/`sign`/`choose`.
@@ -11,5 +12,6 @@
 - `mod.rs` — OS facts and actions the app needs outside key stores and registration.
 - `motion.rs` — "Reduce motion" (`docs/ux.md` §11.4): `SPI_GETCLIENTAREAANIMATION`, `accessibilityDisplayShouldReduceMotion`, GNOME `enable-animations`.
 - `os_version.rs` — The Windows release for the report ("Windows 11 (build 22631)"), from `RtlGetVersion`.
+- `secure_input.rs` — Secure keyboard entry while the PIN field has the focus: `EnableSecureEventInput` on macOS, nothing elsewhere.
 - `url_events.rs` — `websign:` URLs delivered as OS events (macOS Apple Events) instead of arguments.
 - `system_ui.rs` — OS windows the app hands work to: the certificate viewer and the .pfx import (`docs/ux.md` §5.12, §8.5), and opening https URLs.

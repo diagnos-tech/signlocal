@@ -3,7 +3,7 @@
 use websign_core::present::wire::signature_algorithm;
 use websign_core::{Fingerprint, PublicKeyKind, SignatureAlgorithm, SourceKind};
 use websign_devices::hints::DeviceDatabase;
-use websign_keystores::{FoundKey, KeyRef, KeystoreHub, PinPrompt};
+use websign_keystores::{FoundKey, KeyCapabilities, KeyRef, KeystoreHub, PinPrompt};
 use websign_protocol::types::SignatureAlgorithmName;
 use websign_ui_model::certs::{CertCandidate, KeyPath, KeySource, PinMode};
 
@@ -52,10 +52,14 @@ pub(super) fn snapshot(
                 pin: pin_mode(hub, group.fingerprint, index + 1, key),
             })
             .collect();
+        let capabilities = hub.capabilities(KeyRef {
+            fingerprint: group.fingerprint,
+            path: 0,
+        });
         let algorithms = group
             .info
             .as_ref()
-            .map(|info| algorithms_of(&info.key))
+            .map(|info| algorithms_of(&info.key, capabilities))
             .unwrap_or_default();
         snapshot.candidates.push(CertCandidate {
             fingerprint: group.fingerprint,
@@ -98,10 +102,13 @@ fn collect(hub: &mut KeystoreHub) -> (Vec<Found>, Vec<String>) {
     (found, inventory.warnings())
 }
 
-/// What the key store can produce with a key of this type; a store that
-/// cannot (RSASSA-PSS through legacy CAPI) reports `Unsupported` when
-/// signing and the row is then marked incompatible.
-fn algorithms_of(key: &PublicKeyKind) -> Vec<SignatureAlgorithm> {
+/// What the key supports **and** its primary path can produce
+/// (`protocol.md` §4.3): legacy CAPI has no RSASSA-PSS, a token may lack
+/// `CKM_RSA_PKCS_PSS`, the Keychain has no brainpool curves. These become
+/// `certificate.algorithms` and the window's "Not compatible" marking, so an
+/// algorithm is never chosen that would fail after release and PIN entry.
+/// Alternates are not counted: the host switches to them only on failures.
+fn algorithms_of(key: &PublicKeyKind, store: KeyCapabilities) -> Vec<SignatureAlgorithm> {
     let names: &[SignatureAlgorithmName] = match key {
         PublicKeyKind::Rsa { .. } => &[
             SignatureAlgorithmName::RsaPkcs1v15,
@@ -110,7 +117,12 @@ fn algorithms_of(key: &PublicKeyKind) -> Vec<SignatureAlgorithm> {
         PublicKeyKind::Ec { .. } => &[SignatureAlgorithmName::Ecdsa],
         PublicKeyKind::Unsupported { .. } => &[],
     };
-    names.iter().copied().map(signature_algorithm).collect()
+    names
+        .iter()
+        .copied()
+        .map(signature_algorithm)
+        .filter(|&algorithm| store.supports(algorithm))
+        .collect()
 }
 
 /// The path the signature takes, from the source's stable name.
@@ -164,10 +176,26 @@ mod tests {
 
     #[test]
     fn algorithms_follow_the_key_type() {
+        let all = KeyCapabilities::ALL;
         assert_eq!(
-            algorithms_of(&PublicKeyKind::Rsa { bits: 2048 }),
+            algorithms_of(&PublicKeyKind::Rsa { bits: 2048 }, all),
             [SignatureAlgorithm::RsaPkcs1v15, SignatureAlgorithm::RsaPss]
         );
-        assert!(algorithms_of(&PublicKeyKind::Unsupported { oid: "1.2".into() }).is_empty());
+        assert!(algorithms_of(&PublicKeyKind::Unsupported { oid: "1.2".into() }, all).is_empty());
+    }
+
+    #[test]
+    fn algorithms_are_limited_to_what_the_store_can_produce() {
+        let capi = KeyCapabilities::of(&[SignatureAlgorithm::RsaPkcs1v15]);
+        assert_eq!(
+            algorithms_of(&PublicKeyKind::Rsa { bits: 2048 }, capi),
+            [SignatureAlgorithm::RsaPkcs1v15]
+        );
+        let ec = PublicKeyKind::Ec {
+            curve: websign_core::Curve::BrainpoolP256r1,
+        };
+        let keychain =
+            KeyCapabilities::of(&[SignatureAlgorithm::RsaPkcs1v15, SignatureAlgorithm::RsaPss]);
+        assert!(algorithms_of(&ec, keychain).is_empty());
     }
 }

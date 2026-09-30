@@ -78,6 +78,9 @@ blocked_http = "Este site não usa conexão segura (https). Por segurança, o We
 signed_by = "Assinado por {signer}"
 # Under a desktop program's name when its signature could not be verified.
 unverified = "Programa não verificado. Só continue se você mesmo o abriu."
+# Headline instead of the program name when it is an interpreter or shell
+# (node, python, bash, PowerShell…): {program} is its name.
+script_run_by = "Um script executado por {program}"
 
 [code]
 label = "Código de conferência"
@@ -187,8 +190,10 @@ locked_body_generic = "O token bloqueou depois de muitas tentativas erradas. Des
 [consent]
 remember = "Lembrar este site neste computador"
 remember_app = "Lembrar este programa neste computador"
-remember_help = "Ele poderá saber qual certificado você usa sem perguntar. Cada assinatura continua pedindo sua confirmação."
+remember_help = "Ele poderá ver o certificado escolhido agora sem perguntar. Cada assinatura continua pedindo sua confirmação."
 remember_disabled = "Endereços numéricos ou com caracteres especiais não podem ser lembrados."
+# Under the disabled checkbox when the caller is an interpreter or shell.
+remember_disabled_script = "Programas que executam scripts não podem ser lembrados: isso permitiria todos os scripts que eles executam."
 select_shares = "O site vai receber nome, tipo, emissor e validade do certificado escolhido. Nada é assinado agora."
 
 [action]
@@ -415,6 +420,12 @@ body = "Este site não usa https. Por segurança, o WebeSign não assina para el
 [errors.timeout]
 title = "O pedido expirou"
 body = "Ninguém respondeu em 5 minutos. Volte ao site e tente de novo."
+
+# The site did not send the document to sign within 60 s. {site} is the
+# host or program name.
+[errors.digest_timeout]
+title = "O site não respondeu"
+body = "{site} não preparou o documento em 60 segundos. Volte ao site e tente de novo."
 
 [errors.no_certificates]
 title = "Nenhum certificado encontrado"

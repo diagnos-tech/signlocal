@@ -11,6 +11,7 @@ pub mod file_picker;
 pub mod focus;
 mod objc;
 mod peer;
+pub mod secure_input;
 pub mod settings;
 pub mod system_ui;
 pub mod url_events;

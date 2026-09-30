@@ -29,6 +29,26 @@ pub fn expected_curve(
     }
 }
 
+/// What `C_GetMechanismInfo` says about signing with a mechanism.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MechanismAnswer {
+    /// Known, with `CKF_SIGN`.
+    Signs,
+    /// Known without `CKF_SIGN`, or `CKR_MECHANISM_INVALID`.
+    Refuses,
+    /// The token could not describe it.
+    Unknown,
+}
+
+/// Asks the token about `mechanism` on `slot`; never needs a login.
+pub fn mechanism_answer(pkcs11: &Pkcs11, slot: Slot, mechanism: MechanismType) -> MechanismAnswer {
+    match pkcs11.get_mechanism_info(slot, mechanism) {
+        Ok(info) if info.sign() => MechanismAnswer::Signs,
+        Ok(_) | Err(Error::Pkcs11(RvError::MechanismInvalid, _)) => MechanismAnswer::Refuses,
+        Err(_) => MechanismAnswer::Unknown,
+    }
+}
+
 /// `Unsupported` when the token says it cannot sign with the mechanism. A
 /// token that cannot even describe it is given the benefit of the doubt: some
 /// modules implement mechanisms they do not report.
@@ -37,12 +57,11 @@ pub fn require_mechanism(
     slot: Slot,
     mechanism: MechanismType,
 ) -> Result<(), KeystoreError> {
-    match pkcs11.get_mechanism_info(slot, mechanism) {
-        Ok(info) if info.sign() => Ok(()),
-        Ok(_) | Err(Error::Pkcs11(RvError::MechanismInvalid, _)) => Err(
-            KeystoreError::Unsupported(format!("the token cannot sign with {mechanism}")),
-        ),
-        Err(_) => Ok(()),
+    match mechanism_answer(pkcs11, slot, mechanism) {
+        MechanismAnswer::Refuses => Err(KeystoreError::Unsupported(format!(
+            "the token cannot sign with {mechanism}"
+        ))),
+        MechanismAnswer::Signs | MechanismAnswer::Unknown => Ok(()),
     }
 }
 

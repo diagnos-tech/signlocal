@@ -37,6 +37,9 @@ firefox_id = "websign@dev.websign"
 # Store IDs are assigned on first upload; empty until then.
 chrome_web_store_id = ""
 edge_addons_id = ""
+# Slug of the addons.mozilla.org listing, empty until it is published: an
+# unclaimed slug can be registered by anyone, so nothing links to AMO before.
+firefox_amo_slug = ""
 # Public key of the development build. It pins the unpacked extension ID to
 # `dev_id` on every machine, so the native host can allow it before the
 # extension is published. The private key is not needed and is not kept.

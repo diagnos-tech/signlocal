@@ -27,9 +27,6 @@ pub struct RegisterArgs {
     /// `--user-data-dir=<DIR>`; Linux and macOS). For tests.
     #[arg(long, value_name = "DIR")]
     pub user_data_dir: Option<PathBuf>,
-    /// Also allow this Chromium extension ID (repeatable).
-    #[arg(long = "extension-id", value_name = "ID")]
-    pub extension_ids: Vec<String>,
     /// Windows: folder for the manifest files the registry keys point to.
     #[arg(long, value_name = "DIR")]
     pub manifest_dir: Option<PathBuf>,
@@ -73,7 +70,6 @@ pub fn request(args: &RegisterArgs) -> Request {
         },
         browsers: args.browsers.iter().map(|&b| b.into()).collect(),
         user_data_dir: args.user_data_dir.clone(),
-        extension_ids: args.extension_ids.clone(),
         manifest_dir: args.manifest_dir.clone(),
         host: None,
         dry_run: args.dry_run,

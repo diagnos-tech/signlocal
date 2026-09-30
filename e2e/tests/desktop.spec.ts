@@ -29,12 +29,12 @@ test.describe("desktop callers", () => {
       const result = await websign.sign({
         hash: "SHA-384",
         certificate: key.fingerprint,
-        prepare: (certificate) => {
-          prepared.push(certificate.fingerprint);
+        prepare: (certificate, { hash }) => {
+          prepared.push(`${certificate.fingerprint} ${hash}`);
           return createHash("sha384").update(message).digest();
         },
       });
-      expect(prepared).toEqual([key.fingerprint]);
+      expect(prepared).toEqual([`${key.fingerprint} SHA-384`]);
       expect(result.certificate.fingerprint).toBe(key.fingerprint);
       expect(
         verifies(key.certificate, "SHA-384", result.algorithm, message, result.signature),

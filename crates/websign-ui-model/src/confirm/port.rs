@@ -53,10 +53,14 @@ pub struct OpenRequest {
     pub key: RequestKey,
     pub mode: Mode,
     pub caller: CallerView,
-    /// The caller has remembered consent: its certificate is released without
-    /// "Continue" (`docs/plan.md` D11) and the chip says "Allowed site".
+    /// The caller has remembered consent: the chip says "Allowed site".
     pub remembered: bool,
-    /// "Remember this site" may be offered (false for IP and IDN origins).
+    /// The certificates this caller's consent covers. Only these are
+    /// released without "Continue" (`docs/plan.md` D11); any other
+    /// certificate, even for a remembered caller, waits for Continue.
+    pub consented: Vec<Fingerprint>,
+    /// "Remember this site" may be offered (false for IP and IDN origins
+    /// and for interpreters and shells).
     pub can_remember: bool,
     /// 1-based position and queue length, for "Signature request 1 of 3".
     pub position: (u32, u32),
@@ -104,7 +108,11 @@ pub enum Finish {
     /// navigated) or its connection dropped. The window says so for 1.5 s
     /// so the person knows why it goes away.
     SiteCancelled,
+    /// Nobody decided within the decision timeout (5 minutes).
     Timeout,
+    /// The caller did not send the digest within the digest timeout (60 s):
+    /// the site's `prepare` hung, not the person.
+    DigestTimeout,
     /// Ended without a notice (the person's own Cancel, a protocol error):
     /// the window just moves on.
     Aborted,
@@ -163,13 +171,14 @@ pub enum UiCommand {
 /// Window → host.
 #[derive(Debug)]
 pub enum UiEvent {
-    /// The person moved the selection. For a remembered caller the host asks
-    /// for a new digest; otherwise it waits for `Continue`.
+    /// The person moved the selection. For a certificate in the caller's
+    /// consent the host asks for a new digest; otherwise it waits for
+    /// `Continue`.
     Selected {
         key: RequestKey,
         fingerprint: Fingerprint,
     },
-    /// Release the certificate to a caller that is not remembered (D11).
+    /// Release a certificate the caller's consent does not cover (D11).
     Continue {
         key: RequestKey,
         fingerprint: Fingerprint,

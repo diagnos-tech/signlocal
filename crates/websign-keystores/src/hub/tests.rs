@@ -10,6 +10,11 @@ use crate::{Keystore, SourceFailure};
 const SHARED: &[u8] = b"certificate seen by the OS and a module";
 const MODULE_ONLY: &[u8] = b"certificate only a module sees";
 
+/// A legacy store: PKCS#1 v1.5 only.
+fn os_capabilities() -> KeyCapabilities {
+    KeyCapabilities::of(&[SignatureAlgorithm::RsaPkcs1v15])
+}
+
 struct Setup {
     hub: KeystoreHub,
     lists: Rc<Cell<usize>>,
@@ -27,7 +32,10 @@ fn setup() -> Setup {
         ],
     );
     let (lists, ended) = (module.lists.clone(), module.ended.clone());
-    let os = FakeKeystore::new("os", vec![key(SHARED, SourceKind::System, "os-shared")]);
+    let os = FakeKeystore {
+        capabilities: Some(os_capabilities()),
+        ..FakeKeystore::new("os", vec![key(SHARED, SourceKind::System, "os-shared")])
+    };
     let broken = FakeKeystore {
         fail_list: true,
         ..FakeKeystore::new("broken", Vec::new())
@@ -121,7 +129,15 @@ fn unknown_keys_and_paths_are_not_found() {
         ));
         assert!(hub.chain(key).is_empty());
         assert_eq!(hub.pin_state(key), None);
+        assert_eq!(hub.capabilities(key), KeyCapabilities::NONE);
     }
+}
+
+#[test]
+fn capabilities_follow_the_path() {
+    let Setup { mut hub, .. } = setup();
+    assert_eq!(hub.capabilities(reference(SHARED, 0)), os_capabilities());
+    assert_eq!(hub.capabilities(reference(SHARED, 1)), KeyCapabilities::ALL);
 }
 
 #[test]

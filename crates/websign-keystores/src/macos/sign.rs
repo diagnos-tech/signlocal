@@ -67,7 +67,7 @@ pub fn sign(
 
 /// Asks the key (for token keys, the token driver) before signing, so an
 /// unsupported combination is reported as such rather than as a failure.
-fn supports(key: &SecKey, algorithm: Algorithm) -> bool {
+pub(super) fn supports(key: &SecKey, algorithm: Algorithm) -> bool {
     // SAFETY: `key` keeps the SecKeyRef alive for the call, and the algorithm
     // is an immutable CFString constant exported by Security.framework.
     unsafe {
