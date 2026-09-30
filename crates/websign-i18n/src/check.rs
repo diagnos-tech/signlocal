@@ -11,8 +11,14 @@ use crate::message::placeholders;
 
 /// Sections that end up in `chrome.i18n`, which has no plurals.
 const EXTENSION_SECTIONS: [&str; 3] = ["popup.", "store.", "extension."];
-/// The Chrome Web Store limit for an extension description.
-const MAX_DESCRIPTION_CHARS: usize = 132;
+/// Store length limits in characters: the Chrome Web Store caps an extension
+/// description (and the listing summary shown in its search results) at 132
+/// and the listing name at 45.
+const TEXT_LIMITS: [(&str, usize); 3] = [
+    ("extension.description", 132),
+    ("store.listing_summary", 132),
+    ("store.listing_name", 45),
+];
 
 /// One problem in a locale file.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -31,7 +37,7 @@ pub enum Problem {
     /// A plural lacks `other`, or has a category outside CLDR.
     Plural { key: String, detail: String },
     /// A `[popup]`/`[store]`/`[extension]` message is a plural (`chrome.i18n`
-    /// has none), or the store description exceeds 132 characters.
+    /// has none), or a store text exceeds its character limit.
     Extension { key: String, detail: String },
     /// Not valid TOML, or a value that is neither a string nor a table.
     Syntax { detail: String },
@@ -103,10 +109,11 @@ pub fn check_locale(reference: &str, candidate: &str) -> Vec<Problem> {
                 }
             }
             Leaf::Text(text) => {
-                if key == "extension.description" && text.chars().count() > MAX_DESCRIPTION_CHARS {
+                let limit = TEXT_LIMITS.iter().find(|(name, _)| name == key);
+                if let Some(&(_, max)) = limit.filter(|(_, max)| text.chars().count() > *max) {
                     extension.push(Problem::Extension {
                         key: key.clone(),
-                        detail: format!("longer than {MAX_DESCRIPTION_CHARS} characters"),
+                        detail: format!("longer than {max} characters"),
                     });
                 }
             }

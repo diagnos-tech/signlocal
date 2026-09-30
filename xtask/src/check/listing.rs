@@ -72,11 +72,14 @@ pub fn group<'a>(files: impl Iterator<Item = &'a str>) -> Tree {
     tree
 }
 
-/// Whether `folder` is exempt from the `SUMMARY.md` rules: the frozen kit
-/// and `generated/` folders, whose summary the generator writes.
+/// Whether `folder` is exempt from the `SUMMARY.md` rules: the frozen kit,
+/// `generated/` folders, whose summary the generator writes, and the TypeDoc
+/// output under `site/api/`, which TypeDoc rewrites from scratch (its parent
+/// `site/SUMMARY.md` still lists `api/`).
 pub fn is_unchecked(folder: &str) -> bool {
     let kit = folder == UNCHECKED_PREFIX || folder.starts_with("docs/prototypes/kit/");
-    kit || folder.rsplit('/').next() == Some("generated")
+    let api_docs = folder == "site/api" || folder.starts_with("site/api/");
+    kit || api_docs || folder.rsplit('/').next() == Some("generated")
 }
 
 #[cfg(test)]
@@ -108,6 +111,8 @@ mod tests {
         assert!(is_unchecked("docs/prototypes/kit/app"));
         assert!(!is_unchecked("docs/prototypes/kitchen"));
         assert!(is_unchecked("sdk/src/generated"));
+        assert!(is_unchecked("site/api/functions"));
+        assert!(!is_unchecked("site/apis"));
         assert!(!is_unchecked("sdk/src"));
     }
 }

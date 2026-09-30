@@ -7,6 +7,8 @@
       "clients/node/**",
       "extension/**",
       "e2e/**",
+      "examples/web/**",
+      "examples/desktop/node-cli/**",
       "!**/generated",
       "!**/node_modules",
       "!**/.output",

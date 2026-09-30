@@ -11,6 +11,7 @@ WebeSign: sign with your own certificate from any website or desktop program. St
 - `design/` — design tokens (`tokens.css`), the single source for the app theme and the site
 - `docs/` — documentation
 - `e2e/` — end-to-end tests (Playwright)
+- `examples/` — runnable examples for web (SDK) and desktop (Node, Rust) integrators
 - `extension/` — the WebeSign browser extension (WXT, MV3)
 - `i18n/` — translations: en (reference), pt-BR, pt-PT, es, fr, it, de
 - `packaging/` — release packaging definitions

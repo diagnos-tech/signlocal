@@ -101,3 +101,23 @@ fn reports_extension_rules() {
     let problems = check_locale(reference, reference);
     assert!(matches!(problems.as_slice(), [Problem::Extension { .. }]));
 }
+
+#[test]
+fn enforces_store_listing_limits_in_characters() {
+    let reference = "[store]\nlisting_name = \"n\"\nlisting_summary = \"s\"\n";
+    let candidate = |name: usize, summary: usize| {
+        // Multi-byte characters: the limit counts characters, not bytes.
+        let (name, summary) = ("é".repeat(name), "é".repeat(summary));
+        format!("[store]\nlisting_name = \"{name}\"\nlisting_summary = \"{summary}\"\n")
+    };
+    assert!(check_locale(reference, &candidate(45, 132)).is_empty());
+    let problems = check_locale(reference, &candidate(46, 133));
+    let keys: Vec<_> = problems
+        .iter()
+        .map(|p| match p {
+            Problem::Extension { key, .. } => key.as_str(),
+            other => panic!("unexpected {other:?}"),
+        })
+        .collect();
+    assert_eq!(keys, ["store.listing_name", "store.listing_summary"]);
+}

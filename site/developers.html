@@ -183,13 +183,19 @@ it(&quot;stays calm when the person cancels&quot;, async () =&gt; {
 <h2 id="desktop-h" data-i18n="dev.nav_desktop">Desktop programs</h2>
 <h3 data-i18n="dev.desk_h">Desktop program (Node, Bun, Electron): @websign/desktop</h3>
 <p data-i18n="dev.desk">Connect to the app, then call sign(). The app names your program in its confirmation window.</p>
-<pre><code>import { WebSign } from &quot;@websign/desktop&quot;;
-const websign = await WebSign.connect();
-const { signature, certificate } = await websign.sign({
-  hash: &quot;SHA-256&quot;,
-  prepare: async (cert, algorithm) =&gt; digestFor(cert.der, algorithm),
-});
-await websign.close();</code></pre>
+<pre><code>import { createHash } from &quot;node:crypto&quot;;
+import { WebSign } from &quot;@websign/desktop&quot;;
+
+const websign = await WebSign.connect(); // AppMissing if not installed
+try {
+  const { signature, certificate } = await websign.sign({
+    hash: &quot;SHA-256&quot;,
+    prepare: () =&gt; createHash(&quot;sha256&quot;).update(&quot;my document&quot;).digest(),
+  });
+  console.log(`${certificate.displayName}: ${signature.byteLength} bytes`);
+} finally {
+  await websign.close();
+}</code></pre>
 <h3 data-i18n="dev.rust_h">Desktop program (Rust): websign-client</h3>
 <p data-i18n="dev.rust">Client::connect(), then certificates() or sign(). The app is started on demand.</p>
 <p class="muted" data-i18n="dev.docs">API guides and contracts in the repository: docs/architecture/web-api.md and docs/architecture/desktop-api.md</p>
