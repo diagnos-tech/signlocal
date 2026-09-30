@@ -49,6 +49,16 @@ impl Token {
 
 #[test]
 fn serves_a_signature_with_softhsm2() {
+    let required = std::env::var_os(REQUIRE_VAR).is_some();
+    // The fixture is a POSIX script, and on Windows `bash` is often the WSL
+    // launcher, which fails without a distribution instead of reporting
+    // missing tooling.
+    if cfg!(windows) && !required {
+        eprintln!(
+            "SoftHSM2 fixture needs a POSIX shell: skipped (set {REQUIRE_VAR} to fail instead)"
+        );
+        return;
+    }
     let dir = tempfile::tempdir().unwrap();
     let script = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../websign-keystores/tests/support/softhsm-fixture.sh");
@@ -57,7 +67,7 @@ fn serves_a_signature_with_softhsm2() {
         .arg(dir.path())
         .status()
         .unwrap();
-    if status.code() == Some(2) && std::env::var_os(REQUIRE_VAR).is_none() {
+    if status.code() == Some(2) && !required {
         eprintln!("SoftHSM2 tooling not installed: skipped (set {REQUIRE_VAR} to fail instead)");
         return;
     }

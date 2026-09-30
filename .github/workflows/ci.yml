@@ -343,6 +343,8 @@ jobs:
           name: websign-extension-zips
           path: extension/.output/*.zip
           if-no-files-found: error
+          # `.output` is a dot folder, which upload-artifact skips by default.
+          include-hidden-files: true
 
   node-client:
     name: node client (node ${{ matrix.node }})

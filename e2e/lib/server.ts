@@ -54,7 +54,13 @@ export async function startServer(): Promise<PageServer> {
   const { port } = server.address() as AddressInfo;
   return {
     origin: `http://localhost:${port}`,
-    close: () => new Promise<void>((done) => server.close(() => done())),
+    close: () =>
+      new Promise<void>((done) => {
+        server.close(() => done());
+        // Chromium keeps spare connections open, even ones that never sent a
+        // request; `close` alone waits for them to time out.
+        server.closeAllConnections();
+      }),
   };
 }
 

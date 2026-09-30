@@ -35,7 +35,8 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: e2e-${{ github.event.pull_request.number || github.ref }}
+  # Per event: a manual full run must not cancel the push run of the same commit.
+  group: e2e-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -209,7 +210,8 @@ jobs:
         run: |
           case "${{ matrix.image }}" in
             debian:*) apt-get update && apt-get install -y --no-install-recommends bash ca-certificates curl git ;;
-            fedora:*|rockylinux:*) dnf install -y bash ca-certificates curl git tar gzip ;;
+            # The images ship curl-minimal, which conflicts with the full curl.
+            fedora:*|rockylinux:*) dnf install -y --allowerasing bash ca-certificates curl git tar gzip ;;
             archlinux:*) pacman -Syu --noconfirm --needed bash ca-certificates curl git ;;
           esac
       - uses: actions/checkout@v5
@@ -221,13 +223,13 @@ jobs:
           case "${{ matrix.image }}" in
             debian:*)
               apt-get install -y --no-install-recommends gcc g++ make pkg-config unzip libpcsclite-dev \
-                libxkbcommon-dev libwayland-dev softhsm2 opensc p11-kit xvfb xauth mesa-vulkan-drivers \
+                libxkbcommon-dev libwayland-dev softhsm2 opensc p11-kit openssl xvfb xauth mesa-vulkan-drivers \
                 libgl1-mesa-dri libegl1 libxkbcommon-x11-0 libx11-xcb1 libxcb-xfixes0 libx11-6 \
                 libxcursor1 libxi6 libxrandr2 chromium
               ;;
             fedora:*)
               dnf install -y --setopt=install_weak_deps=False gcc gcc-c++ make pkgconf-pkg-config unzip \
-                pcsc-lite-devel libxkbcommon-devel wayland-devel softhsm opensc p11-kit \
+                pcsc-lite-devel libxkbcommon-devel wayland-devel softhsm opensc p11-kit openssl \
                 xorg-x11-server-Xvfb xorg-x11-xauth mesa-vulkan-drivers mesa-dri-drivers mesa-libEGL \
                 libxkbcommon-x11 libxcb libX11 libXcursor libXi libXrandr chromium
               ;;
@@ -235,13 +237,13 @@ jobs:
               dnf install -y epel-release dnf-plugins-core
               dnf config-manager --set-enabled crb
               dnf install -y --allowerasing gcc gcc-c++ make pkgconf-pkg-config unzip pcsc-lite-devel \
-                libxkbcommon-devel wayland-devel softhsm opensc p11-kit xorg-x11-server-Xvfb \
+                libxkbcommon-devel wayland-devel softhsm opensc p11-kit openssl xorg-x11-server-Xvfb \
                 xorg-x11-xauth mesa-vulkan-drivers mesa-dri-drivers mesa-libEGL libxkbcommon-x11 libxcb \
                 libX11 libXcursor libXi libXrandr chromium
               ;;
             archlinux:*)
               pacman -S --noconfirm --needed base-devel unzip pcsclite libxkbcommon wayland softhsm \
-                opensc p11-kit xorg-server-xvfb xorg-xauth vulkan-swrast mesa libxkbcommon-x11 libxcb \
+                opensc p11-kit openssl xorg-server-xvfb xorg-xauth vulkan-swrast mesa libxkbcommon-x11 libxcb \
                 libx11 libxcursor libxi libxrandr chromium
               ;;
           esac

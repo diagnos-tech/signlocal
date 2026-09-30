@@ -232,6 +232,8 @@ jobs:
             npm/*.tgz
             extension/.output/*.zip
           if-no-files-found: error
+          # `.output` is a dot folder, which upload-artifact skips by default.
+          include-hidden-files: true
           retention-days: 30
 
   publish:

@@ -114,10 +114,23 @@ export async function register(
 
 /** Opens diagnostics on `tab`; the e2e hook saves it and closes the window. */
 export async function diagnostics(env: E2eEnvironment, tab: string): Promise<void> {
-  await run(env.app, ["diagnostics", "--tab", tab], {
-    env: appEnv(env, "wait", true),
-    timeout: 60_000,
-  });
+  try {
+    await run(env.app, ["diagnostics", "--tab", tab], {
+      env: appEnv(env, "wait", true),
+      timeout: 60_000,
+    });
+  } catch (error) {
+    // A crash leaves stderr empty: the exit status and the app's own log
+    // (test keys only) are what tells why.
+    const { code, signal } = error as { code?: unknown; signal?: unknown };
+    const log = appLog().split("\n").slice(-40).join("\n");
+    throw new Error(
+      `websign diagnostics --tab ${tab} failed (code ${code}, signal ${signal})\n${log}`,
+      {
+        cause: error,
+      },
+    );
+  }
 }
 
 /** Every line the app logged in this run. */
