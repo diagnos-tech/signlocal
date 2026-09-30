@@ -53,6 +53,8 @@ function createFakeBrowser() {
   const fake = {
     ports: [] as FakePort[],
     connectNativeError: null as Error | null,
+    /** The scheme of extension URLs: `safari-web-extension` makes the background use the relay. */
+    urlScheme: "chrome-extension",
     manifestVersion: "0.1.0",
     runtime: {
       id: "websign-test-extension",
@@ -63,7 +65,10 @@ function createFakeBrowser() {
       sendMessage: vi.fn(async (_message: unknown): Promise<unknown> => undefined),
       getManifest: () => ({ version: fake.manifestVersion }),
       getPlatformInfo: vi.fn(async () => ({ os: "linux" })),
-      getURL: (path: string) => `chrome-extension://websign-test-extension${path}`,
+      getURL: (path: string) => `${fake.urlScheme}://websign-test-extension${path}`,
+      sendNativeMessage: vi.fn(
+        async (_application: string, _message: unknown): Promise<unknown> => undefined,
+      ),
       connectNative: vi.fn((_host: string): FakePort => {
         if (fake.connectNativeError) throw fake.connectNativeError;
         const port = new FakePort();
@@ -89,6 +94,9 @@ function createFakeBrowser() {
     reset(): void {
       this.ports = [];
       this.connectNativeError = null;
+      this.urlScheme = "chrome-extension";
+      this.runtime.sendNativeMessage.mockReset();
+      this.runtime.sendNativeMessage.mockImplementation(async () => undefined);
       this.manifestVersion = "0.1.0";
       this.runtime.onMessage.clear();
       this.runtime.onStartup.clear();

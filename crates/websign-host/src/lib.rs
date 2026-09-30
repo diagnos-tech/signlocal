@@ -40,4 +40,7 @@ pub mod testing;
 
 pub use caller::Caller;
 pub use engine::{Control, Engine, EngineConfig, EngineEvent};
-pub use launch::{BrowserFamily, BrowserLaunch, detect_browser_launch, parse_launch};
+pub use launch::{
+    BrowserFamily, BrowserLaunch, SAFARI_FLAG, detect_browser_launch, is_appex_executable,
+    parse_launch, parse_launch_at, running_in_appex,
+};

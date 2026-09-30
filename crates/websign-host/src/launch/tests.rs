@@ -104,3 +104,62 @@ fn cli_invocations_are_never_mistaken_for_launches() {
         assert_eq!(parse_launch(&args(cli)), None, "{cli:?}");
     }
 }
+
+const APPEX_EXE: &str =
+    "/Applications/WebeSign.app/Contents/PlugIns/WebeSign Extension.appex/Contents/MacOS/websign";
+
+#[test]
+fn the_safari_app_extension_passes_its_flag_and_bundle_id() {
+    let launch = parse_launch_at(true, &args(&[SAFARI_FLAG, "dev.websign.app.extension"])).unwrap();
+    assert_eq!(launch.family, BrowserFamily::Safari);
+    assert_eq!(launch.extension_id, "dev.websign.app.extension");
+    assert_eq!(launch.parent_window, None);
+    assert_eq!(launch.family.as_str(), "safari");
+}
+
+#[test]
+fn the_safari_shape_counts_only_inside_an_appex() {
+    let safari = args(&[SAFARI_FLAG, "dev.websign.app.extension"]);
+    assert_eq!(parse_launch_at(false, &safari), None);
+    assert_eq!(parse_launch(&safari), None);
+}
+
+#[test]
+fn malformed_safari_launches_are_refused() {
+    for bad in [
+        &[SAFARI_FLAG][..],
+        &[SAFARI_FLAG, ""],
+        &[SAFARI_FLAG, "-x"],
+        &[SAFARI_FLAG, ".x"],
+        &[SAFARI_FLAG, "dev.websign app"],
+        &[SAFARI_FLAG, "dev/websign"],
+        &[SAFARI_FLAG, "dev.websign.app.extension", "extra"],
+        &["--safari", "dev.websign.app.extension"],
+    ] {
+        assert_eq!(parse_launch_at(true, &args(bad)), None, "{bad:?}");
+    }
+    let long = "a".repeat(256);
+    assert_eq!(parse_launch_at(true, &args(&[SAFARI_FLAG, &long])), None);
+}
+
+#[test]
+fn browsers_that_start_the_host_are_still_recognized_inside_an_appex() {
+    let launch = parse_launch_at(true, &args(&[&format!("chrome-extension://{ID}/")])).unwrap();
+    assert_eq!(launch.family, BrowserFamily::Chromium);
+}
+
+#[test]
+fn only_the_packaged_appex_layout_is_an_appex_executable() {
+    use std::path::Path;
+    assert!(is_appex_executable(Path::new(APPEX_EXE)));
+    for other in [
+        "/Applications/WebeSign.app/Contents/MacOS/websign",
+        "/usr/local/bin/websign",
+        "/tmp/x.appex/MacOS/websign",
+        "/tmp/x.appex/Contents/Resources/websign",
+        "websign",
+        "/",
+    ] {
+        assert!(!is_appex_executable(Path::new(other)), "{other}");
+    }
+}

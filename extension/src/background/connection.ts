@@ -12,7 +12,6 @@
 
 import { browser } from "wxt/browser";
 import type { AppEnvelope, ClientEnvelope, HelloReason, HelloReply } from "../generated";
-import { NATIVE_HOST } from "../generated";
 import {
   FIRST_HELLO_TIMEOUT_MS,
   HELLO_TIMEOUT_MS,
@@ -21,6 +20,7 @@ import {
 } from "../shared/limits";
 import { AppError, closedCode } from "./app-error";
 import { detectBrowser } from "./browser";
+import { type NativePort, openNativePort } from "./native-port";
 
 /** A live connection to the app. */
 export interface Connection {
@@ -48,10 +48,9 @@ function isEnvelope(value: unknown): value is AppEnvelope {
   return typeof id === "string" && typeof type === "string";
 }
 
-function lastErrorText(port: unknown): string {
+function lastErrorText(port: NativePort): string {
   const fromRuntime = browser.runtime.lastError?.message;
-  const fromPort = (port as { error?: { message?: string } }).error?.message;
-  return fromRuntime ?? fromPort ?? "the app closed the connection";
+  return fromRuntime ?? port.error?.message ?? "the app closed the connection";
 }
 
 function open(reason: HelloReason, forget: () => void): Promise<Connection> {
@@ -67,7 +66,7 @@ function open(reason: HelloReason, forget: () => void): Promise<Connection> {
     const closed = new Promise<{ heard: boolean; reason: string }>((done) => {
       finish = done;
     });
-    let port: ReturnType<typeof browser.runtime.connectNative>;
+    let port: NativePort;
 
     const end = (why: string) => {
       if (ended) return;
@@ -152,7 +151,7 @@ function open(reason: HelloReason, forget: () => void): Promise<Connection> {
     };
 
     try {
-      port = browser.runtime.connectNative(NATIVE_HOST);
+      port = openNativePort();
     } catch (error) {
       reject(new AppError("AppMissing", error instanceof Error ? error.message : "no host"));
       return;
@@ -167,7 +166,7 @@ function open(reason: HelloReason, forget: () => void): Promise<Connection> {
       const why = lastErrorText(port);
       const wasReady = ready;
       end(why);
-      if (!wasReady) reject(new AppError(closedCode(heard), why));
+      if (!wasReady) reject(new AppError(port.error?.code ?? closedCode(heard), why));
     });
     // A host that started but never said a word is as unusable as a missing
     // one, and the remedy is the same (install or repair the app), so it is

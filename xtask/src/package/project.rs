@@ -17,9 +17,6 @@ pub struct Project {
     pub bundle_id: String,
     /// The Safari appex's bundle ID (`[ids] safari_extension_bundle_id`).
     pub safari_bundle_id: String,
-    /// `[extension] firefox_id`: the ID the Safari appex names when it starts
-    /// the host (`safari/SPEC.md` §4).
-    pub firefox_id: String,
 }
 
 impl Project {
@@ -35,7 +32,6 @@ impl Project {
             ("url_scheme", &self.url_scheme),
             ("bundle_id", &self.bundle_id),
             ("safari_bundle_id", &self.safari_bundle_id),
-            ("firefox_id", &self.firefox_id),
             ("version", version),
         ]
     }
@@ -78,7 +74,6 @@ fn parse(text: &str) -> Result<Project, String> {
         url_scheme: get("ids", "url_scheme")?,
         bundle_id: get("ids", "macos_bundle_id")?,
         safari_bundle_id: get("ids", "safari_extension_bundle_id")?,
-        firefox_id: get("extension", "firefox_id")?,
     })
 }
 

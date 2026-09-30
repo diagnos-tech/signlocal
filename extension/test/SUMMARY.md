@@ -17,6 +17,8 @@
 - `router-app-state.test.ts` — Router with an outdated app and a missing native host.
 - `router-lifecycle.test.ts` — Router cleanup on tab close, navigation, document gone and port close.
 - `router.test.ts` — Router forwarding, native ids, tab isolation on the shared port, replies and `status`.
+- `safari-isolation.test.ts` — Safari relay under the real router: two tabs share one session yet get only their own replies; tab close cancels over the relay.
+- `safari-port.test.ts` — Safari relay transport: happy path, host exit, poll timeout, session limit, appex/host missing, malformed replies, backoff, other browsers untouched.
 - `validate.test.ts` — `validatePageRequest`: accepted shapes, rejections, unknown fields refused.
 - `version.test.ts` — `isOlder` vectors and malformed input.
 - `fakes/` — In-memory stand-ins for the WebExtension APIs, the native connection, protocol messages and the page `window`.

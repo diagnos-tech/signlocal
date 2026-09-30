@@ -113,7 +113,7 @@ O = Opus. Tracks of the same wave run in parallel; boundaries never overlap.
 
 | Track | Files | Trigger |
 |---|---|---|
-| C1 Store channel (MSIX, Mac App Store, Safari appex) | `packaging/windows/msix/**`, `packaging/macos/store/**`, `safari/**`, `app/src/platform/macos/safari_socket.rs` | accounts (D10) |
+| C1 Store channel (MSIX, Mac App Store) | `packaging/windows/msix/**`, `packaging/macos/store/**` | accounts (D10). The Safari appex is done and ships in the direct macOS build (`safari/**`, the extension's Safari transport, the host's Safari launch shape); what remains for Safari is Developer ID signing and notarization (C3) and its Mac App Store listing here |
 | C2 macOS PKCS#11 Add-on | `packaging/macos/addon/**` | store build exists and the token matrix requires it (proof 3 criterion) |
 | C3 Code signing | release workflow | certificates bought |
 

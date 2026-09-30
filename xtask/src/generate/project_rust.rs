@@ -16,7 +16,7 @@ const OUTPUT: &str = "crates/websign-project/src/generated.rs";
 const LINE_WIDTH: usize = 100;
 
 /// `(constant, table, key, doc comment)` for every exported string.
-const CONSTANTS: [(&str, &str, &str, &str); 14] = [
+const CONSTANTS: [(&str, &str, &str, &str); 15] = [
     (
         "PRODUCT_NAME",
         "product",
@@ -70,6 +70,12 @@ const CONSTANTS: [(&str, &str, &str, &str); 14] = [
         "ids",
         "macos_app_group",
         "macOS app group shared with the Safari extension.",
+    ),
+    (
+        "SAFARI_EXTENSION_BUNDLE_ID",
+        "ids",
+        "safari_extension_bundle_id",
+        "Bundle identifier of the Safari app extension inside the macOS app.",
     ),
     (
         "FIREFOX_ID",

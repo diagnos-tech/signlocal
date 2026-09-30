@@ -9,5 +9,6 @@
 - `vite.config.ts` — one dev server for every example; `@websign/sdk` aliased to `sdk/src`
 - `tsconfig.json` — type-checking settings (same aliases)
 - `package.json` — standalone package with its own lockfile (not a workspace member)
+- `bun.lock` — resolved dependency versions
 - `biome.json` — lint and format settings for this folder
 - `README.md` — how to run, what each example shows, where the PDF library meets WebeSign

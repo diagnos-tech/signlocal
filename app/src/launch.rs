@@ -8,7 +8,10 @@
 //! counts only when it names one of our extensions (`project.toml`, the same
 //! IDs the manifests' `allowed_origins`/`allowed_extensions` list). Anything
 //! else goes to the command-line parser, which answers with a usage error
-//! (exit 2) instead of serving a stranger on stdio.
+//! (exit 2) instead of serving a stranger on stdio. The Safari app
+//! extension's shape counts only for the copy of this binary inside the
+//! `.appex` (`safari/SPEC.md` §4); the same words typed at a terminal are a
+//! command line.
 
 #[cfg(test)]
 mod tests;
@@ -40,12 +43,13 @@ pub fn detect() -> Launch {
         .map(|arg| arg.to_string_lossy().into_owned())
         .filter(|arg| !is_launch_services_serial(arg))
         .collect();
-    classify(&args)
+    classify(websign_host::running_in_appex(), &args)
 }
 
-/// Pure core of [`detect`], over the arguments after `argv[0]`.
-pub fn classify(args: &[String]) -> Launch {
-    if let Some(browser) = websign_host::parse_launch(args).filter(is_ours) {
+/// Pure core of [`detect`], over the arguments after `argv[0]`; `in_appex`:
+/// this binary is the Safari app extension's copy.
+pub fn classify(in_appex: bool, args: &[String]) -> Launch {
+    if let Some(browser) = websign_host::parse_launch_at(in_appex, args).filter(is_ours) {
         return Launch::Browser(browser);
     }
     match args {
@@ -65,6 +69,7 @@ fn is_ours(launch: &BrowserLaunch) -> bool {
             websign_project::chromium_extension_ids().contains(&launch.extension_id.as_str())
         }
         BrowserFamily::Firefox => launch.extension_id == websign_project::FIREFOX_ID,
+        BrowserFamily::Safari => launch.extension_id == websign_project::SAFARI_EXTENSION_BUNDLE_ID,
         BrowserFamily::Manual => false,
     }
 }

@@ -1,6 +1,6 @@
 //! Frames from the client: accepted by the session, then dispatched by type.
 
-use websign_project::{FIREFOX_ID, chromium_extension_ids};
+use websign_project::{FIREFOX_ID, SAFARI_EXTENSION_BUNDLE_ID, chromium_extension_ids};
 use websign_protocol::messages::{Choose, Hello, HelloReply, OpenDiagnostics, SignBegin, Status};
 use websign_protocol::messages::{Done, StatusReply};
 use websign_protocol::{
@@ -196,6 +196,7 @@ fn launch_is_ours(launch: &BrowserLaunch) -> bool {
     match launch.family {
         BrowserFamily::Chromium => chromium_extension_ids().contains(&launch.extension_id.as_str()),
         BrowserFamily::Firefox => launch.extension_id == FIREFOX_ID,
+        BrowserFamily::Safari => launch.extension_id == SAFARI_EXTENSION_BUNDLE_ID,
         BrowserFamily::Manual => true,
     }
 }

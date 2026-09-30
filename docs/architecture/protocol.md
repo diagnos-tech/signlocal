@@ -27,7 +27,7 @@ test vectors; this page explains the design.
 |---|---|---|---|---|
 | Native messaging | our extension (Chrome, Edge, Brave, Opera, Vivaldi, Firefox) | the browser, with the extension origin as argument | 4-byte length + UTF-8 JSON | page origin from the browser (`web` field), extension ID from the launch arguments |
 | `websign connect` | a desktop program (directly or through `@websign/desktop` / `websign-client`) | that program, as a child process | same | the parent process, identified by the OS |
-| Safari relay (store channel, later) | the Safari appex | the appex (`NSWorkspace`) when nothing listens | same, over a Unix socket in the app group container | page origin from Safari (`sender.url`) |
+| Safari relay | our extension in Safari, through the app extension inside `WebeSign.app` (macOS 13+) | the appex, one bundled host per relay session, with `--safari-web-extension <appex bundle ID>` | the extension sends relay messages (`open`/`send`/`poll`/`close`, [`safari/SPEC.md`](../../safari/SPEC.md)) with `runtime.sendNativeMessage`; the appex speaks this framing to the host on stdio | page origin from Safari's `MessageSender` (`web` field), as for native messaging; extension ID = the appex bundle ID from the launch arguments, accepted only by the copy inside the `.appex` |
 | Page messages | a web page using `@websign/sdk` | — (the extension relays) | `window.postMessage` objects | none: the extension attaches it |
 
 **Framing.** Every message is a `u32` byte length followed by that many bytes

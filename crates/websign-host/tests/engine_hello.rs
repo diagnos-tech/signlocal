@@ -223,31 +223,43 @@ fn a_launch_by_an_unknown_extension_is_refused_on_the_first_frame() {
 }
 
 #[test]
-fn firefox_is_allowed_only_with_the_project_id() {
-    let launch = |id: &str| BrowserLaunch {
-        origin: id.to_owned(),
-        family: BrowserFamily::Firefox,
-        extension_id: id.to_owned(),
-        parent_window: None,
-    };
-    let mut ok = Harness::new(
-        Transport::NativeMessaging {
-            launch: launch(websign_project::FIREFOX_ID),
-        },
-        (1, 1),
-    );
-    ok.send(wire::hello_native("h", 1, 1));
-    assert_eq!(ok.take().kinds(), ["hello"]);
+fn firefox_and_safari_are_allowed_only_with_the_project_ids() {
+    for (family, ours) in [
+        (BrowserFamily::Firefox, websign_project::FIREFOX_ID),
+        (
+            BrowserFamily::Safari,
+            websign_project::SAFARI_EXTENSION_BUNDLE_ID,
+        ),
+    ] {
+        let launch = |id: &str| BrowserLaunch {
+            origin: id.to_owned(),
+            family,
+            extension_id: id.to_owned(),
+            parent_window: None,
+        };
+        let mut ok = Harness::new(
+            Transport::NativeMessaging {
+                launch: launch(ours),
+            },
+            (1, 1),
+        );
+        ok.send(wire::hello_native("h", 1, 1));
+        assert_eq!(ok.take().kinds(), ["hello"], "{family}");
 
-    let mut bad = Harness::new(
-        Transport::NativeMessaging {
-            launch: launch("someone-else@example.org"),
-        },
-        (1, 1),
-    );
-    let control = bad.send(wire::hello_native("h", 1, 1));
-    assert_eq!(bad.take().only_error().1, ErrorCode::InvalidRequest);
-    assert!(is_exit(control));
+        let mut bad = Harness::new(
+            Transport::NativeMessaging {
+                launch: launch("org.example.other"),
+            },
+            (1, 1),
+        );
+        let control = bad.send(wire::hello_native("h", 1, 1));
+        assert_eq!(
+            bad.take().only_error().1,
+            ErrorCode::InvalidRequest,
+            "{family}"
+        );
+        assert!(is_exit(control));
+    }
 }
 
 #[test]

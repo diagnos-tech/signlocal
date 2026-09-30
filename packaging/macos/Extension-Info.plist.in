@@ -34,6 +34,6 @@
 	<key>WebeSignHostExecutable</key>
 	<string>{{slug}}</string>
 	<key>WebeSignHostExtensionID</key>
-	<string>{{firefox_id}}</string>
+	<string>{{safari_bundle_id}}</string>
 </dict>
 </plist>

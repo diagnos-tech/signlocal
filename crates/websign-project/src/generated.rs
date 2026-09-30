@@ -28,6 +28,9 @@ pub const MACOS_BUNDLE_ID: &str = "dev.websign.app";
 /// macOS app group shared with the Safari extension.
 pub const MACOS_APP_GROUP: &str = "TEAMID.dev.websign";
 
+/// Bundle identifier of the Safari app extension inside the macOS app.
+pub const SAFARI_EXTENSION_BUNDLE_ID: &str = "dev.websign.app.extension";
+
 /// Firefox (Gecko) extension ID.
 pub const FIREFOX_ID: &str = "websign@dev.websign";
 

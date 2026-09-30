@@ -48,7 +48,7 @@ fn the_appex_info_plist_names_the_extension_point_and_the_host() {
         ),
         format!(
             "<key>WebeSignHostExtensionID</key>\n\t<string>{}</string>",
-            project.firefox_id
+            project.safari_bundle_id
         ),
     ] {
         assert!(text.contains(&line), "missing {line} in\n{text}");

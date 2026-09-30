@@ -10,12 +10,20 @@
 //!   (`chrome-extension://<id>/`) first; on Windows also
 //!   `--parent-window=<decimal HWND>`.
 //! * Firefox: the manifest's path, then the extension ID.
+//! * Safari: no browser starts a host; the app extension inside the macOS
+//!   app starts its bundled copy of this binary with [`SAFARI_FLAG`] and its
+//!   own bundle ID (`safari/SPEC.md` §4). Only a binary that sits in an
+//!   `.appex` bundle accepts that shape ([`is_appex_executable`]), so it
+//!   never turns a command typed at a terminal into host mode.
 
 use std::ffi::OsString;
 use std::fmt;
+use std::path::Path;
 
 const CHROMIUM_ORIGIN_PREFIX: &str = "chrome-extension://";
 const PARENT_WINDOW_FLAG: &str = "--parent-window=";
+/// The first argument of a launch by the Safari app extension.
+pub const SAFARI_FLAG: &str = "--safari-web-extension";
 
 /// Browser engine family, which decides how the extension was identified.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -23,6 +31,8 @@ pub enum BrowserFamily {
     /// Chrome, Chromium, Edge, Brave, Vivaldi, Opera.
     Chromium,
     Firefox,
+    /// Safari, through the app extension's relay.
+    Safari,
     /// Started by hand (tests, `websign connect` debugging).
     Manual,
 }
@@ -33,6 +43,7 @@ impl BrowserFamily {
         match self {
             Self::Chromium => "chromium",
             Self::Firefox => "firefox",
+            Self::Safari => "safari",
             Self::Manual => "manual",
         }
     }
@@ -48,7 +59,8 @@ impl fmt::Display for BrowserFamily {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BrowserLaunch {
     /// The calling extension's origin as the browser reported it: the
-    /// `chrome-extension://…/` URL, or Firefox's extension ID.
+    /// `chrome-extension://…/` URL, Firefox's extension ID, or the Safari
+    /// app extension's bundle ID.
     pub origin: String,
     pub family: BrowserFamily,
     /// The extension's ID alone (no scheme, no slashes).
@@ -77,10 +89,11 @@ pub fn detect_browser_launch() -> Option<BrowserLaunch> {
         .skip(1)
         .map(|arg: OsString| arg.to_string_lossy().into_owned())
         .collect();
-    parse_launch(&args)
+    parse_launch_at(running_in_appex(), &args)
 }
 
-/// Pure core of [`detect_browser_launch`], over the arguments after `argv[0]`.
+/// The launch of a host that browsers start directly (Chromium, Firefox),
+/// over the arguments after `argv[0]`. Never Safari: see [`parse_launch_at`].
 pub fn parse_launch(args: &[String]) -> Option<BrowserLaunch> {
     let first = args.first()?;
     if let Some(rest) = first.strip_prefix(CHROMIUM_ORIGIN_PREFIX) {
@@ -90,6 +103,54 @@ pub fn parse_launch(args: &[String]) -> Option<BrowserLaunch> {
         return parse_firefox(&args[1]);
     }
     None
+}
+
+/// Pure core of [`detect_browser_launch`]: [`parse_launch`], plus the Safari
+/// shape when `in_appex` (this binary is the app extension's copy).
+pub fn parse_launch_at(in_appex: bool, args: &[String]) -> Option<BrowserLaunch> {
+    match args {
+        [flag, bundle_id] if in_appex && flag == SAFARI_FLAG => parse_safari(bundle_id),
+        _ => parse_launch(args),
+    }
+}
+
+/// Whether `exe` is `<name>.appex/Contents/MacOS/<binary>`: the layout
+/// `cargo xtask package` gives the Safari app extension's copy of the host.
+pub fn is_appex_executable(exe: &Path) -> bool {
+    let macos = exe.parent();
+    let contents = macos.and_then(Path::parent);
+    let bundle = contents.and_then(Path::parent);
+    macos
+        .and_then(Path::file_name)
+        .is_some_and(|name| name == "MacOS")
+        && contents
+            .and_then(Path::file_name)
+            .is_some_and(|name| name == "Contents")
+        && bundle
+            .and_then(Path::extension)
+            .is_some_and(|ext| ext.eq_ignore_ascii_case("appex"))
+}
+
+/// Whether this process is the Safari app extension's copy of the host.
+/// Only macOS has app extensions; elsewhere the Safari shape is never read.
+pub fn running_in_appex() -> bool {
+    cfg!(target_os = "macos") && std::env::current_exe().is_ok_and(|exe| is_appex_executable(&exe))
+}
+
+/// A bundle ID: reverse-DNS letters, digits, `-` and `.` (Apple's rule).
+fn parse_safari(bundle_id: &str) -> Option<BrowserLaunch> {
+    let plausible = !bundle_id.is_empty()
+        && bundle_id.len() <= 255
+        && !bundle_id.starts_with(['-', '.'])
+        && bundle_id
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'.');
+    plausible.then(|| BrowserLaunch {
+        origin: bundle_id.to_owned(),
+        family: BrowserFamily::Safari,
+        extension_id: bundle_id.to_owned(),
+        parent_window: None,
+    })
 }
 
 fn parse_chromium(origin: &str, after_scheme: &str, extra: &[String]) -> Option<BrowserLaunch> {

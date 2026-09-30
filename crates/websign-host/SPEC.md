@@ -14,9 +14,17 @@ separator and `args[1]` is a plausible ID (non-empty, ≤ 256, no leading `-`,
 no whitespace or control characters); anything else → `None`. Promoted tests
 in `src/launch/tests.rs`.
 
+`parse_launch_at(in_appex, args)` adds Safari: exactly
+`[--safari-web-extension, <bundle id>]` (1–255 of `[A-Za-z0-9.-]`, not
+starting with `-` or `.`), recognized only when `in_appex` — this binary is
+`<name>.appex/Contents/MacOS/<binary>` on macOS (`is_appex_executable`,
+`running_in_appex`), the copy the Safari app extension starts
+(`safari/SPEC.md` §4). No browser starts a host for Safari, so the shape
+must not work from any other copy.
+
 Additional rule for the product: the engine refuses a native-messaging launch
 whose extension ID is not in `websign_project::chromium_extension_ids()` (or
-equal to `FIREFOX_ID` for Firefox) — it answers the first frame with
+equal to `FIREFOX_ID` for Firefox, `SAFARI_EXTENSION_BUNDLE_ID` for Safari) — it answers the first frame with
 `InvalidRequest` and exits with status 1. Defense in depth: the browser
 already enforced the manifest.
 

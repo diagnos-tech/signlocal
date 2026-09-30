@@ -68,7 +68,21 @@ The app never talks to a chip. Hardware detection only helps:
 |---|---|---|---|
 | Chrome, Edge, Brave, Chromium, Vivaldi, Opera | HKCU keys (proof 1) | per-user manifests (proof 2) | per-user and system manifests (proof 4); Chromium Snap/Flatpak folders |
 | Firefox ≥ 121 | HKCU key | per-user manifest | per-user and system manifests; Snap via the WebExtensions portal (system manifest) |
-| Safari | — | store channel: appex relay (later) | — |
+| Safari 17+ | — | macOS 13+: the app extension inside `WebeSign.app` relays to a bundled host (`safari/SPEC.md`); nothing to register. Unsigned builds need **Allow Unsigned Extensions**; PKCS#11-only tokens may not work (below). TODO(gustavo): Developer ID signing, notarization, Mac App Store | — |
+
+**Safari and PKCS#11.** Safari starts no native host: the host runs as the
+app extension's copy, inside its sandbox (`safari/SPEC.md` §4). Keychain
+identities (imported certificates) sign inside that sandbox (proven in CI,
+[proof 2](../prototypes/2-mac.md) §5), and the CryptoTokenKit query runs there
+without an extra entitlement (proven; a real CTK token is still to be tried).
+Loading a PKCS#11 module inside a sandbox was refused in the same proof
+(`deny file-read-data` on SoftHSM2 under `/opt/homebrew/Cellar`). The appex
+grants read-only access to `/Applications`, `/Library`, `/usr/local/lib` and
+`/opt/homebrew/lib`, but no real vendor module has been tried through it, and
+modules resolved elsewhere (Homebrew's `lib/` links into `Cellar/`) stay
+blocked. So a token reachable only through PKCS#11 may not work from Safari;
+the same token works from Chrome, Edge, Brave, Opera or Firefox on the same Mac,
+whose host is not sandboxed.
 
 ## Operating systems
 

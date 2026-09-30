@@ -78,7 +78,12 @@ against `SHA256SUMS`, and unzip it.
 - **Firefox:** `about:debugging` → **This Firefox** → **Load Temporary Add-on** → `manifest.json` in the unzipped
   folder (lasts until Firefox restarts). Firefox Developer Edition, Nightly or ESR with
   `xpinstall.signatures.required` set to `false` can keep it: `about:addons` → **Install Add-on From File**.
-- **Safari:** not available in direct builds.
+- **Safari (macOS 13+, Safari 17+):** nothing to download: the extension is inside `WebeSign.app`. Open the app
+  once, then in Safari **Settings → Advanced** → **Show features for web developers**, **Settings → Developer** →
+  **Allow unsigned extensions** (again after every Safari restart while builds are unsigned), and tick WebeSign in
+  **Settings → Extensions**. Keychain and CryptoTokenKit certificates work; a token reachable only
+  through a PKCS#11 driver may not, because the host runs inside the extension's sandbox: use Chrome, Edge,
+  Brave, Opera or Firefox for it.
 
 ## Unsigned builds: what to expect
 
@@ -89,6 +94,7 @@ against `SHA256SUMS`, and unzip it.
 | Linux | nothing (packages are unsigned) | — |
 | Chrome / Edge / Brave | not in the stores yet | **Load unpacked** (above). |
 | Firefox | release Firefox refuses unsigned add-ons | **Load Temporary Add-on** (above). |
+| Safari | unsigned app extensions are off until allowed | **Allow Unsigned Extensions** (above), after each Safari restart. |
 
 A checksum mismatch means the download is corrupt or altered: delete it and do not run it.
 

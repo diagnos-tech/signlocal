@@ -10,6 +10,6 @@
 - `testing/` — fakes of every port (feature `testing`) and a real certificate fixture
 - `caller.rs` — Who is asking, established by the transport — never by the payload.
 - `engine.rs` — The deterministic core loop of a host process.
-- `launch.rs` — Recognizing that a browser (not a person) started this process.
+- `launch.rs` — Recognizing that a browser (not a person) started this process: Chromium, Firefox, or the Safari app extension (from inside the `.appex` only).
 - `lib.rs` — The session engine of the app: everything between a transport and the windows, with no OS or UI code of its own.
 - `queue.rs` — One request on screen, the rest waiting (`docs/ux.md` §4.11).

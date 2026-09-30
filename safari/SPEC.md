@@ -79,17 +79,17 @@ the payload (§2.3 there); the appex adds nothing and trusts nothing.
 ## 4. Host launch
 
 The appex starts `<appex>/Contents/MacOS/<WebeSignHostExecutable>` with the
-arguments `[<appex>/Contents/Resources/manifest.json, <WebeSignHostExtensionID>]`,
-both keys read from the appex's `Info.plist` (rendered from `project.toml`
-by `cargo xtask package`). This is the argument shape Firefox uses, which
-`websign-host`'s launch detection accepts for the Firefox ID; the host then
-serves native messaging exactly as it does for Firefox, and shows "Safari"
-from `hello.browser`.
-
-TODO(gustavo): give `websign-host` a Safari launch shape (for example
-`safari-web-extension://<safari_extension_bundle_id>/`) and a
-`BrowserFamily::Safari`, then change only the arguments in
-`Relay/BundledHost.swift` and `packaging/macos/Extension-Info.plist.in`.
+arguments `[--safari-web-extension, <WebeSignHostExtensionID>]`, both keys
+read from the appex's `Info.plist` (rendered from `project.toml` by `cargo
+xtask package`; the ID is `[ids] safari_extension_bundle_id`). This is the
+host's Safari launch shape (`websign-host` `launch`, `BrowserFamily::Safari`):
+the host accepts it only when its own executable is
+`<name>.appex/Contents/MacOS/<binary>` on macOS, and only for the bundle ID in
+`project.toml`; anywhere else the same words are a command line (usage
+error). It then serves native messaging exactly as for the other browsers,
+logs "started by safari", and shows "Safari" from `hello.browser`. The web
+origin still comes only from the extension, which reads it from Safari's
+`MessageSender`.
 
 **Why a copy of the binary inside the appex:** Safari loads only sandboxed
 app extensions, and a sandboxed process may always read and execute its own

@@ -16,10 +16,15 @@ final class BundledHostTests: XCTestCase {
         let bundled = try BundledHost.command(appex: appex)
         // The appex's copy is signed to inherit a sandbox, and macOS kills
         // such a binary when a process outside any sandbox (this test)
-        // starts it. The app's own binary is the same build, signed plainly.
+        // starts it. The app's own binary is the same build, signed plainly;
+        // it goes into an appex-shaped folder because the host accepts the
+        // Safari launch shape only from inside an `.appex`.
         let app = appex.deletingLastPathComponent().deletingLastPathComponent()
             .appendingPathComponent("MacOS").appendingPathComponent(bundled.executable.lastPathComponent)
-        let command = HostCommand(executable: app, arguments: bundled.arguments)
+        let copy = try appexShapedCopy(of: app)
+        defer { try? FileManager.default.removeItem(at: copy.root) }
+        XCTAssertEqual(bundled.arguments.first, BundledHost.safariFlag)
+        let command = HostCommand(executable: copy.binary, arguments: bundled.arguments)
         let relay = Relay(command: { command })
         let session = relay.open()
         let hello: [String: Any] = [
@@ -33,6 +38,15 @@ final class BundledHostTests: XCTestCase {
         XCTAssertEqual(messages.first?["type"] as? String, "hello", "\(messages)")
         XCTAssertEqual(messages.first?["id"] as? String, "hello")
         _ = relay.call(["relay": 1, "op": "close", "session": session])
+    }
+
+    private func appexShapedCopy(of binary: URL) throws -> (root: URL, binary: URL) {
+        let root = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString)
+        let macOS = root.appendingPathComponent("Test.appex/Contents/MacOS")
+        try FileManager.default.createDirectory(at: macOS, withIntermediateDirectories: true)
+        let copy = macOS.appendingPathComponent(binary.lastPathComponent)
+        try FileManager.default.copyItem(at: binary, to: copy)
+        return (root, copy)
     }
 
     private func version(of appex: URL) throws -> String {
