@@ -132,20 +132,32 @@ await websign.close();
 ```
 
 Also `status()`, `certificates(filter?)`, `openDiagnostics(tab?)`,
-`findExecutable()`. Types are the generated protocol types (Base64 fields of
-results decoded to `Uint8Array`). Contract: [`clients/node/SPEC.md`](../../clients/node/SPEC.md).
+`findExecutable()`. Types are the generated protocol types, except that the
+Base64 fields are decoded once on arrival: `Certificate.der`/`chain` and
+`SignResult.signature` are `Uint8Array`. ESM, `require()` too, Node ≥ 20.19. Contract: [`clients/node/SPEC.md`](../../clients/node/SPEC.md).
 
 ### `websign-client` (Rust, Apache-2.0)
 
 ```rust
-let mut client = websign_client::Client::connect()?;
+use websign_client::{Client, HashName, SignOptions};
+
+let mut client = Client::connect()?;                 // ClientError::AppMissing if not installed
 let result = client.sign(SignOptions::new(HashName::Sha256), |certificate, algorithm| {
-    Ok(digest_for(certificate, algorithm))
+    Ok(digest_for(certificate.der.as_bytes(), algorithm)) // Err(String) cancels in the app
 })?;
+let signature: &[u8] = result.signature.as_bytes();
+// Dropping `client` closes the app's stdin and reaps it.
 ```
 
-Blocking API over `std::process`; depends only on `websign-protocol`.
-Contract: [`clients/rust/SPEC.md`](../../clients/rust/SPEC.md).
+Also `status()`, `certificates(filter)`, `open_diagnostics(tab)`,
+`find_executable()`, `connect_with(ConnectOptions)`. Types are the protocol
+crate's; Base64 fields are decoded on arrival: `Certificate.der`/`chain` and
+`SignResult.signature` are `Base64Bytes` (`as_bytes() -> &[u8]`,
+`into_bytes() -> Vec<u8>`). `Client` is `Send`; `ClientError` is
+`Send + Sync` with `code()` returning the protocol's `ErrorCode`. Blocking
+API over `std::process`; depends on the Apache-2.0 crates `websign-protocol`
+(the wire contract) and `websign-project` (product name and executable
+name). Contract: [`clients/rust/SPEC.md`](../../clients/rust/SPEC.md).
 
 ## 8. The `websign:` URL scheme
 

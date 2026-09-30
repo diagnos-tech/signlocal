@@ -35,7 +35,8 @@ pub mod version;
 
 pub use code::{VerificationCode, verification_code};
 pub use envelope::{
-    AppEnvelope, ClientEnvelope, ParseError, parse_app_message, parse_client_message, to_json,
+    AppEnvelope, ClientEnvelope, ParseError, parse_app_message, parse_client_message,
+    parse_hello_reply, refusal_version, to_json,
 };
 pub use error::{ErrorCode, ErrorDetails, WireError};
 pub use id::RequestId;

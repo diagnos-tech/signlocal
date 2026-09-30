@@ -13,6 +13,7 @@ use serde::{Deserialize, Serialize};
 use crate::error::ErrorCode;
 use crate::id::RequestId;
 use crate::messages::{AppMessage, ClientMessage};
+use crate::version::PROTOCOL_VERSION;
 
 mod bounds;
 mod describe;
@@ -65,7 +66,7 @@ pub fn parse_client_message(
     frame: &[u8],
     negotiated: Option<u32>,
 ) -> Result<ClientEnvelope, ParseError> {
-    let checked = parse::check_envelope(frame, negotiated, parse::Sender::Client)?;
+    let checked = parse::check_envelope(frame, negotiated.into(), parse::Sender::Client)?;
     let message = parse::parse_body(&checked)?;
     bounds::check_client(&message).map_err(|why| parse::invalid(Some(&checked.id), why))?;
     Ok(ClientEnvelope {
@@ -76,8 +77,36 @@ pub fn parse_client_message(
 }
 
 /// Parses one frame from the app, strictly. Used by client libraries.
+///
+/// With `None` only the app's `hello` is accepted; to also accept the app
+/// refusing a `hello`, use [`parse_hello_reply`].
 pub fn parse_app_message(frame: &[u8], negotiated: Option<u32>) -> Result<AppEnvelope, ParseError> {
-    let checked = parse::check_envelope(frame, negotiated, parse::Sender::App)?;
+    parse_app(frame, negotiated.into())
+}
+
+/// Parses the app's answer to a `hello` sent with version `hello_v`
+/// (`SPEC.md` §5.1): its `hello` (whose `v` is the chosen `protocol`), or an
+/// `error` refusing ours, which carries exactly `hello_v`. A refusal is
+/// always at a version the client speaks, however far apart the two
+/// parties' ranges are.
+pub fn parse_hello_reply(frame: &[u8], hello_v: u32) -> Result<AppEnvelope, ParseError> {
+    parse_app(frame, parse::Stage::HelloReply { hello_v })
+}
+
+/// The `v` of an `error` that answers a connection's first frame, before any
+/// version is agreed (`SPEC.md` §5.1): that frame's own `v`, which the
+/// client speaks, or [`PROTOCOL_VERSION`] when the frame has no usable `v`
+/// (no well-behaved client sends that).
+pub fn refusal_version(first_frame: &[u8]) -> u32 {
+    json::read(first_frame)
+        .and_then(|value| value.get("v")?.as_u64())
+        .and_then(|number| u32::try_from(number).ok())
+        .filter(|&number| number >= 1)
+        .unwrap_or(PROTOCOL_VERSION)
+}
+
+fn parse_app(frame: &[u8], stage: parse::Stage) -> Result<AppEnvelope, ParseError> {
+    let checked = parse::check_envelope(frame, stage, parse::Sender::App)?;
     let message = parse::parse_body(&checked)?;
     bounds::check_app(&message).map_err(|why| parse::invalid(Some(&checked.id), why))?;
     Ok(AppEnvelope {

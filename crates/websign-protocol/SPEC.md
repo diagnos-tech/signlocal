@@ -121,6 +121,32 @@ and its work is linear in the frame size (nesting is capped at 128 by
 Round trip: for every message type, `parse(to_json(x)) == x` (property test
 over generated values).
 
+### 5.1 Refusing `hello`
+
+An `error` that answers a connection's first frame (a refused `hello`: failed
+negotiation, a transport rule, a malformed body; or a first message that is
+not `hello`) carries **the `v` of that frame** — `refusal_version(frame)`, or
+`PROTOCOL_VERSION` when the frame has no positive `u32` `v`. A client sends
+`hello` at a version it speaks, so the refusal is readable by a client of any
+version, including one whose range does not overlap the app's
+(`ClientOutdated`, `AppOutdated`). This works because the `error` message
+(`code`, `message`, `details {installed, required, native}`) and the codes that
+can refuse `hello` (`InvalidRequest`, `ClientOutdated`, `AppOutdated`,
+`Internal`) are frozen: no protocol version changes them.
+
+`parse_hello_reply(frame, hello_v)` parses the app's answer to a `hello` sent
+at `hello_v`, with the §5 order of checks except step 5:
+
+| Frame | Result |
+|---|---|
+| `hello` with `v == protocol` | `Ok` (`v` need not equal `hello_v`) |
+| `hello` with `v != protocol` | `InvalidRequest` |
+| `error` with `v == hello_v` | `Ok`, body strict as always |
+| `error` with `v != hello_v` | `InvalidRequest` naming the version |
+| any other `type` | `InvalidRequest` "hello must be answered by hello or error" |
+
+`parse_app_message(frame, None)` is unchanged: it accepts only `hello`.
+
 ## 6. Framing (promoted)
 
 `read_frame` / `write_frame`, `u32` native-endian length + body;

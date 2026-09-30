@@ -15,6 +15,9 @@ categories = ["cryptography", "api-bindings"]
 websign-protocol.workspace = true
 websign-project.workspace = true
 thiserror.workspace = true
+
+[dev-dependencies]
+# The fake app in `examples/` builds its JSON by hand.
 serde_json.workspace = true
 
 [lints]

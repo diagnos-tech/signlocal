@@ -44,6 +44,24 @@ impl Sender {
     }
 }
 
+/// Where the connection stands, which decides the accepted `v` and `type`.
+#[derive(Clone, Copy)]
+pub(super) enum Stage {
+    /// Nothing negotiated yet: only `hello`.
+    BeforeHello,
+    /// The app's answer to a `hello` sent at version `hello_v`: its `hello`,
+    /// or an `error` refusing ours at exactly `hello_v`.
+    HelloReply { hello_v: u32 },
+    /// Every message at the agreed version.
+    Negotiated(u32),
+}
+
+impl From<Option<u32>> for Stage {
+    fn from(negotiated: Option<u32>) -> Stage {
+        negotiated.map_or(Stage::BeforeHello, Stage::Negotiated)
+    }
+}
+
 /// A frame whose envelope passed every check; the body is not parsed yet.
 pub(super) struct Checked {
     pub v: u32,
@@ -63,7 +81,7 @@ pub(super) fn invalid(id: Option<&RequestId>, message: impl Into<String>) -> Par
 /// Checks steps 1 to 5 of `SPEC.md` §5.
 pub(super) fn check_envelope(
     frame: &[u8],
-    negotiated: Option<u32>,
+    stage: Stage,
     sender: Sender,
 ) -> Result<Checked, ParseError> {
     let Some(Value::Object(mut object)) = json::read(frame) else {
@@ -97,7 +115,7 @@ pub(super) fn check_envelope(
         _ => return Err(invalid(Some(&id), "type is missing or not a string")),
     };
 
-    check_version(&object, &kind, v, negotiated, sender, &id)?;
+    check_version(&object, &kind, v, stage, sender, &id)?;
     Ok(Checked {
         v,
         id,
@@ -109,18 +127,29 @@ fn check_version(
     object: &Map<String, Value>,
     kind: &str,
     v: u32,
-    negotiated: Option<u32>,
+    stage: Stage,
     sender: Sender,
     id: &RequestId,
 ) -> Result<(), ParseError> {
-    match negotiated {
-        Some(n) if v != n => Err(invalid(
+    match stage {
+        Stage::Negotiated(n) if v != n => Err(invalid(
             Some(id),
             format!("message version {v} does not match the negotiated version {n}"),
         )),
-        Some(_) => Ok(()),
-        None if kind != "hello" => Err(invalid(Some(id), "hello must be the first message")),
-        None => match sender {
+        Stage::Negotiated(_) => Ok(()),
+        Stage::HelloReply { hello_v } if kind == "error" && v != hello_v => Err(invalid(
+            Some(id),
+            format!("an error answering hello must have version {hello_v}, not {v}"),
+        )),
+        Stage::HelloReply { .. } if kind == "error" => Ok(()),
+        Stage::HelloReply { .. } if kind != "hello" => Err(invalid(
+            Some(id),
+            "hello must be answered by hello or error",
+        )),
+        Stage::BeforeHello if kind != "hello" => {
+            Err(invalid(Some(id), "hello must be the first message"))
+        }
+        Stage::BeforeHello | Stage::HelloReply { .. } => match sender {
             Sender::Client => {
                 let offered = object
                     .get("protocols")

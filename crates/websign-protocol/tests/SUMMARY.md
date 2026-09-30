@@ -5,6 +5,7 @@
 - `canonical_form.rs` — one spelling per message: repeated keys, `null`, arrays for objects, floats (SPEC §1)
 - `error_codes.rs` — error codes, their wire spelling and exit codes
 - `framing.rs` — length-prefixed frames (SPEC §6)
+- `hello_refusal.rs` — the answer to `hello` and the version of a refusal (SPEC §5.1)
 - `identifiers.rs` — `RequestId` and `FingerprintHex` (SPEC §3, §4)
 - `limits_and_types.rs` — limit constants and value types
 - `page_messages.rs` — page ↔ extension messages (SPEC §9)

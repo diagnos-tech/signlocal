@@ -76,6 +76,13 @@ logs and closes the connection.
   `InvalidRequest`, then the connection closes. A second `hello` →
   `InvalidRequest`; the connection stays open. The client's `hello` has `v`
   within its own `protocols`; the app's reply has `v` equal to `protocol`.
+- An `error` answering the first frame (a refused `hello`, or a first message
+  that is not `hello`) carries **that frame's `v`**
+  (`websign_protocol::refusal_version`), so the caller can always read it,
+  even when the two ranges do not overlap. The `error` message's shape and the
+  codes that can refuse `hello` (`InvalidRequest`, `ClientOutdated`,
+  `AppOutdated`, `Internal`) never change between versions. Callers parse the
+  answer to `hello` with `websign_protocol::parse_hello_reply`.
 - Negotiation (`websign_protocol::negotiate`): the highest version in both
   ranges. `client.max < app.min` → `ClientOutdated` (reported to pages as
   `ExtensionOutdated`); `app.max < client.min` → `AppOutdated`.
@@ -89,6 +96,10 @@ logs and closes the connection.
    "browser":{"name":"chrome","version":"129.0","reason":"page"}}
 ← {"v":1,"id":"h","type":"hello","protocol":1,
    "app":{"version":"1.4.0","protocols":{"min":1,"max":1},"os":"windows","arch":"x86_64","channel":"direct"}}
+
+→ {"v":1,"id":"h","type":"hello","client":{"name":"websign-client","version":"0.1.0"},"protocols":{"min":1,"max":1}}
+← {"v":1,"id":"h","type":"error","code":"ClientOutdated","message":"the app needs protocol 2 or newer",
+   "details":{"installed":"1","required":"2"}}
 ```
 
 ## 4. Message catalog
