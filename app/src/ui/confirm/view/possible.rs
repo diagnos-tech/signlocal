@@ -152,16 +152,15 @@ fn actions(ui: &mut Ui, s: &mut Screen<'_>, card: &PossibleCard) {
     ui.with_layout(
         Layout::left_to_right(Align::Min).with_main_wrap(true),
         |ui| {
-            if let Some((url, label)) = &download {
-                if Button::secondary(label)
+            if let Some((url, label)) = &download
+                && Button::secondary(label)
                     .icon(icons::DOWNLOAD)
                     .size(Size::Medium)
                     .show(ui)
                     .response
                     .clicked()
-                {
-                    s.out.push(Action::OpenUrl(url.clone()));
-                }
+            {
+                s.out.push(Action::OpenUrl(url.clone()));
             }
             if Button::ghost(&rescan)
                 .icon(icons::SCAN_AGAIN)

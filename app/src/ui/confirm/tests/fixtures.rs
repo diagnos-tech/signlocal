@@ -77,7 +77,6 @@ fn icp(holder: &str, level: IcpLevel, cpf: Option<&str>, cnpj: Option<&str>) -> 
         holder_name: Some(holder.to_owned()),
         cpf: cpf.map(str::to_owned),
         cnpj: cnpj.map(str::to_owned),
-        ..Default::default()
     })
 }
 

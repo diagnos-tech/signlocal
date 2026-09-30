@@ -43,7 +43,10 @@ fn open_site(rig: &mut Rig, mode: Mode, remembered: bool) {
 }
 
 fn main_list(rig: &mut Rig) {
-    rig.list(vec![ana_card(), ana_a1(), clinic_a1(), old_a3()], Vec::new());
+    rig.list(
+        vec![ana_card(), ana_a1(), clinic_a1(), old_a3()],
+        Vec::new(),
+    );
 }
 
 fn loading(rig: &mut Rig) {

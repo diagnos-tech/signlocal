@@ -3,8 +3,8 @@
 - `mod.rs` — The confirmation window (`docs/ux.md` §4–§6), 480 × 600, fixed: module map and `run`, the entry point of a host process's UI thread.
 - `run.rs` — The eframe event loop: host commands between frames (also while hidden), the close button as Cancel, closing once the engine is done.
 - `window.rs` — The window's state and frame: commands in, person input through the model, decisions out; no eframe, so kittest drives it as the event loop does.
-- `session.rs` — Per-request window state the model does not keep: the PIN buffer, what is expanded, pending focus, loading hints.
-- `guard.rs` — Drops (and wipes) keystrokes that arrive before the window is armed, except Esc (§4.7).
+- `session.rs` — Per-request window state the model does not keep: the PIN buffer, what is expanded, pending focus.
+- `guard.rs` — Drops (and wipes) keystrokes that arrive before the window is armed, except Esc and, once the model takes selections, ↑/↓/Home/End (§4.7).
 - `outbox.rs` — Turns the model's intents into `UiEvent`s; the PIN goes into a `SecretString` and the field is wiped.
 - `viewport.rs` — The OS window: size, always on top, show/hide, title, raising through `platform::focus`, the native handle.
 - `clock.rs` — The time source: the system clock, or a hand-moved one for tests.

@@ -40,7 +40,10 @@ pub(super) fn next_deadline(model: &ConfirmModel, now: Instant) -> Option<Instan
         if let CodeSlot::Preparing(since) = model.code {
             candidates.push(since + SKELETON_DELAY);
         }
-        if let Some(since) = model.loading_since.filter(|_| model.state == ConfirmState::LoadingCerts) {
+        if let Some(since) = model
+            .loading_since
+            .filter(|_| model.state == ConfirmState::LoadingCerts)
+        {
             candidates.extend([since + SKELETON_DELAY, since + SLOW_HINT_DELAY]);
         }
     }

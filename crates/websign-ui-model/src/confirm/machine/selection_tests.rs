@@ -71,7 +71,10 @@ fn loading_shows_the_skeleton_then_the_slow_device() {
     rig.apply(UiCommand::Open(super::rig::request(SIGN, true)));
     let loading = |rig: &Rig| rig.view().loading.expect("loading");
     assert!(!loading(&rig).skeleton);
-    assert_eq!(rig.model.next_deadline(rig.now()), Some(rig.now() + ms(150)));
+    assert_eq!(
+        rig.model.next_deadline(rig.now()),
+        Some(rig.now() + ms(150))
+    );
     rig.wait(150);
     assert!(loading(&rig).skeleton);
     rig.apply(UiCommand::SlowListing {

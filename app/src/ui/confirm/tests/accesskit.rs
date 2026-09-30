@@ -3,7 +3,7 @@
 //! with no value, errors as alerts, and Tab in visual order.
 
 use egui::Key;
-use egui::accesskit::{Live, Role};
+use egui::accesskit::{Live, Role, Toggled};
 use egui_kittest::kittest::{NodeT as _, Queryable as _};
 use websign_protocol::types::BrowserName;
 use websign_ui_model::confirm::port::Failure;
@@ -37,7 +37,7 @@ fn rows_are_radio_buttons_with_their_whole_story() {
         "Ana Beatriz Souza, ICP-Brasil A3, CPF partially hidden, 456 789, \
          AC SOLUTI Multipla v5, Card in reader, Expires in 23 days",
     );
-    assert!(row.accesskit_node().is_selected().unwrap_or(false));
+    assert_eq!(row.accesskit_node().toggled(), Some(Toggled::True));
     assert_eq!(rig.harness.get_all_by_role(Role::RadioButton).count(), 2);
     assert!(
         rig.harness.query_by_role(Role::Image).is_none(),

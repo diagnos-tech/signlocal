@@ -25,6 +25,8 @@ pub fn run(
         Box::new(move |creation| {
             let installed = theme::install(creation, crate::platform::motion::reduce_motion());
             bridge::connect(&creation.egui_ctx);
+            #[cfg(feature = "e2e")]
+            crate::e2e::attach(&creation.egui_ctx, crate::e2e::Window::Confirm);
             let mut window = ConfirmWindow::new(installed, i18n::catalog(), events, Clock::System);
             window.apply(first);
             Ok(Box::new(App {

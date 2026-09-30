@@ -117,13 +117,25 @@ fn os_prompt_disables_cancel_only_while_signing() {
     let mut rig = Rig::new();
     rig.open_default(SIGN, true);
     rig.digest_ready(1);
-    assert_eq!(rig.view().pin, PinBlock::OsPrompt { now: false, system: PinSystem::Windows });
+    assert_eq!(
+        rig.view().pin,
+        PinBlock::OsPrompt {
+            now: false,
+            system: PinSystem::Windows
+        }
+    );
     assert_eq!(rig.view().footer.hint, FooterHint::OsPinPrompt);
     assert!(rig.view().footer.cancel_enabled);
     rig.click();
     assert!(!rig.view().footer.cancel_enabled);
     assert!(rig.input(UserInput::Escape).is_empty());
-    assert_eq!(rig.view().pin, PinBlock::OsPrompt { now: true, system: PinSystem::Windows });
+    assert_eq!(
+        rig.view().pin,
+        PinBlock::OsPrompt {
+            now: true,
+            system: PinSystem::Windows
+        }
+    );
 }
 
 #[test]

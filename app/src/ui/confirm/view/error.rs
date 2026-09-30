@@ -3,7 +3,7 @@
 //! details" with the copyable native code. "Try again" itself is the
 //! primary button in the footer.
 
-use egui::{Align, Layout, Ui, Vec2};
+use egui::{Ui, Vec2};
 use websign_i18n::k;
 use websign_ui_model::confirm::UserInput;
 use websign_ui_model::confirm::port::Failure;
@@ -35,46 +35,45 @@ pub fn show(ui: &mut Ui, s: &mut Screen<'_>, failure: &Failure) {
     }
     let tr = s.tr;
     ui.add_space(metrics::SPACE_2);
-    ui.with_layout(
-        Layout::left_to_right(Align::Center).with_main_wrap(true),
-        |ui| {
-            ui.spacing_mut().item_spacing = Vec2::splat(metrics::SPACE_2);
-            if alternate {
-                let label = tr.tr(k::ACTION_TRY_DRIVER).to_string();
-                if Button::secondary(&label)
-                    .icon(icons::DRIVER)
-                    .show(ui)
-                    .response
-                    .clicked()
-                {
-                    s.input(UserInput::UseAlternatePath);
-                }
+    // `horizontal_wrapped`, not a wrapping layout: that one would claim
+    // the whole height left in the body and push the list off screen.
+    ui.horizontal_wrapped(|ui| {
+        ui.spacing_mut().item_spacing = Vec2::splat(metrics::SPACE_2);
+        if alternate {
+            let label = tr.tr(k::ACTION_TRY_DRIVER).to_string();
+            if Button::secondary(&label)
+                .icon(icons::DRIVER)
+                .show(ui)
+                .response
+                .clicked()
+            {
+                s.input(UserInput::UseAlternatePath);
             }
-            if let (Failure::Internal { .. }, Some(detail)) = (failure, &text.technical) {
-                let label = tr.tr(k::COMMON_COPY).to_string();
-                if Button::secondary(&label)
-                    .icon(icons::COPY)
-                    .show(ui)
-                    .response
-                    .clicked()
-                {
-                    s.out
-                        .push(Action::Copy(format!("{}: {detail}", text.title)));
-                }
+        }
+        if let (Failure::Internal { .. }, Some(detail)) = (failure, &text.technical) {
+            let label = tr.tr(k::COMMON_COPY_DETAILS).to_string();
+            if Button::secondary(&label)
+                .icon(icons::COPY)
+                .show(ui)
+                .response
+                .clicked()
+            {
+                s.out
+                    .push(Action::Copy(format!("{}: {detail}", text.title)));
             }
-            if diagnostics {
-                let label = tr.tr(k::COMMON_OPEN_DIAGNOSTICS).to_string();
-                if Button::ghost(&label)
-                    .icon(icons::DIAGNOSTICS)
-                    .show(ui)
-                    .response
-                    .clicked()
-                {
-                    s.input(UserInput::OpenDiagnostics);
-                }
+        }
+        if diagnostics {
+            let label = tr.tr(k::COMMON_OPEN_DIAGNOSTICS).to_string();
+            if Button::ghost(&label)
+                .icon(icons::DIAGNOSTICS)
+                .show(ui)
+                .response
+                .clicked()
+            {
+                s.input(UserInput::OpenDiagnostics);
             }
-        },
-    );
+        }
+    });
     if let Some(detail) = &text.technical {
         technical(ui, s, detail);
     }

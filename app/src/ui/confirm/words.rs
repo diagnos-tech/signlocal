@@ -5,8 +5,8 @@ use websign_core::present::origin::FormattedOrigin;
 use websign_i18n::{Catalog, k};
 use websign_protocol::types::{BrowserName, HashName, SignatureAlgorithmName};
 use websign_ui_model::confirm::ConfirmView;
-use websign_ui_model::confirm::view::PinSystem;
 use websign_ui_model::confirm::port::{CallerView, Mode};
+use websign_ui_model::confirm::view::PinSystem;
 
 /// The `{site}` of every message: the host with its port
 /// (`app.diagnos.health`), or the program's name.
@@ -165,6 +165,9 @@ mod tests {
         assert_eq!(cut.chars().count(), TITLE_HOST);
         assert!(cut.starts_with('…') && cut.ends_with(".verify.cadastro-medico.com"));
         let domain = "a-registrable-domain-longer-than-the-limit-itself.com";
-        assert_eq!(cut_left(&format!("x.{domain}"), domain.len()), format!("…{domain}"));
+        assert_eq!(
+            cut_left(&format!("x.{domain}"), domain.len()),
+            format!("…{domain}")
+        );
     }
 }
