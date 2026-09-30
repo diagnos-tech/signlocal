@@ -49,6 +49,8 @@ pub fn run(tab: Option<DiagnosticsTab>) -> Result<(), eframe::Error> {
         native_options(&title),
         Box::new(move |creation| {
             let installed = theme::install(creation, crate::platform::motion::reduce_motion());
+            #[cfg(feature = "e2e")]
+            crate::e2e::attach(&creation.egui_ctx, crate::e2e::Window::Diagnostics);
             let ctx = creation.egui_ctx.clone();
             let scale = (ctx.pixels_per_point() * 100.0).round() as u32;
             let dir = data_dir();
