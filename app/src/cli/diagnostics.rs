@@ -66,6 +66,7 @@ pub fn open(tab: Option<DiagnosticsTab>) -> ExitCode {
     log::error!("the diagnostics window could not open: {error}");
     if renderer::is_renderer_failure(&error) && renderer::may_fall_back_to_glow() {
         renderer::remember_glow_needed();
+        eprintln!("websign: {error}; trying again with the OpenGL renderer");
         if let Some(code) = rerun_with_glow() {
             return code;
         }
@@ -79,7 +80,14 @@ pub fn open(tab: Option<DiagnosticsTab>) -> ExitCode {
 fn rerun_with_glow() -> Option<ExitCode> {
     let status = renderer::glow_reexec().and_then(|mut command| command.status());
     match status {
-        Ok(status) => Some(crate::host_process::exit_code(status.code().unwrap_or(1))),
+        Ok(status) => {
+            // A child killed by a signal has no exit code; say so, or the
+            // person sees the window fail with no message at all.
+            if status.code().is_none() {
+                eprintln!("websign: the OpenGL renderer stopped unexpectedly ({status})");
+            }
+            Some(crate::host_process::exit_code(status.code().unwrap_or(1)))
+        }
         Err(error) => {
             log::error!("glow re-exec failed: {:?}", error.kind());
             None

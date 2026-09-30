@@ -1,6 +1,10 @@
 //! The event loop of a host process's window: host commands arrive between
 //! frames (also while the window is hidden, through `App::logic`), the
 //! window draws in `App::ui`, and the OS window follows its state.
+//!
+//! The loop ends when the engine does, visible or hidden: the bridge wakes
+//! it when the engine drops its end of the channel (`ui::bridge`), and a
+//! logic-only pass of the hidden window is enough to close it.
 
 use std::sync::mpsc::{Receiver, TryRecvError};
 
@@ -29,20 +33,14 @@ pub fn run(
             crate::e2e::attach(&creation.egui_ctx, crate::e2e::Window::Confirm);
             let mut window = ConfirmWindow::new(installed, i18n::catalog(), events, Clock::System);
             window.apply(first);
-            Ok(Box::new(App {
-                window,
-                commands,
-                ended: false,
-                shown: Shown::default(),
-                native: None,
-            }))
+            Ok(Box::new(App::new(window, commands)))
         }),
     );
     bridge::disconnect();
     result
 }
 
-struct App<'a> {
+pub(super) struct App<'a> {
     window: ConfirmWindow,
     commands: &'a Receiver<UiCommand>,
     /// The engine dropped its end: close once nothing is on screen.
@@ -51,12 +49,21 @@ struct App<'a> {
     native: Option<isize>,
 }
 
-impl eframe::App for App<'_> {
-    fn logic(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
-        if self.native.is_none() {
-            self.native = viewport::native_handle(frame);
-            bridge::set_native_handle(self.native);
+impl<'a> App<'a> {
+    pub(super) fn new(window: ConfirmWindow, commands: &'a Receiver<UiCommand>) -> Self {
+        App {
+            window,
+            commands,
+            ended: false,
+            shown: Shown::default(),
+            native: None,
         }
+    }
+
+    /// Everything between frames, also while the window is hidden: commands,
+    /// the certificate viewer, timers, the close button, closing once the
+    /// engine ended, and the OS window's state.
+    pub(super) fn step(&mut self, ctx: &egui::Context) {
         loop {
             match self.commands.try_recv() {
                 Ok(command) => self.window.apply(command),
@@ -96,6 +103,16 @@ impl eframe::App for App<'_> {
         if let Some(at) = next {
             ctx.request_repaint_after(at.saturating_duration_since(std::time::Instant::now()));
         }
+    }
+}
+
+impl eframe::App for App<'_> {
+    fn logic(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        if self.native.is_none() {
+            self.native = viewport::native_handle(frame);
+            bridge::set_native_handle(self.native);
+        }
+        self.step(ctx);
     }
 
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {

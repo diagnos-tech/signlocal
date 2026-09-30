@@ -1,7 +1,7 @@
 # app/src/ui/confirm
 
 - `mod.rs` — The confirmation window (`docs/ux.md` §4–§6), 480 × 600, fixed: module map and `run`, the entry point of a host process's UI thread.
-- `run.rs` — The eframe event loop: host commands between frames (also while hidden), the close button as Cancel, closing once the engine is done.
+- `run.rs` — The eframe event loop: host commands between frames (also while hidden), the close button as Cancel, closing once the engine is done, also while hidden.
 - `window.rs` — The window's state and frame: commands in, person input through the model, decisions out; no eframe, so kittest drives it as the event loop does.
 - `session.rs` — Per-request window state the model does not keep: the PIN buffer, what is expanded, pending focus.
 - `guard.rs` — Drops (and wipes) keystrokes that arrive before the window is armed, except Esc and, once the model takes selections, ↑/↓/Home/End (§4.7).

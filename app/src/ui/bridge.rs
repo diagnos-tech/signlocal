@@ -1,6 +1,9 @@
 //! The [`websign_host::ports::ConfirmUi`] implementation: forwards
 //! `UiCommand`s to the UI thread and wakes egui; the window posts
-//! `UiEvent`s back into the engine's channel.
+//! `UiEvent`s back into the engine's channel. Dropping the bridge (the
+//! engine ended) also wakes the window, which then closes: a hidden window
+//! gets no events of its own, so without that wake-up it would keep the
+//! process alive after the connection is over.
 //!
 //! The engine and the window live on different threads and are built apart
 //! (`host_process`), so they meet here: the window registers its egui
@@ -58,30 +61,51 @@ pub fn take_certificate() -> Option<Vec<u8>> {
     link().viewer.take()
 }
 
+/// Runs the window's next pass soon, visible or not (eframe runs the
+/// logic of a hidden window when asked to repaint it).
+fn wake() {
+    if let Some(ctx) = &link().ctx {
+        ctx.request_repaint();
+    }
+}
+
 /// The engine-side handle of the window.
 #[derive(Debug)]
 pub struct WindowBridge {
-    commands: Sender<UiCommand>,
+    /// `None` only while dropping.
+    commands: Option<Sender<UiCommand>>,
 }
 
 impl WindowBridge {
     /// A bridge sending to the UI thread's receiver.
     pub fn new(commands: Sender<UiCommand>) -> WindowBridge {
-        WindowBridge { commands }
+        WindowBridge {
+            commands: Some(commands),
+        }
+    }
+}
+
+impl Drop for WindowBridge {
+    /// Disconnects the channel first, so the pass it wakes sees the end.
+    fn drop(&mut self) {
+        drop(self.commands.take());
+        wake();
     }
 }
 
 impl ConfirmUi for WindowBridge {
     fn command(&mut self, command: UiCommand) {
-        if self.commands.send(command).is_err() {
+        let sent = self
+            .commands
+            .as_ref()
+            .is_some_and(|commands| commands.send(command).is_ok());
+        if !sent {
             // The UI thread is gone (the window could not open); the host
             // already answers every request on screen with `Internal`.
             log::warn!("the confirmation window is gone; command dropped");
             return;
         }
-        if let Some(ctx) = &link().ctx {
-            ctx.request_repaint();
-        }
+        wake();
     }
 
     fn parent_window(&self) -> Option<isize> {
@@ -140,7 +164,25 @@ mod tests {
         assert_eq!(take_certificate(), Some(vec![0x30, 0x03]));
         assert_eq!(take_certificate(), None, "shown once");
 
+        for _ in 0..3 {
+            let mut output = ctx.run_ui(egui::RawInput::default(), |_| {});
+            output.textures_delta.clear();
+        }
+        assert_eq!(receiver.try_iter().collect::<Vec<_>>(), [UiCommand::Hide]);
+        drop(bridge);
+        assert!(
+            ctx.has_requested_repaint(),
+            "the engine's end wakes the window"
+        );
+        assert_eq!(
+            receiver.try_recv(),
+            Err(std::sync::mpsc::TryRecvError::Disconnected),
+            "the woken pass sees the end"
+        );
+
         disconnect();
+        let (sender, receiver) = channel();
+        let mut bridge = WindowBridge::new(sender);
         assert_eq!(bridge.parent_window(), None);
         drop(receiver);
         bridge.command(UiCommand::Hide);

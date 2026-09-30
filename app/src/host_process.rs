@@ -10,8 +10,11 @@
 //! (this module spawns it), and the stdin reader, key store worker, device
 //! monitor and ticker that `websign_host::runtime::serve` spawns. The
 //! process ends when the engine does: the client closed stdin, the desktop
-//! idle limit passed, or the first frame was refused. Nothing outlives it.
+//! idle limit passed, or the first frame was refused. Nothing outlives it:
+//! the window closes when the engine ends, and [`exit_guard`] ends the
+//! process if it has not shortly after.
 
+mod exit_guard;
 #[cfg(feature = "e2e")]
 mod headless;
 pub mod launcher;
@@ -68,10 +71,11 @@ pub fn serve(
     };
     let (commands, inbox) = channel::<UiCommand>();
     let (handoff, events) = channel::<EventSender>();
+    let (ui_returned, exit_guard) = exit_guard::pair();
     let engine = std::thread::Builder::new()
         .name("engine".to_owned())
         .spawn(move || {
-            serve_engine(
+            let status = serve_engine(
                 input,
                 outbound as Box<dyn Outbound>,
                 config,
@@ -82,7 +86,9 @@ pub fn serve(
                 Box::new(launcher::ProcessLauncher),
                 stores(),
                 Options::default(),
-            )
+            );
+            exit_guard.wait_for_ui(status);
+            status
         });
     let Ok(engine) = engine else {
         log::error!("could not start the engine thread");
@@ -90,6 +96,7 @@ pub fn serve(
     };
     // Returns once the engine dropped its end of the command channel.
     ui_thread::run(inbox, events);
+    drop(ui_returned);
     engine.join().unwrap_or_else(|_| {
         log::error!("the engine thread panicked");
         1
