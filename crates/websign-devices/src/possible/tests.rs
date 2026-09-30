@@ -1,5 +1,5 @@
 use super::*;
-use crate::pcsc::{CardState, ReaderScan};
+use crate::pcsc::{CardState, ReaderScan, ServiceState};
 use crate::usb::UsbScan;
 
 fn usb(vid: u16, pid: u16, classes: &[u8], product: &str) -> UsbDevice {
@@ -32,6 +32,7 @@ fn snapshot(devices: Vec<UsbDevice>, readers: Vec<Reader>) -> Snapshot {
         readers: ReaderScan {
             readers,
             problem: None,
+            service: ServiceState::Running,
         },
     }
 }

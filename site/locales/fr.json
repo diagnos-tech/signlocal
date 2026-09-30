@@ -114,5 +114,13 @@
   "test.copy_failed": "Copie impossible. Sélectionnez le résumé ci-dessus et copiez-le vous-même.",
   "test.err_generic": "Une erreur s’est produite.",
   "test.nocrypto": "Ce navigateur ne peut pas faire la vérification (WebCrypto n’est pas disponible). Ouvrez la page en https dans un navigateur récent.",
-  "test.link": "Testez votre installation"
+  "test.link": "Testez votre installation",
+  "act.title": "Terminez la configuration de WebeSign",
+  "act.lead": "Vous avez installé l’application. Il reste une étape pour la relier à vos navigateurs. Cela prend quelques secondes.",
+  "act.button": "Activer WebeSign",
+  "act.allow": "Le navigateur vous demande s’il doit ouvrir WebeSign. Autorisez-le. L’application se configure pour tous les navigateurs de cet ordinateur et ouvre une courte fenêtre de prise en main.",
+  "act.none_h": "Rien ne se passe ?",
+  "act.none": "L’application n’est probablement pas encore installée. Installez-la depuis la page de téléchargement, revenez ici et appuyez de nouveau sur le bouton.",
+  "act.download": "Aller à la page de téléchargement",
+  "act.link": "Déjà installée ? Terminez la configuration"
 }

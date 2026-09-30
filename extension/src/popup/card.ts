@@ -54,7 +54,7 @@ export const DOWNLOAD_URL = `${HOMEPAGE}download.html`;
  * site's test page follows the extension's announcement live and can open
  * the app through its URL scheme, which stays open while the popup cannot.
  */
-export const ACTIVATE_URL = `${HOMEPAGE}test/`;
+export const ACTIVATE_URL = `${HOMEPAGE}activate/`;
 /** The privacy notice. */
 export const PRIVACY_URL = `${HOMEPAGE}privacy.html`;
 

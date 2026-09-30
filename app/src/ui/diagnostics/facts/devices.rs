@@ -5,7 +5,7 @@
 use websign_devices::Snapshot;
 use websign_devices::anonymous_reader_name;
 use websign_devices::hints::{DeviceDatabase, DeviceHint, DeviceKind, PerOs};
-use websign_devices::pcsc::{CardState, Reader};
+use websign_devices::pcsc::{CardState, Reader, ServiceState};
 use websign_devices::possible::{LinkedDevices, PossibleSource, possible_devices};
 use websign_devices::usb::UsbDevice;
 use websign_keystores::{DeviceLink, FoundKey};
@@ -172,16 +172,8 @@ fn this_os<T>(values: &PerOs<T>) -> Option<&T> {
     }
 }
 
-/// Linux: whether `pcscd` answered. `websign_devices::pcsc::ReaderScan`
-/// only says so in its `problem` text (from `Error::NoService` /
-/// `Error::ServiceStopped`), so this matches that text. TODO(gustavo): a
-/// structured `ReaderScan::service` (running / stopped / unavailable) in
-/// `websign-devices` would replace the match.
+/// Linux: whether `pcscd` answered; `None` elsewhere, where the service is
+/// not something the person starts by hand.
 fn pcscd_running(scan: &Snapshot) -> Option<bool> {
-    cfg!(target_os = "linux").then(|| {
-        scan.readers
-            .problem
-            .as_deref()
-            .is_none_or(|problem| !problem.contains("not running"))
-    })
+    cfg!(target_os = "linux").then(|| scan.readers.service != ServiceState::Stopped)
 }

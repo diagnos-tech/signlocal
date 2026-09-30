@@ -66,7 +66,7 @@ describe("popup view: states", () => {
     expect(download?.textContent).toBe("popup_download(Windows)");
     expect(download?.href).toBe(`${HOME}download.html`);
     expect(secondary()?.textContent).toBe("popup_activate");
-    expect(secondary()?.href).toBe(`${HOME}test/`);
+    expect(secondary()?.href).toBe(`${HOME}activate/`);
   });
 
   it("outdated: both versions and the update link", async () => {

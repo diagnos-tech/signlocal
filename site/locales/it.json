@@ -114,5 +114,13 @@
   "test.copy_failed": "Impossibile copiare. Seleziona il riepilogo qui sopra e copialo tu.",
   "test.err_generic": "Qualcosa è andato storto.",
   "test.nocrypto": "Questo browser non può eseguire il controllo (WebCrypto non è disponibile). Apri la pagina in https con un browser aggiornato.",
-  "test.link": "Prova la tua configurazione"
+  "test.link": "Prova la tua configurazione",
+  "act.title": "Completa la configurazione di WebeSign",
+  "act.lead": "Hai installato l’app. Manca un passaggio per collegarla ai tuoi browser. Bastano pochi secondi.",
+  "act.button": "Attiva WebeSign",
+  "act.allow": "Il browser chiede se aprire WebeSign. Consenti. L’app si configura per tutti i browser di questo computer e apre una breve finestra di primi passi.",
+  "act.none_h": "Non è successo nulla?",
+  "act.none": "Probabilmente l’app non è ancora installata. Installala dalla pagina di download, poi torna qui e premi di nuovo il pulsante.",
+  "act.download": "Vai alla pagina di download",
+  "act.link": "Già installata? Completa la configurazione"
 }

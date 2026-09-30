@@ -71,7 +71,7 @@ fn this_os<T>(values: &PerOs<T>) -> Option<&T> {
 #[cfg(test)]
 mod tests {
     use websign_core::SourceKind;
-    use websign_devices::pcsc::ReaderScan;
+    use websign_devices::pcsc::{ReaderScan, ServiceState};
     use websign_devices::usb::{UsbDevice, UsbScan};
     use websign_keystores::PinPrompt;
 
@@ -107,6 +107,7 @@ mod tests {
             readers: ReaderScan {
                 readers: Vec::new(),
                 problem: None,
+                service: ServiceState::Running,
             },
         }
     }

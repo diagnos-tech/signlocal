@@ -114,5 +114,13 @@
   "test.copy_failed": "Não foi possível copiar. Selecione o resumo acima e copie-o manualmente.",
   "test.err_generic": "Algo correu mal.",
   "test.nocrypto": "Este navegador não consegue fazer a verificação (o WebCrypto não está disponível). Abra a página por https num navegador atual.",
-  "test.link": "Teste a sua configuração"
+  "test.link": "Teste a sua configuração",
+  "act.title": "Conclua a configuração do WebeSign",
+  "act.lead": "Já instalou a aplicação. Falta um passo para a ligar aos seus navegadores. Demora alguns segundos.",
+  "act.button": "Ativar o WebeSign",
+  "act.allow": "O navegador vai perguntar se deve abrir o WebeSign. Permita. A aplicação configura-se para todos os navegadores deste computador e abre uma breve janela de primeiros passos.",
+  "act.none_h": "Não aconteceu nada?",
+  "act.none": "É provável que a aplicação ainda não esteja instalada. Instale-a a partir da página de transferência, volte aqui e prima o botão outra vez.",
+  "act.download": "Ir para a página de transferência",
+  "act.link": "Já instalou? Conclua a configuração"
 }

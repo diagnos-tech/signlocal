@@ -114,5 +114,13 @@
   "test.copy_failed": "Kopieren nicht möglich. Markieren Sie die Zusammenfassung oben und kopieren Sie sie selbst.",
   "test.err_generic": "Etwas ist schiefgelaufen.",
   "test.nocrypto": "Dieser Browser kann die Prüfung nicht ausführen (WebCrypto ist nicht verfügbar). Öffnen Sie die Seite über https in einem aktuellen Browser.",
-  "test.link": "Ihre Einrichtung testen"
+  "test.link": "Ihre Einrichtung testen",
+  "act.title": "WebeSign fertig einrichten",
+  "act.lead": "Die App ist installiert. Ein letzter Schritt verbindet sie mit Ihren Browsern. Er dauert nur wenige Sekunden.",
+  "act.button": "WebeSign aktivieren",
+  "act.allow": "Ihr Browser fragt, ob WebeSign geöffnet werden soll. Erlauben Sie es. Die App richtet sich für alle Browser auf diesem Computer ein und öffnet ein kurzes Einstiegsfenster.",
+  "act.none_h": "Nichts passiert?",
+  "act.none": "Die App ist wahrscheinlich noch nicht installiert. Installieren Sie sie über die Download-Seite, kehren Sie dann hierher zurück und drücken Sie die Schaltfläche erneut.",
+  "act.download": "Zur Download-Seite",
+  "act.link": "Schon installiert? Einrichtung abschließen"
 }

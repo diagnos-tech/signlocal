@@ -35,11 +35,34 @@ pub struct Reader {
     pub atr: Option<String>,
 }
 
+/// Whether the PC/SC service answered, for callers that must branch on it
+/// (for instance to suggest starting `pcscd`) instead of reading `problem`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ServiceState {
+    /// The service answered; there may still be no readers.
+    Running,
+    /// The service is installed but not running (or not reachable).
+    Stopped,
+    /// PC/SC could not be used for another reason.
+    Unavailable,
+}
+
+impl ServiceState {
+    fn of(error: &Error) -> Self {
+        match error {
+            Error::NoService | Error::ServiceStopped => Self::Stopped,
+            _ => Self::Unavailable,
+        }
+    }
+}
+
 /// The readers, and why none could be listed if the service is unavailable.
 #[derive(Debug, Serialize)]
 pub struct ReaderScan {
     pub readers: Vec<Reader>,
     pub problem: Option<String>,
+    pub service: ServiceState,
 }
 
 /// Lists readers and their cards once. A machine without the PC/SC service is
@@ -49,9 +72,11 @@ pub fn scan() -> ReaderScan {
         Ok(readers) => ReaderScan {
             readers,
             problem: None,
+            service: ServiceState::Running,
         },
         Err(error) => ReaderScan {
             readers: Vec::new(),
+            service: ServiceState::of(&error),
             problem: Some(describe(error)),
         },
     }
@@ -210,5 +235,18 @@ mod tests {
     fn a_missing_service_gets_an_actionable_sentence() {
         assert!(describe(Error::NoService).contains("pcscd"));
         assert!(describe(Error::InternalError).starts_with("PC/SC is not available"));
+    }
+
+    #[test]
+    fn the_service_state_follows_the_pcsc_error() {
+        assert_eq!(ServiceState::of(&Error::NoService), ServiceState::Stopped);
+        assert_eq!(
+            ServiceState::of(&Error::ServiceStopped),
+            ServiceState::Stopped
+        );
+        assert_eq!(
+            ServiceState::of(&Error::InternalError),
+            ServiceState::Unavailable
+        );
     }
 }

@@ -1002,10 +1002,10 @@ Anatomy: header (20 px brand + "WebeSign") → status card (32 px icon + `text-t
 
 1. The package registers the `websign:` URL scheme **at installation** (MSIX `windows.protocol`, `CFBundleURLTypes`
    on Mac, `.desktop` with `x-scheme-handler/websign` on Linux). This does not require opening the app.
-2. "Already installed? Activate the app" opens `https://<site>/ativar` in a tab. That page calls `websign:activate`
+2. "Already installed? Activate the app" opens `https://<site>/activate/` in a tab. That page calls `websign:activate`
    (the browser asks "Open WebeSign?"), the app writes the manifests of all browsers and shows the
    Diagnostics window with "Getting started".
-3. The `/ativar` page uses the extension's announcement on the page to show live "Looking for the app… → Ready".
+3. The `/activate/` page uses the extension's announcement on the page to show live "Looking for the app… → Ready".
 
 **Why a page and not the popup:** the popup closes when the browser shows the protocol prompt;
 the page stays open and follows the result.

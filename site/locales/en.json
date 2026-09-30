@@ -114,5 +114,13 @@
   "test.copy_failed": "Could not copy. Select the summary above and copy it yourself.",
   "test.err_generic": "Something went wrong.",
   "test.nocrypto": "This browser cannot run the check (WebCrypto is unavailable). Open the page over https in a current browser.",
-  "test.link": "Test your setup"
+  "test.link": "Test your setup",
+  "act.title": "Finish setting up WebeSign",
+  "act.lead": "You installed the app. One more step connects it to your browsers. It takes a few seconds.",
+  "act.button": "Activate WebeSign",
+  "act.allow": "Your browser asks whether to open WebeSign. Allow it. The app sets itself up for every browser on this computer and opens a short getting-started window.",
+  "act.none_h": "Nothing happened?",
+  "act.none": "The app is probably not installed yet. Install it from the download page, then come back and press the button again.",
+  "act.download": "Go to the download page",
+  "act.link": "Already installed? Finish setting up"
 }
