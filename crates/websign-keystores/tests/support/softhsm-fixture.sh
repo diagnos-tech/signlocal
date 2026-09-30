@@ -71,6 +71,7 @@ find_module() {
     /usr/lib/x86_64-linux-gnu/softhsm/libsofthsm2.so \
     /usr/lib/aarch64-linux-gnu/softhsm/libsofthsm2.so \
     /usr/lib64/softhsm/libsofthsm2.so \
+    /usr/lib64/pkcs11/libsofthsm2.so \
     /usr/local/lib/softhsm/libsofthsm2.so \
     /opt/homebrew/lib/softhsm/libsofthsm2.so; do
     if [[ -n $candidate && -f $candidate ]]; then

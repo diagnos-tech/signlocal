@@ -94,8 +94,18 @@ impl SoftHsm {
 
 /// Creates the token and runs the ignored tests whose names contain
 /// `filter` in a child process that sees it. Skips (returns) when SoftHSM
-/// is not installed, unless `WEBSIGN_REQUIRE_SOFTHSM` is set.
+/// is not installed, or on Windows, unless `WEBSIGN_REQUIRE_SOFTHSM` is set.
 pub fn run_children(filter: &str) {
+    let required = std::env::var_os(REQUIRE_VAR).is_some();
+    // The fixture is a POSIX script, and on Windows `bash` is often the WSL
+    // launcher, which fails without a distribution instead of reporting
+    // missing tooling.
+    if cfg!(windows) && !required {
+        eprintln!(
+            "SoftHSM2 fixture needs a POSIX shell: skipped (set {REQUIRE_VAR} to fail instead)"
+        );
+        return;
+    }
     let dir = tempfile::tempdir().expect("temporary directory");
     let script = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/support/softhsm-fixture.sh");
     let status = Command::new("bash")
@@ -103,7 +113,7 @@ pub fn run_children(filter: &str) {
         .arg(dir.path())
         .status()
         .expect("bash runs");
-    if status.code() == Some(2) && std::env::var_os(REQUIRE_VAR).is_none() {
+    if status.code() == Some(2) && !required {
         eprintln!("SoftHSM2 tooling not installed: skipped (set {REQUIRE_VAR} to fail instead)");
         return;
     }

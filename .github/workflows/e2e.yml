@@ -157,6 +157,18 @@ jobs:
           else
             bun run test:ci
           fi
+      # A native crash prints nothing; the OS crash report is its only trace.
+      # `websign doctor` runs the diagnostics scan without a window, which
+      # tells a crash in the scan from one in the window.
+      - name: Keep the app's crash reports (macOS)
+        if: failure() && runner.os == 'macOS'
+        run: |
+          mkdir -p target/e2e-results/crash-reports
+          status=0
+          target/debug/websign doctor >/dev/null || status=$?
+          echo "websign doctor exited with $status"
+          sleep 5
+          cp "$HOME"/Library/Logs/DiagnosticReports/websign-* target/e2e-results/crash-reports/ 2>/dev/null || true
       # Traces of failed scenarios (fixture page and test keys only).
       - uses: actions/upload-artifact@v4
         if: failure()

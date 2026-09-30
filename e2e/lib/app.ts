@@ -10,6 +10,7 @@ import { homedir, platform } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 
+import { crashSummary } from "./crash-report.ts";
 import type { E2eEnvironment } from "./environment.ts";
 
 const run = promisify(execFile);
@@ -114,18 +115,20 @@ export async function register(
 
 /** Opens diagnostics on `tab`; the e2e hook saves it and closes the window. */
 export async function diagnostics(env: E2eEnvironment, tab: string): Promise<void> {
+  const started = Date.now();
   try {
     await run(env.app, ["diagnostics", "--tab", tab], {
       env: appEnv(env, "wait", true),
       timeout: 60_000,
     });
   } catch (error) {
-    // A crash leaves stderr empty: the exit status and the app's own log
-    // (test keys only) are what tells why.
+    // A crash leaves stderr empty: the exit status, the app's own log (test
+    // keys only) and, for a signal on macOS, the OS crash report tell why.
     const { code, signal } = error as { code?: unknown; signal?: unknown };
     const log = appLog().split("\n").slice(-40).join("\n");
+    const crash = signal ? await crashSummary(env.app, started) : "";
     throw new Error(
-      `websign diagnostics --tab ${tab} failed (code ${code}, signal ${signal})\n${log}`,
+      `websign diagnostics --tab ${tab} failed (code ${code}, signal ${signal})\n${log}\n${crash}`,
       {
         cause: error,
       },
