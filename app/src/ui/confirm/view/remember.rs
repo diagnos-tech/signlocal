@@ -3,7 +3,7 @@
 //! addresses and for interpreters and shells; absent when the selected
 //! certificate is already in the caller's consent.
 
-use egui::Ui;
+use egui::{Response, Ui};
 use websign_i18n::k;
 use websign_ui_model::confirm::port::CallerView;
 use websign_ui_model::confirm::view::RememberBox;
@@ -15,7 +15,8 @@ pub fn visible(view: &ConfirmView) -> bool {
     view.remember != RememberBox::Hidden
 }
 
-pub fn show(ui: &mut Ui, s: &mut Screen<'_>) {
+/// Draws the block (checkbox, label and help text); returns it, when shown.
+pub fn show(ui: &mut Ui, s: &mut Screen<'_>) -> Option<Response> {
     let tr = s.tr;
     let label = match s.view.header.caller {
         CallerView::Web { .. } => tr.tr(k::CONSENT_REMEMBER),
@@ -31,10 +32,11 @@ pub fn show(ui: &mut Ui, s: &mut Screen<'_>) {
             };
             (false, false, tr.tr(reason))
         }
-        RememberBox::Hidden => return,
+        RememberBox::Hidden => return None,
     };
     let response = checkbox::show(ui, checked, enabled, &label, &help.to_string());
     if response.clicked() {
         s.input(UserInput::Remember(!checked));
     }
+    Some(response)
 }

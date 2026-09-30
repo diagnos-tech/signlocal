@@ -15,4 +15,5 @@ mod keyboard;
 mod open_time;
 mod paths;
 mod pin_fit;
+mod remember_fit;
 mod snapshots;

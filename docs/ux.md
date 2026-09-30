@@ -376,6 +376,17 @@ The full list specification is in [§5](#5-certificate-list). In the confirmatio
 - **Several**: radio group; ↑/↓ changes the selection.
 - **None**: empty state + [Possible certificates](#6-possible-certificates).
 - Switching certificates **re-arms** the Sign button (600 ms) and asks the site for a new digest (R1).
+- **The body reads whole; the list gives way.** The top of the body (the code card, the Continue hint of D11 or what
+  Choose mode shares), the error notice, the whole PIN block (label, field or its stand-in, and the line under it:
+  the privacy note or the PIN error) and the "Remember" block (§4.10: checkbox and help text, whenever it is shown)
+  stay whole in the visible body, above the footer. The rows and the collapsed "Can't sign (n)" row share one scroll
+  box (3 rows and that row at most, 2 with our PIN field); when space is short the box shrinks, down to the selected
+  row and then half a row, and the list scrolls inside itself while the body stays still. A partial last row shows
+  at least 16 px, or the box ends on a whole row. Only when not even that fits (an error notice and the code card
+  above the list) does the body scroll to these blocks, again each time one of them changes; when they are taller
+  than the body, the PIN block and "Remember" win over the top of the notice. **Why:** the person must see what the
+  primary button does, what the window waits for and what "Remember" grants before pressing Continue, Sign or "Use
+  this certificate".
 
 ### 4.6 PIN
 
@@ -525,7 +536,8 @@ A **new** site (no remembered permission) always sees the checkbox:
 ```
 
 - **Unchecked by default.** **Why:** remembering gives the site a new power; the safe default is not to grant it.
-- Appears in Sign mode (below the list) and in Choose mode.
+- Appears in Sign mode (below the list) and in Choose mode, always whole above the footer: a long list shrinks and
+  scrolls inside itself before the block could be cut off (§4.5).
 - Disabled for IP and punycode (§4.3), and for interpreters and shells (§4.3.1).
 - What "remember" grants is **per site and certificate**: the certificate chosen with the box ticked is the only one
   the site may see without "Continue" — `certificates()` without a window, and in Sign mode its verification code

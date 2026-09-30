@@ -1,7 +1,7 @@
 //! "Sign with" and the certificate list (`docs/ux.md` §4.5, §5): the rows
-//! that can sign (three at most before scrolling; with our PIN field two,
-//! or fewer so the field fits — `fit.rs`),
-//! the collapsed "Can't sign (n)" group, and the devices that brought no
+//! that can sign and the collapsed "Can't sign (n)" group, in one scroll box
+//! (three rows and the group at most; with our PIN field two; shorter so
+//! the rest of the body fits — `fit.rs`), and the devices that brought no
 //! certificate (§6.2). A filter appears above long lists (§5.13).
 
 use egui::{ScrollArea, Ui, Vec2, WidgetInfo, WidgetType};
@@ -49,11 +49,18 @@ pub fn show(ui: &mut Ui, s: &mut Screen<'_>) -> Option<f32> {
         .map(|row| row.candidate.fingerprint)
         .collect();
     let radio = usable_count > 1;
-    let rows_height = if pin::visible(s.view) {
-        s.session.fit.rows_height(2.0 * metrics::ROW_CERT)
+    let rows = if pin::visible(s.view) { 2.0 } else { 3.0 };
+    // "Can't sign (n)" scrolls with the rows, so a short box gives up the
+    // disclosure before it gives up a row that can sign.
+    let disclosure = if list.disabled.is_empty() {
+        0.0
     } else {
-        3.0 * metrics::ROW_CERT
+        metrics::ROW_COMPACT
     };
+    let rows_height = s
+        .session
+        .fit
+        .rows_height(rows * metrics::ROW_CERT + disclosure);
     let trailing = !list.disabled.is_empty() || !s.view.possible.is_empty();
     let mut rows_box = 0.0;
     let group = list::show(ui, |ui| {
@@ -61,6 +68,7 @@ pub fn show(ui: &mut Ui, s: &mut Screen<'_>) -> Option<f32> {
         rows_box = ScrollArea::vertical()
             .id_salt("confirm.rows")
             .max_height(rows_height)
+            .min_scrolled_height(rows_height)
             .auto_shrink([false, true])
             .show(ui, |ui| {
                 ui.spacing_mut().item_spacing = Vec2::ZERO;
@@ -72,12 +80,12 @@ pub fn show(ui: &mut Ui, s: &mut Screen<'_>) -> Option<f32> {
                     position.last &= !trailing;
                     rows::show(ui, s, row, radio, position, &order);
                 }
+                if !list.disabled.is_empty() {
+                    disabled_group(ui, s, &list.disabled, !s.view.possible.is_empty());
+                }
             })
             .inner_rect
             .height();
-        if !list.disabled.is_empty() {
-            disabled_group(ui, s, &list.disabled, !s.view.possible.is_empty());
-        }
         possible::inline(ui, s);
     });
     group

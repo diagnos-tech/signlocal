@@ -5,6 +5,7 @@ use egui::Ui;
 use websign_ui_model::confirm::ConfirmState;
 use websign_ui_model::confirm::port::Failure;
 
+use super::fit::MustSee;
 use super::{Screen, code, empty, error, list, outcome, pin, remember};
 use crate::ui::theme::metrics;
 
@@ -23,7 +24,8 @@ pub fn show(ui: &mut Ui, s: &mut Screen<'_>) {
 
 /// Choosing, ready, signing and the recoverable states: the error notice
 /// (above the list, so another certificate is one click away), the code
-/// card, the list, the PIN and "Remember".
+/// card, the list, the PIN and "Remember"; the notice, the PIN block and
+/// "Remember" kept on screen (`fit.rs`).
 fn request(ui: &mut Ui, s: &mut Screen<'_>) {
     let top = ui.cursor().top();
     let mut gap = false;
@@ -33,6 +35,7 @@ fn request(ui: &mut Ui, s: &mut Screen<'_>) {
         }
         gap = true;
     };
+    let mut notice = None;
     // A locked PIN is told where the PIN field was (§4.6).
     if let Some(failure) = s
         .view
@@ -41,7 +44,7 @@ fn request(ui: &mut Ui, s: &mut Screen<'_>) {
         .filter(|f| !matches!(f, Failure::PinLocked { .. }))
     {
         section(ui);
-        error::show(ui, s, &failure);
+        notice = Some(ui.scope(|ui| error::show(ui, s, &failure)).response.rect);
     }
     if code::visible(s.view) {
         section(ui);
@@ -49,21 +52,27 @@ fn request(ui: &mut Ui, s: &mut Screen<'_>) {
     }
     section(ui);
     let rows_box = list::show(ui, s);
-    let mut field = None;
+    let (mut pin, mut field) = (None, None);
     if pin::visible(s.view) {
         section(ui);
-        field = pin::show(ui, s);
+        let block = ui.scope(|ui| pin::show(ui, s));
+        (pin, field) = (Some(block.response.rect), block.inner);
     }
-    match (field, rows_box) {
-        (Some(field), Some(rows_box)) => {
-            let around_rows = field.rect.bottom() - top - rows_box;
-            let settled = s.session.fit.measured(ui.ctx(), around_rows);
-            s.session.fit.reveal(ui, &field, settled);
-        }
-        _ => s.session.fit.no_field(),
-    }
+    let mut remember = None;
     if remember::visible(s.view) {
         section(ui);
-        remember::show(ui, s);
+        remember = remember::show(ui, s).map(|block| block.rect);
+    }
+    match rows_box {
+        Some(rows_box) => {
+            let shown = MustSee {
+                notice,
+                pin,
+                field: field.as_ref(),
+                remember,
+            };
+            s.session.fit.place(ui, top, rows_box, shown);
+        }
+        None => s.session.fit.nothing_shown(),
     }
 }

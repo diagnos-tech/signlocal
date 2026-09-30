@@ -1,6 +1,8 @@
 //! Our PIN field stays on screen (`docs/ux.md` §4.6): with a site notice,
 //! the code card and a long list, the rows give up height so the field sits
-//! inside the visible body, above the footer, without scrolling the body.
+//! inside the visible body, above the footer, without scrolling the body;
+//! after a failure the whole PIN block (with the line under the field)
+//! stays visible too.
 
 use egui::Rect;
 use egui::accesskit::Role;
@@ -9,10 +11,13 @@ use websign_protocol::types::BrowserName;
 use websign_ui_model::certs::CertCandidate;
 
 use super::fixtures::*;
+use super::scenes::SCENES;
 use super::support::{Rig, SIZE, THEMES};
 
 /// The fixed footer's height (`view/mod.rs`).
 const FOOTER: f32 = 64.0;
+/// The line under the field while there is no error.
+pub const PIN_PRIVACY: &str = "Your PIN stays on this computer and never goes through the browser.";
 
 /// A localhost page (its header carries the development-site notice) asking
 /// to sign with one of `keys`, the first selected with its code shown.
@@ -53,6 +58,45 @@ fn the_pin_field_is_visible_without_scrolling_under_a_long_list() {
             assert!(
                 field.bottom() <= SIZE.y - FOOTER,
                 "{theme}, {count} keys: the footer covers the PIN field ({field:?})"
+            );
+        }
+    }
+}
+
+/// The PIN block of a scene: its caption, our field and the line under it.
+fn pin_block(rig: &Rig, line: &str) -> Rect {
+    let caption = rig
+        .harness
+        .query_all_by_value("Card PIN")
+        .chain(rig.harness.query_all_by_value("Token PIN"))
+        .map(|node| node.rect());
+    let field = rig.harness.get_by_role(Role::PasswordInput).rect();
+    let line = rig.harness.get_all_by_value(line).map(|node| node.rect());
+    caption.chain(line).fold(field, Rect::union)
+}
+
+#[test]
+fn the_whole_pin_block_stays_visible_after_a_failure() {
+    let cases = [
+        ("ready", PIN_PRIVACY),
+        ("error-driver", PIN_PRIVACY),
+        (
+            "pin-error",
+            "Incorrect PIN. Last attempt: one more mistake locks the token.",
+        ),
+    ];
+    for (dark, theme) in THEMES {
+        for (name, line) in cases {
+            let (_, scene) = SCENES
+                .into_iter()
+                .find(|(scene, _)| *scene == name)
+                .expect("a known scene");
+            let mut rig = Rig::new(dark);
+            scene(&mut rig);
+            let (body, block) = (rig.visible_body(), pin_block(&rig, line));
+            assert!(
+                body.contains_rect(block),
+                "{name}, {theme}: the PIN block ({block:?}) is cut off ({body:?})"
             );
         }
     }

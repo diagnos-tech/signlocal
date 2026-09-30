@@ -121,6 +121,19 @@ impl Rig {
             .collect()
     }
 
+    /// The body's visible part: between the header and the footer.
+    pub fn visible_body(&self) -> egui::Rect {
+        let panel = |id: &str| {
+            egui::containers::PanelState::load(&self.harness.ctx, egui::Id::new(id))
+                .expect("the window has drawn its panels")
+                .outer_rect
+        };
+        egui::Rect::from_x_y_ranges(
+            0.0..=SIZE.x,
+            panel("confirm.header").bottom()..=panel("confirm.footer").top(),
+        )
+    }
+
     pub fn snapshot(&mut self, name: &str) {
         snapshot(&mut self.harness, name);
     }

@@ -344,17 +344,33 @@ pub fn token_keys(usable: u8, expired: u8) -> Vec<CertCandidate> {
     let driver = KeySource::Driver {
         path: "/usr/lib/softhsm/libsofthsm2.so".to_owned(),
     };
+    many_keys(usable, expired, driver, token, app_pin(false, false, false))
+}
+
+/// `usable` signing keys and `expired` ones in the Windows store, whose PIN
+/// the system asks for (the e2e probe certificates): a long list, no field.
+pub fn store_keys(usable: u8, expired: u8) -> Vec<CertCandidate> {
+    many_keys(
+        usable,
+        expired,
+        KeySource::Windows,
+        DeviceLabel::Unknown,
+        PinMode::System,
+    )
+}
+
+fn many_keys(
+    usable: u8,
+    expired: u8,
+    source: KeySource,
+    device: DeviceLabel,
+    pin: PinMode,
+) -> Vec<CertCandidate> {
     (0..usable + expired)
         .map(|n| {
             let days = if n < usable { 3650 } else { -30 };
             let info = info(40 + n, &format!("Test Holder {n}"), "Test CA", days);
-            candidate(
-                info,
-                driver.clone(),
-                Some(token.clone()),
-                app_pin(false, false, false),
-                true,
-            )
+            candidate(info, source.clone(), Some(device.clone()), pin, true)
         })
         .collect()
 }
