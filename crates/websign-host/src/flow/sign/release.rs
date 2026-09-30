@@ -1,7 +1,7 @@
 //! Releasing a certificate to the caller with `sign.need_digest`.
 
-use websign_core::Fingerprint;
 use websign_core::present::wire::{algorithm_name, hash_algorithm};
+use websign_core::{Fingerprint, SignatureAlgorithm};
 use websign_keystores::KeyRef;
 use websign_protocol::messages::NeedDigest;
 use websign_protocol::{AppMessage, ErrorCode};
@@ -124,5 +124,26 @@ impl SignFlow {
     /// The hash of the request as the key store names it.
     pub(super) fn hash(&self) -> websign_core::HashAlgorithm {
         hash_algorithm(self.request.hash)
+    }
+
+    /// The algorithm this request would use with `candidate`: the first of
+    /// the request's preference list the key store can produce
+    /// (`SPEC.md` §4.2).
+    pub(super) fn algorithm_for(
+        &self,
+        candidate: &websign_ui_model::certs::CertCandidate,
+    ) -> Option<SignatureAlgorithm> {
+        use websign_core::present::wire::signature_algorithm;
+        use websign_protocol::types::SignatureAlgorithmName;
+        let preference = self
+            .request
+            .algorithms
+            .as_deref()
+            .unwrap_or(&SignatureAlgorithmName::DEFAULT_PREFERENCE);
+        preference
+            .iter()
+            .copied()
+            .map(signature_algorithm)
+            .find(|algorithm| candidate.algorithms.contains(algorithm))
     }
 }

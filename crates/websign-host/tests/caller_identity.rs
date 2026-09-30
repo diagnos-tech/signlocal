@@ -101,7 +101,7 @@ fn ip_and_idn_origins_cannot_be_remembered() {
 }
 
 #[test]
-fn desktop_programs_can_always_be_remembered_and_use_app_or_path_keys() {
+fn desktop_programs_can_be_remembered_and_use_app_or_path_keys() {
     let unsigned = Caller::Desktop(desktop_caller());
     assert!(unsigned.can_remember());
     assert_eq!(unsigned.consent_key(), "path:/opt/tools/invoicer");
@@ -115,4 +115,28 @@ fn desktop_programs_can_always_be_remembered_and_use_app_or_path_keys() {
     });
     assert!(signed.can_remember());
     assert!(signed.consent_key().starts_with("app:"));
+}
+
+#[test]
+fn interpreters_and_shells_cannot_be_remembered_even_when_signed() {
+    for path in [
+        "/usr/bin/node",
+        "/usr/bin/python3.12",
+        "/bin/bash",
+        "C:/Windows/System32/cmd.exe",
+    ] {
+        let caller = Caller::Desktop(DesktopCaller {
+            executable: path.into(),
+            ..desktop_caller()
+        });
+        assert!(!caller.can_remember(), "{path}");
+    }
+    let pwsh = Caller::Desktop(DesktopCaller {
+        executable: "C:/Program Files/PowerShell/7/pwsh.exe".into(),
+        signer: Some(CodeSigner::Authenticode {
+            subject: "Microsoft Corporation".to_owned(),
+        }),
+        ..desktop_caller()
+    });
+    assert!(!pwsh.can_remember());
 }

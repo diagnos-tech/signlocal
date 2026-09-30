@@ -83,11 +83,12 @@ mod tests {
     use super::{is_on, request};
 
     fn pass(ctx: &Context, ask: bool) {
-        let _ = ctx.run_ui(RawInput::default(), |ui| {
+        let mut output = ctx.run_ui(RawInput::default(), |ui| {
             if ask {
                 request(ui.ctx());
             }
         });
+        output.textures_delta.clear();
     }
 
     #[test]

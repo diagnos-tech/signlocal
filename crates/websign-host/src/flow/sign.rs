@@ -30,7 +30,7 @@ mod ui;
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
-use websign_core::{Fingerprint, SignatureAlgorithm};
+use websign_core::Fingerprint;
 use websign_protocol::ErrorCode;
 use websign_protocol::limits::DECISION_TIMEOUT;
 use websign_protocol::messages::SignBegin;
@@ -51,13 +51,27 @@ pub const CHAIN_WAIT: Duration = Duration::from_secs(2);
 pub enum SignState {
     Queued,
     Listing,
-    Selecting { selected: Option<Fingerprint> },
+    Selecting {
+        selected: Option<Fingerprint>,
+    },
     /// Released: the window shows "Preparing…" while the issuer chain
     /// lookup `tag` runs; `sign.need_digest` follows it.
-    Releasing { tag: u64, fingerprint: Fingerprint },
-    AwaitingDigest { seq: u32, fingerprint: Fingerprint },
-    Ready { seq: u32, fingerprint: Fingerprint },
-    Signing { tag: u64, fingerprint: Fingerprint },
+    Releasing {
+        tag: u64,
+        fingerprint: Fingerprint,
+    },
+    AwaitingDigest {
+        seq: u32,
+        fingerprint: Fingerprint,
+    },
+    Ready {
+        seq: u32,
+        fingerprint: Fingerprint,
+    },
+    Signing {
+        tag: u64,
+        fingerprint: Fingerprint,
+    },
     Done,
 }
 
@@ -94,7 +108,11 @@ pub struct SignFlow {
 impl SignFlow {
     /// A queued request. `consented` is the caller's consent record: `None`
     /// when it is not remembered, else the certificates it covers.
-    pub fn new(key: RequestKey, request: SignBegin, consented: Option<Vec<Fingerprint>>) -> SignFlow {
+    pub fn new(
+        key: RequestKey,
+        request: SignBegin,
+        consented: Option<Vec<Fingerprint>>,
+    ) -> SignFlow {
         SignFlow {
             key,
             request,
@@ -130,16 +148,6 @@ impl SignFlow {
             ))),
             Effect::Keys(KeyCommand::List { refresh: false }),
         ]
-    }
-
-    /// The decision deadline that applies now. None while the key store
-    /// signs: the person has decided, and an OS PIN dialog or a slow token
-    /// must not be cut off (the caller can still `cancel`).
-    pub fn deadline_now(&self) -> Option<Instant> {
-        match self.state {
-            SignState::Signing { .. } => None,
-            _ => self.deadline,
-        }
     }
 
     /// Ends the request with `code` (cancel, abort, timeout, disconnect).
@@ -181,27 +189,6 @@ impl SignFlow {
         self.state = SignState::Done;
         self.digest = None;
         true
-    }
-
-    /// The algorithm this request would use with `candidate`: the first of
-    /// the request's preference list the key store can produce
-    /// (`SPEC.md` §4.2).
-    fn algorithm_for(
-        &self,
-        candidate: &websign_ui_model::certs::CertCandidate,
-    ) -> Option<SignatureAlgorithm> {
-        use websign_core::present::wire::signature_algorithm;
-        use websign_protocol::types::SignatureAlgorithmName;
-        let preference = self
-            .request
-            .algorithms
-            .as_deref()
-            .unwrap_or(&SignatureAlgorithmName::DEFAULT_PREFERENCE);
-        preference
-            .iter()
-            .copied()
-            .map(signature_algorithm)
-            .find(|algorithm| candidate.algorithms.contains(algorithm))
     }
 
     /// Whether the caller's consent covers `fingerprint`.

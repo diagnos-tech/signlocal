@@ -297,15 +297,18 @@ A desktop program (`websign connect`, `@websign/desktop`, `websign-client`) repl
 | Element | Treatment | Key |
 |---------|-----------|-----|
 | Eyebrow | "Signature request · from a program on this computer" instead of "via {browser}" | `confirm.via_app` |
-| Headline | The program's display name (executable name when it has none), `text-headline`, never cut | n/a |
+| Headline | The program's display name (executable name when it has none), `text-headline`, never cut. For an interpreter, shell or terminal host (`node`, `python`, `ruby`, `perl`, `java`, `deno`, `bun`, `osascript`, `bash`, `zsh`, `sh`, `fish`, `cmd`, `powershell`, `pwsh`, Windows Terminal…; the list lives in `websign-core` `present/caller/script_hosts.rs`): "A script run by {program}" | `caller.script_run_by` |
 | Line under the name | "Signed by {signer}" when the executable's signature verifies; otherwise a `warning` line "Unverified program. Only continue if you started it yourself." | `caller.signed_by`, `caller.unverified` |
 | Chip | success "Allowed program" or neutral "New program" (accessible name: "First time this program asks for anything on this computer") | `confirm.app_remembered`, `confirm.app_new`, `confirm.app_new_a11y` |
-| Remember checkbox | "Remember this program on this computer"; same help text and default (unchecked) as for sites | `consent.remember_app`, `consent.remember_help` |
+| Remember checkbox | "Remember this program on this computer"; same help text and default (unchecked) as for sites. Disabled for an interpreter or shell: "Programs that run scripts can't be remembered: it would allow every script they run." | `consent.remember_app`, `consent.remember_help`, `consent.remember_disabled_script` |
 | Window title (OS) | "Sign for {site} — WebeSign" with the program name in `{site}` | `confirm.window_title` |
 | Revoke | Diagnostics › Browsers › "Allowed programs"; empty: "No remembered programs." | `sites.apps_section`, `sites.apps_empty` |
 
 **Why:** the program name is self-declared, so the signature check and the "Unverified program" warning are the only
-evidence the user gets; a program that is new or unverified never gets a silent pass.
+evidence the user gets; a program that is new or unverified never gets a silent pass. An interpreter is only the
+runtime of whatever script asks: every script it runs has the same parent process, so remembering `node` or
+`powershell` once would let any script on the computer receive the certificate without a window. Such a caller is
+never remembered (and a consent an older version stored for it is ignored).
 
 ### 4.4 Verification code
 
@@ -464,7 +467,7 @@ Esc and key releases always pass.
 |--------|--------------|--------|
 | `loading_certs` | 2-row skeleton after 150 ms; "Looking for certificates…"; after 2 s, "Still reading {device}. Token drivers can take a few seconds." | → `choosing`, `empty` |
 | `empty` | No code card; empty state + possible certificates ([§6](#6-possible-certificates)); "Open diagnostics" on the left of the footer; Sign disabled; focus on Cancel | → `choosing` (token inserted), Cancel → `NoCertificates` |
-| `choosing` | List; pending digest shows "Preparing the document…"; for a new caller before Continue, the hint `code.continue_hint` and a "Continue" button ([§4.4](#44-verification-code), D11) | → `ready` (digest arrived), Cancel |
+| `choosing` | List; pending digest shows "Preparing the document…"; before Continue for a certificate the caller's consent does not cover (any certificate of a new caller; any other than the remembered ones for a remembered caller), the hint `code.continue_hint` and a "Continue" button ([§4.4](#44-verification-code), D11) | → `ready` (digest arrived), Cancel |
 | `ready` | Code visible; Sign arms in 600 ms | → `signing`, Cancel → `UserCancelled` |
 | `pin_error` | PIN block with message (§4.6) | → `signing`, `pin_locked`, Cancel |
 | `pin_locked` | Lockout notice; row disabled | Choose another → `ready`; Cancel → `PinLocked` |
@@ -472,7 +475,7 @@ Esc and key releases always pass.
 | `success` | Body swaps to a 48 px `check-circle` (success), "Signed", "The signature was sent to {site}."; the result has already been sent to the site | Closes by itself after **900 ms** |
 | `error` | `danger` notice above the list with title, text, action, and a collapsed "Technical details" (copyable code) | Action from [§15](#15-errors); Cancel → error code |
 | `site_cancelled` | "{site} cancelled the request." — any cancel from the caller: the page aborted (`AbortSignal`), its tab closed or navigated, or its connection dropped; the person always learns why the window goes away | Closes after 1.5 s |
-| `timeout` | After **5 min** without a decision | Closes; SDK receives `Timeout` |
+| `timeout` | After **5 min** without a decision: "The request expired" (`errors.timeout`). After **60 s** without the site's document (its `prepare` hung): "The site didn't respond" (`errors.digest_timeout`) | Closes; SDK receives `Timeout` |
 | `blocked_origin` | Only through a bug (R5): `InsecureOrigin` error, no Sign | Close |
 
 **Decision (`loading_certs` timing):** the 150 ms skeleton and the 2 s "Still reading {device}" are counted by the
@@ -517,15 +520,21 @@ A **new** site (no remembered permission) always sees the checkbox:
 
 ```
 [ ] Remember this site on this computer                         ← checkbox, control-sm
-    It will be able to see which certificate you use without asking.    ← text-small fg-subtle
+    It will be able to see the certificate you choose now without asking.    ← text-small fg-subtle
     Every signature still asks for your confirmation.
 ```
 
 - **Unchecked by default.** **Why:** remembering gives the site a new power; the safe default is not to grant it.
 - Appears in Sign mode (below the list) and in Choose mode.
-- Disabled for IP and punycode (§4.3).
-- What "remember" grants: `certificates()` without a window for the certificates already used on the site, and
-  preselection of the last certificate used on the site. Signing **always** asks for confirmation.
+- Disabled for IP and punycode (§4.3), and for interpreters and shells (§4.3.1).
+- What "remember" grants is **per site and certificate**: the certificate chosen with the box ticked is the only one
+  the site may see without "Continue" — `certificates()` without a window, and in Sign mode its verification code
+  without "Continue". Any other certificate (another person's token on a shared computer, a row the person moves to)
+  still needs "Continue" before the site learns it, and moving the selection never discloses one. The last remembered
+  certificate is preselected. Signing **always** asks for confirmation.
+- A remembered site whose selected certificate is not covered shows the Continue hint and the checkbox again
+  (ticking it adds that certificate); for a covered one the checkbox is hidden.
+- Using a certificate after "Continue" without ticking the box adds nothing to the consent.
 - Revoke: Diagnostics › Browsers › "Allowed sites" ([§8.3](#83-browsers-tab)).
 
 **Choose mode** (`certificates()` from an unremembered site, R2): same window, with these differences:
@@ -543,7 +552,10 @@ A **new** site (no remembered permission) always sees the checkbox:
 - **Queue**: requests that arrive while the window is open enter a queue (max 10; above that, `Busy`). The
   eyebrow shows "Signature request 1 of 3" (`confirm.eyebrow_queue`). When the current one finishes, the next takes over with a
   `motion-base` transition and re-arming. Requests from different sites never get mixed.
-- **Timeout**: 5 min without a decision → closes with `Timeout`. Countdown in the footer during the last 30 s.
+- **Timeout**: 5 min without a decision → closes with `Timeout` ("The request expired"). Countdown in the footer
+  during the last 30 s. A site that does not send the document within 60 s after the certificate was released
+  also ends with `Timeout`, but the window says "The site didn't respond" (`errors.digest_timeout`): the person did
+  nothing wrong.
 - **Site gave up**: the extension's port closes (tab closed or navigation) → `site_cancelled` state.
 
 **Decision (D4):** no batch signing in v1 (several reports, one confirmation with N codes): it conflicts with
@@ -1342,6 +1354,7 @@ the translations for es, fr, it, de, and pt-PT follow the same keys.
 | `confirm.app_new_a11y` | Primeira vez que este programa pede algo neste computador | First time this program asks for anything on this computer |
 | `caller.signed_by` | Assinado por {signer} | Signed by {signer} |
 | `caller.unverified` | Programa não verificado. Só continue se você mesmo o abriu. | Unverified program. Only continue if you started it yourself. |
+| `caller.script_run_by` | Um script executado por {program} | A script run by {program} |
 | `confirm.eyebrow_queue` | Pedido de assinatura {current} de {total} | Signature request {current} of {total} |
 | `confirm.inside_frame` | Dentro da página de {top_site} | Inside a page from {top_site} |
 | `origin.warn_idn` | Endereço com caracteres especiais. Confira letra por letra. | Address with special characters. Check it letter by letter. |
@@ -1435,8 +1448,9 @@ the translations for es, fr, it, de, and pt-PT follow the same keys.
 | `pin.locked_body_generic` | O token bloqueou depois de muitas tentativas erradas. Desbloqueie com o PUK no programa do fabricante ou procure a autoridade certificadora. | The token locked after too many wrong attempts. Unlock it with the PUK in the vendor's software or contact your certificate authority. |
 | `consent.remember` | Lembrar este site neste computador | Remember this site on this computer |
 | `consent.remember_app` | Lembrar este programa neste computador | Remember this program on this computer |
-| `consent.remember_help` | Ele poderá saber qual certificado você usa sem perguntar. Cada assinatura continua pedindo sua confirmação. | It will be able to see which certificate you use without asking. Every signature still asks for your confirmation. |
+| `consent.remember_help` | Ele poderá ver o certificado escolhido agora sem perguntar. Cada assinatura continua pedindo sua confirmação. | It will be able to see the certificate you choose now without asking. Every signature still asks for your confirmation. |
 | `consent.remember_disabled` | Endereços numéricos ou com caracteres especiais não podem ser lembrados. | Numeric or special-character addresses can't be remembered. |
+| `consent.remember_disabled_script` | Programas que executam scripts não podem ser lembrados: isso permitiria todos os scripts que eles executam. | Programs that run scripts can't be remembered: it would allow every script they run. |
 | `consent.select_shares` | O site vai receber nome, tipo, emissor e validade do certificado escolhido. Nada é assinado agora. | The site will receive the name, type, issuer and validity of the chosen certificate. Nothing is signed now. |
 | `action.sign` | Assinar | Sign |
 | `action.signing` | Assinando… | Signing… |
@@ -1638,6 +1652,7 @@ The pt-BR and en columns are product copy (title — text) and are kept as data.
 | `InsecureOrigin` | Non-local `http` origin, `file:`, etc. | S, D (J only through a bug) | Site sem conexão segura — Este site não usa https. Por segurança, o WebeSign não assina para ele. | Insecure site — This site doesn't use https. For your safety, WebeSign won't sign for it. | n/a (D: "Call the SDK from an https origin or localhost.") |
 | `UserCancelled` | Cancel, Esc, or X with no visible blocker | S | Assinatura cancelada. | Signature cancelled. | The site decides |
 | `Timeout` | 5 min without a decision | J, S | O pedido expirou — Ninguém respondeu em 5 minutos. Volte ao site e tente de novo. | The request expired — Nobody answered for 5 minutes. Go back to the site and try again. | n/a |
+| `Timeout` (digest) | The site did not send the document within 60 s | J | O site não respondeu — {site} não preparou o documento em 60 segundos. Volte ao site e tente de novo. | The site didn't respond — {site} didn't prepare the document within 60 seconds. Go back to the site and try again. | n/a |
 | `NoCertificates` | Window closed with an empty list | J (empty state), S | Nenhum certificado encontrado — Conecte o token ou insira o cartão e tente de novo. | No certificates found — Plug in your token or insert your card and try again. | Open diagnostics |
 | `CertificateUnavailable` | The requested/chosen certificate vanished (token removed, key deleted) | J, S | Certificado indisponível — O certificado escolhido não está mais acessível. Conecte o token de novo ou escolha outro. | Certificate unavailable — The chosen certificate is no longer available. Plug the token back in or choose another one. | Focus on the list |
 | `CertificateNotValid` | The site asked for an expired or not-yet-valid certificate | J (disabled row), S | Certificado fora da validade — Este certificado venceu ou ainda não começou a valer. Escolha outro ou renove com a sua autoridade certificadora. | Certificate out of validity — This certificate has expired or isn't valid yet. Choose another one or renew it with your certificate authority. | Open diagnostics |

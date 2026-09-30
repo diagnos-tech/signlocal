@@ -31,7 +31,15 @@ pub fn show(ui: &mut Ui, s: &mut Screen<'_>) {
         Mode::Choose => s.tr.tr(k::CONFIRM_ASKS_SELECT),
     }
     .to_string();
-    let spoken = format!("{lead}, {}, {}", words::site(&s.view.header.caller), chip.1);
+    let who = match &s.view.header.caller {
+        CallerView::Desktop { label } if label.runs_scripts => {
+            s.tr.tr(k::CALLER_SCRIPT_RUN_BY)
+                .arg("program", &label.name)
+                .to_string()
+        }
+        caller => words::site(caller),
+    };
+    let spoken = format!("{lead}, {who}, {}", chip.1);
     origin::show(ui, s.tr, &s.view.header.caller, &asks, &spoken);
 }
 

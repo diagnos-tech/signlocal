@@ -2,6 +2,7 @@
 
 - `acquire.rs` — Opening a certificate's private key with `CryptAcquireCertificatePrivateKey`, the one call that reaches CNG providers, legacy CSPs and minidrivers alike.
 - `aes_reopen.rs` — Reopening A1 keys from Microsoft's SHA-1-only `PROV_RSA_FULL` CSPs in the AES CSP, so plain CAPI can sign SHA-2.
+- `capabilities.rs` — What a key can sign with, from its provider and acquisition preference: CNG everything, bridged Microsoft CSPs PKCS#1 v1.5 and PSS, plain CAPI PKCS#1 v1.5 only.
 - `capi.rs` — Signing with a legacy CAPI key (`CryptSignHash`): old token CSPs and A1 certificates imported into Microsoft's software CSPs.
 - `cert_context.rs` — Owned certificate contexts and their properties.
 - `chain.rs` — Issuer certificates from `CertGetCertificateChain`, built offline (no AIA, no root update), leaf excluded.

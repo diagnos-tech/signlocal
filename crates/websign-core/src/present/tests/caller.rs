@@ -94,7 +94,11 @@ fn interpreters_and_shells_run_scripts_and_say_so() {
     let node = caller("/usr/bin/node", None, None);
     assert!(runs_scripts(&node));
     assert!(caller_label(&node).runs_scripts);
-    let pwsh = caller("C:/Program Files/PowerShell/7/pwsh.exe", Some("PowerShell 7"), Some(authenticode()));
+    let pwsh = caller(
+        "C:/Program Files/PowerShell/7/pwsh.exe",
+        Some("PowerShell 7"),
+        Some(authenticode()),
+    );
     assert!(caller_label(&pwsh).runs_scripts);
     assert!(!caller_label(&caller("/opt/acme/invoicer", None, None)).runs_scripts);
 }

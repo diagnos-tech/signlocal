@@ -4,6 +4,7 @@
 - `caller_identity.rs` — SPEC §3: `Caller::web`, consent key, `can_remember`
 - `engine_cancel.rs` — SPEC §8.9: cancel from page and person, disconnect, requests after their end
 - `engine_choose.rs` — SPEC §8.12 and §5: remembered, revoked and new `choose`, chains in the answer
+- `engine_consent_per_certificate.rs` — SPEC §8.20-21 and D11: consent per caller and certificate, arrowing, revoke, interpreters
 - `engine_consent.rs` — consent per caller: status, revoke, ticked Remember, usage, caller view
 - `engine_devices.rs` — SPEC §8.13: device events while a request is open
 - `engine_diagnostics_idle.rs` — SPEC §8.14-15: `diagnostics.open`, desktop idle exit

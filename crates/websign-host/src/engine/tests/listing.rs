@@ -136,6 +136,7 @@ fn the_driver_path_signs_with_our_pin_after_the_store_failed() {
         key,
         fingerprint: fp(),
     });
+    rig.answer_chains();
     rig.digest("1", 1, &fixture::DIGEST);
     rig.h.keys.take();
     rig.h.ui.take();

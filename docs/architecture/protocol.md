@@ -173,8 +173,14 @@ See §5 for the state machine.
 
 - `algorithm` is chosen by the app: the first entry of `algorithms` (default
   `ECDSA, RSASSA-PKCS1-v1_5, RSASSA-PSS`) that the key supports **and** its key
-  store can produce (e.g. RSASSA-PSS is absent through legacy CAPI). No match →
-  the certificate is shown disabled ("Not compatible with this request").
+  store can produce. No match → the certificate is shown disabled ("Not
+  compatible with this request"). What a store can produce is read without a
+  PIN when listing (`Keystore::capabilities`, keystores SPEC §1 rule 10):
+  PKCS#11 from the slot's mechanisms (`CKM_RSA_PKCS`, `CKM_RSA_PKCS_PSS`,
+  `CKM_ECDSA` with `CKF_SIGN`); Windows CNG keys can do all three, keys signed
+  through plain CAPI only RSASSA-PKCS1-v1_5; macOS from
+  `SecKeyIsAlgorithmSupported` (brainpool keys: none). The same intersection
+  is `certificate.algorithms` on the wire.
 - RSASSA-PSS always uses MGF1 with the same hash and a salt as long as the
   digest (what CNG, CryptoTokenKit and PKCS#11 do; proven in the kit).
 - `signature`: RSA → the modulus-length block; ECDSA → raw `r‖s`, each half

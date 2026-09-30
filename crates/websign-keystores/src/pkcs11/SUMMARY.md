@@ -3,6 +3,7 @@
 - `known_paths/` — known vendor module paths per OS
 - `p11kit/` — p11-kit module registrations
 - `always_authenticate.rs` — Keys with `CKA_ALWAYS_AUTHENTICATE`: the PIN is asked again for every signature, as qualified signature keys of eIDAS cards (Cartao de Cidadao, DNIe, Estonian ID card) require.
+- `capabilities.rs` — What a token can sign with (`CKM_RSA_PKCS`, `CKM_RSA_PKCS_PSS`, `CKM_ECDSA` with `CKF_SIGN`), cached per slot until the next listing.
 - `cert_names.rs` — The issuer and subject names of a certificate as raw DER, for chaining CA certificates byte for byte.
 - `chain.rs` — `chain`: the CA certificates stored on the token, nearest issuer first, leaf excluded, at most 8.
 - `ckr.rs` — Raw `CKR_*` return codes and names, which `cryptoki` hides behind its `RvError` enum.

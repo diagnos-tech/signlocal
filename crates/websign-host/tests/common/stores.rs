@@ -112,7 +112,11 @@ impl ConsentStore for Consent {
     fn record_use(&mut self, key: &str, fingerprint: &str, now: i64) -> Result<(), StoreError> {
         check(&self.0)?;
         let mut state = self.0.borrow_mut();
-        if let Some(record) = state.consent.iter_mut().find(|r| r.key == key) {
+        // Only a certificate the consent covers is refreshed; none is added.
+        let covered = |r: &&mut ConsentRecord| {
+            r.key == key && r.certificates.iter().any(|f| f == fingerprint)
+        };
+        if let Some(record) = state.consent.iter_mut().find(covered) {
             record.certificates.retain(|f| f != fingerprint);
             record.certificates.insert(0, fingerprint.to_owned());
             record.last_used_at = now;

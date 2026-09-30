@@ -2,6 +2,7 @@
 
 - `errors/` — unit tests of the `CFError` mapping
 - `algorithm.rs` — `SecKeyAlgorithm` for each (hash, signature algorithm) pair, "Digest" variants only.
+- `capabilities.rs` — What a key can sign with, from `SecKeyIsAlgorithmSupported` for every hash (brainpool keys: no ECDSA).
 - `chain.rs` — Issuer certificates of a leaf from `SecTrust`, without network fetching.
 - `errors.rs` — Security.framework and CryptoTokenKit `CFError`s turned into [`KeystoreError`] (cancel, wrong/blocked PIN, token removed).
 - `identities.rs` — Finding identities (certificate plus private key) in keychain files and CryptoTokenKit tokens without prompting.

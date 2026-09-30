@@ -19,8 +19,11 @@
 //!   per executable, so there is nothing to show as "Signed by");
 //!   `getppid` re-read afterwards against PID reuse.
 //!
-//! A parent that is a shell (`bash`, `zsh`, `cmd`, `powershell`) is reported
-//! as itself: the person started the command.
+//! A parent that is an interpreter or shell (`node`, `python`, `bash`,
+//! `cmd`, `powershell`) is reported as itself: the person started the
+//! command. Every script it runs shares that identity, so such a caller is
+//! never remembered and the window names it "a script run by {program}"
+//! (`websign_core::present::caller::runs_scripts`).
 //!
 //! Nothing here logs the executable path: it usually contains the user name.
 

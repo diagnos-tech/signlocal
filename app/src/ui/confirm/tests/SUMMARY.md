@@ -7,6 +7,7 @@
 - `snapshots.rs` — One snapshot per scene in light and dark.
 - `arming.rs` — 600 ms of focus before Sign or Continue act; early clicks and keystrokes dropped (§4.7).
 - `keyboard.rs` — Esc cancels, Enter never continues or chooses, Space does, arrows select, Enter on a row moves focus (§4.9).
+- `callers.rs` — An interpreter reads "A script run by {program}" and cannot be remembered; a digest timeout blames the site (§4.3.1, §4.11).
 - `accesskit.rs` — Header sentence, radio rows with full names, PIN without value, alerts, Tab order (§14).
 - `open_time.rs` — Frames laid out within 300 ms of `Open` (timing printed).
 - `pin_fit.rs` — Our PIN field stays visible above the footer, the body unscrolled, under a long list at 480 × 600 (§4.6).

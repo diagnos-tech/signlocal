@@ -44,7 +44,9 @@ pub(super) fn view(model: &ConfirmModel, now: Instant) -> ConfirmView {
             primary_first: cfg!(target_os = "windows"),
         },
         loading: loading(model, now),
-        expiry: model.expiry.filter(|_| model.state == ConfirmState::Timeout),
+        expiry: model
+            .expiry
+            .filter(|_| model.state == ConfirmState::Timeout),
     }
 }
 

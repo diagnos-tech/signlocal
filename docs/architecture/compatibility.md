@@ -12,7 +12,7 @@ offered by CNG, CryptoTokenKit or common tokens).
 | Signature | Key | Encoding returned | Windows CNG | Windows CAPI (legacy CSP) | macOS Keychain/CTK | PKCS#11 |
 |---|---|---|---|---|---|---|
 | RSASSA-PKCS1-v1_5 | RSA 1024–16384 | modulus-length block | `NCryptSignHash` + `BCRYPT_PAD_PKCS1` | `CryptSignHash` (bytes reversed); `PROV_RSA_FULL` keys reopened in the AES CSP | `RSASignatureDigestPKCS1v15SHA*` | `CKM_RSA_PKCS` over the `DigestInfo` |
-| RSASSA-PSS (MGF1 same hash, salt = digest length) | RSA | block | `BCRYPT_PAD_PSS` | only via the CNG bridge (`PREFER`, D9) | `RSASignatureDigestPSSSHA*` (salt = digest length, verified in Apple's sources) | `CKM_RSA_PKCS_PSS` |
+| RSASSA-PSS (MGF1 same hash, salt = digest length) | RSA | block | `BCRYPT_PAD_PSS` | only via the CNG bridge (`PREFER`, D9) for Microsoft's CSPs; not offered for third-party CSPs or after the fallback to `ALLOW` | `RSASignatureDigestPSSSHA*` (salt = digest length, verified in Apple's sources) when `SecKeyIsAlgorithmSupported` says so | `CKM_RSA_PKCS_PSS`, offered only when the token lists it with `CKF_SIGN` |
 | ECDSA P-256 / P-384 / P-521 | EC | raw `r‖s` | native `r‖s` | — (CAPI has no ECC) | DER → converted | `CKM_ECDSA` (raw; DER converted) |
 | ECDSA brainpoolP256r1 / P384r1 / P512r1 | EC | raw `r‖s` | if the KSP supports the curve | — | — (the Security framework has no brainpool curves; use the token's PKCS#11 module) | if the module does |
 

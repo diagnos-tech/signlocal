@@ -98,23 +98,30 @@ fn an_unanswered_chain_leaves_the_result_without_one() {
 }
 
 #[test]
-fn the_chain_is_read_on_release_and_reaches_the_result() {
+fn the_first_need_digest_waits_for_the_chain_and_carries_it() {
     let p = Cert::p256();
     let issuer = vec![0x30, 0x03, 0x02, 0x01, 0x07];
     let mut h = Harness::native_ready();
     h.remember(ORIGIN, &[&p]);
     let key = h.begin("s1", ORIGIN, SHA256).opens()[0].key;
-    let listed = h.listed(&[&p]);
+    let listed = h.listed_raw(&[&p]);
     assert_eq!(
         listed.key_kinds(),
         ["chain"],
         "asked when the certificate leaves"
     );
-    assert!(
-        listed.need_digests()[0].1.certificate.chain.is_empty(),
-        "the digest request does not wait for it"
+    assert_eq!(
+        listed.digest_pending_count(),
+        1,
+        "the window says Preparing"
     );
-    h.chains(&listed, std::slice::from_ref(&issuer));
+    assert!(
+        listed.need_digests().is_empty(),
+        "the digest request waits for the chain"
+    );
+    let out = h.chains(&listed, std::slice::from_ref(&issuer));
+    let chain = &out.need_digests()[0].1.certificate.chain;
+    assert_eq!(chain.len(), 1, "prepare(cert) sees the chain");
     h.answer_digest("s1", 1, SHA256);
     let out = h.press_sign(key, &p, None);
     let tag = out.signs()[0].tag;
@@ -122,6 +129,24 @@ fn the_chain_is_read_on_release_and_reaches_the_result() {
     let chain = &out.results()[0].1.certificate.chain;
     assert_eq!(chain.len(), 1);
     assert_eq!(chain[0].as_bytes(), issuer.as_slice());
+}
+
+#[test]
+fn a_slow_chain_holds_need_digest_back_for_two_seconds_at_most() {
+    let p = Cert::p256();
+    let mut h = Harness::native_ready();
+    h.remember(ORIGIN, &[&p]);
+    h.begin("s1", ORIGIN, SHA256);
+    h.listed_raw(&[&p]);
+    h.clock.advance(std::time::Duration::from_millis(1999));
+    h.tick();
+    assert!(h.take_raw().need_digests().is_empty());
+    h.clock.advance(std::time::Duration::from_millis(1));
+    h.tick();
+    let out = h.take_raw();
+    let needs = out.need_digests();
+    assert_eq!(needs.len(), 1, "sent without the chain");
+    assert!(needs[0].1.certificate.chain.is_empty());
 }
 
 #[test]

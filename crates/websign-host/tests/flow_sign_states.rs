@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 
 use common::Cert;
 use common::effects::{need_digest_seq, words};
-use common::flows::{KEY, listed, new_flow};
+use common::flows::{KEY, listed, new_flow, with_chains};
 use websign_host::flow::Effect;
 use websign_host::flow::sign::SignState;
 use websign_ui_model::confirm::UiCommand;
@@ -68,13 +68,14 @@ fn a_remembered_caller_with_a_preselected_certificate_is_released_at_once() {
     let effects = flow.on_listed(&common::snapshot(&[&p]), common::flows::context());
     assert_eq!(
         words(&effects),
-        [
-            "ui:certificates",
-            "send:need_digest",
-            "ui:digest_pending",
-            "keys:chain"
-        ]
+        ["ui:certificates", "ui:digest_pending", "keys:chain"]
     );
+    assert!(
+        matches!(flow.state, SignState::Releasing { fingerprint, .. } if fingerprint == p.fingerprint),
+        "waits for the chain: {:?}",
+        flow.state
+    );
+    let effects = with_chains(&mut flow, effects);
     assert_eq!(need_digest_seq(&effects), Some(1));
     assert_eq!(
         flow.state,
@@ -124,9 +125,10 @@ fn continue_releases_the_certificate_of_a_new_caller() {
     });
     assert_eq!(
         words(&effects),
-        ["send:need_digest", "ui:digest_pending", "keys:chain"],
+        ["ui:digest_pending", "keys:chain"],
         "the chain is read for the certificate just released"
     );
+    let effects = with_chains(&mut flow, effects);
     assert_eq!(need_digest_seq(&effects), Some(1));
     assert_eq!(
         flow.state,
@@ -164,9 +166,10 @@ fn selecting_for_a_remembered_caller_asks_for_a_new_digest() {
     });
     assert_eq!(
         words(&effects),
-        ["send:need_digest", "ui:digest_pending", "keys:chain"],
+        ["ui:digest_pending", "keys:chain"],
         "the chain is read for the certificate just released"
     );
+    let effects = with_chains(&mut flow, effects);
     assert_eq!(need_digest_seq(&effects), Some(2));
     assert_eq!(
         flow.state,
@@ -215,12 +218,10 @@ fn the_context_decides_what_a_remembered_caller_gets_first() {
         let mut flow = new_flow(true);
         flow.activate(Instant::now(), &common::flows::presentation());
         flow.on_listed(&common::snapshot(&[&p, &r]), context);
-        assert_eq!(
-            flow.state,
-            SignState::AwaitingDigest {
-                seq: 1,
-                fingerprint: expected
-            }
+        assert!(
+            matches!(flow.state, SignState::Releasing { fingerprint, .. } if fingerprint == expected),
+            "{:?}",
+            flow.state
         );
     }
 }

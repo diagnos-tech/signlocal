@@ -31,8 +31,19 @@ fn record_use_never_creates_consent() {
     consent.record_use("https://a.example", "aa", 10);
     assert!(consent.records.is_empty());
     consent.remember("https://a.example", "aa", 10);
+    consent.remember("https://a.example", "bb", 15);
+    consent.record_use("https://a.example", "aa", 20);
+    assert_eq!(consent.records[0].certificates, ["aa", "bb"]);
+    assert_eq!(consent.records[0].last_used_at, 20);
+}
+
+#[test]
+fn record_use_never_adds_a_certificate_to_a_remembered_caller() {
+    let mut consent = ConsentDocument::default();
+    consent.remember("https://a.example", "aa", 10);
     consent.record_use("https://a.example", "bb", 20);
-    assert_eq!(consent.records[0].certificates, ["bb", "aa"]);
+    assert_eq!(consent.records[0].certificates, ["aa"]);
+    assert_eq!(consent.records[0].last_used_at, 10);
 }
 
 #[test]

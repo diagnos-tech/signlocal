@@ -136,18 +136,22 @@ the name or issuer text.
 
 ### 2.2 `ConfirmModel`
 
-States and transitions follow ux §4.8 with D11:
+States and transitions follow ux §4.8 with D11. Consent is per
+certificate: `OpenRequest.consented` lists the certificates the caller's
+consent covers (empty for a new caller). Below, a **consented** selection
+is one in that list; any other selection needs Continue, even when
+`remembered` is true (another person's token on a shared computer).
 
 | From | Input | To / effect |
 |---|---|---|
 | Idle | `Open` | LoadingCerts; timeout starts; arming per §2.2.1 |
 | LoadingCerts / Empty | `Certificates` with a usable row | Choosing (selection from the list) |
 | LoadingCerts | `Certificates` without usable rows | Empty (`list` kept, with its disabled rows) |
-| Choosing | new caller, primary click (armed) | intent `Continue(selected)`; code card `Preparing` |
-| Choosing | remembered caller | (host already sent the digest request) code card `Preparing` |
-| Choosing | `DigestReady` for the selected certificate, after Continue or for a remembered caller | Ready; re-arm |
+| Choosing | selection not consented, primary click (armed) | intent `Continue(selected)`; code card `Preparing` |
+| Choosing | consented selection | (host already sent the digest request) code card `Preparing` |
+| Choosing | `DigestReady` for the selected certificate, after Continue or for a consented one | Ready; re-arm |
 | Ready | `DigestReady` again for the selection | code replaced; re-arm |
-| Choosing / Ready / PinError / PinLocked / Error | `Select(other usable)` (settled, §2.2.1) | Choosing; intent `Selected(other)`; re-arm; PIN length, PIN error, banner and path reset; (remembered: `Preparing`, new: `ContinueHint`) |
+| Choosing / Ready / PinError / PinLocked / Error | `Select(other usable)` (settled, §2.2.1) | Choosing; intent `Selected(other)`; re-arm; PIN length, PIN error, banner and path reset; (consented: `Preparing`, otherwise: `ContinueHint`) |
 | Ready / PinError | primary click or `Enter` (armed; PIN length valid when the field is shown) | Signing; intent `Sign { via, … }` |
 | Error (retryable) | primary click or `Enter` (armed, "Try again") | Signing; intent `Sign` on the last path |
 | Error `DriverFailure { alternate: true }` | `UseAlternatePath` (armed), path 1 needs our field (§2.2.2) | Ready on path 1: banner cleared, PIN length 0, re-arm, no intent; Sign then sends `Sign { via: 1 }` |
@@ -161,14 +165,15 @@ States and transitions follow ux §4.8 with D11:
 | request on screen | Escape / Cancel / Close | intent `Cancel(cancel_code(state))`, every press |
 | Success / SiteCancelled / Timeout | Escape / Cancel / Close | Idle, no intent (the request is already answered) |
 | any | `Finished(SiteCancelled)` (the caller cancelled: AbortSignal, tab closed or navigated, connection dropped) | SiteCancelled; 1500 ms → Idle |
-| any | `Finished(Timeout)` | Timeout ("The request expired"); 1500 ms → Idle |
+| any | `Finished(Timeout)` | Timeout ("The request expired": nobody decided in 5 minutes), `view.expiry = Decision`; 1500 ms → Idle |
+| any | `Finished(DigestTimeout)` | Timeout, `view.expiry = Digest` ("The site didn't respond": it did not prepare the document within 60 s); 1500 ms → Idle |
 | any | `Finished(Aborted)` (the person's own Cancel, a protocol error) or `Hide` | Idle at once, no notice |
 | Choose mode, Choosing (armed) | primary click | intent `Choose { … }` once; `Finished(Chosen)` → Success |
 
 Commands whose `key` is not the request on screen are dropped (a `Queue`
 for another key included). `DigestReady` is ignored for a certificate that
-is not selected and, for a new caller, before Continue: the window never
-asked for it (D11).
+is not selected and, for a selection that is not consented, before
+Continue: the window never asked for it (D11).
 
 #### 2.2.1 Arming
 
@@ -233,8 +238,8 @@ asked for it (D11).
   and `UnsupportedAlgorithm` ask for another certificate. For those the
   primary button reads `Sign`, disabled.
 - `Preparing { skeleton }` turns true 150 ms after the card started
-  preparing: the Continue click (new caller), entering Choosing (remembered
-  caller) or a `DigestPending` for the selection, whichever is latest.
+  preparing: the Continue click, entering Choosing with a consented
+  selection, or a `DigestPending` for the selection, whichever is latest.
 - `loading` is `Some` only in LoadingCerts: `skeleton` 150 ms after the
   listing started (`Open` or `Rescan`), `slow_device` = the device of the
   last `SlowListing` for the request on screen, shown 2 s after the listing
@@ -254,13 +259,18 @@ Empty → `NoCertificates`; PinLocked → `PinLocked`; Error with
 ### 2.4 `view` and `banner_code`
 
 `view` maps the state to `ConfirmView` exactly as ux §4.2–§4.11 describe:
-button labels (`Continue` for a new caller before release, `Sign`,
+button labels (`Continue` before a selection that is not consented is
+released, `Sign`,
 `Signing`, `Retry` after a retryable error, `UseCertificate` in choose
 mode), `primary_first` on Windows, `cancel_enabled = false` only while
 signing with an OS or PIN-pad prompt, `FooterHint::ExpiresIn` in the last
 30 s (it wins over any hint), `FooterHint::OsPinPrompt` for a system PIN,
-`FooterHint::OpenDiagnostics` in Empty, `RememberBox` hidden for remembered
-callers, disabled when `can_remember` is false. In Empty, `list` is `Some`
+`FooterHint::OpenDiagnostics` in Empty, `RememberBox` hidden while the
+selection is consented (Remember could add nothing), disabled when
+`can_remember` is false (IP and IDN origins, interpreters and shells), else
+enabled: ticking it for a remembered caller adds the chosen certificate;
+`Sign`/`Choose` carry `remember` only in that case. `expiry` is `Some` only
+in Timeout. In Empty, `list` is `Some`
 and carries the disabled rows. An idle view (never rendered: the window is
 hidden) has a blank desktop caller. `banner_code` maps each `Failure` to its
 protocol code (`PinIncorrect`, `PinLocked`, `TokenRemoved`, `DriverFailure`,

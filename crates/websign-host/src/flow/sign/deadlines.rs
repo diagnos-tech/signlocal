@@ -1,5 +1,7 @@
 //! The waits a sign request can run out of, besides the person's decision.
 
+use std::time::Instant;
+
 use websign_protocol::{AppMessage, ErrorCode, WireError};
 use websign_ui_model::confirm::port::{Finish, UiCommand};
 
@@ -7,6 +9,16 @@ use super::{SignFlow, SignState};
 use crate::flow::Effect;
 
 impl SignFlow {
+    /// The decision deadline that applies now. None while the key store
+    /// signs: the person has decided, and an OS PIN dialog or a slow token
+    /// must not be cut off (the caller can still `cancel`).
+    pub fn deadline_now(&self) -> Option<Instant> {
+        match self.state {
+            SignState::Signing { .. } => None,
+            _ => self.deadline,
+        }
+    }
+
     /// [`super::CHAIN_WAIT`] passed in `Releasing`: `sign.need_digest` goes
     /// without the chain (the `sign.result` still carries it when the
     /// lookup finishes before the signature).

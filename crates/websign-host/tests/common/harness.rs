@@ -15,8 +15,8 @@ use websign_host::{Control, Engine, EngineConfig, EngineEvent};
 use websign_keystores::KeystoreError;
 use websign_protocol::ProtocolRange;
 use websign_protocol::types::{AppInfo, Channel, OsName};
-use websign_ui_model::confirm::UiEvent;
 use websign_ui_model::confirm::port::RequestKey;
+use websign_ui_model::confirm::{UiCommand, UiEvent};
 
 use super::certs::{Cert, digest, snapshot};
 use super::fakes::{FakeKeys, FakeLauncher, FakeOutbound, FakeUi, ManualClock, Recorded, Shared};
@@ -81,6 +81,8 @@ pub struct Harness {
     pub rec: Shared,
     pub clock: ManualClock,
     pub state: State,
+    /// Chain lookups [`Harness::take`] already answered.
+    answered: Vec<u64>,
 }
 
 impl Harness {
@@ -105,6 +107,7 @@ impl Harness {
             rec,
             clock,
             state,
+            answered: Vec::new(),
         }
     }
 
@@ -172,7 +175,45 @@ impl Harness {
     }
 
     /// Everything sent since the last call.
+    ///
+    /// A sign release (`DigestPending`) waits for its issuer chain before
+    /// `sign.need_digest`; the fake key store answers those lookups at once
+    /// with an empty chain, as the real worker does in order, and what
+    /// follows is part of the same step. `choose` lookups stay unanswered
+    /// for the test to drive ([`Harness::chains`]); [`Harness::take_raw`]
+    /// leaves sign lookups unanswered too.
     pub fn take(&mut self) -> Out {
+        let mut out = self.take_raw();
+        loop {
+            let released = out
+                .ui
+                .iter()
+                .any(|command| matches!(command, UiCommand::DigestPending { .. }));
+            let tags: Vec<u64> = out
+                .chain_tags()
+                .into_iter()
+                .filter(|tag| released && !self.answered.contains(tag))
+                .collect();
+            if tags.is_empty() {
+                return out;
+            }
+            for tag in tags {
+                self.answered.push(tag);
+                self.keys(KeyReply::Chain {
+                    tag,
+                    chain: Vec::new(),
+                });
+            }
+            let next = self.take_raw();
+            out.frames.extend(next.frames);
+            out.ui.extend(next.ui);
+            out.keys.extend(next.keys);
+            out.diagnostics.extend(next.diagnostics);
+        }
+    }
+
+    /// Everything sent since the last call, with no chain answered.
+    pub fn take_raw(&mut self) -> Out {
         let mut rec = self.rec.borrow_mut();
         Out {
             frames: std::mem::take(&mut rec.frames),
@@ -216,6 +257,12 @@ impl Harness {
     pub fn listed(&mut self, certs: &[&Cert]) -> Out {
         self.keys(KeyReply::Listed(snapshot(certs)));
         self.take()
+    }
+
+    /// A listing, with the chain lookups it causes left unanswered.
+    pub fn listed_raw(&mut self, certs: &[&Cert]) -> Out {
+        self.keys(KeyReply::Listed(snapshot(certs)));
+        self.take_raw()
     }
 
     /// The key store answers every chain lookup in `asked` with `chain`.

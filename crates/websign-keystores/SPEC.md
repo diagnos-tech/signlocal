@@ -32,12 +32,19 @@ suite (§7) is the acceptance test of every adapter.
    (PKCS#11: by DER; Windows: thumbprint lookup, then byte comparison;
    macOS: the locator must equal the SHA-256 of `cert_der`). Otherwise
    `NotFound` (contract check `vanished-key`).
+10. `capabilities` says which algorithms the store can produce with a key,
+    read without prompting or logging in; the host offers the intersection
+    with what the key type allows (`protocol.md` §4.3), so every advertised
+    algorithm must sign (contract check `advertised-algorithms-sign`). A
+    store may refuse an algorithm it does not advertise, as `Unsupported`.
 
 ## 2. Model (promoted, extended)
 
 `FoundKey` gains `device: Option<DeviceLink>` (NEW). `PinState` (NEW) is
 what `pin_state` reports. `KeystoreError::TokenRemoved` (NEW).
-`NcryptPreference` default is `Prefer` (D9).
+`NcryptPreference` default is `Prefer` (D9). `KeyCapabilities` (NEW) is what
+`Keystore::capabilities` and `KeystoreHub::capabilities` report (§1 rule 10);
+the trait's default is every algorithm, for sources that cannot tell.
 
 ## 3. PKCS#11 (`pkcs11/`)
 
@@ -50,6 +57,12 @@ paths per OS, and `extra_modules`; one load per file (inode), never
 DER when slots move; mechanisms checked with `C_GetMechanismInfo`;
 `CKA_ALWAYS_AUTHENTICATE` handled with a raw `C_Sign` after
 `C_Login(CKU_CONTEXT_SPECIFIC)`.
+
+Capabilities (NEW): `C_GetMechanismInfo` on the locator's slot for
+`CKM_ECDSA`, `CKM_RSA_PKCS` and `CKM_RSA_PKCS_PSS`, each counting with
+`CKF_SIGN`; a mechanism the token cannot describe counts when
+`C_GetMechanismList` lists it (or when there is no list, as signing assumes).
+Read once per slot and cached until the next `list`.
 
 ### 3.1 Sessions (NEW, D5)
 
@@ -116,6 +129,14 @@ retry. PSS through `Allow` on a CSP → `Unsupported`. `NTE_BAD_KEYSET`
 stays `Native` (card CSPs also return it when the card is absent, and the
 host then offers an alternate path, §6).
 
+Capabilities (NEW), from `CERT_KEY_PROV_INFO` without opening the key: CNG
+keys → PKCS#1 v1.5, PSS, ECDSA. CSP keys → RSA only: PKCS#1 v1.5 and PSS
+when the acquisition preference (after §4.2 fallbacks for that locator) is
+`Prefer` or `Only` and the CSP is one Windows bridges to CNG (Microsoft's
+software CSPs, the Base Smart Card CSP, the default CSP); PKCS#1 v1.5 only
+through plain CAPI (`Allow`, a fallen-back key, a third-party CSP under
+`Prefer`); nothing for a third-party CSP under `Only`.
+
 ### 4.3 Device link (NEW)
 
 A fully qualified container name `\\.\<reader>\…` names the reader at no
@@ -144,11 +165,16 @@ the `CryptoTokenKit` error domain; home from `getpwuid_r` when sandboxed.
 
 All Security.framework calls happen on the hub's thread (the host
 guarantees it). The adapter also takes one process-wide lock around each
-`list`, `sign` and `chain` (Chromium does the same, the legacy keychain code
-is not thread-safe), so a diagnostics thread or a second hub cannot race it.
+`list`, `sign`, `capabilities` and `chain` (Chromium does the same, the
+legacy keychain code is not thread-safe), so a diagnostics thread or a second hub cannot race it.
 The lock is held while the OS PIN dialog is open inside
 `SecKeyCreateSignature`; that blocks nothing the thread confinement does not
 already block, and cancelling is done in the OS dialog itself.
+
+Capabilities (NEW): an algorithm counts when `SecKeyIsAlgorithmSupported`
+(sign, "Digest" variant) accepts it for SHA-256, SHA-384 and SHA-512, asked
+under the §5.1 lock. The Security framework has no brainpool curves, so such
+keys advertise no ECDSA and are not offered.
 
 ### 5.2 Device link (NEW)
 
@@ -175,7 +201,8 @@ token which `userInfo` entry carries the attempts left).
 - `sign(key, request)`: routes to the owning keystore. A `Native` error on
   the primary path is returned as is; the host decides whether to offer an
   alternate (`docs/ux.md` §5.11).
-- `chain`, `pin_state`: route likewise; unknown key → empty/`None`.
+- `chain`, `pin_state`, `capabilities`: route likewise; unknown key →
+  empty/`None`/nothing.
 - `end_sessions()`: calls every keystore's `end_sessions`.
 - `invalidate()` drops only the listing: sources stay open (modules loaded,
   tokens unlocked). `with_sources(opened)` builds a hub over sources the
@@ -188,9 +215,10 @@ Checks, each with a stable name:
 | Check | Expectation |
 |---|---|
 | `lists-expected` | every fingerprint of `fixture.expected` is listed exactly once by this source |
-| `list-is-quiet` | listing twice returns the same set; no `WrongPin`/`PinRequired` from `list`; no app-PIN token reports `unlocked` after `list` |
+| `list-is-quiet` | listing twice returns the same set; no `WrongPin`/`PinRequired` from `list`; no app-PIN token reports `unlocked` after `list` and `capabilities` |
 | `provider-is-anonymous` | `provider` contains none of `fixture.private_text` (token labels, serials, container names), nor the certificate's display name, CN, subject serial number or (≥ 8 hex digits) certificate serial |
-| `signs-every-combination` | every listed key signs SHA-256/384/512 × each supported algorithm and `websign_core::verify` accepts |
+| `signs-every-combination` | every listed key signs SHA-256/384/512 × each algorithm its type supports and `websign_core::verify` accepts; an algorithm the store does not advertise may fail only with `Unsupported` |
+| `advertised-algorithms-sign` | the store advertises at least one algorithm the key's type supports, and every advertised one signs with every hash (§1 rule 10) |
 | `rejects-wrong-length` | a 31-byte digest for SHA-256 → error, never a signature |
 | `vanished-key` | signing a listed key whose `cert_der` was altered (last byte flipped) → `NotFound` or `TokenRemoved`, never a signature (§1 rule 9) |
 | `wrong-pin` (if `wrong_pin`) | `WrongPin`; then `pin_state().count_low` or not, per token; then the right PIN signs |

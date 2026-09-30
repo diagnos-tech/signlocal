@@ -14,9 +14,10 @@ const SHA256: HashAlgorithm = HashAlgorithm::Sha256;
 
 #[test]
 fn switching_certificate_asks_again_and_ignores_the_late_digest() {
+    // The consent covers both certificates, so switching releases at once.
     let (p, r) = (Cert::p256(), Cert::rsa());
     let mut h = Harness::native_ready();
-    h.remember(ORIGIN, &[&p]);
+    h.remember(ORIGIN, &[&p, &r]);
     let key = h.begin("s1", ORIGIN, SHA256).opens()[0].key;
     let out = h.listed(&[&p, &r]);
     assert_eq!(out.need_digests()[0].1.seq, 1);
@@ -77,7 +78,7 @@ fn a_new_site_switching_certificate_still_waits_for_continue() {
 fn switching_after_ready_goes_back_to_waiting_for_a_digest() {
     let (p, r) = (Cert::p256(), Cert::rsa());
     let mut h = Harness::native_ready();
-    h.remember(ORIGIN, &[&p]);
+    h.remember(ORIGIN, &[&p, &r]);
     let key = h.begin("s1", ORIGIN, SHA256).opens()[0].key;
     h.listed(&[&p, &r]);
     assert_eq!(h.answer_digest("s1", 1, SHA256).digest_ready_count(), 1);
@@ -113,10 +114,10 @@ fn a_remembered_caller_gets_the_certificate_it_used_last_preselected() {
 #[test]
 fn the_certificate_named_in_sign_begin_is_preselected() {
     // SPEC §4: `sign.begin.certificate` wins over the last used one; it is
-    // released at once only because the caller is remembered.
+    // released at once only because the caller's consent covers it.
     let (p, r) = (Cert::p256(), Cert::rsa());
     let mut h = Harness::native_ready();
-    h.remember(ORIGIN, &[&p]);
+    h.remember(ORIGIN, &[&p, &r]);
     let frame = common::wire::sign_begin_with(
         "s1",
         ORIGIN,

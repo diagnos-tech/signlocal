@@ -50,14 +50,18 @@ fn the_caller_does_not_answer_need_digest_within_60_seconds() {
     h.pass(1);
     let out = h.take();
     assert_eq!(out.only_error(), ("s1".to_owned(), ErrorCode::Timeout));
-    assert_eq!(out.finished(), [(key, Finish::Timeout)]);
+    assert_eq!(
+        out.finished(),
+        [(key, Finish::DigestTimeout)],
+        "the window blames the site, not the person"
+    );
 }
 
 #[test]
 fn the_digest_clock_restarts_with_each_need_digest() {
     let (p, r) = (Cert::p256(), Cert::rsa());
     let mut h = Harness::native_ready();
-    h.remember(ORIGIN, &[&p]);
+    h.remember(ORIGIN, &[&p, &r]);
     let key = h.begin("s1", ORIGIN, SHA256).opens()[0].key;
     h.listed(&[&p, &r]);
 

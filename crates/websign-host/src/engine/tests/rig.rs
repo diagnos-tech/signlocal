@@ -149,7 +149,8 @@ impl Rig {
     }
 
     /// Runs one `sign.begin` up to the digest being ready and returns the
-    /// request key: list, continue (D11), digest.
+    /// request key: list, continue (D11) unless the certificate is
+    /// consented, chain, digest.
     pub fn until_ready(&mut self, id: &str) -> RequestKey {
         self.sign_begin(id);
         let key = Rig::opened(&self.h.ui.take()).expect("window opened").key;
@@ -159,12 +160,16 @@ impl Rig {
             ui.iter()
                 .any(|c| matches!(c, UiCommand::Certificates { .. }))
         );
-        if self.messages().is_empty() {
+        let released = ui
+            .iter()
+            .any(|c| matches!(c, UiCommand::DigestPending { .. }));
+        if !released {
             self.ui(UiEvent::Continue {
                 key,
                 fingerprint: fixture::fingerprint(),
             });
         }
+        self.answer_chains();
         self.digest(id, 1, &fixture::DIGEST);
         key
     }

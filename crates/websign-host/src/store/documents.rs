@@ -65,10 +65,15 @@ impl ConsentDocument {
         }
     }
 
-    /// Only for callers that are already remembered: using a certificate
-    /// never grants consent by itself.
+    /// Only for certificates the caller's consent already covers: using a
+    /// certificate never grants consent by itself, so a remembered site
+    /// that got another certificate after "Continue" does not get it again
+    /// without asking.
     pub fn record_use(&mut self, key: &str, fingerprint: &str, now: i64) {
-        if let Some(record) = self.records.iter_mut().find(|record| record.key == key) {
+        let record = self.records.iter_mut().find(|record| {
+            record.key == key && record.certificates.iter().any(|c| c == fingerprint)
+        });
+        if let Some(record) = record {
             touch(record, fingerprint, now);
         }
     }

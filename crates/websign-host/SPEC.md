@@ -67,7 +67,11 @@ Refusals are `InvalidRequest` naming the field.
 `Caller::web` formats both origins with `format_origin` (both must be secure:
 a frame inside an insecure page is not a secure context); `top = None` when
 their canonical forms are equal. `consent_key` and `can_remember` as
-documented in the code.
+documented in the code: `can_remember` is false for IP and IDN origins and
+for desktop callers that `websign_core::present::caller::runs_scripts`
+(interpreters, shells, terminal hosts: their consent would cover every
+script they run). The engine ignores a stored consent record of a caller
+that cannot be remembered, and never writes one.
 
 ## 4. Sign flow (`flow::sign`)
 
@@ -78,17 +82,35 @@ queue position) to `activate(now, &presentation)` and a fresh
 context from the request (`algorithms`, `certificate`) and the stores (the
 certificate this caller used last, recent use anywhere), so the preselected
 certificate is the list rules' own: `sign.begin.certificate` when usable,
-else the one last used by this caller, else the first usable row. Effects per
-transition:
+else the one last used by this caller, else the first usable row.
+
+**Consent is per caller and certificate (D11).** `SignFlow::new` takes the
+caller's consent record: `None` (not remembered) or the fingerprints it
+covers (`consented`). Only a consented certificate is released without
+"Continue"; any other one — the preselected first usable row on a shared
+computer, a row the person moves to, a certificate named by
+`sign.begin.certificate` — waits for `Ui(Continue)`, even for a remembered
+caller. Moving the selection never discloses a certificate that is not
+consented. `Open` carries `remembered` (the chip) and `consented` (so the
+window shows Continue or "Preparing…" per row).
+
+**Release** = `Ui(DigestPending{fp})` and `Keys(Chain)` → `Releasing{tag,
+fp}`; the chain answer (or `CHAIN_WAIT` = 2 s without one, engine tick) →
+`Send(NeedDigest{seq+1, certificate with its chain})` → AwaitingDigest.
+A certificate whose chain is already known skips `Releasing`:
+`Send(NeedDigest)`, `Ui(DigestPending)` at once.
+
+Effects per transition:
 
 | Event | State → | Effects (in order) |
 |---|---|---|
 | `activate(now)` | Queued → Listing | `Ui(Open{…})`, `Keys(List{refresh:false})`; deadline = now + 300 s |
-| `on_listed` | Listing → Selecting | `Ui(Certificates{…})`; if remembered and a certificate is preselected: → AwaitingDigest(1) with `Send(NeedDigest{seq:1})`, `Ui(DigestPending)`; if nothing usable: stay Selecting (window shows Empty) |
+| `on_listed` | Listing → Selecting | `Ui(Certificates{…})`; if the preselected certificate is consented: release it; otherwise nothing leaves (window shows Continue); if nothing usable: stay Selecting (window shows Empty) |
 | `on_listed` again | same state | `Ui(Certificates{…})` only |
-| `Ui(Selected fp)` | Selecting/AwaitingDigest/Ready → | remembered: AwaitingDigest(seq+1), `Send(NeedDigest)`, `Ui(DigestPending)`; new: Selecting{fp} |
-| `Ui(Continue fp)` | Selecting → AwaitingDigest(seq+1) | `Send(NeedDigest)`, `Ui(DigestPending)` |
-| (any release above) | | then `Keys(Chain)` once per certificate |
+| `Ui(Selected fp)` | Selecting/Releasing/AwaitingDigest/Ready → | consented fp: release; any other fp: Selecting{fp}, nothing sent |
+| `Ui(Continue fp)` | Selecting → release | as **Release** above |
+| `Keys(Chain)` for the lookup `Releasing` waits for | Releasing → AwaitingDigest(seq+1) | `Send(NeedDigest)` with the chain |
+| `chain_wait_over()` (2 s in Releasing) | Releasing → AwaitingDigest(seq+1) | `Send(NeedDigest)` with an empty chain |
 | `on_digest(seq, d)` stale seq (issued, not current, or not awaiting) | unchanged | none |
 | `on_digest` seq never issued | → Done | `Send(Error InvalidRequest)`, `Ui(Failed Internal)` |
 | `on_digest` wrong length | → Done | `Send(Error InvalidRequest)`, `Ui(Failed Internal)` |
@@ -102,7 +124,8 @@ transition:
 | `Keys(Signed Unsupported)` | → Selecting | `Ui(Failed UnsupportedAlgorithm)` |
 | `Keys(Signed Native/Other)` | → Ready | `Ui(Failed DriverFailure{driver of the path tried, alternate: via 0 and an alternate exists})`, `RecordError` |
 | `Ui(Cancel code)` | → Done | `Send(Error code)`, `Ui(Finished …)` |
-| `end(code)` (cancel, timeout) | → Done | `Send(Error code)`; when on screen: `Ui(Finished SiteCancelled)` for `Aborted` (the caller's `cancel`: AbortSignal, tab closed or navigated, `prepare` threw — the person sees why the window goes), `Ui(Finished Timeout)` for a timeout, else `Ui(Finished Aborted)` |
+| `end(code)` (cancel, decision timeout) | → Done | `Send(Error code)`; when on screen: `Ui(Finished SiteCancelled)` for `Aborted` (the caller's `cancel`: AbortSignal, tab closed or navigated, `prepare` threw — the person sees why the window goes), `Ui(Finished Timeout)` for a timeout, else `Ui(Finished Aborted)` |
+| `digest_timed_out()` | → Done | `Send(Error Timeout, "the caller did not send the digest in time")`; when on screen `Ui(Finished DigestTimeout)`: the window says the site did not prepare the document, not that nobody decided |
 | `disconnected()` | → Done | `Ui(Finished SiteCancelled)` when on screen; nothing is sent |
 
 `Ui(Sign{via: n})` signs through `KeyRef { path: n }` with the window's PIN:
@@ -115,17 +138,20 @@ than the table's. `KeyCommand::Sign.parent_window` is `None` from the flow;
 the engine fills it with `ConfirmUi::parent_window()`.
 
 Digest timeout: 60 s after each `NeedDigest` without the matching digest →
-`end(Timeout)`. Decision timeout: the deadline → `end(Timeout)`. The
+`digest_timed_out()`. Decision timeout: the deadline → `end(Timeout)`; it
+wins when both ran out. The
 deadline does not apply while `Signing` (an OS PIN dialog or a slow token;
 the caller can still `cancel`); a signing that fails after it ends at the
 next tick.
 
-Chain: asked (`Keys(Chain)`) when a certificate is first released, without
-delaying `sign.need_digest`, whose certificate carries the chain only when
-it is already known. `sign.result` carries the chain when the answer arrived
-before the signature (the key store serves commands in order, so the real
-worker always answers first), else an empty one. The chain is unsigned CMS
-data, so a caller can add it after the digest.
+Chain: asked (`Keys(Chain)`) when a certificate is first released, and
+`sign.need_digest` waits for it (at most `CHAIN_WAIT`, 2 s), so `prepare(cert)`
+gets the chain a signature format embeds (CAdES/PAdES signed attributes
+reference it, so a chain added after the digest would not always do). The
+key store serves commands in order and reads chains from memory, so the
+wait is normally a few milliseconds; after 2 s the request goes without it
+and `sign.result` carries the chain when its answer arrived before the
+signature.
 
 ### 4.1 Self-check
 
@@ -176,15 +202,20 @@ Files in `data_dir()`: `consent.json`, `usage.json`, `connections.json`,
   `<name>.corrupt` (replacing an older one), log, default.
 - `JsonFile::update`: `File::lock` on `<name>.lock` (exclusive, blocking up
   to 2 s, then `Io`), read, change, write `<name>.tmp`, `fsync`, rename.
-  On Unix the folder is created `0700` and every file `0600` (they say which
-  sites get certificates without asking); on Windows the profile ACL applies.
-- Consent: `remember` inserts or refreshes; `record_use` only touches
-  existing records; certificates list most-recent-first, at most 20.
+  On Unix the folder is `0700` and every file `0600` (they say which sites
+  get certificates without asking), set on every write, not only on
+  creation: an older folder or a `*.tmp` left by a crash is tightened too;
+  on Windows the profile ACL applies.
+- Consent: `remember` inserts or refreshes the record and adds the
+  certificate; `record_use` only refreshes a certificate the record already
+  covers (it never adds one: using a certificate after Continue grants
+  nothing); certificates list most-recent-first, at most 20.
 - Usage: most-recent-first, at most 100 fingerprints.
 - Errors: newest last, at most 20.
-- `RecordConsent{remember, fp}`: `remember` (when the caller `can_remember`)
-  or `record_use`; always `usage.record(fp)` — usage is anonymous. A failed
-  self-check records nothing.
+- `RecordConsent{remember, fp}`: when the caller `can_remember`, `remember`
+  (ticked) or `record_use`; nothing for other callers; always
+  `usage.record(fp)` — usage is anonymous. A failed self-check records
+  nothing.
 - A native `hello` records a `ConnectionRecord` (browser, versions); a
   desktop `hello` none.
 - Store failures never fail a request: the engine logs the failure kind (never
@@ -199,7 +230,8 @@ Each is a test: events in, assert frames out, UI commands, key commands.
    connection kept. Every close before negotiation is `Control::Exit(1)`.
 2. Native messaging without `web` on `sign.begin` → `InvalidRequest`; desktop
    with `web` → `InvalidRequest`; `http://evil.example` → `InsecureOrigin`.
-3. Remembered site: `sign.begin` → Open + List → Certificates → NeedDigest(1)
+3. Remembered site with its consented certificate: `sign.begin` → Open + List
+   → Certificates, DigestPending, Chain → chain → NeedDigest(1)
    → digest → DigestReady → Sign → Signed → verify ok → `sign.result`.
 4. New site: no NeedDigest until `Continue`; `Cancel` before Continue → the
    caller got an error and **no certificate** (D11).
@@ -212,8 +244,9 @@ Each is a test: events in, assert frames out, UI commands, key commands.
    (both flows); client disconnect → UI
    `Finished SiteCancelled`, no frames, `Control::Exit(0)` (`Broken` →
    `Exit(1)`).
-10. Decision timeout (manual clock +300 s) → `Timeout`; digest timeout
-    (+60 s) → `Timeout`; none while `Signing`.
+10. Decision timeout (manual clock +300 s) → `Timeout`, `Finished Timeout`;
+    digest timeout (+60 s) → `Timeout`, `Finished DigestTimeout`; none while
+    `Signing`. A chain that does not come within 2 s → NeedDigest without it.
 11. Queue: 1 active + 10 waiting accepted, 12th → `Busy`; finishing the first
     opens the second (`Open` with position (1, 10)).
 12. Remembered `choose` answers without UI (after the chains); revoked in
@@ -241,6 +274,15 @@ Each is a test: events in, assert frames out, UI commands, key commands.
     wrong PIN reports the driver's flags. End to end over pipes with a
     failing fake store and SoftHSM2 as the alternate, the window being the
     real `ConfirmModel` (`runtime/softhsm_tests/alternate.rs`).
+20. Consent per certificate (D11): a remembered site with someone else's
+    token listed → nothing released (no NeedDigest, no Chain) until
+    Continue; arrowing through the rows releases nothing new; the consented
+    certificate is still released at once; revoked → back to Continue for
+    all; using another certificate without Remember does not extend the
+    consent, with Remember it adds only that one.
+21. Interpreter or shell caller (`/usr/bin/node`): `can_remember` false in
+    `Open`, a ticked Remember stores nothing, and a record stored by an
+    older version is ignored.
 
 ## 9. Runtime
 

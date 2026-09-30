@@ -4,7 +4,7 @@ mod common;
 
 use common::Cert;
 use common::effects::{failure, sent_error, sign_command, words};
-use common::flows::{KEY, awaiting, digest_message, press_sign, ready};
+use common::flows::{KEY, awaiting, digest_message, press_sign, ready, with_chains};
 use websign_core::HashAlgorithm;
 use websign_host::flow::Effect;
 use websign_host::flow::sign::SignState;
@@ -22,10 +22,11 @@ fn a_stale_digest_changes_nothing() {
         panic!("released at once: {:?}", flow.state);
     };
     let other = if fingerprint == p.fingerprint { &r } else { &p };
-    flow.on_ui(UiEvent::Selected {
+    let effects = flow.on_ui(UiEvent::Selected {
         key: KEY,
         fingerprint: other.fingerprint,
     });
+    with_chains(&mut flow, effects);
     let before = flow.state.clone();
     assert!(matches!(before, SignState::AwaitingDigest { seq: 2, .. }));
     let effects = flow.on_digest(digest_message(1, common::certs::digest(SHA256)));
@@ -65,10 +66,14 @@ fn the_length_follows_the_declared_hash() {
         (HashName::Sha512, 64),
     ] {
         let p = Cert::p256();
-        let mut flow =
-            websign_host::flow::sign::SignFlow::new(KEY, common::flows::begin(hash), true);
+        let mut flow = websign_host::flow::sign::SignFlow::new(
+            KEY,
+            common::flows::begin(hash),
+            common::flows::consent(true),
+        );
         flow.activate(std::time::Instant::now(), &common::flows::presentation());
-        flow.on_listed(&common::snapshot(&[&p]), common::flows::context());
+        let effects = flow.on_listed(&common::snapshot(&[&p]), common::flows::context());
+        with_chains(&mut flow, effects);
         let effects = flow.on_digest(digest_message(1, vec![7; len]));
         assert_eq!(words(&effects), ["ui:digest_ready"], "{hash:?}");
         assert!(matches!(flow.state, SignState::Ready { seq: 1, .. }));
@@ -127,7 +132,8 @@ fn sign_carries_the_chosen_path_and_the_pin() {
     ];
     let mut flow = common::flows::new_flow(true);
     flow.activate(std::time::Instant::now(), &common::flows::presentation());
-    flow.on_listed(&snapshot, common::flows::context());
+    let effects = flow.on_listed(&snapshot, common::flows::context());
+    with_chains(&mut flow, effects);
     flow.on_digest(digest_message(1, common::certs::digest(SHA256)));
     let sign = |via| UiEvent::Sign {
         key: KEY,

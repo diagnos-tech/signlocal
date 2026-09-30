@@ -69,6 +69,8 @@ fn a_new_site_signs_after_continue_and_the_result_carries_the_verified_signature
         key: open.key,
         fingerprint: fp(),
     });
+    assert!(rig.messages().is_empty(), "need_digest waits for the chain");
+    rig.answer_chains();
     let need = rig.messages();
     assert!(
         matches!(&need[..], [AppMessage::NeedDigest(need)] if need.seq == 1 && need.certificate.fingerprint.as_str() == fp().to_hex())
@@ -108,7 +110,9 @@ fn a_remembered_site_gets_need_digest_without_continue_and_the_window_knows() {
     rig.sign_begin("2");
     let open = Rig::opened(&rig.h.ui.take()).unwrap();
     assert!(open.remembered);
+    assert_eq!(open.consented, [fp()]);
     rig.listed(fixture::snapshot());
+    rig.answer_chains();
     let messages = rig.messages();
     assert!(matches!(&messages[..], [AppMessage::NeedDigest(need)] if need.seq == 1));
     assert!(
@@ -136,7 +140,7 @@ fn cancelling_before_continue_leaves_the_caller_with_no_certificate() {
 }
 
 #[test]
-fn switching_certificate_asks_again_with_the_next_sequence_number() {
+fn switching_to_a_certificate_outside_the_consent_waits_for_continue() {
     let mut rig = Rig::browser();
     remember_the_site(&mut rig);
     let second = Fingerprint::from_bytes([7; 32]);
@@ -149,12 +153,23 @@ fn switching_certificate_asks_again_with_the_next_sequence_number() {
     rig.sign_begin("2");
     let key = Rig::opened(&rig.h.ui.take()).unwrap().key;
     rig.listed(snapshot);
+    rig.answer_chains();
     assert!(matches!(&rig.messages()[..], [AppMessage::NeedDigest(n)] if n.seq == 1));
 
     rig.ui(UiEvent::Selected {
         key,
         fingerprint: second,
     });
+    rig.answer_chains();
+    assert!(
+        rig.messages().is_empty(),
+        "moving the selection discloses nothing"
+    );
+    rig.ui(UiEvent::Continue {
+        key,
+        fingerprint: second,
+    });
+    rig.answer_chains();
     assert!(matches!(&rig.messages()[..], [AppMessage::NeedDigest(n)] if n.seq == 2));
     rig.h.ui.take();
 
@@ -226,6 +241,7 @@ fn the_digest_deadline_runs_from_each_need_digest() {
         key,
         fingerprint: fp(),
     });
+    rig.answer_chains();
     rig.h.outbound.take();
     rig.tick_after(Duration::from_secs(59));
     assert!(rig.messages().is_empty());
