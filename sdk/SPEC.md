@@ -17,7 +17,12 @@ script (`test/helpers`).
   captured at import. Without a `window` (server-side rendering) the SDK
   imports cleanly, `status()` reports nothing installed and the other calls
   reject `ExtensionMissing`.
-- No console output, ever.
+- No console output from the main entry and `/messages`, ever (`/testing`
+  warns on purpose, §14).
+- Every `WebSignError` carries `hint` (the next step, English, for developers;
+  one per code, `src/hints.ts`) and `docsUrl` =
+  `HOMEPAGE + "developers.html#error-" + code`; `site/developers.html` has an
+  anchor for every code (tested).
 
 ## 2. `channel` (internal, not exported from the package)
 
@@ -58,13 +63,16 @@ The SDK speaks page protocol 1. After discovery, `certificates()` and
   version; kept for SDKs that drop version 1).
 
 `status()` reports such an extension as installed, the app as not
-installed, `ready: false`.
+installed, `ready: false`, `problem: "ClientOutdated"` (or
+`"ExtensionOutdated"`).
 
 ## 4. `convert`
 
 - `toBase64`/`fromBase64`: RFC 4648 standard alphabet, padded, strict (same
-  rules as the protocol crate §7); implemented without `atob` (works in
-  workers). Only replies are decoded, so a failure is `Internal`.
+  rules as the protocol crate §7) through `atob`/`btoa` (present in windows,
+  workers and Node): a text is accepted only when re-encoding its bytes gives
+  it back, which refuses whitespace, URL-safe letters, missing padding and
+  stray bits. Only replies are decoded, so a failure is `Internal`.
 - `toCertificate`: Base64 → `Uint8Array`, Unix seconds → `Date`, other fields
   copied; `profile.eidas.types` copied.
 
@@ -83,7 +91,9 @@ installed, `ready: false`.
 outdated:false}, remembered:false, ready:false}`. Incompatible protocol →
 §3. Else send `status`; reply `status` (`PageStatus`) → map; `error
 AppMissing` → `app.installed=false`; other errors → `app.installed=true,
-outdated = code === "AppOutdated"`. The extension answers `status` itself,
+outdated = code === "AppOutdated"`. `problem` is the first of
+`ExtensionMissing`, the protocol problem (§3), `AppMissing`, `AppOutdated`
+that applies, absent when `ready`; `ready = !problem`. The extension answers `status` itself,
 so no reply within 10 s (the extension needs up to 8 s + 1.5 s for an app's
 first start) means it hung: abort (posting `cancel`) and report the
 app as not installed. `ready = extension.installed && app.installed &&
@@ -130,8 +140,14 @@ order. Unknown or lowercase names, non-strings, `null` and an empty array →
    - Once a newer `need_digest` arrived, or the request ended (final reply,
      abort, earlier failure), an older `prepare`'s result and failure are
      both dropped.
-6. `sign.result` → resolve (`toCertificate`, signature decoded); `error` →
+6. `sign.result` → resolve (`toCertificate`, signature decoded, `digest` =
+   a copy of the last digest sent, i.e. the one the app signed); `error` →
    reject; late replies after the SDK cancelled are ignored.
+
+Types: `sign<H, A>(options: SignOptions<H, A>): Promise<SignResult<H, A>>`,
+so `prepare`'s context and the result carry the literal hash and algorithm
+union the caller passed. Bytes out are `Uint8Array<ArrayBuffer>` (accepted by
+WebCrypto as is); bytes in are `Uint8Array | ArrayBuffer`.
 
 ## 9. `installUrl()`
 
@@ -153,17 +169,53 @@ Returns an idempotent unsubscribe.
 
 ## 11. `fingerprint(digest)`
 
-The verification code of `websign-protocol` SPEC §8, same vectors. Fewer
-than 8 bytes → throws `WebSignError(InvalidRequest)` (the Rust API returns
+The verification code of `websign-protocol` SPEC §8, same vectors. Takes a
+`Uint8Array` (its view only) or an `ArrayBuffer`. Fewer than 8 bytes, or not
+bytes → throws `WebSignError(InvalidRequest)` (the Rust API returns
 `None`; a synchronous function has no promise to reject).
 
 ## 12. `@websign/sdk/messages`
 
-`errorText(code, locale)`: closest locale (`pt` → pt-BR, `es-MX` → es, …,
-else en) from the generated `messages.gen.ts`; `undefined` for
-`InvalidRequest`, `PinIncorrect`, `ClientOutdated` (site bugs or internal).
+`errorText(error, locale?)`: `error` is a code, a `WebSignError` or any
+`{code, details?}`; `locale` defaults to `navigator.language`, else `en`.
+Closest locale (`pt` → pt-BR, `es-MX` → es, …, else en) from the generated
+`messages.gen.ts`; `{installed}`/`{required}` filled from `details` when
+present, else left. `undefined` for `undefined` (so `status().problem` passes
+as is) and for `InvalidRequest`, `PinIncorrect`, `ClientOutdated` (site bugs
+or internal).
+
+`isWebSignError(error, ...codes)` (main entry): `instanceof WebSignError`
+and, when codes are given, one of them; narrows `code` in TypeScript.
 
 ## 13. Size
 
-A consumer bundle of every export of the built `dist/` (Bun, minified) is
+A consumer bundle of every export of the built main entry (Bun, minified) is
 < 5 KB gzip: `bun run build && bun run size` (exits 1 over budget; for CI).
+`/messages` and `/testing` are reported, not budgeted.
+
+## 14. `@websign/sdk/testing`
+
+`installFakeWebSign(options?)` answers the SDK's page frames on `window` as
+the content script, extension and app would (tests: `test/testing/`):
+
+- Frames arrive as `message` events whose data has `source: "websign-page"`;
+  answers are dispatched as `message` events with `source` = the window and
+  `origin` = its origin (not `postMessage`: some test DOMs drop both), one
+  microtask later or after `latencyMs`. It announces at install and on
+  `discover`, except in `extension-missing`.
+- Certificates: real X.509 v3 DER, self-issued with fixed public test keys
+  (EC P-256; RSA-2048 with PKCS#1 v1.5 and PSS); signatures over the digest
+  computed with BigInt (RFC 6979 nonces, PSS salt derived from the digest),
+  so certificates and signatures are identical on every run.
+- The person picks `choose()` (default the first usable certificate); a
+  preselected fingerprint it lacks → `CertificateUnavailable`; none usable →
+  `NoCertificates`; outside validity → `CertificateNotValid`;
+  `failNext(code)` fails the next choose/sign once; `switchDuringNextSign`
+  sends `need_digest` seq 2 with another certificate after the first digest.
+- Scenarios: `app-missing`/`app-outdated`/`extension-outdated` answer status
+  accordingly and fail choose/sign with that code (`details` 0.9.0/1.0.0);
+  `sdk-outdated` announces protocol 2.
+- Guard: refuses origins other than localhost, 127.x, ::1, `*.localhost`,
+  `.test`, `.example`, `.invalid`, `.local`, `file:`/`about:` unless
+  `allowAnyOrigin`; `console.warn` at every install and once if a real
+  extension also answers.

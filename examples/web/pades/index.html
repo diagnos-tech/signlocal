@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>WebeSign: PAdES example</title>
+    <link rel="stylesheet" href="../shared/example.css" />
+  </head>
+  <body>
+    <h1>Sign a PDF (PAdES)</h1>
+    <p class="muted">
+      pdf-lib reserves room for the signature, PKI.js builds the signed attributes for the certificate the
+      person picks, WebeSign signs their SHA-256, and the raw signature goes back into the PDF. Nothing
+      leaves this page. Code: <code>pades/sign-pdf.ts</code>.
+    </p>
+    <p>
+      <button id="sample" type="button">Sign a sample PDF</button>
+      or <label>choose a PDF <input id="file" type="file" accept="application/pdf" /></label>
+    </p>
+    <div id="result" class="card" hidden aria-live="polite">
+      <p id="summary"></p>
+      <p id="download"></p>
+    </div>
+    <p class="muted">
+      With the fake, the certificate is a public test certificate: PDF readers show the signature as valid
+      but untrusted.
+    </p>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

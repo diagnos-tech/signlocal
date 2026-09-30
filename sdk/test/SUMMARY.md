@@ -4,12 +4,14 @@
 - `certificates.test.ts` — certificates(): only the chosen certificate, filter, errors, abort
 - `change.test.ts` — onChange(): announcements, failures, debounce, unsubscribe
 - `channel.test.ts` — channel.send/discover: ids, framing, final replies, abort
-- `convert.test.ts` — strict Base64 without atob, wire-to-public certificate
+- `convert.test.ts` — strict Base64, wire-to-public certificate
 - `detection.test.ts` — discovery timeouts, caching, status() mapping
+- `developers-page.test.ts` — site/developers.html has an anchor per error code and every text in 7 locales
+- `errors.test.ts` — WebSignError hint and docsUrl per code, isWebSignError()
 - `filtering.test.ts` — foreign sources/origins and malformed frames are ignored
-- `fingerprint.test.ts` — verification code vectors of the protocol SPEC
+- `fingerprint.test.ts` — verification code vectors of the protocol SPEC, byte inputs
 - `install.test.ts` — installUrl() per browser, announcement over user agent
-- `messages.test.ts` — errorText() locales and silent codes
+- `messages.test.ts` — errorText() locales, silent codes, placeholders, default locale
 - `protocol-version.test.ts` — unsupported protocol ranges are refused locally
 - `security.test.ts` — no leaks to other frames, console or globals
 - `sign-cancel.test.ts` — AbortSignal before, during and after a signature
@@ -17,5 +19,10 @@
 - `sign-digest.test.ts` — exact digest length, coercion, prepare failures, need_digest checks
 - `sign-flow.test.ts` — begin, need_digest, prepare, digest, result and error codes
 - `sign-options.test.ts` — option validation and sign.begin contents
+- `sign-result.test.ts` — result.digest is what was signed
 - `ssr.test.ts` — importing and calling without a window (server-side rendering)
+- `status-problem.test.ts` — status().problem for every setup
+- `types.test.ts` — compile-time checks of the public types (literal narrowing, byte types)
+- `raw.d.ts` — typing of `?raw` imports
 - `helpers/` — fake window, fake content script, fixtures and SDK loader
+- `testing/` — tests of `@websign/sdk/testing` against the real SDK

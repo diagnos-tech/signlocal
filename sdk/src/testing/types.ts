@@ -25,7 +25,7 @@ export interface FakeRequest {
   /** `sign`: the preselected certificate's fingerprint. */
   readonly certificate?: string;
   /** `sign`: the digest that was signed, once signed. */
-  readonly digest?: Uint8Array;
+  readonly digest?: Uint8Array<ArrayBuffer>;
   /** The page cancelled it (AbortSignal, or prepare threw). */
   readonly cancelled?: boolean;
 }

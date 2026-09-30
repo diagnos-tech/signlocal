@@ -55,6 +55,14 @@ describe("type-level ergonomics", () => {
     expectTypeOf<Status["problem"]>().toEqualTypeOf<StatusProblem | undefined>();
     expectTypeOf<StatusProblem>().toExtend<ErrorCode>();
     expectTypeOf<SignResult["certificate"]["notAfter"]>().toEqualTypeOf<Date>();
-    expectTypeOf<SignResult["signature"]>().toEqualTypeOf<Uint8Array>();
+    expectTypeOf<SignResult["signature"]>().toEqualTypeOf<Uint8Array<ArrayBuffer>>();
+  });
+
+  it("bytes the SDK returns go straight into WebCrypto", () => {
+    const hashDer = (result: SignResult) => crypto.subtle.digest("SHA-256", result.certificate.der);
+    const hashChain = (result: SignResult) =>
+      result.certificate.chain.map((der) => crypto.subtle.digest("SHA-256", der));
+    expectTypeOf(hashDer).returns.resolves.toEqualTypeOf<ArrayBuffer>();
+    expectTypeOf(hashChain).returns.toEqualTypeOf<Promise<ArrayBuffer>[]>();
   });
 });

@@ -14,7 +14,7 @@
 <div class="tsd-signature"><span class="tsd-kind-type-alias">Bytes</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Uint8Array</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">ArrayBuffer</span></div>
 <div class="tsd-comment tsd-typography"><p>Bytes the SDK accepts: a <code>Uint8Array</code> (only its view is read) or an
 <code>ArrayBuffer</code>, such as <code>crypto.subtle.digest()</code> returns. The SDK always
-gives bytes back as <code>Uint8Array</code>.</p>
+gives bytes back as <code>Uint8Array&lt;ArrayBuffer&gt;</code>, which WebCrypto accepts as is.</p>
 </div>
 <div class="tsd-comment tsd-typography">
 <div class="tsd-tag-example">

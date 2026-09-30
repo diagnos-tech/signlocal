@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>WebeSign: vanilla example</title>
+    <link rel="stylesheet" href="../shared/example.css" />
+  </head>
+  <body>
+    <h1>Sign a text</h1>
+    <p id="setup" class="muted" role="status">Checking WebeSign…</p>
+    <p><a id="install" href="https://diagnos-tech.github.io/web-esign/download.html" hidden>Install WebeSign</a></p>
+
+    <label for="text">Text to sign</label>
+    <textarea id="text" rows="3" style="width: 100%">I agree to the terms.</textarea>
+    <p><button id="sign" type="button" disabled>Sign with my certificate</button></p>
+
+    <div id="result" class="card" hidden aria-live="polite"></div>
+
+    <script type="module">
+      // Everything this example needs is in this file. In your project:
+      //   bun add @websign/sdk   (or npm/pnpm/yarn), then import as below.
+      import { installUrl, onChange, sign, status, WebSignError } from "@websign/sdk";
+      import { errorText } from "@websign/sdk/messages";
+
+      const $ = (id) => document.getElementById(id);
+
+      // Without the extension, use the SDK's fake (add ?real to the address for the real one).
+      // Never ship @websign/sdk/testing: the dynamic import keeps it out of real pages.
+      if (!new URLSearchParams(location.search).has("real")) {
+        const { installFakeWebSign } = await import("@websign/sdk/testing");
+        await installFakeWebSign({ latencyMs: 600 });
+      }
+
+      // 1. Is WebeSign ready? status() never opens a window and never rejects.
+      let ready = false;
+      function showSetup(s) {
+        ready = s.ready;
+        $("sign").disabled = !ready;
+        const text = errorText(s.problem); // undefined when ready
+        $("setup").textContent = text ? `${text.title}. ${text.body}` : "WebeSign is ready.";
+        $("install").hidden = s.problem !== "ExtensionMissing";
+        $("install").href = installUrl(); // the extension store of this browser
+      }
+      showSetup(await status());
+      onChange(showSetup); // the person installs or updates WebeSign while the page is open
+
+      // 2. Sign: prepare() returns the digest once the person has chosen a certificate.
+      $("sign").addEventListener("click", async () => {
+        $("sign").disabled = true;
+        $("result").hidden = true;
+        try {
+          const data = new TextEncoder().encode($("text").value);
+          const result = await sign({
+            hash: "SHA-256",
+            prepare: (_certificate, { hash }) => crypto.subtle.digest(hash, data),
+          });
+          show(
+            `<p class="ok"><strong>Signed</strong> by ${escapeHtml(result.certificate.displayName)}</p>
+             <p>${result.algorithm} with ${result.hash}, ${result.signature.length}-byte signature.</p>
+             <p class="muted">Send <code>result.signature</code> and <code>result.certificate.der</code> to your server to verify and store.</p>`,
+          );
+        } catch (error) {
+          // 3. Errors: a stable code, a hint for you, a localized text for the person.
+          if (!(error instanceof WebSignError)) throw error;
+          console.info(`${error.code}: ${error.message}\n${error.hint}\n${error.docsUrl}`);
+          if (error.code !== "UserCancelled") {
+            const text = errorText(error) ?? { title: "Signing failed", body: error.message };
+            show(`<p class="error"><strong>${escapeHtml(text.title)}</strong></p><p>${escapeHtml(text.body)}</p>`);
+          }
+        } finally {
+          $("sign").disabled = !ready;
+        }
+      });
+
+      function show(html) {
+        $("result").innerHTML = html;
+        $("result").hidden = false;
+      }
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+    </script>
+  </body>
+</html>

@@ -36,7 +36,7 @@ export type SignatureAlgorithm = "ECDSA" | "RSASSA-PKCS1-v1_5" | "RSASSA-PSS";
 /**
  * Bytes the SDK accepts: a `Uint8Array` (only its view is read) or an
  * `ArrayBuffer`, such as `crypto.subtle.digest()` returns. The SDK always
- * gives bytes back as `Uint8Array`.
+ * gives bytes back as `Uint8Array<ArrayBuffer>`, which WebCrypto accepts as is.
  *
  * @example
  * const digest: Bytes = await crypto.subtle.digest("SHA-256", data);
@@ -83,9 +83,9 @@ export interface CertificateProfile {
  */
 export interface Certificate {
   /** DER bytes: what CMS `certificates` and signing-certificate-v2 need. */
-  readonly der: Uint8Array;
+  readonly der: Uint8Array<ArrayBuffer>;
   /** Issuers, nearest first, leaf excluded; best effort, may be empty. */
-  readonly chain: readonly Uint8Array[];
+  readonly chain: readonly Uint8Array<ArrayBuffer>[];
   /** SHA-256 of `der`, 64 lowercase hex digits. Pass it to `sign({ certificate })`. */
   readonly fingerprint: string;
   /** Holder name as the app shows it. */
@@ -173,9 +173,9 @@ export interface SignResult<
   readonly hash: H;
   readonly algorithm: A;
   /** RSA: the signature block. ECDSA: raw r‖s (IEEE P1363), each half padded to the curve size. */
-  readonly signature: Uint8Array;
+  readonly signature: Uint8Array<ArrayBuffer>;
   /** The digest that was signed: what `prepare` returned for `certificate`. */
-  readonly digest: Uint8Array;
+  readonly digest: Uint8Array<ArrayBuffer>;
 }
 
 /**

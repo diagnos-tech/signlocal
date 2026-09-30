@@ -60,6 +60,12 @@ export interface FakeOptions {
 /**
  * The installed fake: script what the person does next and inspect what
  * your page asked.
+ *
+ * @example
+ * const fake = await installFakeWebSign();
+ * fake.failNext("PinLocked");
+ * await expect(sign(options)).rejects.toMatchObject({ code: "PinLocked" });
+ * expect(fake.requests.at(-1)).toMatchObject({ type: "sign", hash: "SHA-256" });
  */
 export interface FakeWebSign {
   /** The certificates, as `sign()` and `certificates()` return them. */

@@ -38,6 +38,10 @@ function fromNavigator(): string {
  *
  * The browser comes from the extension's last announcement when there is
  * one (it knows better), else from the user agent.
+ *
+ * @example
+ * const { problem } = await status();
+ * if (problem === "ExtensionMissing") installLink.href = installUrl();
  */
 export function installUrl(): string {
   const browser = lastAnnouncement()?.extension.browser ?? fromNavigator();

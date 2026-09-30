@@ -13,7 +13,7 @@ import type { Certificate } from "./types.js";
  *
  * @throws {WebSignError} `Internal` on anything but canonical Base64.
  */
-export function fromBase64(text: string): Uint8Array {
+export function fromBase64(text: string): Uint8Array<ArrayBuffer> {
   let binary: string | undefined;
   try {
     binary = atob(text);

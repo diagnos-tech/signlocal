@@ -10,7 +10,12 @@
 import type { ErrorCode, ErrorDetails } from "./generated/index.js";
 import { MESSAGES } from "./messages.gen.js";
 
-/** Locales with texts. */
+/**
+ * Locales with texts; `errorText` picks the closest one to what you pass.
+ *
+ * @example
+ * const locale: MessageLocale = "pt-BR";
+ */
 export type MessageLocale = "en" | "pt-BR" | "pt-PT" | "es" | "fr" | "it" | "de";
 
 const LOCALES: readonly MessageLocale[] = ["en", "pt-BR", "pt-PT", "es", "fr", "it", "de"];
@@ -26,7 +31,13 @@ export interface ErrorText {
   readonly body: string;
 }
 
-/** A `WebSignError`, or anything with its `code` (and `details`). */
+/**
+ * A `WebSignError`, or anything with its `code` (and `details`), such as an
+ * error your server relayed as JSON.
+ *
+ * @example
+ * errorText({ code: "AppOutdated", details: { installed: "1.0.0", required: "1.2.0" } }, "de");
+ */
 export interface ErrorLike {
   readonly code: ErrorCode;
   readonly details?: ErrorDetails | undefined;

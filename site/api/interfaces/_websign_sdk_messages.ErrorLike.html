@@ -12,11 +12,18 @@
 <li><a href="" aria-current="page">ErrorLike</a></li></ul>
 <h1>Interface ErrorLike</h1></div>
 <section class="tsd-panel tsd-comment">
-<div class="tsd-comment tsd-typography"><p>A <code>WebSignError</code>, or anything with its <code>code</code> (and <code>details</code>).</p>
-</div></section>
+<div class="tsd-comment tsd-typography"><p>A <code>WebSignError</code>, or anything with its <code>code</code> (and <code>details</code>), such as an
+error your server relayed as JSON.</p>
+</div>
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-example">
+<h4 class="tsd-anchor-link" id="example">Example<a href="#example" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-6">errorText</span><span class="hl-1">({ </span><span class="hl-2">code:</span><span class="hl-1"> </span><span class="hl-3">&quot;AppOutdated&quot;</span><span class="hl-1">, </span><span class="hl-2">details:</span><span class="hl-1"> { </span><span class="hl-2">installed:</span><span class="hl-1"> </span><span class="hl-3">&quot;1.0.0&quot;</span><span class="hl-1">, </span><span class="hl-2">required:</span><span class="hl-1"> </span><span class="hl-3">&quot;1.2.0&quot;</span><span class="hl-1"> } }, </span><span class="hl-3">&quot;de&quot;</span><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
+
+</div></div></section>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">ErrorLike</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#code">code</a><span class="tsd-signature-symbol">:</span> <a href="../types/_websign_sdk.ErrorCode.html" class="tsd-signature-type tsd-kind-type-alias">ErrorCode</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#details">details</a><span class="tsd-signature-symbol">?:</span> <a href="../types/_websign_sdk.ErrorDetails.html" class="tsd-signature-type tsd-kind-type-alias">ErrorDetails</a><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/diagnos-tech/web-esign/blob/main/messages.ts#L30">sdk/src/messages.ts:30</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/diagnos-tech/web-esign/blob/main/messages.ts#L41">sdk/src/messages.ts:41</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -34,12 +41,12 @@
 <h3 class="tsd-anchor-link" id="code"><code class="tsd-tag">Readonly</code><span>code</span><a href="#code" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <a href="../types/_websign_sdk.ErrorCode.html" class="tsd-signature-type tsd-kind-type-alias">ErrorCode</a></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/diagnos-tech/web-esign/blob/main/messages.ts#L31">sdk/src/messages.ts:31</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/diagnos-tech/web-esign/blob/main/messages.ts#L42">sdk/src/messages.ts:42</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="details"><code class="tsd-tag">Optional</code> <code class="tsd-tag">Readonly</code><span>details</span><a href="#details" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">details</span><span class="tsd-signature-symbol">?:</span> <a href="../types/_websign_sdk.ErrorDetails.html" class="tsd-signature-type tsd-kind-type-alias">ErrorDetails</a></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/diagnos-tech/web-esign/blob/main/messages.ts#L32">sdk/src/messages.ts:32</a></li></ul></aside></section></section></details></div>
+<li>Defined in <a href="https://github.com/diagnos-tech/web-esign/blob/main/messages.ts#L43">sdk/src/messages.ts:43</a></li></ul></aside></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

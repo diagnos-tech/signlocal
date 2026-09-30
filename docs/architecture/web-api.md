@@ -7,16 +7,22 @@ runtime dependencies, < 5 KB gzipped. Source and contract:
 
 ## 1. Surface
 
+Free functions rather than a client object: the extension is one per page,
+there is nothing to connect or close, and unused calls are tree-shaken.
+
 ```ts
-import { status, certificates, sign, installUrl, onChange, fingerprint, WebSignError } from "@websign/sdk";
+import { status, certificates, sign, installUrl, onChange, fingerprint, WebSignError, isWebSignError } from "@websign/sdk";
 import { errorText } from "@websign/sdk/messages"; // optional localized texts
+import { installFakeWebSign } from "@websign/sdk/testing"; // tests and local development only
 
 status(): Promise<Status>                                  // never opens a window, never rejects
 certificates(options?: CertificateOptions): Promise<Certificate[]>
-sign(options: SignOptions): Promise<SignResult>
+sign<H, A>(options: SignOptions<H, A>): Promise<SignResult<H, A>>  // literal hash/algorithm flow into prepare and the result
 installUrl(): string                                       // store page for this browser
 onChange(listener: (status: Status) => void): () => void   // returns unsubscribe
-fingerprint(digest: Uint8Array): VerificationCode          // same code the app shows
+fingerprint(digest: Uint8Array | ArrayBuffer): VerificationCode  // same code the app shows
+isWebSignError(error, ...codes): error is WebSignError     // narrows error.code
+errorText(error: ErrorCode | WebSignError | undefined, locale = navigator.language): { title; body } | undefined
 ```
 
 ### Types
@@ -29,11 +35,11 @@ interface SignOptions {
   hash: HashAlgorithm;
   algorithm?: SignatureAlgorithm | readonly SignatureAlgorithm[]; // preference order
   certificate?: Certificate | string;                             // preselect (fingerprint)
-  prepare(certificate: Certificate, context: { hash; algorithm }): Uint8Array | ArrayBuffer | Promise<…>;
+  prepare(certificate: Certificate, context: { hash: H; algorithm: A }): Uint8Array | ArrayBuffer | Promise<…>;
   signal?: AbortSignal;
 }
 
-interface SignResult { certificate: Certificate; hash; algorithm; signature: Uint8Array }
+interface SignResult { certificate: Certificate; hash: H; algorithm: A; signature: Uint8Array; digest: Uint8Array } // digest: what was signed
 
 interface Certificate {
   der: Uint8Array; chain: Uint8Array[]; fingerprint: string;       // SHA-256 hex
@@ -48,15 +54,22 @@ interface Status {
   app: { installed: boolean; version?: string; outdated: boolean };
   remembered: boolean;   // certificates() will answer without a window (for certificates already consented to)
   ready: boolean;        // extension + compatible app
+  problem?: "ExtensionMissing" | "ExtensionOutdated" | "ClientOutdated" | "AppMissing" | "AppOutdated"; // absent when ready
 }
 
 interface VerificationCode { text: string; colorIndex: number; cells: boolean[] } // 25 cells, row-major
 
-class WebSignError extends Error { code: ErrorCode; details?: { installed?; required?; native? } }
+class WebSignError extends Error {
+  code: ErrorCode; message: string;   // what happened (English, for developers)
+  hint: string;                       // what to do next (English, for developers)
+  docsUrl: string;                    // <homepage>developers.html#error-<code>
+  details?: { installed?; required?; native? };
+}
 ```
 
 `ErrorCode` is the protocol's list ([protocol.md §7](protocol.md#7-errors)).
-Every rejection is a `WebSignError`; nothing else is thrown.
+Every rejection is a `WebSignError`; nothing else is thrown. Bytes the SDK
+returns are `Uint8Array<ArrayBuffer>`, which WebCrypto takes as is.
 
 ## 2. Usage
 
@@ -76,6 +89,31 @@ const result = await sign({
 `prepare` may run more than once (the person switches certificate in the
 window); keep it pure and fast. Throwing inside `prepare` aborts the request
 (`Aborted`).
+
+### Errors: one table for developers, localized texts for people
+
+```ts
+try {
+  await sign({ hash: "SHA-256", prepare });
+} catch (error) {
+  if (!isWebSignError(error)) throw error;
+  if (error.code === "UserCancelled") return;
+  console.warn(error.code, error.hint, error.docsUrl);
+  const text = errorText(error); // title + next step, {installed}/{required} filled
+}
+```
+
+`site/developers.html` has one row per code with the anchor `error-<Code>`;
+the desktop clients link to the same rows.
+
+### Test without the extension
+
+`@websign/sdk/testing` (`installFakeWebSign()`) answers the SDK on `window`
+like the extension and app: real ECDSA/RSA signatures with public test keys,
+scripted outcomes (`scenario`, `failNext`, `choose`, `switchDuringNextSign`),
+`requests` and `verify()` for assertions. Separate entry point, refuses
+non-local origins, warns on the console: it cannot reach production by
+accident. Examples in [`examples/web/`](../../examples/web/).
 
 ### Show the verification code next to your button
 
@@ -150,7 +188,7 @@ const ok = c.profile.icpBrasil?.match(/^A[34]$/) || (c.profile.eidas?.qualified 
   (`chrome_web_store_id`, `edge_addons_id`, `firefox_amo_slug`) is set in
   `project.toml`; until then it points to the download page. A guessed AMO
   slug is never used: an unpublished slug can be claimed by anyone.
-- `@websign/sdk/messages` `errorText(code, locale)` returns title/body from
+- `@websign/sdk/messages` `errorText(error, locale?)` returns title/body from
   `i18n/*.toml` `[site.errors]` for the closest of en, pt-BR, pt-PT, es, fr,
   it, de.
 
