@@ -49,6 +49,8 @@ windows = { workspace = true, features = [
   "Win32_System_Diagnostics_ToolHelp",
   "Win32_Security_WinTrust",
   "Win32_Security_Cryptography",
+  "Win32_Security_Cryptography_Catalog",
+  "Win32_Security_Cryptography_Sip",
   "Win32_Security_Cryptography_UI",
   "Win32_UI_WindowsAndMessaging",
   "Win32_UI_Shell",
@@ -65,6 +67,9 @@ libc.workspace = true
 
 [dev-dependencies]
 egui_kittest.workspace = true
+tempfile.workspace = true
+# The SoftHSM2 test drives `websign connect` through the real client.
+websign-client = { path = "../clients/rust" }
 
 [lints]
 workspace = true

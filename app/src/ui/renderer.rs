@@ -10,6 +10,19 @@
 //!
 //! `WEBSIGN_RENDERER=wgpu|glow` forces one. The backend that drew is reported
 //! in diagnostics (`render: wgpu/dx12`, `render: glow`).
+//!
+//! **Startup order.** A re-exec is only safe before stdin is read, but a
+//! host process opens its first window after reading a request. So the
+//! choice is made without re-executing, from facts available at start: the
+//! forced variable, else a "glow needed" marker in the app's data folder,
+//! else wgpu. The marker is written the first time wgpu fails for a renderer
+//! reason on macOS or Linux ([`remember_glow_needed`]):
+//!
+//! * the diagnostics window (nothing read from stdin yet) records it and
+//!   re-executes with glow at once;
+//! * a host process records it and fails the requests on screen with
+//!   `Internal` (the window could not be shown); every later launch on this
+//!   machine starts with glow directly.
 
 use std::process::Command;
 
@@ -41,9 +54,40 @@ impl Backend {
 /// Environment variable that forces a backend (and marks a re-exec).
 pub const RENDERER_ENV: &str = "WEBSIGN_RENDERER";
 
-/// The backend for this process: the forced one, else wgpu.
+/// The backend for this process: the forced one, else glow when this
+/// machine needed it before (macOS and Linux), else wgpu. Reads a file and
+/// the environment only, so it may run at any point of a host's life.
 pub fn choose() -> Backend {
-    forced().unwrap_or(Backend::Wgpu)
+    forced().unwrap_or_else(|| {
+        let remembered = cfg!(any(target_os = "macos", target_os = "linux"))
+            && glow_marker().is_some_and(|marker| marker.exists());
+        if remembered {
+            Backend::Glow
+        } else {
+            Backend::Wgpu
+        }
+    })
+}
+
+/// Records that wgpu failed here, so later launches start with glow.
+/// Best effort: without a data folder every launch tries wgpu first.
+pub fn remember_glow_needed() {
+    let Some(marker) = glow_marker() else {
+        return;
+    };
+    let written = marker
+        .parent()
+        .map_or(Ok(()), std::fs::create_dir_all)
+        .and_then(|()| std::fs::write(&marker, b"wgpu failed on this machine\n"));
+    match written {
+        Ok(()) => log::warn!("wgpu failed: later launches start with glow"),
+        Err(error) => log::warn!("could not record the glow fallback: {:?}", error.kind()),
+    }
+}
+
+/// The marker file: `renderer-glow` in the app's data folder.
+fn glow_marker() -> Option<std::path::PathBuf> {
+    websign_host::store::data_dir().map(|dir| dir.join("renderer-glow"))
 }
 
 /// Whether a failed wgpu start may be retried by re-executing with glow:
@@ -72,12 +116,9 @@ pub fn is_renderer_failure(error: &eframe::Error) -> bool {
 /// and relays its exit code; standard streams are inherited.
 ///
 /// Only safe before this process has read anything from stdin: the child
-/// cannot see bytes the parent already consumed. A native messaging host
-/// that opens its first window after reading a request must not re-execute
-/// then (the request would be lost); it answers that request with an error
-/// and relies on the next launch. TODO(gustavo): decide whether the host
-/// should remember "glow needed" on this machine so the next launch starts
-/// with glow directly.
+/// cannot see bytes the parent already consumed. A host process therefore
+/// never re-executes; it relies on [`remember_glow_needed`] (see the module
+/// documentation).
 pub fn glow_reexec() -> std::io::Result<Command> {
     let mut command = Command::new(std::env::current_exe()?);
     command

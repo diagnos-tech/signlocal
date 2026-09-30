@@ -4,17 +4,24 @@
 //! Machine-facing commands (`sign`, `choose`, `connect`, and anything with
 //! `--json`) write exactly one JSON document to stdout and nothing else;
 //! people-facing text goes to stderr. Exit codes are stable
-//! ([`websign_protocol::ErrorCode::exit_code`]).
+//! ([`websign_protocol::ErrorCode::exit_code`]; 2 for a usage error, which
+//! clap reports itself).
 
 pub mod activate;
 mod choose;
 mod connect;
 mod diagnostics;
 mod doctor;
+mod help;
 mod install;
+mod local;
 mod options;
+mod output;
 mod register;
+mod report;
 mod sign;
+#[cfg(test)]
+mod tests;
 mod version;
 
 use std::process::ExitCode;
@@ -23,7 +30,13 @@ use clap::{Parser, Subcommand};
 
 /// Sign with your certificate for any website or desktop program.
 #[derive(Debug, Parser)]
-#[command(name = "websign", version, about, disable_help_subcommand = true)]
+#[command(
+    name = "websign",
+    version,
+    about,
+    disable_help_subcommand = true,
+    after_help = help::MAIN
+)]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Option<Command>,
@@ -43,10 +56,13 @@ pub enum Command {
     /// Open the diagnostics window.
     Diagnostics(diagnostics::DiagnosticsArgs),
     /// Sign a digest: opens the confirmation window, prints the result as JSON.
+    #[command(after_help = help::SIGN)]
     Sign(sign::SignArgs),
     /// Let the person choose a certificate; prints it as JSON.
+    #[command(after_help = help::CHOOSE)]
     Choose(choose::ChooseArgs),
     /// Speak the framed protocol on stdin/stdout (for client libraries).
+    #[command(after_help = help::CONNECT)]
     Connect(connect::ConnectArgs),
     /// Print the version.
     Version(version::VersionArgs),

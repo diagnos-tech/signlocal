@@ -5,8 +5,11 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 use clap::ValueEnum;
+use websign_registration::{Action, Request, Scope};
 
+use super::install::manifest_steps;
 use super::options::BrowserArg;
+use super::report::Report;
 
 /// `websign register`.
 #[derive(Debug, clap::Args)]
@@ -30,8 +33,10 @@ pub struct RegisterArgs {
     /// Windows: folder for the manifest files the registry keys point to.
     #[arg(long, value_name = "DIR")]
     pub manifest_dir: Option<PathBuf>,
+    /// Print what would be done; change nothing.
     #[arg(long)]
     pub dry_run: bool,
+    /// Print a JSON report instead of text.
     #[arg(long)]
     pub json: bool,
 }
@@ -45,6 +50,32 @@ pub enum ScopeArg {
 
 /// Runs `websign_registration::run` and prints one line (or JSON) per target.
 pub fn run(args: &RegisterArgs) -> ExitCode {
-    let _ = args;
-    todo!("desktop-api.md §register")
+    let report = Report {
+        command: "register",
+        system: args.scope == ScopeArg::System,
+        dry_run: args.dry_run,
+        steps: manifest_steps(&request(args)),
+    };
+    report.print(args.json)
+}
+
+/// The registration request the flags describe.
+pub fn request(args: &RegisterArgs) -> Request {
+    Request {
+        action: if args.uninstall {
+            Action::Uninstall
+        } else {
+            Action::Install
+        },
+        scope: match args.scope {
+            ScopeArg::User => Scope::User,
+            ScopeArg::System => Scope::System,
+        },
+        browsers: args.browsers.iter().map(|&b| b.into()).collect(),
+        user_data_dir: args.user_data_dir.clone(),
+        extension_ids: args.extension_ids.clone(),
+        manifest_dir: args.manifest_dir.clone(),
+        host: None,
+        dry_run: args.dry_run,
+    }
 }

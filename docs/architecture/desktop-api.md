@@ -105,7 +105,9 @@ The window shows the calling program instead of a web origin:
   enclosing `.app`; Linux the `Name` of a `.desktop` file whose `Exec` matches),
   else the file name;
 - **detail**: "Signed by {signer}" when the OS verified a code signature
-  (Windows Authenticode leaf CN; macOS team ID + identifier), else the
+  (Windows Authenticode leaf CN, or "Microsoft Windows" for programs signed
+  through a system catalog such as `cmd.exe`; macOS team ID + identifier,
+  checked on the parent's audit token when it is our stdin peer), else the
   executable path with an "Unverified program" warning;
 - a shell parent (`bash`, `zsh`, `cmd.exe`, `powershell`, `Terminal`) is shown
   as itself — the person typed the command.
@@ -165,3 +167,7 @@ name). Contract: [`clients/rust/SPEC.md`](../../clients/rust/SPEC.md).
 with every browser and opens diagnostics with "Getting started". It exists
 because store packages run no install scripts. Any other `websign:` URL only
 opens diagnostics; URLs never carry data the app acts on.
+
+Windows and Linux pass the URL as the last argument. macOS delivers it as an
+Apple Event (`kAEGetURL`), which the app handles once it has finished
+launching; `-psn_` arguments are ignored.

@@ -1,13 +1,22 @@
 # app/src/cli
 
-- `activate.rs` — `websign:activate` from the website's `/activate` page: register with every browser (stores run no install scripts), then open diagnostics with "Getting started".
+- `doctor/` — the diagnostics report's JSON
+- `install/` — registration steps, the Linux menu entry and `--purge`
+- `local/` — the in-memory client of `sign` and `choose`
+- `sign/` — reading `--digest` and `--digest-file`
+- `tests/` — flags, golden JSON and exit codes
+- `activate.rs` — `websign:activate` from the website's `/activate` page: register with every browser (stores run no install scripts), then open diagnostics with "Getting started"; also the handler of URLs that arrive as macOS Apple Events.
 - `choose.rs` — `websign choose`: the certificate the person picks, as JSON.
 - `connect.rs` — `websign connect`: the framed protocol on stdin/stdout, identical to native messaging except that the caller is the parent process.
 - `diagnostics.rs` — `websign diagnostics` (and `websign` with no command): the diagnostics window, in this process.
-- `doctor.rs` — `websign doctor`: the diagnostics report on stdout, for support and CI.
+- `doctor.rs` — `websign doctor`: the diagnostics report on stdout (the window's collector), for support and CI.
+- `help.rs` — Examples and output notes `--help` prints for `sign`, `choose`, `connect` and the app.
 - `install.rs` — `websign install` / `websign uninstall`: what an installer runs once, and what the app repeats silently on every start (`docs/architecture/desktop-api.md`).
+- `local.rs` — `sign`/`choose` run one whole connection in this process, through the same engine and window as `connect`.
 - `mod.rs` — The command line: the desktop API for scripts and programs, and the installer's entry points (`docs/architecture/desktop-api.md`).
 - `options.rs` — Value types shared by several commands.
+- `output.rs` — One JSON document on stdout, a localized line on stderr, the stable exit code.
 - `register.rs` — `websign register`: native messaging manifests only; the kit's `websign-probe register`, kept for tests and support.
+- `report.rs` — The report of `install`, `uninstall` and `register`, as text or stable JSON.
 - `sign.rs` — `websign sign`: one signature from the command line.
 - `version.rs` — `websign version`.

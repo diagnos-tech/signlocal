@@ -76,9 +76,19 @@ Nothing runs permanently. Every process ends when its job ends.
 | a browser (native messaging) | `chrome-extension://<id>/ [--parent-window=N]` or `<manifest path> <gecko id>` | the extension keeps the port (it closes after 60 s idle) | serves pages of that browser profile |
 | a desktop program | `websign connect` | stdin is open (idle exit 300 s) | serves that program |
 | a script / person | `websign sign|choose|…` | one request | prints JSON, exits |
-| the OS (URL) | `websign:activate` | registration + diagnostics window | first-run registration for store builds |
+| the OS (URL) | `websign:activate` (Windows, Linux); no arguments + a `kAEGetURL` Apple Event (macOS) | registration + diagnostics window | first-run registration for store builds |
 | the app menu | no arguments | the diagnostics window is open | diagnostics; silent re-registration |
 | a host process | `websign diagnostics --tab …` (spawned) | the window is open | "Open diagnostics" outlives the connection |
+
+Launch detection (`app/src/launch.rs`) is strict: browser-shaped arguments
+start a host only when they name one of our extensions (the IDs of
+`project.toml`, the same the manifests allow); anything else is parsed as a
+command line and a mistake is a usage error (exit 2), never host mode. A
+`websign:` URL names one action (`activate`); every other URL only opens
+diagnostics. On macOS Launch Services starts the app without the URL and
+delivers it as an Apple Event, also to a copy that already shows a window;
+`app/src/platform/url_events.rs` installs the handler when AppKit posts
+"will finish launching", so neither window needs code for it.
 
 Two browsers mean two host processes, each with its own window queue; they
 share state through files (consent, settings, connection records) with
@@ -100,6 +110,24 @@ learned this).
 Signing blocks inside the key store (the OS PIN dialog can take a minute), so
 it never runs on the engine thread: cancellation, disconnects and timeouts
 keep working while a PIN dialog is open.
+
+The process ends when the engine does: the client closed stdin, the
+desktop idle limit passed, or the first frame was refused. A connection
+that never needs a window (`status`, a remembered `choose`) never starts
+the UI toolkit.
+
+### Renderer
+
+`app/src/ui/renderer.rs` picks the backend without re-executing, from facts
+known at start: `WEBSIGN_RENDERER=wgpu|glow` when set, else glow when the
+`renderer-glow` marker exists in the data folder (macOS and Linux), else
+wgpu (DX12/WARP, Vulkan/llvmpipe, Metal cover RDP and GPU-less VMs; glow
+does not work on Windows). The first wgpu failure for a graphics reason on
+macOS or Linux writes the marker. A **host process never re-executes**: it
+has already read the request from stdin, which a child could not see, so it
+fails the requests on screen with `Internal` and the next launch starts
+with glow. The **diagnostics window** has read nothing, so it writes the
+marker and re-executes itself at once with `WEBSIGN_RENDERER=glow`.
 
 ## Data flow of one signature
 
@@ -126,9 +154,21 @@ Per-user data folder (`%APPDATA%\websign`, `~/Library/Application
 Support/websign`, `$XDG_CONFIG_HOME/websign`): `consent.json` (remembered
 callers), `usage.json` (certificate last-use), `connections.json` (extension
 pings per browser), `errors.json` (last 20 error codes), `settings.json`
-(user-added drivers, onboarding). Logs: the temp folder, size-capped. None of
-it contains PINs, digests or document data; only consent and usage hold
-certificate fingerprints, and they never leave the machine.
+(user-added drivers, onboarding). None of it contains PINs, digests or
+document data; only consent and usage hold certificate fingerprints, and
+they never leave the machine.
+
+Logs live in the per-user log folder (`%LOCALAPPDATA%\websign\logs`,
+`~/Library/Logs/websign`, `$XDG_STATE_HOME/websign` or
+`~/.local/state/websign`), never the shared temp folder: on macOS and Linux
+the folder is `0700` and `websign.log` is `0600`. At 1 MiB the file becomes
+`websign.log.1`, replacing the previous one (at most 2 MiB on disk);
+concurrent processes append whole lines and follow each other's rotation.
+Level from `WEBSIGN_LOG` (default `info`). Every line passes a privacy
+filter (`app/src/logging/redact`) on top of the rule that log calls carry
+steps, codes and sizes only ([security.md](security.md#logs)).
+`websign uninstall --purge` deletes the data and log folders, and only
+folders whose path ends in the app's own name.
 
 ## Channels
 
