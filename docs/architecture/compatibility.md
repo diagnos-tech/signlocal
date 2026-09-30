@@ -14,7 +14,7 @@ offered by CNG, CryptoTokenKit or common tokens).
 | RSASSA-PKCS1-v1_5 | RSA 1024–16384 | modulus-length block | `NCryptSignHash` + `BCRYPT_PAD_PKCS1` | `CryptSignHash` (bytes reversed); `PROV_RSA_FULL` keys reopened in the AES CSP | `RSASignatureDigestPKCS1v15SHA*` | `CKM_RSA_PKCS` over the `DigestInfo` |
 | RSASSA-PSS (MGF1 same hash, salt = digest length) | RSA | block | `BCRYPT_PAD_PSS` | only via the CNG bridge (`PREFER`, D9) | `RSASignatureDigestPSSSHA*` (salt = digest length, verified in Apple's sources) | `CKM_RSA_PKCS_PSS` |
 | ECDSA P-256 / P-384 / P-521 | EC | raw `r‖s` | native `r‖s` | — (CAPI has no ECC) | DER → converted | `CKM_ECDSA` (raw; DER converted) |
-| ECDSA brainpoolP256r1 / P384r1 / P512r1 | EC | raw `r‖s` | if the KSP supports the curve | — | if the token driver does | if the module does |
+| ECDSA brainpoolP256r1 / P384r1 / P512r1 | EC | raw `r‖s` | if the KSP supports the curve | — | — (the Security framework has no brainpool curves; use the token's PKCS#11 module) | if the module does |
 
 The app never asks a key store to hash (`CKM_SHA256_RSA_PKCS` would hash the
 digest again). Every result is verified before it is returned (brainpoolP512r1
@@ -72,7 +72,8 @@ The app never talks to a chip. Hardware detection only helps:
 
 ## Operating systems
 
-Windows 10 22H2+ and 11 (x64, arm64); macOS 13+ (universal); Linux with
-glibc ≥ 2.31: Ubuntu 22.04/24.04, Debian 12, Fedora 42, Rocky/RHEL 9, Arch
-(best effort), amd64 and arm64. Requirements: PC/SC (`pcscd`, `libpcsclite`)
+Windows 10 22H2+ and 11 (x64, arm64); macOS 13+ (universal;
+`LSMinimumSystemVersion` in `packaging/macos/Info.plist.in`); Linux with
+glibc ≥ 2.34 (release builds run in Rocky Linux 9): Ubuntu 22.04/24.04,
+Debian 12, Fedora 42, Rocky/RHEL 9, Arch (best effort), amd64 and arm64. Requirements: PC/SC (`pcscd`, `libpcsclite`)
 on Linux; any GPU or a software renderer (WARP, llvmpipe, Apple software).

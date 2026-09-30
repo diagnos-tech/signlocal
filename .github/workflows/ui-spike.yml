@@ -1,13 +1,11 @@
 # Spike: can the real app window be rendered and screenshotted on every OS?
 # Runs the window path (auto / wgpu / glow) and the headless egui_kittest path
 # on each target, records results without failing on a single approach, and
-# uploads every PNG as `ui-spike-<os>`. Runs when this file changes, or by hand.
+# uploads every PNG as `ui-spike-<os>`. Kept as an evidence tool for
+# docs/prototypes/: it runs only by hand.
 name: ui-spike
 
 on:
-  push:
-    paths:
-      - ".github/workflows/ui-spike.yml"
   workflow_dispatch:
 
 permissions:

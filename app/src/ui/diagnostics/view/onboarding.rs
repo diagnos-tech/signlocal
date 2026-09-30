@@ -18,7 +18,7 @@ use crate::ui::theme::{self, metrics, typography};
 use crate::ui::widgets::button::{Button, Kind, Size};
 use crate::ui::widgets::tone::Tone;
 
-/// The test page. TODO(gustavo): publish it on the site (`/test`).
+/// The site's test page (`site/test/`), which signs and verifies a fixed message.
 pub fn test_page() -> String {
     format!("{}test/", websign_project::HOMEPAGE)
 }

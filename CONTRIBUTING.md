@@ -9,8 +9,9 @@ changed:
 
 | Part | License |
 |---|---|
-| `app/`, `crates/` (except the two below), `extension/`, `safari/`, `packaging/`, `scripts/`, `e2e/`, `xtask/`, `i18n/`, `docs/` | GPL-3.0-or-later **with the app-store additional permission** (section 7, in [`LICENSE`](LICENSE)) |
-| `sdk/`, `clients/`, `crates/websign-protocol/`, `crates/websign-project/` | Apache-2.0 |
+| `app/`, `crates/` (except the two below), `extension/`, `safari/`, `packaging/`, `scripts/`, `e2e/`, `xtask/`, `site/`, `docs/`, `i18n/README.md` | GPL-3.0-or-later **with the app-store additional permission** (section 7, in [`LICENSE`](LICENSE)) |
+| `sdk/`, `clients/node/`, `clients/rust/`, `crates/websign-protocol/`, `crates/websign-project/` | Apache-2.0 (each has its own `LICENSE`) |
+| `project.toml`, `i18n/*.toml` | GPL-3.0-or-later **or** Apache-2.0, at your option: the Apache-2.0 parts generate code from them ([`i18n/README.md`](i18n/README.md#license)) |
 | `devices.json`, `devices.schema.json` | CC0-1.0 |
 
 The additional permission lets the app ship through the Mac App Store and the
@@ -18,7 +19,9 @@ Microsoft Store. Contributions that do not accept it cannot be merged.
 
 New dependencies must be GPL-3.0-compatible (MIT, Apache-2.0, BSD, ISC, Zlib,
 MPL-2.0; `cargo deny check` enforces it). Apache-2.0 parts must not depend on
-GPL parts. The SDK and the client libraries have **zero runtime dependencies**.
+GPL parts. The SDK and the Node client have **zero runtime dependencies**; the
+Rust client depends only on the Apache-2.0 `websign-protocol` and
+`websign-project` crates (plus `thiserror`).
 
 ## Commits
 
@@ -64,5 +67,5 @@ Platform code is proven by contract test suites instead
 ## Security
 
 Never log a PIN, a certificate, a name, a CPF/CNPJ, a serial number or a
-digest. Vulnerabilities: do not open a public issue — write to the
-maintainer. `TODO(gustavo)`: create `SECURITY.md` with the contact address.
+digest. Vulnerabilities: do not open a public issue — follow
+[`SECURITY.md`](SECURITY.md).

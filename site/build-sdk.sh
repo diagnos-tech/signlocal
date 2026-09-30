@@ -1,8 +1,9 @@
 #!/usr/bin/env sh
 # Rebuilds site/assets/websign-sdk.js: the @websign/sdk ESM bundle (plus its
 # localized error texts) that the test page imports. The built file is
-# committed so the static site needs no build step at deploy; run this after
-# any change under sdk/src and commit the result.
+# committed so the site works when served straight from a checkout; run this
+# after any change under sdk/src and commit the result. The Pages workflow
+# (.github/workflows/pages.yml) runs it again before every deploy.
 set -eu
 here=$(cd "$(dirname "$0")" && pwd)
 sdk="$here/../sdk"

@@ -184,6 +184,11 @@ function Unblock-Tree([string]$Dir) {
 function Install-Websign {
     if (-not $Version) { throw '-Version is required: prereleases are not "latest" (see docs/install.md)' }
     $Script:Version = $Version.TrimStart('v')
+    # The version goes into file names, paths and URLs: strict SemVer only.
+    # \z, not $, so a trailing newline cannot slip through.
+    $ident = '[0-9A-Za-z-]+'
+    $semver = "\A(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-$ident(\.$ident)*)?(\+$ident(\.$ident)*)?\z"
+    if ($Script:Version -notmatch $semver) { throw '-Version must be a release version such as 1.2.3 or 1.2.3-rc.1' }
     $arch = Get-WebsignArch $env:PROCESSOR_ARCHITECTURE $env:PROCESSOR_ARCHITEW6432
     $zipName = "$($Script:Slug)-$($Script:Version)-windows-$arch.zip"
     $dir = Get-InstallDir

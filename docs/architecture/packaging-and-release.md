@@ -34,7 +34,7 @@ native runner of each OS; the release job assembles and publishes.
 | Windows direct | `%LOCALAPPDATA%\Programs\WebeSign\websign.exe`, folder added to the user `PATH` | `websign install`: `HKCU\Software\<vendor>\NativeMessagingHosts\dev.websign.host` for every browser, manifests in `%LOCALAPPDATA%\websign\NativeMessagingHosts`, `HKCU\Software\Classes\websign`, Start menu shortcut |
 | Windows store | package folder; alias `websign.exe` in `%LOCALAPPDATA%\Microsoft\WindowsApps` | same keys, written by the app on first start (manifests point at the alias) |
 | macOS direct | `/Applications/WebeSign.app` (or `~/Applications` without admin rights); `~/.local/bin/websign` symlink | `websign install`: manifests in each browser's `NativeMessagingHosts` under `~/Library/Application Support`; URL scheme from `Info.plist` |
-| Linux deb/rpm | `/usr/bin/websign`, `/usr/share/applications/websign.desktop` | postinst runs `websign install --system` (system manifests; the Firefox Snap portal also reads `~/.mozilla`, which `websign install` writes per user) and enables `pcscd.socket`; `Depends: libpcsclite1` / `Requires: pcsc-lite-libs`; `Recommends: pcscd, p11-kit` |
+| Linux deb/rpm | `/usr/bin/websign`, `/usr/share/applications/websign.desktop` | postinst runs `websign install --system` (system manifests; the Firefox Snap portal also reads `~/.mozilla`, which `websign install` writes per user); it leaves `pcscd.socket` to the pcscd package (diagnostics shows the enable command); `Depends: libpcsclite1` / `Requires: pcsc-lite-libs`; `Recommends: pcscd, p11-kit` |
 | Linux tar.gz | `~/.local/bin/websign`, `~/.local/share/applications/websign.desktop` | `websign install` (per user); per-user manifests also cover the Firefox Snap; the script offers `sudo websign install --system` for other users |
 
 `websign-client` and `@websign/desktop` search these locations in this order
@@ -80,7 +80,7 @@ Direct builds are not code-signed yet (costs and accounts pending, brief
 | Where | What happens | What to do |
 |---|---|---|
 | Windows | SmartScreen "Windows protected your PC" when running a downloaded `websign.exe` by hand | The install script avoids it (it downloads with PowerShell and unblocks the file). Manual download: **More info → Run anyway**. |
-| macOS | Gatekeeper "cannot be opened because the developer cannot be verified" | The install script removes the quarantine attribute (`xattr -dr com.apple.quarantine`). Manual: right-click the app → **Open**, or System Settings → Privacy & Security → **Open Anyway**. |
+| macOS | Gatekeeper "cannot be opened because the developer cannot be verified" | The install script removes the quarantine attribute from `WebeSign.app` only (`xattr -dr com.apple.quarantine`). Manual: System Settings → Privacy & Security → **Open Anyway** (macOS 14 and earlier: right-click the app → **Open**). |
 | Linux | nothing (packages are unsigned; `apt install ./websign_<v>_amd64.deb`, `dnf install ./websign-<v>-1.x86_64.rpm`) | — |
 | Chrome / Edge / Brave | the extension is not in the stores yet | `chrome://extensions` → Developer mode → **Load unpacked** → the unzipped `websign-extension-<v>-chromium` folder. The development key pins the ID the app allows. |
 | Firefox | release Firefox refuses unsigned add-ons | `about:debugging` → This Firefox → **Load Temporary Add-on** (lasts until restart), or Firefox Developer/Nightly/ESR with `xpinstall.signatures.required = false`. `TODO(gustavo)`: sign on AMO as *unlisted* (free, automatic) to remove this step. |
@@ -96,11 +96,12 @@ Direct builds are not code-signed yet (costs and accounts pending, brief
 2. Push tag `vX.Y.Z` (or run the workflow by hand with an existing tag to
    rebuild and replace a release). `cargo xtask package` builds every
    artifact without caches: Linux in a `rockylinux:9` container on
-   `ubuntu-24.04` and `ubuntu-24.04-arm` (its glibc 2.34 is the oldest of the
-   supported distributions; deb and rpm with the pinned, hash-checked nfpm;
+   `ubuntu-24.04` and `ubuntu-24.04-arm` (Rocky 9's glibc 2.34 is the oldest
+   of the supported distributions, so it is the Linux floor; deb and rpm with the pinned, hash-checked nfpm;
    tar.gz), Windows x64 and arm64 on
    `windows-latest` (arm64 cross-compiled by MSVC), the universal `.app` on
-   `macos-latest` (lipo, ad-hoc signature). Every release binary is checked
+   `macos-latest` (lipo, ad-hoc signature; `LSMinimumSystemVersion` 13.0, the
+   macOS floor of [`compatibility.md`](compatibility.md)). Every release binary is checked
    for the `e2e` marker. The extension zips are the `direct` channel
    (`WEBSIGN_CHANNEL=direct bun run zip`, development key). The e2e suite
    runs in `e2e.yml`, not against the packaged files.

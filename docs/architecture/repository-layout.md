@@ -3,9 +3,10 @@
 ```
 Cargo.toml  rust-toolchain.toml  rustfmt.toml  deny.toml  .cargo/config.toml
 package.json  bun.lock  biome.json  tsconfig.base.json
-project.toml            provisional names and IDs (single source, D6)
-devices.json  devices.schema.json  LICENSE-CC0
-i18n/                   en (reference), pt-BR, pt-PT, es, fr, it, de
+LICENSE  LICENSE-CC0  README.md  CONTRIBUTING.md  SECURITY.md
+project.toml            provisional names and IDs (single source, D6; GPL-3.0-or-later OR Apache-2.0)
+devices.json  devices.schema.json  (CC0-1.0)
+i18n/                   en (reference), pt-BR, pt-PT, es, fr, it, de (GPL-3.0-or-later OR Apache-2.0)
 crates/
   websign-core/         pure: algorithms, encodings, certificate summary, verify, dedup, display rules
   websign-protocol/     wire types, framing, errors, verification code (Apache-2.0)
@@ -26,6 +27,8 @@ packaging/              linux/, windows/, macos/ packaging definitions
 scripts/install/        install.sh, install.ps1
 e2e/                    Playwright suites
 xtask/                  cargo xtask gen|check|package|screenshots
+site/                   static website, deployed to GitHub Pages by .github/workflows/pages.yml
+.github/workflows/      ci, e2e, release, pages, scheduled; prototypes and ui-spike by hand only
 docs/                   plan.md, ux.md, architecture/, prototypes/, research/, screenshots/
 ```
 
@@ -44,7 +47,9 @@ Deviations from the first sketch in the old plan, and why:
   generated from the same files.
 - **Protocol and client crates are Apache-2.0**, so the GPL never reaches a
   program that only talks to the app. The verification-code algorithm lives
-  in the protocol crate for the same reason.
+  in the protocol crate for the same reason. `project.toml` and
+  `i18n/*.toml` are dual-licensed (GPL-3.0-or-later or Apache-2.0) because
+  the Apache-2.0 parts embed or generate code from them.
 
 ## Conventions
 

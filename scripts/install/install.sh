@@ -105,29 +105,42 @@ asset_id() {
         /"name":/ { n = $0; sub(/.*"name": *"/, "", n); sub(/".*/, "", n); if (n == want && id != "") { print id; exit } }'
 }
 
+fetch_local() {
+    cp "$WEBSIGN_RELEASE_DIR/$1" "$WORK/$1" || die "$1 is not in $WEBSIGN_RELEASE_DIR"
+}
+
+fetch_gh() {
+    gh release download "v$VERSION" --repo "$REPO" --pattern "$1" --dir "$WORK" --clobber \
+        || die "gh could not download $1 of v$VERSION"
+}
+
+# The private repository through the REST API: the release description
+# names the asset id, which is then downloaded as a raw stream.
+fetch_token() {
+    have curl || die "curl is required"
+    api="https://api.github.com/repos/$REPO/releases"
+    get_auth -H "Accept: application/vnd.github+json" "$api/tags/v$VERSION" \
+        -o "$WORK/release.json" || die "cannot read release v$VERSION (check the token)"
+    id=$(asset_id "$WORK/release.json" "$1")
+    [ -n "$id" ] || die "release v$VERSION has no file named $1"
+    get_auth -H "Accept: application/octet-stream" "$api/assets/$id" \
+        -o "$WORK/$1" || die "cannot download $1"
+}
+
+fetch_https() {
+    have curl || die "curl is required"
+    get "https://github.com/$REPO/releases/download/v$VERSION/$1" -o "$WORK/$1" \
+        || die "cannot download $1 (private repository? run 'gh auth login' or set WEBSIGN_GITHUB_TOKEN)"
+}
+
 # Downloads asset "$1" of release v$VERSION into "$WORK". Source order: a
 # local release folder (tests, offline), gh when logged in, a bearer token
 # for the private repository, anonymous HTTPS.
 fetch() {
-    name=$1
-    if [ -n "${WEBSIGN_RELEASE_DIR:-}" ]; then
-        cp "$WEBSIGN_RELEASE_DIR/$name" "$WORK/$name" || die "$name is not in $WEBSIGN_RELEASE_DIR"
-    elif have gh && gh auth status >/dev/null 2>&1; then
-        gh release download "v$VERSION" --repo "$REPO" --pattern "$name" --dir "$WORK" --clobber \
-            || die "gh could not download $name of v$VERSION"
-    elif [ -n "${WEBSIGN_GITHUB_TOKEN:-}" ]; then
-        have curl || die "curl is required"
-        api="https://api.github.com/repos/$REPO/releases"
-        get_auth -H "Accept: application/vnd.github+json" "$api/tags/v$VERSION" \
-            -o "$WORK/release.json" || die "cannot read release v$VERSION (check the token)"
-        id=$(asset_id "$WORK/release.json" "$name")
-        [ -n "$id" ] || die "release v$VERSION has no file named $name"
-        get_auth -H "Accept: application/octet-stream" "$api/assets/$id" \
-            -o "$WORK/$name" || die "cannot download $name"
-    else
-        have curl || die "curl is required"
-        get "https://github.com/$REPO/releases/download/v$VERSION/$name" -o "$WORK/$name" \
-            || die "cannot download $name (private repository? run 'gh auth login' or set WEBSIGN_GITHUB_TOKEN)"
+    if [ -n "${WEBSIGN_RELEASE_DIR:-}" ]; then fetch_local "$1"
+    elif have gh && gh auth status >/dev/null 2>&1; then fetch_gh "$1"
+    elif [ -n "${WEBSIGN_GITHUB_TOKEN:-}" ]; then fetch_token "$1"
+    else fetch_https "$1"
     fi
 }
 
@@ -213,24 +226,25 @@ want_package() {
     ask "Install the system package instead (uses sudo, registers every user)? No installs for your user only."
 }
 
+# The release file name of the deb or rpm for this family and CPU.
+package_file() {
+    if [ "$1" = deb ]; then
+        if [ "$2" = x64 ]; then echo "${SLUG}_${VERSION}_amd64.deb"; else echo "${SLUG}_${VERSION}_arm64.deb"; fi
+    else
+        if [ "$2" = x64 ]; then echo "$SLUG-$VERSION-1.x86_64.rpm"; else echo "$SLUG-$VERSION-1.aarch64.rpm"; fi
+    fi
+}
+
+package_manager() {
+    if [ "$1" = deb ]; then echo apt-get; elif have dnf; then echo dnf; else echo yum; fi
+}
+
 install_package() {
     family=$1; arch=$2
-    if [ "$family" = deb ]; then
-        if [ "$arch" = x64 ]; then a=amd64; else a=arm64; fi
-        file="${SLUG}_${VERSION}_$a.deb"
-    else
-        if [ "$arch" = x64 ]; then a=x86_64; else a=aarch64; fi
-        file="$SLUG-$VERSION-1.$a.rpm"
-    fi
+    file=$(package_file "$family" "$arch")
     fetch_verified "$file"
     root_cmd=$(as_root)
-    if [ "$family" = deb ]; then
-        manager=apt-get
-    elif have dnf; then
-        manager=dnf
-    else
-        manager=yum
-    fi
+    manager=$(package_manager "$family")
     # $root_cmd is empty or "sudo": unquoted on purpose so empty adds no word.
     # shellcheck disable=SC2086
     run $root_cmd "$manager" install -y "$WORK/$file"
@@ -334,6 +348,18 @@ uninstall_macos() {
 
 # ---- entry point --------------------------------------------------------
 
+# The version ends up in file names, a temporary path and URLs, so only a
+# strict SemVer 2.0 value is accepted (MAJOR.MINOR.PATCH, optional
+# -prerelease and +build of [0-9A-Za-z-] dot-separated identifiers). The
+# character check comes first because grep matches line by line: it rejects
+# a newline that would otherwise smuggle a second line past the pattern.
+valid_version() {
+    case "$1" in '' | *[!0-9A-Za-z.+-]*) return 1 ;; esac
+    ident='[0-9A-Za-z-]+'
+    num='(0|[1-9][0-9]*)'
+    printf '%s\n' "$1" | grep -Eq "^$num\.$num\.$num(-$ident(\.$ident)*)?(\+$ident(\.$ident)*)?\$"
+}
+
 parse_args() {
     while [ $# -gt 0 ]; do
         case "$1" in
@@ -361,6 +387,7 @@ main() {
         return 0
     fi
     [ -n "$VERSION" ] || die "--version is required: prereleases are not \"latest\" (see docs/install.md)"
+    valid_version "$VERSION" || die "--version must be a release version such as 1.2.3 or 1.2.3-rc.1"
     WORK=$(mktemp -d "${TMPDIR:-/tmp}/websign-install.XXXXXX")
     trap cleanup EXIT
     trap on_signal INT TERM

@@ -153,6 +153,9 @@ jobs:
       # xtask uses to write zips, not the GNU tar of Git Bash.
       - name: Build and package
         timeout-minutes: 75
+        # Matches LSMinimumSystemVersion in packaging/macos/Info.plist.in.
+        env:
+          MACOSX_DEPLOYMENT_TARGET: "13.0"
         run: cargo xtask package --target ${{ matrix.target }} --out dist
       - name: Release binaries have no e2e marker
         timeout-minutes: 10

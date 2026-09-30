@@ -1,10 +1,23 @@
 # Implementation plan
 
-Phase 0 (risk proofs) is done: [`docs/prototypes/`](prototypes/). This plan
-builds the product from the skeleton now in the repository: every crate and
-package exists, compiles on Linux, Windows and macOS, and declares its public
-API with `todo!()` bodies; every pure part has a `SPEC.md`. Contracts are in
+**Status:** waves A and B are implemented: every crate and package works on
+Linux, Windows and macOS, the CI gates run on every push, and `v*` tags publish
+unsigned prereleases. The risk proofs that preceded them are in
+[`docs/prototypes/`](prototypes/). Contracts are in
 [`docs/architecture/`](architecture/); the UX is [`docs/ux.md`](ux.md).
+
+What remains:
+
+- **Maintainer actions** (§5): enable GitHub Pages for `site/`
+  (`.github/workflows/pages.yml` is ready), the security contact in
+  [`SECURITY.md`](../SECURITY.md), final name and domain, store and npm
+  accounts.
+- **Wave C** (§3): code signing and notarization, store channels, the macOS
+  PKCS#11 Add-on.
+- **Hardware verification**: real tokens and cards on each OS, following the
+  checklist in [`docs/compatibility.md`](compatibility.md).
+- **Screenshots** of Windows, macOS and the Linux distributions in
+  [`docs/screenshots/`](screenshots/) from a green `e2e.yml` run.
 
 ## 1. Decisions
 
@@ -116,6 +129,11 @@ decisions. Merging needs the CI gates of `testing.md` §6.
 - D11 (Continue before the certificate reaches a new site) — UX sign-off.
 - AMO unlisted signing for the Firefox direct build (free) — see
   `packaging-and-release.md`.
-- Security contact for `SECURITY.md`.
+- Security contact for [`SECURITY.md`](../SECURITY.md).
+- Enable GitHub Pages ("Source: GitHub Actions") so `pages.yml` can publish
+  `site/`.
+- Confirm the license change: `project.toml` and `i18n/*.toml` are
+  dual-licensed GPL-3.0-or-later or Apache-2.0 so the Apache-2.0 SDK and
+  clients can ship what is generated from them ([`LICENSE`](../LICENSE)).
 - Everything already marked `TODO(gustavo)` in `docs/ux.md` §17 and
   `project.toml`.

@@ -136,6 +136,15 @@ refuse "a file missing from SHA256SUMS fails" env WEBSIGN_RELEASE_DIR="$UNLISTED
     WEBSIGN_OS_RELEASE="$ROOT/os-release.arch" HOME="$ROOT/home" sh "$SCRIPT" --version "$VERSION" --yes --prefix "$ROOT/prefix5"
 
 refuse "--version is required" run_linux --yes --prefix "$ROOT/prefix6"
+for good in 1.2.3 0.1.0-rc.1 10.20.30-alpha-2.x+build.5; do
+    check "version $good is accepted" lib valid_version "$good"
+done
+for bad in 1.2 01.2.3 1.2.3.4 1.2.3- '1.2.3/../x' '1.2.3 x' '1.2.3?a=b' "1.2.3
+../x"; do
+    refuse "version '$bad' is refused" lib valid_version "$bad"
+done
+refuse "an invalid --version stops before downloading" run_linux --version '1.2.3/../../x' --yes --prefix "$ROOT/prefix9"
+check "nothing was installed for the invalid version" test ! -e "$ROOT/prefix9"
 refuse "unknown options are refused" run_linux --frobnicate
 
 # ---- uninstall ------------------------------------------------------------

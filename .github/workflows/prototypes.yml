@@ -1,14 +1,11 @@
 # Risk proofs: builds websign-probe on each OS and exercises every signing
 # path with software keys (SoftHSM2, CNG/CAPI software providers, a test
 # keychain). Real tokens are covered by the manual steps in docs/prototypes/.
+# Kept as an evidence tool for docs/prototypes/: it runs only by hand, since
+# the product's own gates live in ci.yml.
 name: prototypes
 
 on:
-  push:
-    paths:
-      - "docs/prototypes/kit/**"
-      - ".github/workflows/prototypes.yml"
-      - "project.toml"
   workflow_dispatch:
 
 concurrency:

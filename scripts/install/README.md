@@ -12,7 +12,7 @@ extension step. Idempotent: a second run upgrades in place.
 
 | | `install.sh` | `install.ps1` |
 |---|---|---|
-| Version | `--version <v>` (or `WEBSIGN_VERSION`) | `-Version <v>` |
+| Version | `--version <v>` (or `WEBSIGN_VERSION`); strict SemVer, checked before any path or URL uses it | `-Version <v>`; same check |
 | Remove | `--uninstall` | `-Uninstall` |
 | Skip registration | `--no-register` | `-NoRegister` |
 | Preview | `--dry-run` (downloads and verifies, changes nothing) | `-DryRun` |

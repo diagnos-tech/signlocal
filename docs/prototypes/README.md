@@ -25,8 +25,8 @@ decision is proven (or refuted) with real code. Each proof has a document with t
 - `kit/extension/`, `kit/nm-e2e/`: minimal extension and end-to-end native messaging test.
 - `kit/windows/`, `kit/msix/`, `kit/macos/`, `kit/linux/`: proof scripts per operating system.
 
-CI ([`.github/workflows/prototypes.yml`](../../.github/workflows/prototypes.yml)) runs the
-proofs with software keys on all three systems. Real tokens: see the script in each document.
+[`.github/workflows/prototypes.yml`](../../.github/workflows/prototypes.yml) runs the
+proofs with software keys on all three systems when started by hand (Actions → prototypes). Real tokens: see the script in each document.
 
 ### Quick start
 

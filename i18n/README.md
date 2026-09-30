@@ -19,3 +19,12 @@ Used by:
 After editing: `cargo xtask check i18n` (keys, placeholders, plurals, store
 limits), then `cargo xtask gen` and commit the generated files
 (`cargo xtask check generated` fails otherwise).
+
+## License
+
+The TOML files here, like `project.toml`, are licensed GPL-3.0-or-later **or**
+Apache-2.0, at your option (see [`LICENSE`](../LICENSE)). The Apache-2.0 SDK
+ships text generated from them (`sdk/src/messages.gen.ts`), so a GPL-only
+source would pull the SDK under the GPL. Contributing a translation means
+offering it under both licenses. This README and the tooling stay
+GPL-3.0-or-later.

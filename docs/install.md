@@ -151,7 +151,8 @@ sha256sum --ignore-missing -c SHA256SUMS && sudo dnf install ./websign-<v>-1.x86
 
 Smart cards and tokens need the PC/SC daemon: `sudo apt install pcscd` (Debian, Ubuntu) or
 `sudo dnf install pcsc-lite` (Fedora, Rocky), then `sudo systemctl enable --now pcscd.socket`. The packages
-depend on `libpcsclite1` / `pcsc-lite-libs` and enable the socket when `pcscd` is present.
+depend on `libpcsclite1` / `pcsc-lite-libs` but leave the daemon's service to its own package; the
+diagnostics window shows the command when the service is stopped.
 
 **Uninstall (packages).** As each user who used the app, run `websign uninstall` (add `--purge` to also delete
 settings and remembered sites; this also removes the per-user Firefox registrations). Then remove the
@@ -175,6 +176,12 @@ The extension is not in the stores yet. Download `websign-extension-<v>-chromium
 | Chrome, Edge, Brave | Open `chrome://extensions` (`edge://extensions`, `brave://extensions`), turn on **Developer mode**, click **Load unpacked** and pick the unzipped `websign-extension-<v>-chromium` folder. Keep the folder: the browser loads it from there. Its fixed development key gives the ID the app allows. |
 | Firefox | Open `about:debugging`, **This Firefox**, **Load Temporary Add-on**, and pick `manifest.json` in the unzipped folder. It lasts until Firefox restarts. To keep it, use Firefox Developer Edition, Nightly or ESR: set `xpinstall.signatures.required` to `false` in `about:config`, then in `about:addons` choose **Install Add-on From File** and pick the zip. |
 | Safari | Not available in direct builds; it arrives with the store release. |
+
+**About the development key.** The Chromium zip pins its ID with a public development key from `project.toml`, so the
+app can allow it before the extension is in a store. Anyone can reuse that key: an unpacked extension built with it gets
+the same ID and can start the app like ours. Only load the zip from our release after checking `SHA256SUMS`, and do not
+keep other unpacked extensions you do not trust. Your confirmation in the app window is still needed for every
+signature. Store builds never carry this key.
 
 **Uninstall:** remove it from the browser's extensions page (`about:addons` in Firefox), then delete the folder.
 

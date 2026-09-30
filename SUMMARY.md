@@ -27,6 +27,7 @@ WebeSign: sign with your own certificate from any website or desktop program. St
 - `LICENSE` — GPL-3.0-or-later with the app-store additional permission
 - `LICENSE-CC0` — CC0-1.0 text for devices.json and its schema
 - `README.md` — what the project is and where to start
+- `SECURITY.md` — how to report a vulnerability privately
 - `biome.json` — Biome lint and format rules for the TypeScript packages
 - `bun.lock` — resolved npm dependency versions
 - `deny.toml` — cargo-deny policy: GPL-compatible licenses, advisories, bans

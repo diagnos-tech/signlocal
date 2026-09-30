@@ -385,7 +385,7 @@ button{font:inherit;color:inherit}
       <span class="mark lg" aria-hidden="true"><svg class="ic"><use href="#f-seal-check"/></svg></span>
       <div>
         <h1>WebeSign UI Mockups</h1>
-        <p>Mockups for the <span class="mono">docs/ux.md</span> specification, for approval. Fictitious data. The UI ships in 7 languages (en, es, pt-PT, pt-BR, fr, it, de); these mockups show the Brazilian Portuguese (pt-BR) copy of the app UI, while the page text around it is English.</p>
+        <p>Mockups for the <span class="mono">docs/ux.md</span> specification, for approval. Fictitious data. The UI ships in 7 languages (en, es, pt-PT, pt-BR, fr, it, de); these mockups show the English copy (<span class="mono">i18n/en.toml</span>); every locale's approved text lives in <span class="mono">i18n/</span>. Names, ID numbers and issuers are Brazilian and Portuguese examples on purpose.</p>
       </div>
     </div>
     <div class="seg" role="group" aria-label="Theme" id="theme-seg">
@@ -395,14 +395,14 @@ button{font:inherit;color:inherit}
     </div>
   </header>
   <nav class="page-nav" aria-label="Sections">
-    <a href="#confirmacao">Confirmation window</a>
-    <a href="#diagnostico">Diagnostics window</a>
+    <a href="#confirmation">Confirmation window</a>
+    <a href="#diagnostics">Diagnostics window</a>
     <a href="#popup">Extension popup</a>
     <a href="#tokens">Tokens</a>
   </nav>
 
   <!-- ===================== CONFIRMATION ===================== -->
-  <section class="sec" id="confirmacao" data-os="windows">
+  <section class="sec" id="confirmation" data-os="windows">
     <div class="sec-head">
       <div>
         <h2>Confirmation window</h2>
@@ -425,33 +425,33 @@ button{font:inherit;color:inherit}
         </figcaption>
         <div class="stage" data-w="480" data-h="632">
           <div class="win confirm" id="mock-main">
-            <div class="titlebar">Assinar para app.diagnos.health — WebeSign<svg class="tb-x"><use href="#r-x"/></svg></div>
+            <div class="titlebar">Sign for app.diagnos.health — WebeSign<svg class="tb-x"><use href="#r-x"/></svg></div>
             <div class="c-head">
               <div class="c-eyebrow">
-                <span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Pedido de assinatura · pelo Chrome</span>
-                <span class="chip chip-success"><svg class="ic"><use href="#f-check-circle"/></svg>Site com permissão</span>
+                <span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Signature request · via Chrome</span>
+                <span class="chip chip-success"><svg class="ic"><use href="#f-check-circle"/></svg>Allowed site</span>
               </div>
               <div class="c-origin"><span class="o-dim">https://app.</span>diagnos.health</div>
-              <p class="c-asks">quer que você assine um documento.</p>
+              <p class="c-asks">wants you to sign a document.</p>
             </div>
             <div class="c-body">
               <div class="card code-card">
                 <div class="idc" data-code="7F3A9C21E0B455D8" id="main-idc"></div>
                 <div class="code-main">
-                  <div class="code-label">Código de conferência <span class="badge">SHA-256</span></div>
+                  <div class="code-label">Verification code <span class="badge">SHA-256</span></div>
                   <div class="code" id="main-code">7F3A 9C21 E0B4 55D8</div>
-                  <div class="code-help">Confira se o site mostra o mesmo código.</div>
+                  <div class="code-help">Check that the site shows the same code.</div>
                 </div>
               </div>
               <div class="group">
-                <div class="list-label" id="lbl-main">Assinar com</div>
+                <div class="list-label" id="lbl-main">Sign with</div>
                 <div class="list" role="radiogroup" aria-labelledby="lbl-main" id="main-list">
                   <div class="row sel" role="radio" aria-checked="true" tabindex="0" data-code="7F3A9C21E0B455D8">
                     <span class="radio on"></span>
                     <div class="row-main">
                       <div class="r1"><span class="name">Ana Beatriz Souza</span><span class="badge">ICP-Brasil A3</span></div>
                       <div class="r2">CPF •••.456.789-•• · AC SOLUTI Multipla v5</div>
-                      <div class="r3"><span class="loc"><svg class="ic"><use href="#r-identification-card"/></svg><span>Cartão no leitor</span></span><span class="sep">·</span><span class="v t-warn"><svg class="ic"><use href="#r-clock"/></svg>Vence em 23 dias</span><a class="link">Detalhes</a></div>
+                      <div class="r3"><span class="loc"><svg class="ic"><use href="#r-identification-card"/></svg><span>Card in reader</span></span><span class="sep">·</span><span class="v t-warn"><svg class="ic"><use href="#r-clock"/></svg>Expires in 23 days</span><a class="link">Details</a></div>
                     </div>
                   </div>
                   <div class="row" role="radio" aria-checked="false" tabindex="-1" data-code="C41E07B2956AF3D0">
@@ -459,7 +459,7 @@ button{font:inherit;color:inherit}
                     <div class="row-main">
                       <div class="r1"><span class="name">Ana Beatriz Souza</span><span class="badge">ICP-Brasil A1</span></div>
                       <div class="r2">CPF •••.456.789-•• · AC Certisign RFB G5</div>
-                      <div class="r3"><span class="loc"><svg class="ic"><use href="#r-desktop"/></svg><span>Neste computador</span></span><span class="sep">·</span><span class="v">Válido até 14/03/2027</span></div>
+                      <div class="r3"><span class="loc"><svg class="ic"><use href="#r-desktop"/></svg><span>On this computer</span></span><span class="sep">·</span><span class="v">Valid until 14 Mar 2027</span></div>
                     </div>
                   </div>
                   <div class="row" role="radio" aria-checked="false" tabindex="-1" data-code="2B90E6D17A4C38F5">
@@ -467,16 +467,16 @@ button{font:inherit;color:inherit}
                     <div class="row-main">
                       <div class="r1"><span class="name">Clinica Souza Imagem Ltda</span><span class="badge">ICP-Brasil A1</span></div>
                       <div class="r2">CNPJ 12.345.678/0001-90 · AC Certisign RFB G5</div>
-                      <div class="r3"><span class="loc"><svg class="ic"><use href="#r-desktop"/></svg><span>Neste computador</span></span><span class="sep">·</span><span class="v t-danger"><svg class="ic"><use href="#r-clock"/></svg>Vence em 5 dias</span></div>
+                      <div class="r3"><span class="loc"><svg class="ic"><use href="#r-desktop"/></svg><span>On this computer</span></span><span class="sep">·</span><span class="v t-danger"><svg class="ic"><use href="#r-clock"/></svg>Expires in 5 days</span></div>
                     </div>
                   </div>
-                  <div class="row-compact"><svg class="ic"><use href="#r-caret-right"/></svg>Não podem assinar (1)</div>
+                  <div class="row-compact"><svg class="ic"><use href="#r-caret-right"/></svg>Can't sign (1)</div>
                 </div>
               </div>
             </div>
             <div class="c-foot">
-              <span class="hint">O <span class="os-name">Windows</span> vai pedir o PIN numa janela própria.</span>
-              <div class="btns"><button type="button" class="btn">Cancelar</button><button type="button" class="btn primary" id="main-sign">Assinar</button></div>
+              <span class="hint"><span class="os-name">Windows</span> will ask for your PIN in its own window.</span>
+              <div class="btns"><button type="button" class="btn">Cancel</button><button type="button" class="btn primary" id="main-sign">Sign</button></div>
             </div>
           </div>
         </div>
@@ -491,33 +491,33 @@ button{font:inherit;color:inherit}
         </figcaption>
         <div class="stage" data-w="480" data-h="632">
           <div class="win confirm">
-            <div class="titlebar">Assinar para app.diagnos.health — WebeSign<svg class="tb-x"><use href="#r-x"/></svg></div>
+            <div class="titlebar">Sign for app.diagnos.health — WebeSign<svg class="tb-x"><use href="#r-x"/></svg></div>
             <div class="c-head">
               <div class="c-eyebrow">
-                <span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Pedido de assinatura · pelo Firefox</span>
-                <span class="chip chip-success"><svg class="ic"><use href="#f-check-circle"/></svg>Site com permissão</span>
+                <span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Signature request · via Firefox</span>
+                <span class="chip chip-success"><svg class="ic"><use href="#f-check-circle"/></svg>Allowed site</span>
               </div>
               <div class="c-origin"><span class="o-dim">https://app.</span>diagnos.health</div>
-              <p class="c-asks">quer que você assine um documento.</p>
+              <p class="c-asks">wants you to sign a document.</p>
             </div>
             <div class="c-body">
               <div class="card code-card">
                 <div class="idc" data-code="E3B0C44298FC1C14"></div>
                 <div class="code-main">
-                  <div class="code-label">Código de conferência <span class="badge">SHA-256</span></div>
+                  <div class="code-label">Verification code <span class="badge">SHA-256</span></div>
                   <div class="code">E3B0 C442 98FC 1C14</div>
-                  <div class="code-help">Confira se o site mostra o mesmo código.</div>
+                  <div class="code-help">Check that the site shows the same code.</div>
                 </div>
               </div>
               <div class="group">
-                <div class="list-label">Assinar com</div>
+                <div class="list-label">Sign with</div>
                 <div class="list">
                   <div class="row sel">
                     <span class="radio on"></span>
                     <div class="row-main">
                       <div class="r1"><span class="name">Ana Beatriz Souza</span><span class="badge">ICP-Brasil A3</span></div>
                       <div class="r2">CPF •••.456.789-•• · AC Certisign RFB G5</div>
-                      <div class="r3"><span class="loc"><svg class="ic"><use href="#r-usb"/></svg><span>Token SafeNet eToken 5110 · pelo driver</span></span><span class="sep">·</span><span class="v">Válido até 22/10/2029</span></div>
+                      <div class="r3"><span class="loc"><svg class="ic"><use href="#r-usb"/></svg><span>Token SafeNet eToken 5110 · via driver</span></span><span class="sep">·</span><span class="v">Valid until 22 Oct 2029</span></div>
                     </div>
                   </div>
                   <div class="row">
@@ -525,20 +525,20 @@ button{font:inherit;color:inherit}
                     <div class="row-main">
                       <div class="r1"><span class="name">Ana Beatriz Souza</span><span class="badge">ICP-Brasil A1</span></div>
                       <div class="r2">CPF •••.456.789-•• · AC Certisign RFB G5</div>
-                      <div class="r3"><span class="loc"><svg class="ic"><use href="#r-desktop"/></svg><span>Neste computador</span></span><span class="sep">·</span><span class="v">Válido até 14/03/2027</span></div>
+                      <div class="r3"><span class="loc"><svg class="ic"><use href="#r-desktop"/></svg><span>On this computer</span></span><span class="sep">·</span><span class="v">Valid until 14 Mar 2027</span></div>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="pin">
-                <div class="pin-top"><label>PIN do token</label><span>4 a 16 caracteres</span></div>
-                <div class="field err focus"><span class="dots">••••</span><span class="caret"></span><button type="button" class="icon-btn" aria-label="Mostrar PIN"><svg class="ic"><use href="#r-eye"/></svg></button></div>
-                <div class="msg danger"><svg class="ic"><use href="#f-x-circle"/></svg>PIN incorreto. Última tentativa: se errar de novo, o token bloqueia.</div>
+                <div class="pin-top"><label>Token PIN</label><span>4 to 16 characters</span></div>
+                <div class="field err focus"><span class="dots">••••</span><span class="caret"></span><button type="button" class="icon-btn" aria-label="Show PIN"><svg class="ic"><use href="#r-eye"/></svg></button></div>
+                <div class="msg danger"><svg class="ic"><use href="#f-x-circle"/></svg>Incorrect PIN. Last attempt: one more mistake locks the token.</div>
               </div>
             </div>
             <div class="c-foot">
               <span class="hint"></span>
-              <div class="btns"><button type="button" class="btn">Cancelar</button><button type="button" class="btn primary">Assinar</button></div>
+              <div class="btns"><button type="button" class="btn">Cancel</button><button type="button" class="btn primary">Sign</button></div>
             </div>
           </div>
         </div>
@@ -552,32 +552,32 @@ button{font:inherit;color:inherit}
         </figcaption>
         <div class="stage" data-w="480" data-h="632">
           <div class="win confirm">
-            <div class="titlebar">Assinar para app.diagnos.health — WebeSign<svg class="tb-x"><use href="#r-x"/></svg></div>
+            <div class="titlebar">Sign for app.diagnos.health — WebeSign<svg class="tb-x"><use href="#r-x"/></svg></div>
             <div class="c-head">
               <div class="c-eyebrow">
-                <span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Pedido de assinatura · pelo Edge</span>
-                <span class="chip chip-success"><svg class="ic"><use href="#f-check-circle"/></svg>Site com permissão</span>
+                <span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Signature request · via Edge</span>
+                <span class="chip chip-success"><svg class="ic"><use href="#f-check-circle"/></svg>Allowed site</span>
               </div>
               <div class="c-origin"><span class="o-dim">https://app.</span>diagnos.health</div>
-              <p class="c-asks">quer que você assine um documento.</p>
+              <p class="c-asks">wants you to sign a document.</p>
             </div>
             <div class="c-body">
               <div class="group">
-                <div class="list-label">Assinar com</div>
+                <div class="list-label">Sign with</div>
                 <div class="list">
                   <div class="empty">
                     <svg class="ic"><use href="#r-certificate"/></svg>
-                    <b>Nenhum certificado encontrado</b>
-                    <p>Conecte o token ou insira o cartão no leitor. A lista atualiza sozinha.</p>
+                    <b>No certificates found</b>
+                    <p>Plug in your token or insert your card. The list updates by itself.</p>
                   </div>
                   <div class="possible" style="border-top:1px solid var(--ws-border)">
                     <span class="bubble"><svg class="ic"><use href="#r-usb"/></svg></span>
                     <div>
-                      <b>SafeNet eToken 5110 conectado</b>
-                      <p>Nenhum certificado apareceu neste token. Para usá-lo, instale o SafeNet Authentication Client.</p>
+                      <b>SafeNet eToken 5110 connected</b>
+                      <p>No certificate showed up on this token. To use it, install SafeNet Authentication Client.</p>
                       <div class="acts">
-                        <button type="button" class="btn md"><svg class="ic"><use href="#r-download-simple"/></svg>Baixar para <span class="os-name">Windows</span><svg class="ic"><use href="#r-arrow-square-out"/></svg></button>
-                        <button type="button" class="btn md ghost"><svg class="ic"><use href="#r-arrow-clockwise"/></svg>Já instalei, procurar de novo</button>
+                        <button type="button" class="btn md"><svg class="ic"><use href="#r-download-simple"/></svg>Download for <span class="os-name">Windows</span><svg class="ic"><use href="#r-arrow-square-out"/></svg></button>
+                        <button type="button" class="btn md ghost"><svg class="ic"><use href="#r-arrow-clockwise"/></svg>I installed it, scan again</button>
                       </div>
                     </div>
                   </div>
@@ -585,8 +585,8 @@ button{font:inherit;color:inherit}
               </div>
             </div>
             <div class="c-foot">
-              <span class="hint"><a class="link" style="display:inline-flex;align-items:center;gap:6px"><svg class="ic"><use href="#r-stethoscope"/></svg>Abrir diagnóstico</a></span>
-              <div class="btns"><button type="button" class="btn">Cancelar</button><button type="button" class="btn primary is-disabled" aria-disabled="true">Assinar</button></div>
+              <span class="hint"><a class="link" style="display:inline-flex;align-items:center;gap:6px"><svg class="ic"><use href="#r-stethoscope"/></svg>Open diagnostics</a></span>
+              <div class="btns"><button type="button" class="btn">Cancel</button><button type="button" class="btn primary is-disabled" aria-disabled="true">Sign</button></div>
             </div>
           </div>
         </div>
@@ -600,46 +600,46 @@ button{font:inherit;color:inherit}
         </figcaption>
         <div class="stage" data-w="480" data-h="632">
           <div class="win confirm">
-            <div class="titlebar">Escolher certificado para app.diagnos.health — WebeSign<svg class="tb-x"><use href="#r-x"/></svg></div>
+            <div class="titlebar">Choose certificate for app.diagnos.health — WebeSign<svg class="tb-x"><use href="#r-x"/></svg></div>
             <div class="c-head">
               <div class="c-eyebrow">
-                <span class="lead"><svg class="ic"><use href="#r-certificate"/></svg>Pedido de certificado · pelo Chrome</span>
-                <span class="chip chip-neutral" title="Primeira vez que este site pede algo neste computador"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#f-info"/></svg>Site novo</span>
+                <span class="lead"><svg class="ic"><use href="#r-certificate"/></svg>Certificate request · via Chrome</span>
+                <span class="chip chip-neutral" title="First time this site asks for anything on this computer"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#f-info"/></svg>New site</span>
               </div>
               <div class="c-origin"><span class="o-dim">https://app.</span>diagnos.health</div>
-              <p class="c-asks">quer saber com qual certificado você vai assinar.</p>
+              <p class="c-asks">wants to know which certificate you will sign with.</p>
             </div>
             <div class="c-body">
-              <div class="callout callout-info"><svg class="ic"><use href="#f-info"/></svg><span>O site vai receber nome, tipo, emissor e validade do certificado escolhido. Nada é assinado agora.</span></div>
+              <div class="callout callout-info"><svg class="ic"><use href="#f-info"/></svg><span>The site will receive the name, type, issuer and validity of the chosen certificate. Nothing is signed now.</span></div>
               <div class="group">
-                <div class="list-label">Escolha o certificado</div>
+                <div class="list-label">Choose a certificate</div>
                 <div class="list">
                   <div class="row sel">
                     <span class="radio on"></span>
                     <div class="row-main">
                       <div class="r1"><span class="name">Marta Sofia Carvalho</span><span class="badge">Cartão de Cidadão</span></div>
-                      <div class="r2">Documento •••••123 · EC de Assinatura Digital Qualificada do Cartão de Cidadão 0017</div>
-                      <div class="r3"><span class="loc"><svg class="ic"><use href="#r-identification-card"/></svg><span>Cartão no leitor</span></span><span class="sep">·</span><span class="v">Válido até 22/06/2030</span><a class="link">Detalhes</a></div>
+                      <div class="r2">ID •••••123 · EC de Assinatura Digital Qualificada do Cartão de Cidadão 0017</div>
+                      <div class="r3"><span class="loc"><svg class="ic"><use href="#r-identification-card"/></svg><span>Card in reader</span></span><span class="sep">·</span><span class="v">Valid until 22 Jun 2030</span><a class="link">Details</a></div>
                     </div>
                   </div>
                   <div class="row">
                     <span class="radio"></span>
                     <div class="row-main">
-                      <div class="r1"><span class="name">Marta Sofia Carvalho</span><span class="badge">Qualificado eIDAS</span></div>
+                      <div class="r1"><span class="name">Marta Sofia Carvalho</span><span class="badge">Qualified eIDAS</span></div>
                       <div class="r2">Multicert CA Qualificada 005</div>
-                      <div class="r3"><span class="loc"><svg class="ic"><use href="#r-usb"/></svg><span>Token ou cartão</span></span><span class="sep">·</span><span class="v t-warn"><svg class="ic"><use href="#r-clock"/></svg>Vence em 12 dias</span></div>
+                      <div class="r3"><span class="loc"><svg class="ic"><use href="#r-usb"/></svg><span>Token or card</span></span><span class="sep">·</span><span class="v t-warn"><svg class="ic"><use href="#r-clock"/></svg>Expires in 12 days</span></div>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="consent">
                 <span class="check" role="checkbox" aria-checked="false"></span>
-                <div><b>Lembrar este site neste computador</b><span>Ele poderá saber qual certificado você usa sem perguntar. Cada assinatura continua pedindo sua confirmação.</span></div>
+                <div><b>Remember this site on this computer</b><span>It will be able to see which certificate you use without asking. Every signature still asks for your confirmation.</span></div>
               </div>
             </div>
             <div class="c-foot">
               <span class="hint"></span>
-              <div class="btns"><button type="button" class="btn">Cancelar</button><button type="button" class="btn primary">Usar este certificado</button></div>
+              <div class="btns"><button type="button" class="btn">Cancel</button><button type="button" class="btn primary">Use this certificate</button></div>
             </div>
           </div>
         </div>
@@ -652,44 +652,44 @@ button{font:inherit;color:inherit}
       <div class="mini">
         <span class="mini-tag">Deceptive subdomain · long host uses 16 px</span>
         <div class="c-head">
-          <div class="c-eyebrow"><span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Pedido de assinatura · pelo Chrome</span><span class="chip chip-neutral"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#f-info"/></svg>Site novo</span></div>
+          <div class="c-eyebrow"><span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Signature request · via Chrome</span><span class="chip chip-neutral"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#f-info"/></svg>New site</span></div>
           <div class="c-origin long"><span class="o-dim">https://diagnos.health.</span>cadastro-medico.com</div>
-          <p class="c-asks">quer que você assine um documento.</p>
+          <p class="c-asks">wants you to sign a document.</p>
         </div>
       </div>
       <div class="mini">
         <span class="mini-tag">Punycode (Cyrillic letter in place of the “a”)</span>
         <div class="c-head">
-          <div class="c-eyebrow"><span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Pedido de assinatura · pelo Chrome</span><span class="chip chip-neutral"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#f-info"/></svg>Site novo</span></div>
+          <div class="c-eyebrow"><span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Signature request · via Chrome</span><span class="chip chip-neutral"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#f-info"/></svg>New site</span></div>
           <div class="c-origin"><span class="o-dim">https://</span>xn--dignos-4nf.health</div>
-          <p class="c-asks">quer que você assine um documento.</p>
-          <div class="c-alert"><svg class="ic"><use href="#f-warning"/></svg><div>Endereço com caracteres especiais. Confira letra por letra.<small>Aparece como diаgnos.health</small></div></div>
+          <p class="c-asks">wants you to sign a document.</p>
+          <div class="c-alert"><svg class="ic"><use href="#f-warning"/></svg><div>Address with special characters. Check it letter by letter.<small>Displays as diаgnos.health</small></div></div>
         </div>
       </div>
       <div class="mini">
         <span class="mini-tag">Local network IP · port visible</span>
         <div class="c-head">
-          <div class="c-eyebrow"><span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Pedido de assinatura · pelo Edge</span><span class="chip chip-neutral"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#f-info"/></svg>Site novo</span></div>
+          <div class="c-eyebrow"><span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Signature request · via Edge</span><span class="chip chip-neutral"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#f-info"/></svg>New site</span></div>
           <div class="c-origin"><span class="o-dim">https://</span>192.168.0.20<span class="o-dim">:8443</span></div>
-          <p class="c-asks">quer que você assine um documento.</p>
-          <div class="c-alert"><svg class="ic"><use href="#f-warning"/></svg><div>Endereço numérico da rede local</div></div>
+          <p class="c-asks">wants you to sign a document.</p>
+          <div class="c-alert"><svg class="ic"><use href="#f-warning"/></svg><div>Local network numeric address</div></div>
         </div>
       </div>
       <div class="mini">
         <span class="mini-tag">Local development site</span>
         <div class="c-head">
-          <div class="c-eyebrow"><span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Pedido de assinatura · pelo Chrome</span><span class="chip chip-success"><svg class="ic"><use href="#f-check-circle"/></svg>Site com permissão</span></div>
+          <div class="c-eyebrow"><span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Signature request · via Chrome</span><span class="chip chip-success"><svg class="ic"><use href="#f-check-circle"/></svg>Allowed site</span></div>
           <div class="c-origin"><span class="o-dim">http://</span>localhost<span class="o-dim">:5173</span></div>
-          <p class="c-asks">quer que você assine um documento.</p>
-          <div class="c-alert"><svg class="ic"><use href="#r-terminal-window"/></svg><div>Site local de desenvolvimento</div></div>
+          <p class="c-asks">wants you to sign a document.</p>
+          <div class="c-alert"><svg class="ic"><use href="#r-terminal-window"/></svg><div>Local development site</div></div>
         </div>
       </div>
       <div class="mini">
         <span class="mini-tag">Non-local http · blocked (should never reach the window)</span>
         <div class="c-head">
-          <div class="c-eyebrow"><span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Pedido de assinatura · pelo Chrome</span></div>
-          <div class="c-origin"><span class="o-dim">http://laudos.</span>exemplo.com</div>
-          <div class="c-alert danger"><svg class="ic"><use href="#f-x-circle"/></svg><div>Este site não usa conexão segura (https). Por segurança, o WebeSign não assina para ele.</div></div>
+          <div class="c-eyebrow"><span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Signature request · via Chrome</span></div>
+          <div class="c-origin"><span class="o-dim">http://reports.</span>example.com</div>
+          <div class="c-alert danger"><svg class="ic"><use href="#f-x-circle"/></svg><div>This site doesn't use a secure connection (https). For your safety, WebeSign won't sign for it.</div></div>
         </div>
       </div>
     </div>
@@ -700,37 +700,37 @@ button{font:inherit;color:inherit}
       <div class="mini">
         <span class="mini-tag">0–600 ms · arming (clicks and keys ignored, except Esc)</span>
         <div class="c-foot">
-          <span class="hint">O <span class="os-name">Windows</span> vai pedir o PIN numa janela própria.</span>
-          <div class="btns"><button type="button" class="btn">Cancelar</button><button type="button" class="btn primary is-disabled" aria-disabled="true">Assinar</button></div>
+          <span class="hint"><span class="os-name">Windows</span> will ask for your PIN in its own window.</span>
+          <div class="btns"><button type="button" class="btn">Cancel</button><button type="button" class="btn primary is-disabled" aria-disabled="true">Sign</button></div>
         </div>
       </div>
       <div class="mini">
         <span class="mini-tag">Signing with the system key</span>
         <div class="c-foot">
-          <span class="hint"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#r-password"/></svg>Digite o PIN na janela do <span class="os-name">Windows</span>.</span>
-          <div class="btns"><button type="button" class="btn is-disabled" aria-disabled="true">Aguarde…</button><button type="button" class="btn primary"><span class="spin"></span>Assinando…</button></div>
+          <span class="hint"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#r-password"/></svg>Enter your PIN in the <span class="os-name">Windows</span> window.</span>
+          <div class="btns"><button type="button" class="btn is-disabled" aria-disabled="true">Please wait…</button><button type="button" class="btn primary"><span class="spin"></span>Signing…</button></div>
         </div>
       </div>
       <div class="mini">
         <span class="mini-tag">Success · closes by itself</span>
         <div class="mini-success">
           <svg class="ic"><use href="#f-check-circle"/></svg>
-          <b>Assinado</b>
-          <span>A assinatura foi enviada para app.diagnos.health.</span>
+          <b>Signed</b>
+          <span>The signature was sent to app.diagnos.health.</span>
         </div>
       </div>
       <div class="mini">
         <span class="mini-tag">Reader keypad (PIN pad)</span>
         <div class="c-foot">
-          <span class="hint"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#r-dots-nine"/></svg>Digite o PIN no teclado do leitor.</span>
-          <div class="btns"><button type="button" class="btn is-disabled" aria-disabled="true">Aguarde…</button><button type="button" class="btn primary"><span class="spin"></span>Assinando…</button></div>
+          <span class="hint"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#r-dots-nine"/></svg>Enter your PIN on the reader's keypad.</span>
+          <div class="btns"><button type="button" class="btn is-disabled" aria-disabled="true">Please wait…</button><button type="button" class="btn primary"><span class="spin"></span>Signing…</button></div>
         </div>
       </div>
     </div>
   </section>
 
   <!-- ===================== DIAGNOSTICS ===================== -->
-  <section class="sec" id="diagnostico">
+  <section class="sec" id="diagnostics">
     <div class="sec-head">
       <div>
         <h2>Diagnostics window</h2>
@@ -740,83 +740,83 @@ button{font:inherit;color:inherit}
     <figure class="shot" style="max-width:760px">
       <div class="stage" data-w="760" data-h="572">
         <div class="win diag" id="mock-diag">
-          <div class="titlebar">Diagnóstico — WebeSign<svg class="tb-x"><use href="#r-x"/></svg></div>
+          <div class="titlebar">Diagnostics — WebeSign<svg class="tb-x"><use href="#r-x"/></svg></div>
           <div class="d-wrap">
             <aside class="d-side">
               <div class="d-brand"><span class="mark"><svg class="ic"><use href="#f-seal-check"/></svg></span><div><b>WebeSign</b><span>1.4.0</span></div></div>
-              <span class="chip chip-warning"><svg class="ic"><use href="#f-warning"/></svg>Precisa de atenção</span>
-              <nav class="d-nav" role="tablist" aria-orientation="vertical" aria-label="Diagnóstico">
-                <button type="button" class="d-tab" role="tab" aria-selected="true" aria-controls="tab-nav" id="t-nav"><svg class="ic"><use href="#r-browsers"/></svg>Navegadores<svg class="ic st warn" aria-label="Precisa de atenção"><use href="#f-warning"/></svg></button>
-                <button type="button" class="d-tab" role="tab" aria-selected="false" aria-controls="tab-dev" id="t-dev"><svg class="ic"><use href="#r-usb"/></svg>Dispositivos<svg class="ic st warn" aria-label="Precisa de atenção"><use href="#f-warning"/></svg></button>
-                <button type="button" class="d-tab" role="tab" aria-selected="false" aria-controls="tab-cert" id="t-cert"><svg class="ic"><use href="#r-certificate"/></svg>Certificados<svg class="ic st warn" aria-label="Precisa de atenção"><use href="#f-warning"/></svg></button>
-                <button type="button" class="d-tab" role="tab" aria-selected="false" aria-controls="tab-help" id="t-help"><svg class="ic"><use href="#r-question"/></svg>Ajuda</button>
+              <span class="chip chip-warning"><svg class="ic"><use href="#f-warning"/></svg>Needs attention</span>
+              <nav class="d-nav" role="tablist" aria-orientation="vertical" aria-label="Diagnostics">
+                <button type="button" class="d-tab" role="tab" aria-selected="true" aria-controls="tab-nav" id="t-nav"><svg class="ic"><use href="#r-browsers"/></svg>Browsers<svg class="ic st warn" aria-label="Needs attention"><use href="#f-warning"/></svg></button>
+                <button type="button" class="d-tab" role="tab" aria-selected="false" aria-controls="tab-dev" id="t-dev"><svg class="ic"><use href="#r-usb"/></svg>Devices<svg class="ic st warn" aria-label="Needs attention"><use href="#f-warning"/></svg></button>
+                <button type="button" class="d-tab" role="tab" aria-selected="false" aria-controls="tab-cert" id="t-cert"><svg class="ic"><use href="#r-certificate"/></svg>Certificates<svg class="ic st warn" aria-label="Needs attention"><use href="#f-warning"/></svg></button>
+                <button type="button" class="d-tab" role="tab" aria-selected="false" aria-controls="tab-help" id="t-help"><svg class="ic"><use href="#r-question"/></svg>Help</button>
               </nav>
               <div class="spacer"></div>
-              <button type="button" class="btn md block"><svg class="ic"><use href="#r-copy"/></svg>Copiar diagnóstico</button>
+              <button type="button" class="btn md block"><svg class="ic"><use href="#r-copy"/></svg>Copy diagnostics</button>
             </aside>
             <div class="d-main">
               <!-- Browsers -->
               <div role="tabpanel" id="tab-nav" aria-labelledby="t-nav">
-                <div class="d-head"><div><h3>Navegadores</h3><p>Onde a extensão está instalada e conectada ao app.</p></div><button type="button" class="btn md"><svg class="ic"><use href="#r-arrow-clockwise"/></svg>Procurar de novo</button></div>
-                <div class="d-sec">Navegadores neste computador</div>
+                <div class="d-head"><div><h3>Browsers</h3><p>Where the extension is installed and connected to the app.</p></div><button type="button" class="btn md"><svg class="ic"><use href="#r-arrow-clockwise"/></svg>Scan again</button></div>
+                <div class="d-sec">Browsers on this computer</div>
                 <div class="d-list">
-                  <div class="d-row"><svg class="ic"><use href="#r-browser"/></svg><div class="main"><div class="t">Google Chrome <span class="mono">129</span></div><div class="s"><svg class="ic t-success"><use href="#f-check-circle"/></svg>Extensão 1.4.2 conectada · há 3 min</div></div></div>
-                  <div class="d-row"><svg class="ic"><use href="#r-browser"/></svg><div class="main"><div class="t">Mozilla Firefox <span class="mono">131</span></div><div class="s"><svg class="ic t-success"><use href="#f-check-circle"/></svg>Extensão 1.4.2 conectada · ontem, 17:40</div></div></div>
-                  <div class="d-row"><svg class="ic"><use href="#r-browser"/></svg><div class="main"><div class="t">Microsoft Edge <span class="mono">129</span></div><div class="s"><svg class="ic t-warn"><use href="#f-warning"/></svg>Extensão não detectada</div><div class="x">Se o Edge mostrar “Nova extensão adicionada”, clique em Ativar.</div></div><button type="button" class="btn sm">Instalar extensão<svg class="ic"><use href="#r-arrow-square-out"/></svg></button></div>
+                  <div class="d-row"><svg class="ic"><use href="#r-browser"/></svg><div class="main"><div class="t">Google Chrome <span class="mono">129</span></div><div class="s"><svg class="ic t-success"><use href="#f-check-circle"/></svg>Extension 1.4.2 connected · 3 min ago</div></div></div>
+                  <div class="d-row"><svg class="ic"><use href="#r-browser"/></svg><div class="main"><div class="t">Mozilla Firefox <span class="mono">131</span></div><div class="s"><svg class="ic t-success"><use href="#f-check-circle"/></svg>Extension 1.4.2 connected · yesterday, 17:40</div></div></div>
+                  <div class="d-row"><svg class="ic"><use href="#r-browser"/></svg><div class="main"><div class="t">Microsoft Edge <span class="mono">129</span></div><div class="s"><svg class="ic t-warn"><use href="#f-warning"/></svg>Extension not detected</div><div class="x">If Edge shows “New extension added”, click Turn on.</div></div><button type="button" class="btn sm">Install extension<svg class="ic"><use href="#r-arrow-square-out"/></svg></button></div>
                 </div>
-                <div class="d-sec"><svg class="ic"><use href="#r-globe"/></svg>Sites com permissão</div>
+                <div class="d-sec"><svg class="ic"><use href="#r-globe"/></svg>Allowed sites</div>
                 <div class="d-list">
-                  <div class="d-row"><div class="main"><div class="t"><span><span class="o-dim">https://app.</span>diagnos.health</span></div><div class="s">Lembrado em 12/09/2026 · último uso hoje, 14:02</div></div><button type="button" class="btn sm">Revogar</button></div>
-                  <div class="d-row"><div class="main"><div class="t"><span><span class="o-dim">https://laudos.</span>clinicasaolucas.med.br</span></div><div class="s">Lembrado em 03/07/2026 · último uso 28/08/2026</div></div><button type="button" class="btn sm">Revogar</button></div>
+                  <div class="d-row"><div class="main"><div class="t"><span><span class="o-dim">https://app.</span>diagnos.health</span></div><div class="s">Remembered on 12 Sep 2026 · last used today, 14:02</div></div><button type="button" class="btn sm">Revoke</button></div>
+                  <div class="d-row"><div class="main"><div class="t"><span><span class="o-dim">https://laudos.</span>clinicasaolucas.med.br</span></div><div class="s">Remembered on 3 Jul 2026 · last used 28 Aug 2026</div></div><button type="button" class="btn sm">Revoke</button></div>
                 </div>
               </div>
               <!-- Devices -->
               <div role="tabpanel" id="tab-dev" aria-labelledby="t-dev" hidden>
-                <div class="d-head"><div><h3>Dispositivos</h3><p>Tokens, cartões e drivers que o WebeSign enxerga agora.</p></div><button type="button" class="btn md"><svg class="ic"><use href="#r-arrow-clockwise"/></svg>Procurar de novo</button></div>
-                <div class="d-sec">Tokens e cartões</div>
+                <div class="d-head"><div><h3>Devices</h3><p>Tokens, cards and drivers WebeSign can see right now.</p></div><button type="button" class="btn md"><svg class="ic"><use href="#r-arrow-clockwise"/></svg>Scan again</button></div>
+                <div class="d-sec">Tokens and cards</div>
                 <div class="d-list">
-                  <div class="d-row"><svg class="ic"><use href="#r-usb"/></svg><div class="main"><div class="t">SafeNet eToken 5110 <span class="mono">USB 0529:0620</span></div><div class="s"><svg class="ic t-warn"><use href="#f-warning"/></svg>Sem certificados · instale o SafeNet Authentication Client</div></div><button type="button" class="btn sm"><svg class="ic"><use href="#r-download-simple"/></svg>Baixar para Windows</button></div>
+                  <div class="d-row"><svg class="ic"><use href="#r-usb"/></svg><div class="main"><div class="t">SafeNet eToken 5110 <span class="mono">USB 0529:0620</span></div><div class="s"><svg class="ic t-warn"><use href="#f-warning"/></svg>No certificates · install SafeNet Authentication Client</div></div><button type="button" class="btn sm"><svg class="ic"><use href="#r-download-simple"/></svg>Download for Windows</button></div>
                 </div>
-                <div class="d-sec">Leitores de cartão</div>
+                <div class="d-sec">Card readers</div>
                 <div class="d-list">
-                  <div class="d-row"><svg class="ic"><use href="#r-identification-card"/></svg><div class="main"><div class="t">Identiv uTrust 2700 R <span class="mono">USB 04E6:5810</span></div><div class="s"><svg class="ic t-success"><use href="#f-check-circle"/></svg>Cartão: G&amp;D StarSign · 1 certificado</div><div class="x mono">ATR 3B:D5:18:FF:81:91:FE:1F:C3:80:73:C8:21:10:0A</div></div><button type="button" class="icon-btn" aria-label="Copiar ATR"><svg class="ic"><use href="#r-copy"/></svg></button></div>
+                  <div class="d-row"><svg class="ic"><use href="#r-identification-card"/></svg><div class="main"><div class="t">Identiv uTrust 2700 R <span class="mono">USB 04E6:5810</span></div><div class="s"><svg class="ic t-success"><use href="#f-check-circle"/></svg>Card: G&amp;D StarSign · 1 certificate</div><div class="x mono">ATR 3B:D5:18:FF:81:91:FE:1F:C3:80:73:C8:21:10:0A</div></div><button type="button" class="icon-btn" aria-label="Copy ATR"><svg class="ic"><use href="#r-copy"/></svg></button></div>
                 </div>
-                <div class="d-sec">Drivers de token</div>
+                <div class="d-sec">Token drivers</div>
                 <div class="d-list">
-                  <div class="d-row"><svg class="ic"><use href="#r-plug"/></svg><div class="main"><div class="t">OpenSC PKCS#11</div><div class="s"><svg class="ic t-success"><use href="#f-check-circle"/></svg>Carregado · 1 token · Encontrado automaticamente</div><div class="x mono">%ProgramFiles%\OpenSC Project\OpenSC\pkcs11\opensc-pkcs11.dll</div></div></div>
-                  <div class="d-row"><svg class="ic"><use href="#r-plug"/></svg><div class="main"><div class="t">wdpkcs_icp.dll</div><div class="s"><svg class="ic t-danger"><use href="#f-x-circle"/></svg>Não carregou: arquivo não encontrado · Adicionado por você</div><div class="x mono">%USERPROFILE%\Downloads\wdpkcs_icp.dll</div></div><button type="button" class="btn sm">Remover</button></div>
+                  <div class="d-row"><svg class="ic"><use href="#r-plug"/></svg><div class="main"><div class="t">OpenSC PKCS#11</div><div class="s"><svg class="ic t-success"><use href="#f-check-circle"/></svg>Loaded · 1 token · Found automatically</div><div class="x mono">%ProgramFiles%\OpenSC Project\OpenSC\pkcs11\opensc-pkcs11.dll</div></div></div>
+                  <div class="d-row"><svg class="ic"><use href="#r-plug"/></svg><div class="main"><div class="t">wdpkcs_icp.dll</div><div class="s"><svg class="ic t-danger"><use href="#f-x-circle"/></svg>Failed to load: file not found · Added by you</div><div class="x mono">%USERPROFILE%\Downloads\wdpkcs_icp.dll</div></div><button type="button" class="btn sm">Remove</button></div>
                 </div>
-                <div class="d-actions"><button type="button" class="btn md"><svg class="ic"><use href="#r-plus"/></svg>Adicionar driver…</button><span class="note">Use só se o fabricante do token pedir.</span></div>
+                <div class="d-actions"><button type="button" class="btn md"><svg class="ic"><use href="#r-plus"/></svg>Add driver…</button><span class="note">Only use this if your token vendor tells you to.</span></div>
               </div>
               <!-- Certificates -->
               <div role="tabpanel" id="tab-cert" aria-labelledby="t-cert" hidden>
-                <div class="d-head"><div><h3>Certificados</h3><p>Todos os certificados que este computador oferece, inclusive os que não servem para assinar.</p></div></div>
-                <div class="d-actions" style="margin-top:14px"><button type="button" class="btn md"><svg class="ic"><use href="#r-file-plus"/></svg>Importar arquivo .pfx…</button><span class="note" style="flex:1;min-width:200px">O Windows importa o arquivo e guarda o certificado com segurança. Você vai precisar da senha do arquivo.</span></div>
-                <div class="d-sec">No Windows (3)</div>
+                <div class="d-head"><div><h3>Certificates</h3><p>Every certificate this computer offers, including the ones that can't sign.</p></div></div>
+                <div class="d-actions" style="margin-top:14px"><button type="button" class="btn md"><svg class="ic"><use href="#r-file-plus"/></svg>Import .pfx file…</button><span class="note" style="flex:1;min-width:200px">Windows imports the file and stores the certificate securely. You'll need the file's password.</span></div>
+                <div class="d-sec">In Windows (3)</div>
                 <div class="d-list">
-                  <div class="d-row"><svg class="ic"><use href="#r-identification-card"/></svg><div class="main"><div class="t">Ana Beatriz Souza <span class="badge">ICP-Brasil A3</span></div><div class="s">CPF •••.456.789-•• · AC SOLUTI Multipla v5</div><div class="s"><span class="t-warn" style="display:inline-flex;align-items:center;gap:4px"><svg class="ic"><use href="#r-clock"/></svg>Vence em 23 dias</span>· Cartão no leitor · também pelo driver</div></div><a class="link" style="font-size:12px">Detalhes</a></div>
-                  <div class="d-row"><svg class="ic"><use href="#r-desktop"/></svg><div class="main"><div class="t">Ana Beatriz Souza <span class="badge">ICP-Brasil A1</span></div><div class="s">CPF •••.456.789-•• · AC Certisign RFB G5</div><div class="s">Válido até 14/03/2027 · Neste computador</div></div><a class="link" style="font-size:12px">Detalhes</a></div>
-                  <div class="d-row"><svg class="ic"><use href="#r-desktop"/></svg><div class="main"><div class="t">Clinica Souza Imagem Ltda <span class="badge">ICP-Brasil A1</span></div><div class="s">CNPJ 12.345.678/0001-90 · AC Certisign RFB G5</div><div class="s"><span class="t-danger" style="display:inline-flex;align-items:center;gap:4px"><svg class="ic"><use href="#r-clock"/></svg>Vence em 5 dias</span>· Neste computador</div></div><a class="link" style="font-size:12px">Detalhes</a></div>
+                  <div class="d-row"><svg class="ic"><use href="#r-identification-card"/></svg><div class="main"><div class="t">Ana Beatriz Souza <span class="badge">ICP-Brasil A3</span></div><div class="s">CPF •••.456.789-•• · AC SOLUTI Multipla v5</div><div class="s"><span class="t-warn" style="display:inline-flex;align-items:center;gap:4px"><svg class="ic"><use href="#r-clock"/></svg>Expires in 23 days</span>· Card in reader · also via driver</div></div><a class="link" style="font-size:12px">Details</a></div>
+                  <div class="d-row"><svg class="ic"><use href="#r-desktop"/></svg><div class="main"><div class="t">Ana Beatriz Souza <span class="badge">ICP-Brasil A1</span></div><div class="s">CPF •••.456.789-•• · AC Certisign RFB G5</div><div class="s">Valid until 14 Mar 2027 · On this computer</div></div><a class="link" style="font-size:12px">Details</a></div>
+                  <div class="d-row"><svg class="ic"><use href="#r-desktop"/></svg><div class="main"><div class="t">Clinica Souza Imagem Ltda <span class="badge">ICP-Brasil A1</span></div><div class="s">CNPJ 12.345.678/0001-90 · AC Certisign RFB G5</div><div class="s"><span class="t-danger" style="display:inline-flex;align-items:center;gap:4px"><svg class="ic"><use href="#r-clock"/></svg>Expires in 5 days</span>· On this computer</div></div><a class="link" style="font-size:12px">Details</a></div>
                 </div>
-                <div class="d-sec"><svg class="ic"><use href="#r-caret-down"/></svg>Não servem para assinar (2)</div>
+                <div class="d-sec"><svg class="ic"><use href="#r-caret-down"/></svg>Can't sign (2)</div>
                 <div class="d-list">
-                  <div class="d-row dis"><svg class="ic"><use href="#r-identification-card"/></svg><div class="main"><div class="t">Ana Beatriz Souza <span class="badge">ICP-Brasil A3</span></div><div class="s"><svg class="ic t-danger"><use href="#f-x-circle"/></svg>Venceu em 10/05/2026 · AC SOLUTI Multipla v5</div></div></div>
-                  <div class="d-row dis"><svg class="ic"><use href="#r-desktop"/></svg><div class="main"><div class="t">Ana B. Souza — VPN Clínica <span class="badge">Certificado</span></div><div class="s"><svg class="ic t-subtle"><use href="#r-circle-dashed"/></svg>Feito para login, não para assinatura · AC Interna Clinica Souza</div></div></div>
+                  <div class="d-row dis"><svg class="ic"><use href="#r-identification-card"/></svg><div class="main"><div class="t">Ana Beatriz Souza <span class="badge">ICP-Brasil A3</span></div><div class="s"><svg class="ic t-danger"><use href="#f-x-circle"/></svg>Expired on 10 May 2026 · AC SOLUTI Multipla v5</div></div></div>
+                  <div class="d-row dis"><svg class="ic"><use href="#r-desktop"/></svg><div class="main"><div class="t">Ana B. Souza — Clinic VPN <span class="badge">Certificate</span></div><div class="s"><svg class="ic t-subtle"><use href="#r-circle-dashed"/></svg>Made for login, not for signing · AC Interna Clinica Souza</div></div></div>
                 </div>
               </div>
               <!-- Help -->
               <div role="tabpanel" id="tab-help" aria-labelledby="t-help" hidden>
-                <div class="d-head"><div><h3>Ajuda</h3><p>Respostas rápidas e como relatar um problema.</p></div></div>
-                <div class="d-sec">Perguntas comuns</div>
+                <div class="d-head"><div><h3>Help</h3><p>Quick answers and how to report a problem.</p></div></div>
+                <div class="d-sec">Common questions</div>
                 <div class="faq">
-                  <details open><summary><svg class="ic"><use href="#r-caret-right"/></svg>Meu certificado não aparece</summary><p>Confira: o token está conectado? O driver do fabricante está instalado (veja Dispositivos)? O certificado venceu (veja Certificados)? Se é um arquivo .pfx, ele foi importado?</p></details>
-                  <details><summary><svg class="ic"><use href="#r-caret-right"/></svg>Errei o PIN / o token bloqueou</summary><p>Depois de algumas tentativas erradas, o token bloqueia para proteger você. Para desbloquear, use o PUK (código de desbloqueio que veio com o token) no programa do fabricante. Sem o PUK, procure a autoridade certificadora.</p></details>
-                  <details><summary><svg class="ic"><use href="#r-caret-right"/></svg>O que o WebeSign envia para os sites?</summary><p>Só o certificado que você escolheu e a assinatura do código de conferência. Nunca o PIN, nunca o documento.</p></details>
-                  <details><summary><svg class="ic"><use href="#r-caret-right"/></svg>Atalhos de teclado</summary><p><span class="kbd">Esc</span> cancela · <span class="kbd">↑</span> <span class="kbd">↓</span> trocam o certificado · <span class="kbd">Enter</span> no PIN assina · <span class="kbd">Ctrl</span>+<span class="kbd">1</span>…<span class="kbd">4</span> trocam de aba · <span class="kbd">F5</span> procura de novo</p></details>
+                  <details open><summary><svg class="ic"><use href="#r-caret-right"/></svg>My certificate doesn't show up</summary><p>Check: is the token plugged in? Is the vendor's driver installed (see Devices)? Has the certificate expired (see Certificates)? If it's a .pfx file, was it imported?</p></details>
+                  <details><summary><svg class="ic"><use href="#r-caret-right"/></svg>I got the PIN wrong / the token locked</summary><p>After a few wrong attempts the token locks to protect you. To unlock it, use the PUK (the unlock code that came with the token) in the vendor's software. Without the PUK, contact your certificate authority.</p></details>
+                  <details><summary><svg class="ic"><use href="#r-caret-right"/></svg>What does WebeSign send to sites?</summary><p>Only the certificate you chose and the signature of the verification code. Never your PIN, never the document.</p></details>
+                  <details><summary><svg class="ic"><use href="#r-caret-right"/></svg>Keyboard shortcuts</summary><p><span class="kbd">Esc</span> cancels · <span class="kbd">↑</span> <span class="kbd">↓</span> move between certificates · <span class="kbd">Enter</span> in the PIN signs · <span class="kbd">Ctrl</span>+<span class="kbd">1</span>…<span class="kbd">4</span> switch tabs · <span class="kbd">F5</span> scans again</p></details>
                 </div>
-                <div class="d-sec">Relatar um problema</div>
-<pre class="diag-pre" tabindex="0" aria-label="Pré-visualização do diagnóstico">WebeSign diagnostics v1
-app: 1.4.0 (msix, x86_64) · protocol 1 · locale pt-BR · scale 125%
+                <div class="d-sec">Report a problem</div>
+<pre class="diag-pre" tabindex="0" aria-label="Diagnostics preview">WebeSign diagnostics v1
+app: 1.4.0 (msix, x86_64) · protocol 1 · locale en · scale 125%
 os: Windows 11 23H2 (10.0.22631)
 render: wgpu/dx12
 browsers:
@@ -836,10 +836,10 @@ certificates:
 complement: n/a
 recent errors (last 20):
   2026-09-29T14:05Z sign PinIncorrect pkcs11 CKR_PIN_INCORRECT</pre>
-                <p class="note" style="margin:8px 0 0">Isto é exatamente o que será copiado. Não inclui nomes, CPF, sites nem números de série.</p>
-                <div class="d-actions"><button type="button" class="btn md"><svg class="ic"><use href="#r-copy"/></svg>Copiar diagnóstico</button><button type="button" class="btn md ghost">Abrir página de suporte<svg class="ic"><use href="#r-arrow-square-out"/></svg></button></div>
-                <div class="d-sec">Sobre</div>
-                <p class="note" style="margin:0">WebeSign 1.4.0 · protocolo 1 · GPL-3.0-or-later · <a class="link">Código-fonte</a> · <a class="link">Privacidade</a></p>
+                <p class="note" style="margin:8px 0 0">This is exactly what will be copied. It includes no names, ID numbers, sites or serial numbers.</p>
+                <div class="d-actions"><button type="button" class="btn md"><svg class="ic"><use href="#r-copy"/></svg>Copy diagnostics</button><button type="button" class="btn md ghost">Open support page<svg class="ic"><use href="#r-arrow-square-out"/></svg></button></div>
+                <div class="d-sec">About</div>
+                <p class="note" style="margin:0">WebeSign 1.4.0 · protocol 1 · GPL-3.0-or-later · <a class="link">Source code</a> · <a class="link">Privacy</a></p>
               </div>
             </div>
           </div>
@@ -850,12 +850,12 @@ recent errors (last 20):
     <h3 class="sub">Getting started (strip at the top of the content, first run only)</h3>
     <p>It goes away when everything turns green and the first test signature passes, or when the user hides it.</p>
     <div class="onb" style="max-width:712px">
-      <b><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#r-list-checks"/></svg>Primeiros passos</b>
-      <span><svg class="ic t-success"><use href="#f-check-circle"/></svg>App instalado</span>
-      <span><svg class="ic t-warn"><use href="#f-warning"/></svg>Extensão no navegador</span>
-      <span><svg class="ic t-success"><use href="#f-check-circle"/></svg>Certificado encontrado</span>
-      <span><svg class="ic t-subtle"><use href="#r-circle-dashed"/></svg>Teste de assinatura</span>
-      <button type="button" class="btn sm primary" style="min-width:0">Testar assinatura</button>
+      <b><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#r-list-checks"/></svg>Getting started</b>
+      <span><svg class="ic t-success"><use href="#f-check-circle"/></svg>App installed</span>
+      <span><svg class="ic t-warn"><use href="#f-warning"/></svg>Browser extension</span>
+      <span><svg class="ic t-success"><use href="#f-check-circle"/></svg>Certificate found</span>
+      <span><svg class="ic t-subtle"><use href="#r-circle-dashed"/></svg>Test signature</span>
+      <button type="button" class="btn sm primary" style="min-width:0">Test a signature</button>
     </div>
 
     <h3 class="sub">Add-on on Mac (Devices tab, App Store build only)</h3>
@@ -864,19 +864,19 @@ recent errors (last 20):
       <div class="mini">
         <span class="mini-tag">Needed and absent</span>
         <div style="padding:14px 16px;background:var(--ws-bg-canvas)">
-          <div class="callout callout-warning"><svg class="ic"><use href="#r-puzzle-piece"/></svg><div><b>Este token precisa do Complemento para Mac</b>Apps da App Store não podem usar alguns drivers de token. O Complemento WebeSign, gratuito e do mesmo projeto, faz essa ponte. Ele só funciona quando o WebeSign pede.<div style="margin-top:10px"><button type="button" class="btn md"><svg class="ic"><use href="#r-download-simple"/></svg>Baixar Complemento</button></div></div></div>
+          <div class="callout callout-warning"><svg class="ic"><use href="#r-puzzle-piece"/></svg><div><b>This token needs the Mac Add-on</b>App Store apps can't use some token drivers. The free WebeSign Add-on, from the same project, bridges that gap. It only runs when WebeSign asks for it.<div style="margin-top:10px"><button type="button" class="btn md"><svg class="ic"><use href="#r-download-simple"/></svg>Download Add-on</button></div></div></div>
         </div>
       </div>
       <div class="mini">
         <span class="mini-tag">Outdated</span>
         <div style="padding:14px 16px;background:var(--ws-bg-canvas)">
-          <div class="callout callout-warning"><svg class="ic"><use href="#f-warning"/></svg><div><b>Atualize o Complemento</b>1.1.0 instalado, precisa da 1.2.0.<div style="margin-top:10px"><button type="button" class="btn md">Atualizar Complemento</button></div></div></div>
+          <div class="callout callout-warning"><svg class="ic"><use href="#f-warning"/></svg><div><b>Update the Add-on</b>1.1.0 installed, 1.2.0 required.<div style="margin-top:10px"><button type="button" class="btn md">Update Add-on</button></div></div></div>
         </div>
       </div>
       <div class="mini">
         <span class="mini-tag">Installed and current</span>
         <div class="d-list" style="border:0;border-radius:0">
-          <div class="d-row"><svg class="ic"><use href="#r-puzzle-piece"/></svg><div class="main"><div class="t">Complemento WebeSign</div><div class="s"><svg class="ic t-success"><use href="#f-check-circle"/></svg>Complemento ativo · versão 1.2.0</div></div></div>
+          <div class="d-row"><svg class="ic"><use href="#r-puzzle-piece"/></svg><div class="main"><div class="t">WebeSign Add-on</div><div class="s"><svg class="ic t-success"><use href="#f-check-circle"/></svg>Add-on active · version 1.2.0</div></div></div>
         </div>
       </div>
     </div>
@@ -895,36 +895,36 @@ recent errors (last 20):
         <figcaption class="shot-cap"><b>All good</b><span>Host answered with an accepted version.</span></figcaption>
         <div class="popup">
           <div class="pp-head"><span class="mark sm"><svg class="ic"><use href="#f-seal-check"/></svg></span>WebeSign</div>
-          <div class="pp-state" role="status"><svg class="ic t-success"><use href="#f-check-circle"/></svg><div><b>Tudo pronto para assinar</b><p>O app WebeSign 1.4.0 está conectado a este navegador.</p></div></div>
-          <div class="pp-actions"><button type="button" class="btn primary block"><svg class="ic"><use href="#r-stethoscope"/></svg>Abrir diagnóstico</button></div>
-          <div class="pp-foot"><span>Extensão 1.4.2 · App 1.4.0</span><a class="link">Privacidade</a></div>
+          <div class="pp-state" role="status"><svg class="ic t-success"><use href="#f-check-circle"/></svg><div><b>Ready to sign</b><p>The WebeSign app 1.4.0 is connected to this browser.</p></div></div>
+          <div class="pp-actions"><button type="button" class="btn primary block"><svg class="ic"><use href="#r-stethoscope"/></svg>Open diagnostics</button></div>
+          <div class="pp-foot"><span>Extension 1.4.2 · App 1.4.0</span><a class="link">Privacy</a></div>
         </div>
       </figure>
       <figure class="shot">
         <figcaption class="shot-cap"><b>App missing (or never opened)</b><span>The download link follows the detected OS.</span></figcaption>
         <div class="popup">
           <div class="pp-head"><span class="mark sm"><svg class="ic"><use href="#f-seal-check"/></svg></span>WebeSign</div>
-          <div class="pp-state" role="status"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#r-download-simple"/></svg><div><b>Falta instalar o app WebeSign</b><p>A extensão precisa do app no computador para assinar.</p></div></div>
-          <div class="pp-actions"><button type="button" class="btn primary block">Baixar para Windows<svg class="ic"><use href="#r-arrow-square-out"/></svg></button><button type="button" class="btn ghost md">Já instalei? Ativar o app</button></div>
-          <div class="pp-foot"><span>Extensão 1.4.2</span><a class="link">Privacidade</a></div>
+          <div class="pp-state" role="status"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#r-download-simple"/></svg><div><b>The WebeSign app isn't installed</b><p>The extension needs the app on your computer to sign.</p></div></div>
+          <div class="pp-actions"><button type="button" class="btn primary block">Download for Windows<svg class="ic"><use href="#r-arrow-square-out"/></svg></button><button type="button" class="btn ghost md">Already installed? Activate the app</button></div>
+          <div class="pp-foot"><span>Extension 1.4.2</span><a class="link">Privacy</a></div>
         </div>
       </figure>
       <figure class="shot">
         <figcaption class="shot-cap"><b>App outdated</b><span>Version below the extension's MIN_APP_VERSION.</span></figcaption>
         <div class="popup">
           <div class="pp-head"><span class="mark sm"><svg class="ic"><use href="#f-seal-check"/></svg></span>WebeSign</div>
-          <div class="pp-state" role="status"><svg class="ic t-warn"><use href="#f-warning"/></svg><div><b>Atualize o app WebeSign</b><p>Você tem a versão 1.1.0. Este navegador precisa da 1.3.0 ou mais nova.</p></div></div>
-          <div class="pp-actions"><button type="button" class="btn primary block">Atualizar na Microsoft Store<svg class="ic"><use href="#r-arrow-square-out"/></svg></button></div>
-          <div class="pp-foot"><span>Extensão 1.4.2 · App 1.1.0</span><a class="link">Privacidade</a></div>
+          <div class="pp-state" role="status"><svg class="ic t-warn"><use href="#f-warning"/></svg><div><b>Update the WebeSign app</b><p>You have version 1.1.0. This browser needs 1.3.0 or newer.</p></div></div>
+          <div class="pp-actions"><button type="button" class="btn primary block">Update in Microsoft Store<svg class="ic"><use href="#r-arrow-square-out"/></svg></button></div>
+          <div class="pp-foot"><span>Extension 1.4.2 · App 1.1.0</span><a class="link">Privacy</a></div>
         </div>
       </figure>
       <figure class="shot">
         <figcaption class="shot-cap"><b>App did not respond</b><span>Host started, but did not answer within 3 s.</span></figcaption>
         <div class="popup">
           <div class="pp-head"><span class="mark sm"><svg class="ic"><use href="#f-seal-check"/></svg></span>WebeSign</div>
-          <div class="pp-state" role="status"><svg class="ic t-danger"><use href="#f-x-circle"/></svg><div><b>O app não respondeu</b><p>Tente de novo. Se continuar, reinicie o computador.</p><code>native host exited (code 1)</code></div></div>
-          <div class="pp-actions"><button type="button" class="btn primary block"><svg class="ic"><use href="#r-arrow-clockwise"/></svg>Tentar de novo</button><button type="button" class="btn ghost md">Baixar de novo</button></div>
-          <div class="pp-foot"><span>Extensão 1.4.2</span><a class="link">Privacidade</a></div>
+          <div class="pp-state" role="status"><svg class="ic t-danger"><use href="#f-x-circle"/></svg><div><b>The app didn't respond</b><p>Try again. If it keeps happening, restart your computer.</p><code>native host exited (code 1)</code></div></div>
+          <div class="pp-actions"><button type="button" class="btn primary block"><svg class="ic"><use href="#r-arrow-clockwise"/></svg>Try again</button><button type="button" class="btn ghost md">Download again</button></div>
+          <div class="pp-foot"><span>Extension 1.4.2</span><a class="link">Privacy</a></div>
         </div>
       </figure>
     </div>
@@ -943,11 +943,11 @@ recent errors (last 20):
       <div style="display:flex;flex-direction:column;gap:24px;min-width:0">
         <div class="tok-table">
           <div class="type-row"><span style="font:600 20px/26px var(--ws-font-ui)">diagnos.health</span><code>text-headline 20/26 600</code></div>
-          <div class="type-row"><span style="font:600 16px/22px var(--ws-font-ui)">Tudo pronto para assinar</span><code>text-title 16/22 600</code></div>
+          <div class="type-row"><span style="font:600 16px/22px var(--ws-font-ui)">Ready to sign</span><code>text-title 16/22 600</code></div>
           <div class="type-row"><span style="font:600 14px/20px var(--ws-font-ui)">Ana Beatriz Souza</span><code>text-body-strong 14/20 600</code></div>
-          <div class="type-row"><span style="font:500 14px/20px var(--ws-font-ui)">Assinar</span><code>text-button 14/20 500</code></div>
-          <div class="type-row"><span style="font:400 14px/20px var(--ws-font-ui)">quer que você assine um documento.</span><code>text-body 14/20 400</code></div>
-          <div class="type-row"><span style="font:500 12px/16px var(--ws-font-ui)" class="t-muted">Assinar com</span><code>text-caption 12/16 500</code></div>
+          <div class="type-row"><span style="font:500 14px/20px var(--ws-font-ui)">Sign</span><code>text-button 14/20 500</code></div>
+          <div class="type-row"><span style="font:400 14px/20px var(--ws-font-ui)">wants you to sign a document.</span><code>text-body 14/20 400</code></div>
+          <div class="type-row"><span style="font:500 12px/16px var(--ws-font-ui)" class="t-muted">Sign with</span><code>text-caption 12/16 500</code></div>
           <div class="type-row"><span style="font:400 12px/16px var(--ws-font-ui)" class="t-muted">AC SOLUTI Multipla v5</span><code>text-small 12/16 400</code></div>
           <div class="type-row"><span style="font:500 18px/24px var(--ws-font-mono);letter-spacing:.5px">7F3A 9C21 E0B4 55D8</span><code>text-code 18/24 500 mono</code></div>
           <div class="type-row"><span style="font:400 12px/16px var(--ws-font-mono)" class="t-muted">USB 0529:0620</span><code>text-mono 12/16 400 mono</code></div>
@@ -1004,7 +1004,7 @@ recent errors (last 20):
   });
 
   // Button order per platform.
-  var confirmSec = document.getElementById("confirmacao");
+  var confirmSec = document.getElementById("confirmation");
   document.querySelectorAll("#os-seg button").forEach(function(b){
     b.addEventListener("click", function(){
       var os = b.getAttribute("data-os-set");
@@ -1052,7 +1052,7 @@ recent errors (last 20):
   var list = document.getElementById("main-list");
   if (list) {
     var rows = list.querySelectorAll(".row[data-code]");
-    var details = '<a class="link">Detalhes</a>';
+    var details = '<a class="link">Details</a>';
     function select(row){
       rows.forEach(function(r){
         var on = r === row;
