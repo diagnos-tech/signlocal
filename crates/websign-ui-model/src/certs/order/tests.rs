@@ -3,7 +3,7 @@
 use websign_core::{KeyUsage, SignatureAlgorithm};
 
 use super::*;
-use crate::certs::{DisabledReason, HiddenReason, KeySource, PinMode, RowStatus};
+use crate::certs::{DisabledReason, HiddenReason, KeyPath, KeySource, PinMode, RowStatus};
 use crate::fixtures::{NOW, candidate, context, fingerprint};
 
 fn names(rows: &[CertRow]) -> Vec<&str> {
@@ -17,8 +17,11 @@ fn info_mut(candidate: &mut CertCandidate) -> &mut websign_core::CertInfo {
 #[test]
 fn spec_vector_16_6() {
     let mut a3 = candidate(1, "Ana Souza");
-    a3.alternates = vec![KeySource::Driver {
-        path: "~/opensc.so".into(),
+    a3.alternates = vec![KeyPath {
+        source: KeySource::Driver {
+            path: "~/opensc.so".into(),
+        },
+        pin: PinMode::Unlocked,
     }];
     let mut a1_ana = candidate(2, "Ana Souza");
     a1_ana.hardware = Some(false);

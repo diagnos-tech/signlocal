@@ -6,6 +6,7 @@ mod device_label;
 mod devices;
 mod key_worker;
 mod possible;
+mod slow_listing;
 mod snapshot;
 #[cfg(test)]
 mod softhsm_tests;
@@ -17,10 +18,12 @@ use std::time::Duration;
 
 pub use key_worker::spawn_key_worker;
 pub use stdio::{StdoutOutbound, WriterOutbound, spawn_stdin_reader};
-use websign_keystores::Options;
+use websign_keystores::{KeystoreHub, Options};
 
 use crate::engine::{Control, Engine, EngineConfig, EngineEvent, Ports};
-use crate::ports::{ConfirmUi, KeyCommand, KeyService, Launcher, Outbound, SystemClock};
+use crate::ports::{
+    ConfirmUi, KeyCommand, KeyService, Launcher, Outbound, SLOW_LISTING, SystemClock,
+};
 use crate::store::{DiskStores, MemoryStores, Stores, data_dir};
 
 /// Channel into the engine, cloned into every producer (the UI included).
@@ -68,16 +71,51 @@ pub fn serve(
     config: EngineConfig,
     make_ui: impl FnOnce(EventSender) -> Box<dyn ConfirmUi>,
     launcher: Box<dyn Launcher>,
-    mut stores: Box<dyn Stores>,
-    mut options: Options,
+    stores: Box<dyn Stores>,
+    options: Options,
 ) -> i32 {
+    let parts = Parts {
+        input,
+        outbound,
+        config,
+        launcher,
+        stores,
+    };
+    serve_with(parts, make_ui, options, KeystoreHub::new)
+}
+
+/// What [`serve`] runs besides the window and the key stores.
+pub(crate) struct Parts<R> {
+    pub input: R,
+    pub outbound: Box<dyn Outbound>,
+    pub config: EngineConfig,
+    pub launcher: Box<dyn Launcher>,
+    pub stores: Box<dyn Stores>,
+}
+
+/// [`serve`] with the key store hub built by `make_hub` from the final
+/// options, on the key worker's thread (tests put fake sources next to a
+/// real module).
+pub(crate) fn serve_with(
+    parts: Parts<impl Read + Send + 'static>,
+    make_ui: impl FnOnce(EventSender) -> Box<dyn ConfirmUi>,
+    mut options: Options,
+    make_hub: impl FnOnce(Options) -> KeystoreHub + Send + 'static,
+) -> i32 {
+    let Parts {
+        input,
+        outbound,
+        config,
+        launcher,
+        mut stores,
+    } = parts;
     let (events, inbox) = channel();
     match stores.settings().get() {
         Ok(settings) => options.extra_modules.extend(settings.user_modules),
         Err(error) => log::warn!("settings unavailable: {}", error.kind()),
     }
     let ui = make_ui(events.clone());
-    let keys = spawn_key_worker(options, events.clone());
+    let keys = key_worker::spawn_worker(move || make_hub(options), SLOW_LISTING, events.clone());
     stdio::spawn_reader(input, events.clone());
     let _monitor = devices::start_monitor(events.clone());
     spawn_ticker(events);

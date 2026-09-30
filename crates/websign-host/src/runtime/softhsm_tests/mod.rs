@@ -6,7 +6,9 @@
 //! key stores' fixture script and runs this test binary again with the
 //! variable set, filtered to [`child`].
 
+mod alternate;
 mod child;
+mod model_window;
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -61,16 +63,17 @@ fn serves_a_signature_with_softhsm2() {
     }
     assert!(status.success(), "softhsm-fixture.sh failed: {status}");
 
-    let status = Command::new(std::env::current_exe().unwrap())
-        .args([
-            "runtime::softhsm_tests::child::",
-            "--ignored",
-            "--test-threads=1",
-            "--nocapture",
-        ])
-        .env("SOFTHSM2_CONF", dir.path().join("softhsm2.conf"))
-        .env(FIXTURE_VAR, dir.path())
-        .status()
-        .unwrap();
-    assert!(status.success(), "the child run against SoftHSM2 failed");
+    // One process per module: each loads SoftHSM2 afresh.
+    for tests in [
+        "runtime::softhsm_tests::child::",
+        "runtime::softhsm_tests::alternate::",
+    ] {
+        let status = Command::new(std::env::current_exe().unwrap())
+            .args([tests, "--ignored", "--test-threads=1", "--nocapture"])
+            .env("SOFTHSM2_CONF", dir.path().join("softhsm2.conf"))
+            .env(FIXTURE_VAR, dir.path())
+            .status()
+            .unwrap();
+        assert!(status.success(), "{tests} against SoftHSM2 failed");
+    }
 }

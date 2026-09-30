@@ -193,4 +193,11 @@ pub enum UiEvent {
     Rescan { key: RequestKey },
     /// "Open diagnostics": the host starts a separate process.
     OpenDiagnostics { tab: Option<DiagnosticsTab> },
+    /// "View in system" (`docs/ux.md` §5.12): the host opens the OS
+    /// certificate viewer with the certificate's DER, which the window never
+    /// holds, owned by the confirmation window.
+    ViewCertificate {
+        key: RequestKey,
+        fingerprint: Fingerprint,
+    },
 }

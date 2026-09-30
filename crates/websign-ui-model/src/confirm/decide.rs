@@ -11,6 +11,7 @@ use super::machine::{ConfirmModel, ConfirmState, Intent};
 use super::outcome::is_retryable;
 use super::port::{Failure, Mode};
 use super::slot::CodeSlot;
+use super::view::PinBlock;
 
 impl ConfirmModel {
     /// Enter in the PIN field or on the focused Sign button. Enter only ever
@@ -86,8 +87,12 @@ impl ConfirmModel {
             .is_some_and(|request| self.remember && !request.remembered && request.can_remember)
     }
 
-    /// "Try through the token driver": sign again over the first alternate path.
-    pub(super) fn use_alternate_path(&mut self) -> Vec<Intent> {
+    /// "Try through the token driver": sign again over the first alternate
+    /// path. A driver that needs our PIN field (the failed OS store asked
+    /// through its own dialog, so none was typed) first shows the field:
+    /// the window returns to `Ready` on that path, re-armed, and Sign sends
+    /// the PIN. Otherwise (PIN pad, unlocked token) it signs at once.
+    pub(super) fn use_alternate_path(&mut self, now: Instant) -> Vec<Intent> {
         let offered = matches!(
             self.banner,
             Some(Failure::DriverFailure {
@@ -97,11 +102,22 @@ impl ConfirmModel {
         );
         let Some(fingerprint) = self
             .selected_usable()
-            .filter(|_| offered && self.can_sign())
+            .filter(|_| offered && matches!(self.code, CodeSlot::Ready(_)))
         else {
             return Vec::new();
         };
         self.via = 1;
+        if matches!(self.pin_block(), PinBlock::Field { .. }) {
+            self.state = ConfirmState::Ready;
+            self.banner = None;
+            self.pin_error = None;
+            self.pin_len = 0;
+            self.rearm(now);
+            return Vec::new();
+        }
+        if !self.can_sign() {
+            return Vec::new();
+        }
         self.begin_signing(fingerprint)
     }
 }

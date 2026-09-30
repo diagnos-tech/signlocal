@@ -2,7 +2,9 @@
 
 use super::machine::{ConfirmModel, ConfirmState};
 use super::view::{PinBlock, PinError, PinSystem};
-use crate::certs::{CertRow, DeviceLabel, DisabledReason, KeySource, PinMode, RowStatus};
+use crate::certs::{
+    CertCandidate, CertRow, DeviceLabel, DisabledReason, KeySource, PinMode, RowStatus,
+};
 
 impl ConfirmModel {
     /// What the PIN area shows for the selected certificate.
@@ -24,8 +26,8 @@ impl ConfirmModel {
         match row.status {
             RowStatus::Disabled(DisabledReason::PinLocked) => PinBlock::Locked,
             RowStatus::Disabled(_) => PinBlock::Hidden,
-            RowStatus::Usable => match row.candidate.pin {
-                PinMode::System => match pin_system(&row.candidate.source) {
+            RowStatus::Usable => match self.path_of(&row.candidate) {
+                (source, PinMode::System) => match pin_system(source) {
                     Some(system) => PinBlock::OsPrompt {
                         now: signing,
                         system,
@@ -34,10 +36,25 @@ impl ConfirmModel {
                     // needs the PIN from us.
                     None => self.field(row, None),
                 },
-                PinMode::PinPad => PinBlock::PinPad { now: signing },
-                PinMode::Unlocked => PinBlock::Unlocked,
-                PinMode::App { length, .. } => self.field(row, length),
+                (_, PinMode::PinPad) => PinBlock::PinPad { now: signing },
+                (_, PinMode::Unlocked) => PinBlock::Unlocked,
+                (_, PinMode::App { length, .. }) => self.field(row, length),
             },
+        }
+    }
+
+    /// The path signing takes (`via`) and who asks for the
+    /// PIN on it: after "Try through the token driver" the PIN area follows
+    /// the driver, not the store that failed. A path the candidate does not
+    /// have falls back to the primary one.
+    pub(super) fn path_of<'a>(&self, candidate: &'a CertCandidate) -> (&'a KeySource, PinMode) {
+        match self
+            .via
+            .checked_sub(1)
+            .and_then(|index| candidate.alternates.get(index))
+        {
+            Some(path) => (&path.source, path.pin),
+            None => (&candidate.source, candidate.pin),
         }
     }
 

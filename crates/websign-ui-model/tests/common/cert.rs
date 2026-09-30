@@ -6,8 +6,8 @@ use websign_core::{
     CertInfo, DistinguishedName, Fingerprint, KeyUsage, PublicKeyKind, SignatureAlgorithm,
 };
 use websign_ui_model::certs::{
-    CertCandidate, CertList, CertRow, DeviceLabel, HiddenReason, KeySource, ListContext, PinMode,
-    RowStatus,
+    CertCandidate, CertList, CertRow, DeviceLabel, HiddenReason, KeyPath, KeySource, ListContext,
+    PinMode, RowStatus,
 };
 
 pub const SERVER_AUTH: &str = "1.3.6.1.5.5.7.3.1";
@@ -128,6 +128,14 @@ pub fn token(name: &str) -> Option<DeviceLabel> {
 pub fn driver(path: &str) -> KeySource {
     KeySource::Driver {
         path: path.to_owned(),
+    }
+}
+
+/// A token-driver path to the same key, as an alternate.
+pub fn driver_path(path: &str, pin: PinMode) -> KeyPath {
+    KeyPath {
+        source: driver(path),
+        pin,
     }
 }
 

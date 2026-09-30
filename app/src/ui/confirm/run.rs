@@ -67,6 +67,20 @@ impl eframe::App for App<'_> {
                 }
             }
         }
+        if let Some(der) = bridge::take_certificate() {
+            // Modal on Windows and macOS: this frame waits until it closes.
+            // On Linux the viewer is another program, so the window leaves
+            // always-on-top until its next state change instead of covering it.
+            if crate::platform::system_ui::view_certificate(&der, self.native) {
+                if cfg!(target_os = "linux") {
+                    ctx.send_viewport_cmd(egui::ViewportCommand::WindowLevel(
+                        egui::WindowLevel::Normal,
+                    ));
+                }
+            } else {
+                log::info!("no certificate viewer on this system");
+            }
+        }
         let next = self.window.tick();
         if ctx.input(|input| input.viewport().close_requested()) && !self.ended {
             // The close button is Cancel (`docs/ux.md` §4.1); the window

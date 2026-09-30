@@ -110,13 +110,19 @@ fn sign_in_ready_calls_the_key_store_once() {
 
 #[test]
 fn sign_carries_the_chosen_path_and_the_pin() {
-    use websign_ui_model::certs::KeySource;
+    use websign_ui_model::certs::{KeyPath, KeySource, PinMode};
     let p = Cert::p256();
     let mut snapshot = (*common::snapshot(&[&p])).clone();
     snapshot.candidates[0].alternates = vec![
-        KeySource::MacosKeychain,
-        KeySource::Driver {
-            path: "libtoken.so".to_owned(),
+        KeyPath {
+            source: KeySource::MacosKeychain,
+            pin: PinMode::System,
+        },
+        KeyPath {
+            source: KeySource::Driver {
+                path: "libtoken.so".to_owned(),
+            },
+            pin: PinMode::Unlocked,
         },
     ];
     let mut flow = common::flows::new_flow(true);

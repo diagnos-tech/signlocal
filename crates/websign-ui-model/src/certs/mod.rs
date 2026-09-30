@@ -17,7 +17,7 @@ mod text;
 mod validity;
 
 pub use badge::{Badge, badge};
-pub use candidate::{CertCandidate, DeviceLabel, KeySource, PinMode};
+pub use candidate::{CertCandidate, DeviceLabel, KeyPath, KeySource, PinMode};
 pub use filter::{FILTER_THRESHOLD, matches_filter};
 pub use location::{Location, Place, location};
 pub use order::{ListContext, build_cert_list};

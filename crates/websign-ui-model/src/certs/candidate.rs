@@ -10,8 +10,9 @@ pub struct CertCandidate {
     pub info: Result<CertInfo, websign_core::CertError>,
     /// The path the signature will take (the OS when it has the key).
     pub source: KeySource,
-    /// Other paths to the same key (`docs/ux.md` §5.11).
-    pub alternates: Vec<KeySource>,
+    /// Other paths to the same key (`docs/ux.md` §5.11); path `n` of
+    /// `UiEvent::Sign.via` is `alternates[n - 1]`.
+    pub alternates: Vec<KeyPath>,
     pub device: Option<DeviceLabel>,
     pub pin: PinMode,
     /// What the key store can produce with this key.
@@ -22,6 +23,15 @@ pub struct CertCandidate {
     pub has_private_key: bool,
     /// Its token was removed while the window was open.
     pub removed: bool,
+}
+
+/// Another way to reach a candidate's key, with who asks for the PIN on
+/// it: the OS store may show its own dialog while the token driver that
+/// sees the same key needs our field (`docs/ux.md` §4.6, §5.11).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct KeyPath {
+    pub source: KeySource,
+    pub pin: PinMode,
 }
 
 /// Where a key is reached.

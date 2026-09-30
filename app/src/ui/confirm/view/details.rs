@@ -6,6 +6,7 @@ use jiff::Timestamp;
 use websign_core::{CertInfo, Curve, PublicKeyKind};
 use websign_i18n::{Catalog, dates, k};
 use websign_ui_model::certs::{CertRow, KeySource};
+use websign_ui_model::confirm::UserInput;
 
 use super::{Action, Screen};
 use crate::ui::icons;
@@ -40,7 +41,7 @@ pub fn show(ui: &mut Ui, s: &mut Screen<'_>, row: &CertRow) {
         .candidate
         .alternates
         .iter()
-        .any(|source| matches!(source, KeySource::Driver { .. }))
+        .any(|path| matches!(path.source, KeySource::Driver { .. }))
     {
         pairs.push((
             String::new(),
@@ -87,8 +88,26 @@ pub fn show(ui: &mut Ui, s: &mut Screen<'_>, row: &CertRow) {
                         }
                     });
                     ui.end_row();
+                    ui.label("");
+                    view_in_system(ui, s);
+                    ui.end_row();
                 });
         });
+}
+
+/// The OS viewer shows everything the pairs above leave out; the host opens
+/// it with the certificate it holds (`docs/ux.md` §5.12).
+fn view_in_system(ui: &mut Ui, s: &mut Screen<'_>) {
+    let label = s.tr.tr(k::CERT_DETAILS_VIEW_IN_SYSTEM).to_string();
+    if Button::ghost(&label)
+        .icon(icons::CERTIFICATE)
+        .size(Size::Small)
+        .show(ui)
+        .response
+        .clicked()
+    {
+        s.input(UserInput::ViewCertificate);
+    }
 }
 
 fn issuer(info: &CertInfo) -> String {

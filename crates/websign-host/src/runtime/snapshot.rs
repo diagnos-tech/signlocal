@@ -5,7 +5,7 @@ use websign_core::{Fingerprint, PublicKeyKind, SignatureAlgorithm, SourceKind};
 use websign_devices::hints::DeviceDatabase;
 use websign_keystores::{FoundKey, KeyRef, KeystoreHub, PinPrompt};
 use websign_protocol::types::SignatureAlgorithmName;
-use websign_ui_model::certs::{CertCandidate, KeySource, PinMode};
+use websign_ui_model::certs::{CertCandidate, KeyPath, KeySource, PinMode};
 
 use super::device_label::device_label;
 use super::possible::{linked_devices, possible_cards};
@@ -19,25 +19,39 @@ struct Found {
     der: Vec<u8>,
     info: Result<websign_core::CertInfo, websign_core::CertError>,
     primary: FoundKey,
-    alternates: Vec<KeySource>,
+    alternates: Vec<FoundKey>,
 }
 
 /// The listing of `hub` as candidates: one per certificate, the OS path
 /// first, with device labels from `devices.json` and PIN modes from the
-/// tokens' own flags (read without logging in); plus the plugged-in devices
-/// that brought no certificate (a fresh USB and PC/SC scan).
-pub(super) fn snapshot(hub: &mut KeystoreHub, hints: Option<&DeviceDatabase>) -> KeySnapshot {
+/// tokens' own flags (read without logging in, for every path: a driver
+/// that sees an OS store's key needs our PIN field when signing through
+/// it); plus the devices of `scan` that brought no certificate.
+pub(super) fn snapshot(
+    hub: &mut KeystoreHub,
+    hints: Option<&DeviceDatabase>,
+    scan: &websign_devices::Snapshot,
+) -> KeySnapshot {
     let (found, failures) = collect(hub);
     let linked = linked_devices(found.iter().map(|group| &group.primary));
     let mut snapshot = KeySnapshot {
         failures,
         possible: hints
-            .map(|database| possible_cards(&websign_devices::Snapshot::scan(), database, &linked))
+            .map(|database| possible_cards(scan, database, &linked))
             .unwrap_or_default(),
         ..KeySnapshot::default()
     };
     for group in found {
-        let pin = pin_mode(hub, group.fingerprint, &group.primary);
+        let pin = pin_mode(hub, group.fingerprint, 0, &group.primary);
+        let alternates = group
+            .alternates
+            .iter()
+            .enumerate()
+            .map(|(index, key)| KeyPath {
+                source: key_source(key),
+                pin: pin_mode(hub, group.fingerprint, index + 1, key),
+            })
+            .collect();
         let algorithms = group
             .info
             .as_ref()
@@ -47,7 +61,7 @@ pub(super) fn snapshot(hub: &mut KeystoreHub, hints: Option<&DeviceDatabase>) ->
             fingerprint: group.fingerprint,
             info: group.info,
             source: key_source(&group.primary),
-            alternates: group.alternates,
+            alternates,
             device: device_label(group.primary.device.as_ref(), hints),
             pin,
             algorithms,
@@ -71,7 +85,7 @@ fn collect(hub: &mut KeystoreHub) -> (Vec<Found>, Vec<String>) {
             .alternates
             .iter()
             .filter_map(|&index| inventory.entries.get(index))
-            .map(|entry| key_source(&entry.key))
+            .map(|entry| entry.key.clone())
             .collect();
         found.push(Found {
             fingerprint: Fingerprint::of(&entry.key.cert_der),
@@ -111,17 +125,20 @@ fn key_source(key: &FoundKey) -> KeySource {
     }
 }
 
-fn pin_mode(hub: &mut KeystoreHub, fingerprint: Fingerprint, key: &FoundKey) -> PinMode {
+/// Who asks for the PIN on path `path` of the key (`KeyRef::path`).
+fn pin_mode(
+    hub: &mut KeystoreHub,
+    fingerprint: Fingerprint,
+    path: usize,
+    key: &FoundKey,
+) -> PinMode {
     match key.pin {
         PinPrompt::System => PinMode::System,
         PinPrompt::App {
             protected_path: true,
         } => PinMode::PinPad,
         PinPrompt::App { .. } => {
-            let state = hub.pin_state(KeyRef {
-                fingerprint,
-                path: 0,
-            });
+            let state = hub.pin_state(KeyRef { fingerprint, path });
             match state {
                 Some(state) if state.unlocked && !state.always_authenticate => PinMode::Unlocked,
                 Some(state) => PinMode::App {

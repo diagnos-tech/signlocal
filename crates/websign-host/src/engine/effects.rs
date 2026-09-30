@@ -60,13 +60,16 @@ impl Engine {
         self.settle(key);
     }
 
-    /// Key commands that need the confirmation window's handle get it here:
-    /// the flows never see the window.
-    fn send_keys(&mut self, mut command: KeyCommand) {
-        if let KeyCommand::Sign { parent_window, .. } = &mut command
-            && parent_window.is_none()
-        {
-            *parent_window = self.ports.ui.parent_window();
+    /// Every key command goes through here: signing gets the confirmation
+    /// window's handle (the flows never see the window), and listings are
+    /// counted so a slow one can be announced.
+    pub(super) fn send_keys(&mut self, mut command: KeyCommand) {
+        match &mut command {
+            KeyCommand::Sign { parent_window, .. } if parent_window.is_none() => {
+                *parent_window = self.ports.ui.parent_window();
+            }
+            KeyCommand::List { .. } => self.listings.started(),
+            _ => {}
         }
         self.ports.keys.send(command);
     }

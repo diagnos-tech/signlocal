@@ -59,7 +59,7 @@ impl ConfirmUi for ScriptedWindow {
     }
 }
 
-struct NoLauncher;
+pub(super) struct NoLauncher;
 
 impl Launcher for NoLauncher {
     fn open_diagnostics(&mut self, _: Option<DiagnosticsTab>) -> Result<(), String> {
@@ -67,11 +67,49 @@ impl Launcher for NoLauncher {
     }
 }
 
-fn send(writer: &mut PipeWriter, json: &str) {
+/// A desktop client, so no browser rules apply.
+pub(super) fn config() -> EngineConfig {
+    EngineConfig {
+        app: AppInfo {
+            version: "1.0.0".into(),
+            protocols: ProtocolRange { min: 1, max: 1 },
+            os: OsName::Linux,
+            arch: "x86_64".into(),
+            channel: Channel::Direct,
+        },
+        transport: Transport::Desktop {
+            caller: DesktopCaller {
+                executable: "/usr/bin/test-client".into(),
+                product_name: None,
+                signer: None,
+            },
+        },
+    }
+}
+
+/// `hello`, answered.
+pub(super) fn hello(to_host: &mut PipeWriter, from_host: &mut PipeReader) {
+    send(
+        to_host,
+        r#"{"v":1,"id":"h","type":"hello","client":{"name":"test","version":"1"},"protocols":{"min":1,"max":1}}"#,
+    );
+    assert!(matches!(receive(from_host, None), AppMessage::Hello(_)));
+}
+
+/// Fails the whole run if the host hangs.
+pub(super) fn watchdog() {
+    std::thread::spawn(|| {
+        std::thread::sleep(Duration::from_secs(120));
+        eprintln!("timed out waiting for the host");
+        std::process::exit(2);
+    });
+}
+
+pub(super) fn send(writer: &mut PipeWriter, json: &str) {
     write_frame(writer, json.as_bytes()).unwrap();
 }
 
-fn receive(reader: &mut PipeReader, negotiated: Option<u32>) -> AppMessage {
+pub(super) fn receive(reader: &mut PipeReader, negotiated: Option<u32>) -> AppMessage {
     let frame = read_frame(reader).unwrap().expect("the host closed early");
     parse_app_message(&frame, negotiated).unwrap().message
 }
@@ -83,11 +121,7 @@ fn signs_over_stdio_framing_through_the_key_worker() {
         return;
     };
     // A hung host must fail the run, not hang it.
-    std::thread::spawn(|| {
-        std::thread::sleep(Duration::from_secs(120));
-        eprintln!("timed out waiting for the host");
-        std::process::exit(2);
-    });
+    watchdog();
 
     let der = token.certificate("rsa-issued");
     let target = Fingerprint::of(&der);
@@ -97,26 +131,10 @@ fn signs_over_stdio_framing_through_the_key_worker() {
     let pin = token.pin.clone();
     let module = token.module.clone();
     let host = std::thread::spawn(move || {
-        let config = EngineConfig {
-            app: AppInfo {
-                version: "1.0.0".into(),
-                protocols: ProtocolRange { min: 1, max: 1 },
-                os: OsName::Linux,
-                arch: "x86_64".into(),
-                channel: Channel::Direct,
-            },
-            transport: Transport::Desktop {
-                caller: DesktopCaller {
-                    executable: "/usr/bin/test-client".into(),
-                    product_name: None,
-                    signer: None,
-                },
-            },
-        };
         serve(
             host_input,
             Box::new(WriterOutbound::new(host_output)),
-            config,
+            config(),
             move |events| {
                 Box::new(ScriptedWindow {
                     events,
@@ -135,14 +153,7 @@ fn signs_over_stdio_framing_through_the_key_worker() {
         )
     });
 
-    send(
-        &mut to_host,
-        r#"{"v":1,"id":"h","type":"hello","client":{"name":"test","version":"1"},"protocols":{"min":1,"max":1}}"#,
-    );
-    assert!(matches!(
-        receive(&mut from_host, None),
-        AppMessage::Hello(_)
-    ));
+    hello(&mut to_host, &mut from_host);
 
     send(
         &mut to_host,

@@ -23,7 +23,7 @@ fn vector() -> Vec<CertCandidate> {
     let mut a3 = candidate(A3_ANA, "Ana Beatriz Souza");
     a3.hardware = Some(true);
     a3.device = token("SafeNet eToken 5110");
-    a3.alternates = vec![driver("eTPKCS11.dll")];
+    a3.alternates = vec![driver_path("eTPKCS11.dll", app_pin(None))];
 
     let a1_ana = candidate(A1_ANA, "Ana Beatriz Souza");
     let a1_clinic = candidate(A1_CLINIC, "Clinica Diagnos Ltda");
@@ -87,7 +87,10 @@ fn groups_and_reasons_match_the_vector() {
 fn the_deduplicated_a3_keeps_its_alternate_path() {
     let list = build_cert_list(&vector(), &context());
     let a3 = row(&list, fp(A3_ANA));
-    assert_eq!(a3.candidate.alternates, vec![driver("eTPKCS11.dll")]);
+    assert_eq!(
+        a3.candidate.alternates,
+        vec![driver_path("eTPKCS11.dll", app_pin(None))]
+    );
 }
 
 #[test]

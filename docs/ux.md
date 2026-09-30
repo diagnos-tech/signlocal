@@ -425,6 +425,12 @@ dialog (`C_Login` needs the PIN from us), so a driver key the host marks "system
 length limits; Linux therefore never shows the OS hint. The window drops "always on top" only while an OS dialog
 is asking (`signing` with a store key).
 
+**Decision (PIN per path):** each path to a key has its own PIN mode, read by the host for that path (the OS store
+and the token driver that sees the same key differ). The PIN area follows the path the signature takes: after "Try
+through the token driver" (§5.11) a driver that needs our PIN shows the PIN block first, focused, with Sign
+re-armed; the signature goes when the person presses Sign, with the PIN. A driver on a PIN pad or already unlocked
+signs at once.
+
 ### 4.7 Buttons, arming, and accidental-click prevention
 
 | Rule | Value | Why |
@@ -469,8 +475,10 @@ Esc and key releases always pass.
 
 **Decision (`loading_certs` timing):** the 150 ms skeleton and the 2 s "Still reading {device}" are counted by the
 UI model from the start of the listing (the request opening, or "Scan again"), so they appear in tests and screen
-readers exactly as drawn. The device name comes from the host's `SlowListing` command; until the host sends it,
-only "Looking for certificates…" shows.
+readers exactly as drawn. The device name comes from the host's `SlowListing` command, which the key store worker
+sends when a listing is still running after 2 s. Key stores report no progress, so the name is the model of the
+first plugged-in token or card that `devices.json` knows (never a token label or serial); with none known, no
+command is useful and only "Looking for certificates…" shows. The list that arrives replaces the text.
 
 **Why close on success:** the user's next step is on the site; 900 ms is enough to see that it worked.
 The result is sent before the animation, so the site does not wait for it.
@@ -682,7 +690,7 @@ In Diagnostics › Certificates there are groups by origin (that is where IT loo
 Key: SHA-256 of the certificate's DER. The same certificate seen by the system and by the driver becomes **one**
 row, using the system path (decision 2 of the project brief). Details shows "Also available through the token
 driver". If signing through the system fails with a driver error (not PIN, not cancellation), the error offers
-"Try through the token driver" (`errors.driver_failure.alt_path`).
+"Try through the token driver" (`errors.driver_failure.alt_path`). When the driver needs our PIN, the PIN block appears first (§4.6).
 
 ### 5.12 Certificate details
 
@@ -703,10 +711,11 @@ The "Details" link (only on the selected row) expands the row in `motion-base` w
 "View in system" button (`cert.details.view_in_system`): opens the OS viewer
 (`CryptUIDlgViewContext` on Windows, `SFCertificatePanel` on Mac, `gcr-viewer` on Linux if present).
 
-**Decision:** the button is not shown yet. Every OS viewer needs the certificate's DER, and the window only
-receives the parsed `CertInfo`; the host holds the DER (`KeySnapshot.certificates`). Proposed contract: a
-`UiEvent::ViewCertificate { key, fingerprint }` answered by the engine, which opens the viewer with the DER and
-our window as the parent. The window never receives certificate bodies.
+**Decision:** every OS viewer needs the certificate's DER, and the window only receives the parsed `CertInfo`;
+the host holds the DER (`KeySnapshot.certificates`). The button sends `UiEvent::ViewCertificate { key,
+fingerprint }` (armed, like every other click, §4.7); the engine takes the DER of that certificate from the last
+listing and hands it to the window port, which opens the viewer on the UI thread with our window as the parent
+(the Windows and macOS viewers are modal). The window's model never receives certificate bodies.
 
 ### 5.13 Many certificates
 

@@ -5,7 +5,7 @@ use websign_keystores::KeystoreError;
 use websign_protocol::messages::SignResult;
 use websign_protocol::types::{Base64Bytes, Certificate};
 use websign_protocol::{AppMessage, ErrorCode};
-use websign_ui_model::certs::{CertCandidate, KeySource};
+use websign_ui_model::certs::{CertCandidate, KeySource, PinMode};
 use websign_ui_model::confirm::port::{Failure, Finish, UiCommand};
 
 use super::signing::Attempt;
@@ -30,7 +30,7 @@ impl SignFlow {
                 }
                 _ => Vec::new(),
             },
-            KeyReply::Listed(_) => Vec::new(),
+            KeyReply::Listed(_) | KeyReply::SlowListing { .. } => Vec::new(),
         }
     }
 
@@ -80,7 +80,7 @@ impl SignFlow {
     ) -> Result<Certificate, (Failure, Option<String>)> {
         let listing = self.listing.as_ref();
         let candidate = listing.and_then(|listing| listing.candidate(&attempt.fingerprint));
-        let fail = || unverified(candidate_driver(candidate), attempt);
+        let fail = || unverified(candidate_driver(candidate, attempt.via), candidate, attempt);
         let (Some(listing), Some(candidate)) = (listing, candidate) else {
             return Err(fail());
         };
@@ -128,19 +128,38 @@ impl SignFlow {
     }
 }
 
-fn unverified(driver: String, attempt: &Attempt) -> (Failure, Option<String>) {
+fn unverified(
+    driver: String,
+    candidate: Option<&CertCandidate>,
+    attempt: &Attempt,
+) -> (Failure, Option<String>) {
     let native = "signature did not verify".to_owned();
     let failure = Failure::DriverFailure {
         driver,
         native: native.clone(),
-        alternate: attempt.via == 0,
+        alternate: attempt.via == 0 && candidate.is_some_and(|c| !c.alternates.is_empty()),
     };
     (failure, Some(native))
 }
 
-/// Key store or driver name for the message "{driver} didn't respond".
-pub(super) fn candidate_driver(candidate: Option<&CertCandidate>) -> String {
-    match candidate.map(|c| &c.source) {
+/// The source and PIN mode of path `via` of `candidate` (0 = primary,
+/// n = `alternates[n - 1]`).
+pub(super) fn path_of(candidate: &CertCandidate, via: usize) -> Option<(&KeySource, PinMode)> {
+    match via.checked_sub(1) {
+        None => Some((&candidate.source, candidate.pin)),
+        Some(index) => candidate
+            .alternates
+            .get(index)
+            .map(|path| (&path.source, path.pin)),
+    }
+}
+
+/// Key store or driver name of path `via`, for "{driver} didn't respond".
+pub(super) fn candidate_driver(candidate: Option<&CertCandidate>, via: usize) -> String {
+    match candidate
+        .and_then(|c| path_of(c, via))
+        .map(|(source, _)| source)
+    {
         Some(KeySource::Windows) => "Windows".to_owned(),
         Some(KeySource::MacosKeychain) => "macOS Keychain".to_owned(),
         Some(KeySource::MacosToken) => "macOS smart card".to_owned(),

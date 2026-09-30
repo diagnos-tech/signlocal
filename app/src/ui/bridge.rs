@@ -16,15 +16,19 @@ use websign_host::ports::ConfirmUi;
 use websign_ui_model::confirm::UiCommand;
 
 /// What the engine thread knows about the live window.
-#[derive(Debug, Default)]
+#[derive(Default)]
 struct Link {
     ctx: Option<egui::Context>,
     handle: Option<isize>,
+    /// A certificate waiting for the OS viewer: the viewers of Windows and
+    /// macOS are modal and must run on the UI thread, never on the engine's.
+    viewer: Option<Vec<u8>>,
 }
 
 static LINK: Mutex<Link> = Mutex::new(Link {
     ctx: None,
     handle: None,
+    viewer: None,
 });
 
 /// A poisoned lock only means another thread panicked mid-update of two
@@ -47,6 +51,11 @@ pub fn set_native_handle(handle: Option<isize>) {
 /// Called when the event loop ends.
 pub fn disconnect() {
     *link() = Link::default();
+}
+
+/// The certificate the engine asked to show in the OS viewer, once.
+pub fn take_certificate() -> Option<Vec<u8>> {
+    link().viewer.take()
 }
 
 /// The engine-side handle of the window.
@@ -78,6 +87,17 @@ impl ConfirmUi for WindowBridge {
     fn parent_window(&self) -> Option<isize> {
         link().handle
     }
+
+    /// Hands `der` to the UI thread, which opens the viewer owned by the
+    /// window between frames ([`take_certificate`]). A second request before
+    /// that replaces the first: the person asked for the latest.
+    fn view_certificate(&mut self, der: Vec<u8>) {
+        let mut link = link();
+        link.viewer = Some(der);
+        if let Some(ctx) = &link.ctx {
+            ctx.request_repaint();
+        }
+    }
 }
 
 #[cfg(test)]
@@ -107,6 +127,18 @@ mod tests {
         bridge.command(UiCommand::Hide);
         assert!(ctx.has_requested_repaint(), "a command wakes the window");
         assert_eq!(bridge.parent_window(), Some(42));
+
+        for _ in 0..3 {
+            let mut output = ctx.run_ui(egui::RawInput::default(), |_| {});
+            output.textures_delta.clear();
+        }
+        bridge.view_certificate(vec![0x30, 0x03]);
+        assert!(
+            ctx.has_requested_repaint(),
+            "a certificate wakes the window"
+        );
+        assert_eq!(take_certificate(), Some(vec![0x30, 0x03]));
+        assert_eq!(take_certificate(), None, "shown once");
 
         disconnect();
         assert_eq!(bridge.parent_window(), None);

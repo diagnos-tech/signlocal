@@ -48,6 +48,7 @@ impl Outbound for FakeOutbound {
 pub struct FakeUi {
     commands: Rc<RefCell<Vec<UiCommand>>>,
     parent: Rc<Cell<Option<isize>>>,
+    viewed: Rc<RefCell<Vec<Vec<u8>>>>,
 }
 
 impl FakeUi {
@@ -57,6 +58,11 @@ impl FakeUi {
 
     pub fn take(&self) -> Vec<UiCommand> {
         std::mem::take(&mut *self.commands.borrow_mut())
+    }
+
+    /// The certificates handed to the OS viewer, in order.
+    pub fn viewed(&self) -> Vec<Vec<u8>> {
+        self.viewed.borrow().clone()
     }
 
     /// The handle the fake window reports for OS PIN dialogs.
@@ -72,6 +78,10 @@ impl ConfirmUi for FakeUi {
 
     fn parent_window(&self) -> Option<isize> {
         self.parent.get()
+    }
+
+    fn view_certificate(&mut self, der: Vec<u8>) {
+        self.viewed.borrow_mut().push(der);
     }
 }
 

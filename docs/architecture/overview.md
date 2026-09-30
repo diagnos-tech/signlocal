@@ -100,16 +100,22 @@ learned this).
 
 | Thread | Owns | Talks through |
 |---|---|---|
-| main | the egui/winit event loop (macOS requires the main thread); started with the first window, kept alive hidden between requests (winit cannot create a second event loop) | `UiCommand` in, `UiEvent` out |
+| main | the egui/winit event loop (macOS requires the main thread); started with the first window, kept alive hidden between requests (winit cannot create a second event loop); also opens the OS certificate viewer, modal on Windows and macOS | `UiCommand` in, `UiEvent` out; a certificate for the viewer through the window bridge |
 | engine | `websign_host::Engine`: session, queue, flows — deterministic, single-threaded | one `mpsc` channel of `EngineEvent` |
 | stdin reader | blocking frame reads | posts `Frame`/`Closed`/`Broken` |
-| key store worker | `KeystoreHub` (key stores are not `Send`; Security.framework calls are serialized, as Chromium does) | `KeyCommand` in, `KeyReply` out |
+| key store worker | `KeystoreHub` (key stores are not `Send`; Security.framework calls are serialized, as Chromium does); a short-lived watch per listing posts `SlowListing` after 2 s | `KeyCommand` in, `KeyReply` out |
 | device monitor | `SCardGetStatusChange` loop | posts `DeviceEvent` |
 | timer | 250 ms ticks while a request is open | posts `Tick` |
 
 Signing blocks inside the key store (the OS PIN dialog can take a minute), so
 it never runs on the engine thread: cancellation, disconnects and timeouts
 keep working while a PIN dialog is open.
+
+"View in system" (`docs/ux.md` §5.12) follows the same rule: the window
+sends `UiEvent::ViewCertificate`, the engine takes the certificate's DER from
+the last listing and hands it to `ConfirmUi::view_certificate`, and the app's
+bridge passes it to the main thread, which opens the OS viewer owned by the
+confirmation window. The DER never enters the window's model.
 
 The process ends when the engine does: the client closed stdin, the
 desktop idle limit passed, or the first frame was refused. A connection

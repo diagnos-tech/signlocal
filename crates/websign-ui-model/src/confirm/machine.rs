@@ -70,6 +70,8 @@ pub enum UserInput {
     OpenDiagnostics,
     /// "Try through the token driver" (`docs/ux.md` §5.11).
     UseAlternatePath,
+    /// "View in system" in the selected row's details (`docs/ux.md` §5.12).
+    ViewCertificate,
 }
 
 /// A decision the app turns into a [`super::port::UiEvent`] (adding the PIN
@@ -90,6 +92,8 @@ pub enum Intent {
     Cancel(ErrorCode),
     Rescan,
     OpenDiagnostics(Option<DiagnosticsTab>),
+    /// Show this certificate in the OS viewer; the host holds its DER.
+    ViewCertificate(Fingerprint),
 }
 
 /// The window's whole state.

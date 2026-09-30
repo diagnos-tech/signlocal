@@ -177,6 +177,12 @@ impl ConfirmWindow {
         let _ = self
             .model
             .input(UserInput::PinLength(self.session.pin.chars().count()), now);
+        // "Try through the token driver" may need our PIN first: the field
+        // it brings takes the focus.
+        let error = matches!(before, ConfirmState::Error { .. });
+        if error && *self.model.state() == ConfirmState::Ready && pin_field {
+            self.session.focus = Some(FocusTarget::Pin);
+        }
         self.after_change(&before, now);
         ctx.request_repaint();
     }

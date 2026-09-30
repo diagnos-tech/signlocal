@@ -147,8 +147,11 @@ fn certificates() -> Vec<CertCandidate> {
     );
     a3.device = Some(reader.clone());
     a3.hardware = Some(true);
-    a3.alternates = vec![KeySource::Driver {
-        path: "opensc-pkcs11.dll".to_owned(),
+    a3.alternates = vec![websign_ui_model::certs::KeyPath {
+        source: KeySource::Driver {
+            path: "opensc-pkcs11.dll".to_owned(),
+        },
+        pin: PinMode::System,
     }];
     set_issuer(&mut a3, "AC SOLUTI Multipla v5");
     let a1 = candidate(

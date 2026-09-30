@@ -37,7 +37,10 @@ pub fn collect(
             .alternates
             .iter()
             .filter_map(|&index| inventory.entries.get(index))
-            .map(|alternate| key_source(&alternate.key))
+            .map(|alternate| websign_ui_model::certs::KeyPath {
+                source: key_source(&alternate.key),
+                pin: PinMode::System,
+            })
             .collect();
         candidates.push(CertCandidate {
             fingerprint,

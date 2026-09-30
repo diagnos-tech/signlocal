@@ -6,8 +6,9 @@ mod common;
 use common::*;
 use websign_protocol::ErrorCode;
 use websign_protocol::types::SignatureAlgorithmName;
+use websign_ui_model::certs::PinMode;
 use websign_ui_model::confirm::port::Failure;
-use websign_ui_model::confirm::view::PrimaryButton;
+use websign_ui_model::confirm::view::{PinBlock, PrimaryButton};
 use websign_ui_model::confirm::{ConfirmState, Intent, UserInput};
 
 fn signing() -> Window {
@@ -118,7 +119,7 @@ fn a_driver_failure_with_an_alternate_path_can_retry_through_the_driver() {
     // `via` 0 is the primary path; the first alternate is index 1. A retry
     // after the alternate failed repeats the path that failed last.
     let mut candidates = pair();
-    candidates[0].alternates = vec![driver("eTPKCS11.dll")];
+    candidates[0].alternates = vec![driver_path("eTPKCS11.dll", PinMode::Unlocked)];
     let mut w = ready_remembered(candidates, context());
     w.click();
     w.signing().fail(driver_failure(true));
@@ -126,6 +127,33 @@ fn a_driver_failure_with_an_alternate_path_can_retry_through_the_driver() {
     assert_eq!(w.input(UserInput::UseAlternatePath), vec![sign_via(1)]);
     assert_eq!(w.state(), ConfirmState::Signing);
     w.fail(driver_failure(false));
+    assert_eq!(w.click(), vec![sign_via(1)]);
+}
+
+#[test]
+fn a_driver_path_that_needs_our_pin_shows_the_field_before_signing() {
+    // The OS store asked through its own dialog, so no PIN was typed: the
+    // driver's C_Login needs one from our field (ux §4.6, §5.11).
+    let mut candidates = pair();
+    candidates[0].alternates = vec![driver_path("eTPKCS11.dll", app_pin(Some((4, 8))))];
+    let mut w = ready_remembered(candidates, context());
+    w.click();
+    w.signing().fail(driver_failure(true));
+    w.wait(1_000);
+    assert_eq!(w.input(UserInput::UseAlternatePath), vec![]);
+    assert_eq!(w.state(), ConfirmState::Ready);
+    assert!(matches!(
+        w.view().pin,
+        PinBlock::Field {
+            length: Some((4, 8)),
+            valid: false,
+            ..
+        }
+    ));
+    assert_eq!(w.view().banner, None);
+    w.input(UserInput::PinLength(4));
+    assert_eq!(w.click(), vec![], "re-armed: the field is new content");
+    w.wait(1_000);
     assert_eq!(w.click(), vec![sign_via(1)]);
 }
 

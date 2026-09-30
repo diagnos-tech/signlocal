@@ -95,15 +95,19 @@ transition:
 | `on_digest` ok | AwaitingDigest → Ready | `Ui(DigestReady{code})` |
 | `Ui(Sign{fp, via, pin, remember})` in Ready with the same fp | → Signing(tag) | `Keys(Sign{…})`, `Ui(Signing)` |
 | `Keys(Signed ok)` | → Done | verify (§4.1); `Keys(Chain)` result used if already known else empty chain; `RecordConsent`; `Send(SignResult)`; `Ui(Finished Signed)` |
-| `Keys(Signed WrongPin)` | → Ready | `Ui(Failed PinIncorrect{flags from pin_state})` |
+| `Keys(Signed WrongPin)` | → Ready | `Ui(Failed PinIncorrect{flags from the pin_state of the path tried})` |
 | `Keys(Signed PinLocked)` | → Selecting | `Ui(Failed PinLocked)`, `RecordError` |
 | `Keys(Signed Cancelled)` (OS dialog cancelled) | → Ready | `Ui(Failed …)` none: back to Ready silently |
 | `Keys(Signed TokenRemoved/NotFound)` | → Selecting | `Ui(Failed TokenRemoved/CertificateUnavailable)` |
 | `Keys(Signed Unsupported)` | → Selecting | `Ui(Failed UnsupportedAlgorithm)` |
-| `Keys(Signed Native/Other)` | → Ready | `Ui(Failed DriverFailure{alternate})`, `RecordError` |
+| `Keys(Signed Native/Other)` | → Ready | `Ui(Failed DriverFailure{driver of the path tried, alternate: via 0 and an alternate exists})`, `RecordError` |
 | `Ui(Cancel code)` | → Done | `Send(Error code)`, `Ui(Finished …)` |
 | `end(code)` (abort, timeout) | → Done | `Send(Error code)`; `Ui(Finished Timeout)` for a timeout, else `Ui(Finished Aborted)` (only when on screen) |
 | `disconnected()` | → Done | `Ui(Finished SiteCancelled)` when on screen; nothing is sent |
+
+`Ui(Sign{via: n})` signs through `KeyRef { path: n }` with the window's PIN:
+the window shows its PIN field for a driver path (`websign-ui-model`
+`SPEC.md` §2.2.2), so the PIN reaches `C_Login` there.
 
 Window events for a fingerprint that is not listed, or whose row is
 disabled, are ignored without a reply, as are events in any other state
@@ -221,6 +225,19 @@ Each is a test: events in, assert frames out, UI commands, key commands.
 15. Desktop idle 300 s without requests → `Control::Exit(0)`; a native
     connection never idles out (the extension closes the port).
 16. No `hello` within `HELLO_TIMEOUT` (5 s) → `Control::Exit(0)`.
+17. Slow listing: `Keys(SlowListing{device})` while a `List` is unanswered
+    and a request is on screen → `Ui(SlowListing{key, device})`; after the
+    `Listed` (the notice crossed it) or with nothing on screen → nothing.
+    "Scan again" starts a new listing.
+18. `Ui(ViewCertificate{key, fp})` for the request on screen →
+    `ConfirmUi::view_certificate(DER of fp from the last listing)`; an
+    unlisted fingerprint or another key → nothing; nothing is sent.
+19. Alternate path: primary Windows store (`System`), alternate driver
+    (`App`): a native error on path 0 → `DriverFailure{driver: "Windows",
+    alternate: true}`; `Sign{via: 1, pin}` → `Keys(Sign{path: 1, pin})`; a
+    wrong PIN reports the driver's flags. End to end over pipes with a
+    failing fake store and SoftHSM2 as the alternate, the window being the
+    real `ConfirmModel` (`runtime/softhsm_tests/alternate.rs`).
 
 ## 9. Runtime
 
@@ -233,12 +250,16 @@ Each is a test: events in, assert frames out, UI commands, key commands.
   `Internal` error for the same id (as the kit did); `write_frame`.
 - Key worker: owns `KeystoreHub::new(options)`; `List` maps the inventory to
   `CertCandidate`s (device labels via `websign_devices::hints`, PIN mode via
-  `pin_state`, algorithms from the key type and the store's capabilities)
+  `pin_state` for the primary path and for each alternate `KeyPath`, algorithms from the key type and the store's capabilities)
   plus `possible`: a fresh `websign_devices::Snapshot::scan()` through
   `possible_devices` with the listed keys' `LinkedDevices` (reader names,
   token models, `unknown_links` when a hardware key has no `DeviceLink` or
   only a CryptoTokenKit one), keeping the confident entries as
-  `PossibleCard`s; replies in command order.
+  `PossibleCard`s; replies in command order. A listing still running after
+  `SLOW_LISTING` (2 s) first posts `KeyReply::SlowListing{device}`: the
+  `devices.json` model of the first known plugged-in token or card (from the
+  same scan), else `None` — the key stores report no progress, and a token
+  label or serial is never used.
 - Neither the device monitor nor the hints database is wrapped in
   `catch_unwind`: `monitor::start` cannot fail (it retries on its own
   thread) and a bad embedded database is an error value; a panic in a
@@ -246,4 +267,7 @@ Each is a test: events in, assert frames out, UI commands, key commands.
   "Scan again".
 - `serve(input, outbound, config, make_ui, launcher, stores, options)` is
   `serve_stdio` over any streams and stores (the SoftHSM2 test uses pipes).
+- `ConfirmUi::view_certificate(der)` must not block (the Windows and macOS
+  viewers are modal): the app hands the bytes to its UI thread. The default
+  implementation has no viewer.
 - The `testing` feature exposes fakes of every port for other crates' tests.

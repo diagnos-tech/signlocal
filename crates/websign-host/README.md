@@ -13,8 +13,9 @@ with fakes.
   Phase-0 kit.
 - Tests: `cargo test -p websign-host` runs every scenario over recording
   fakes (`tests/common`; the crate's own fakes are `websign_host::testing`,
-  behind the `testing` feature), and serves a whole signature over pipes with
-  the real key worker against a SoftHSM2 token (skipped when
+  behind the `testing` feature), and serves whole signatures over pipes with
+  the real key worker against a SoftHSM2 token, directly and as the
+  alternate path of a failing OS store (skipped when
   `softhsm2-util`, `pkcs11-tool` and `openssl` are missing;
   `WEBSIGN_REQUIRE_SOFTHSM=1` makes that a failure).
 - License: GPL-3.0-or-later.

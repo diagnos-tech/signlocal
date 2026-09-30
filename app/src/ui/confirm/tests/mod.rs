@@ -11,4 +11,5 @@ mod accesskit;
 mod arming;
 mod keyboard;
 mod open_time;
+mod paths;
 mod snapshots;

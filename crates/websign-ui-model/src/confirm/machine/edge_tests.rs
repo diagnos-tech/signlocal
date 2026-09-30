@@ -1,4 +1,5 @@
-//! Result screens, the timeout countdown and the repaint deadlines.
+//! Result screens, the timeout countdown, the repaint deadlines and "View
+//! in system".
 
 use std::time::Duration;
 
@@ -88,4 +89,19 @@ fn arming_and_skeleton_are_deadlines() {
             .is_some_and(|at| at > rig.now())
     );
     assert_eq!(ConfirmModel::new().next_deadline(t0), None);
+}
+
+#[test]
+fn view_in_system_names_the_selected_certificate_once_armed() {
+    let mut rig = Rig::new();
+    rig.open_default(SIGN, true);
+    assert_eq!(rig.input(UserInput::ViewCertificate), [], "not armed yet");
+    rig.wait(700);
+    assert_eq!(
+        rig.input(UserInput::ViewCertificate),
+        [Intent::ViewCertificate(crate::fixtures::fingerprint(1))]
+    );
+    rig.finish(Finish::Signed);
+    rig.wait(700);
+    assert_eq!(rig.input(UserInput::ViewCertificate), [], "answered");
 }

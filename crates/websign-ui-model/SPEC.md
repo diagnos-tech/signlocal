@@ -150,7 +150,9 @@ States and transitions follow ux §4.8 with D11:
 | Choosing / Ready / PinError / PinLocked / Error | `Select(other usable)` (settled, §2.2.1) | Choosing; intent `Selected(other)`; re-arm; PIN length, PIN error, banner and path reset; (remembered: `Preparing`, new: `ContinueHint`) |
 | Ready / PinError | primary click or `Enter` (armed; PIN length valid when the field is shown) | Signing; intent `Sign { via, … }` |
 | Error (retryable) | primary click or `Enter` (armed, "Try again") | Signing; intent `Sign` on the last path |
-| Error `DriverFailure { alternate: true }` | `UseAlternatePath` (armed) | Signing; intent `Sign { via: 1 }`; later retries keep `via: 1` |
+| Error `DriverFailure { alternate: true }` | `UseAlternatePath` (armed), path 1 needs our field (§2.2.2) | Ready on path 1: banner cleared, PIN length 0, re-arm, no intent; Sign then sends `Sign { via: 1 }` |
+| Error `DriverFailure { alternate: true }` | `UseAlternatePath` (armed), any other PIN mode | Signing; intent `Sign { via: 1 }`; later retries keep `via: 1` |
+| request on screen | `ViewCertificate` (armed) | intent `ViewCertificate(selected)`; state unchanged |
 | Signing | `Failed(PinIncorrect)` | PinError; typed length reset to 0 (the app zeroizes the field), focus PIN |
 | Signing | `Failed(PinLocked)` | PinLocked; selected row `Disabled(PinLocked)` in place |
 | Signing | `Failed(UnsupportedAlgorithm)` | Error; selected row `Disabled(Incompatible)` in place |
@@ -185,7 +187,8 @@ asked for it (D11).
   no API can abort: Cancel is disabled ("Please wait…") and Escape does
   nothing; the OS dialog or the keypad has its own cancel.
 - Everything else is ignored while unarmed: primary press/release, `Enter`,
-  `Remember`, `Rescan`, `OpenDiagnostics`, `UseAlternatePath`.
+  `Remember`, `Rescan`, `OpenDiagnostics`, `UseAlternatePath`,
+  `ViewCertificate`.
   `Focus` and `PinLength` are always taken (they decide nothing).
 - `Select` is gated only until the window **settles**: it has been armed at
   least once since the last `Focus` change or `Open` (an input or a re-arm
@@ -209,6 +212,11 @@ asked for it (D11).
 
 #### 2.2.2 PIN, retries and the code card
 
+- The PIN area follows the signing path `via`: 0 is the candidate's
+  `source`/`pin`, n its `alternates[n - 1]` (`KeyPath { source, pin }`, the
+  PIN mode the host read for that path); a missing path falls back to the
+  primary. So after "Try through the token driver" a driver path shows our
+  field even though the OS store it replaces has its own dialog.
 - `PinMode::System` → `PinBlock::OsPrompt { system }` named after the key's
   store, not the running OS: `KeySource::Windows` → `Windows`,
   `MacosKeychain`/`MacosToken` → `Macos`. A `Driver` source has no system

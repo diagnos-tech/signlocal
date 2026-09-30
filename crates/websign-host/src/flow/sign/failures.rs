@@ -6,7 +6,7 @@ use websign_protocol::ErrorCode;
 use websign_ui_model::certs::{CertCandidate, PinMode};
 use websign_ui_model::confirm::port::{Failure, UiCommand};
 
-use super::keys::candidate_driver;
+use super::keys::{candidate_driver, path_of};
 use super::signing::Attempt;
 use super::{SignFlow, SignState};
 use crate::flow::Effect;
@@ -27,7 +27,10 @@ impl SignFlow {
         let key = self.key;
         let failed = |failure| Effect::Ui(UiCommand::Failed { key, failure });
         let (state, effects) = match error {
-            KeystoreError::WrongPin => (Next::Ready, vec![failed(wrong_pin(candidate.as_ref()))]),
+            KeystoreError::WrongPin => (
+                Next::Ready,
+                vec![failed(wrong_pin(candidate.as_ref(), attempt.via))],
+            ),
             KeystoreError::PinLocked => (
                 Next::Selecting,
                 vec![
@@ -56,7 +59,7 @@ impl SignFlow {
                     Next::Ready,
                     vec![
                         failed(Failure::DriverFailure {
-                            driver: candidate_driver(candidate.as_ref()),
+                            driver: candidate_driver(candidate.as_ref(), attempt.via),
                             native: native.clone(),
                             alternate: attempt.via == 0
                                 && candidate.is_some_and(|c| !c.alternates.is_empty()),
@@ -89,10 +92,11 @@ fn record(code: ErrorCode, native: Option<String>) -> Effect {
     Effect::RecordError { code, native }
 }
 
-/// The PIN flags as of the listing: the worker reports only "wrong PIN", so
-/// the counters are the last ones read.
-fn wrong_pin(candidate: Option<&CertCandidate>) -> Failure {
-    let (count_low, final_try) = match candidate.map(|c| c.pin) {
+/// The PIN flags of the path that was tried, as of the listing: the worker
+/// reports only "wrong PIN", so the counters are the last ones read.
+fn wrong_pin(candidate: Option<&CertCandidate>, via: usize) -> Failure {
+    let pin = candidate.and_then(|c| path_of(c, via)).map(|(_, pin)| pin);
+    let (count_low, final_try) = match pin {
         Some(PinMode::App {
             count_low,
             final_try,

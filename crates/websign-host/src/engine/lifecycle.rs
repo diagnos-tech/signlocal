@@ -23,10 +23,13 @@ impl Engine {
                 }
             }
             UiEvent::Rescan { key } if self.queue.active() == Some(key) => {
-                self.ports.keys.send(KeyCommand::Invalidate);
-                self.ports.keys.send(KeyCommand::List { refresh: true });
+                self.send_keys(KeyCommand::Invalidate);
+                self.send_keys(KeyCommand::List { refresh: true });
             }
             UiEvent::Rescan { .. } => {}
+            UiEvent::ViewCertificate { key, fingerprint } => {
+                self.view_certificate(key, &fingerprint);
+            }
             event => {
                 let key = ui_key(&event);
                 // Only the request on screen can be acted on; anything else
@@ -48,7 +51,9 @@ impl Engine {
     /// one, an operation's result to the request that started it.
     pub(super) fn on_keys(&mut self, reply: KeyReply) {
         match reply {
+            KeyReply::SlowListing { device } => self.on_slow_listing(device),
             KeyReply::Listed(snapshot) => {
+                self.listings.arrived(&snapshot);
                 if !snapshot.failures.is_empty() {
                     log::debug!("{} key source(s) failed to list", snapshot.failures.len());
                 }
@@ -91,10 +96,10 @@ impl Engine {
             event,
             DeviceEvent::CardRemoved { .. } | DeviceEvent::ReaderRemoved { .. }
         ) {
-            self.ports.keys.send(KeyCommand::EndSessions);
+            self.send_keys(KeyCommand::EndSessions);
         }
-        self.ports.keys.send(KeyCommand::Invalidate);
-        self.ports.keys.send(KeyCommand::List { refresh: true });
+        self.send_keys(KeyCommand::Invalidate);
+        self.send_keys(KeyCommand::List { refresh: true });
     }
 
     /// Deadlines, the `hello` limit and the idle exit of desktop clients.
@@ -158,7 +163,8 @@ fn ui_key(event: &UiEvent) -> Option<RequestKey> {
         | UiEvent::Sign { key, .. }
         | UiEvent::Choose { key, .. }
         | UiEvent::Cancel { key, .. }
-        | UiEvent::Rescan { key } => Some(*key),
+        | UiEvent::Rescan { key }
+        | UiEvent::ViewCertificate { key, .. } => Some(*key),
         UiEvent::OpenDiagnostics { .. } => None,
     }
 }

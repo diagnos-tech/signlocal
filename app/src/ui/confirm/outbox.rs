@@ -55,6 +55,7 @@ pub fn send(
         Intent::Cancel(code) => UiEvent::Cancel { key, code },
         Intent::Rescan => UiEvent::Rescan { key },
         Intent::OpenDiagnostics(tab) => UiEvent::OpenDiagnostics { tab },
+        Intent::ViewCertificate(fingerprint) => UiEvent::ViewCertificate { key, fingerprint },
     };
     if events.send(EngineEvent::Ui(event)).is_err() {
         log::warn!("the engine is gone; a window decision was dropped");

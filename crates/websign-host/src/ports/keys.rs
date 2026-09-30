@@ -7,12 +7,17 @@
 
 use std::collections::HashMap;
 use std::sync::Arc;
+use std::time::Duration;
 
 use secrecy::SecretString;
 use websign_core::{Fingerprint, HashAlgorithm, SignatureAlgorithm};
 use websign_keystores::{KeyRef, KeystoreError};
 use websign_ui_model::certs::CertCandidate;
 use websign_ui_model::possible::PossibleCard;
+
+/// How long a listing runs before the window says which device it is still
+/// reading (`docs/ux.md` §4.8 "Still reading {device}").
+pub const SLOW_LISTING: Duration = Duration::from_secs(2);
 
 /// A listing, shared read-only between the engine and the UI.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -65,6 +70,13 @@ pub enum KeyReply {
     Chain {
         tag: u64,
         chain: Vec<Vec<u8>>,
+    },
+    /// A listing has taken longer than [`SLOW_LISTING`] and is still running
+    /// (a token driver loading or reading its objects); its `Listed`
+    /// follows. `device` is a safe model name of a plugged-in token or card
+    /// from `devices.json`, never a token label or a serial.
+    SlowListing {
+        device: Option<String>,
     },
 }
 

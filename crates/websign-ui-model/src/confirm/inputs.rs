@@ -53,7 +53,14 @@ pub(super) fn handle(model: &mut ConfirmModel, input: UserInput, now: Instant) -
         UserInput::OpenDiagnostics if armed && model.on_screen() => {
             return vec![Intent::OpenDiagnostics(None)];
         }
-        UserInput::UseAlternatePath if armed => return model.use_alternate_path(),
+        UserInput::UseAlternatePath if armed => return model.use_alternate_path(now),
+        UserInput::ViewCertificate if armed && model.on_screen() => {
+            return model
+                .selected_row()
+                .map(|row| Intent::ViewCertificate(row.candidate.fingerprint))
+                .into_iter()
+                .collect();
+        }
         _ => {}
     }
     Vec::new()

@@ -8,6 +8,7 @@
 mod effects;
 mod frames;
 mod lifecycle;
+mod listing;
 mod persist;
 mod present;
 mod queueing;
@@ -92,6 +93,7 @@ pub struct Engine {
     started: Instant,
     /// The last frame or request end, for the desktop idle exit.
     last_activity: Instant,
+    listings: listing::Listings,
     /// Whether the launch arguments were checked (once, at the first frame).
     launch_checked: bool,
     /// The `v` of errors sent before negotiation: the version of the frame
@@ -113,6 +115,7 @@ impl Engine {
             next_key: 1,
             started: now,
             last_activity: now,
+            listings: listing::Listings::default(),
             launch_checked: false,
             refusal_version: websign_protocol::PROTOCOL_VERSION,
         }
