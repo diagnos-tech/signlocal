@@ -2,11 +2,18 @@
 //! row reads, their order and the initial selection.
 
 mod badge;
+mod build_row;
 mod candidate;
 mod filter;
+mod hide;
 mod location;
+mod merge;
 mod order;
 mod row;
+#[cfg(test)]
+mod row_tests;
+mod status;
+mod text;
 mod validity;
 
 pub use badge::{Badge, badge};

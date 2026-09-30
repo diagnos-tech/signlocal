@@ -22,35 +22,88 @@ impl Arming {
     /// Starts (or restarts) the delay at `now`. Call when the window becomes
     /// visible and focused, and on every re-arm event.
     pub fn rearm(&mut self, now: Instant) {
-        let _ = now;
-        todo!("SPEC.md §2.1")
+        self.since = Some(now);
+        self.pressed_armed = false;
     }
 
     /// Stops counting (focus lost, window hidden).
     pub fn disarm(&mut self) {
-        todo!("SPEC.md §2.1")
+        self.since = None;
+        self.pressed_armed = false;
     }
 
     /// Whether input is accepted at `now`.
     pub fn is_armed(&self, now: Instant) -> bool {
-        let _ = now;
-        todo!("SPEC.md §2.1")
+        self.since
+            .is_some_and(|since| now.saturating_duration_since(since) >= ARMING_DELAY)
     }
 
     /// The press half of a click; remembers whether it was armed.
     pub fn press(&mut self, now: Instant) {
-        let _ = now;
-        todo!("SPEC.md §2.1")
+        self.pressed_armed = self.is_armed(now);
     }
 
     /// The release half; `true` = the click counts.
     pub fn release(&mut self, now: Instant) -> bool {
-        let _ = now;
-        todo!("SPEC.md §2.1")
+        let counts = self.pressed_armed && self.is_armed(now);
+        self.pressed_armed = false;
+        counts
     }
 
     /// When the button becomes armed, for scheduling a repaint.
     pub fn armed_at(&self) -> Option<Instant> {
-        todo!("SPEC.md §2.1")
+        self.since.map(|since| since + ARMING_DELAY)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const MS: fn(u64) -> Duration = Duration::from_millis;
+
+    #[test]
+    fn arms_after_the_delay() {
+        let t0 = Instant::now();
+        let mut arming = Arming::default();
+        assert!(!arming.is_armed(t0));
+        assert_eq!(arming.armed_at(), None);
+        arming.rearm(t0);
+        assert!(!arming.is_armed(t0 + MS(599)));
+        assert!(arming.is_armed(t0 + MS(600)));
+        assert_eq!(arming.armed_at(), Some(t0 + MS(600)));
+    }
+
+    #[test]
+    fn press_before_arming_never_counts() {
+        let t0 = Instant::now();
+        let mut arming = Arming::default();
+        arming.rearm(t0);
+        arming.press(t0 + MS(100));
+        assert!(!arming.release(t0 + MS(700)));
+    }
+
+    #[test]
+    fn armed_click_counts_once() {
+        let t0 = Instant::now();
+        let mut arming = Arming::default();
+        arming.rearm(t0);
+        arming.press(t0 + MS(650));
+        assert!(arming.release(t0 + MS(700)));
+        assert!(!arming.release(t0 + MS(710)));
+    }
+
+    #[test]
+    fn rearm_or_disarm_between_press_and_release_cancels_the_click() {
+        let t0 = Instant::now();
+        let mut arming = Arming::default();
+        arming.rearm(t0);
+        arming.press(t0 + MS(650));
+        arming.rearm(t0 + MS(660));
+        assert!(!arming.release(t0 + MS(1400)));
+        arming.press(t0 + MS(1400));
+        arming.disarm();
+        assert!(!arming.release(t0 + MS(2000)));
+        assert!(!arming.is_armed(t0 + MS(2000)));
     }
 }

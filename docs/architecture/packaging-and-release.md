@@ -34,8 +34,8 @@ native runner of each OS; the release job assembles and publishes.
 | Windows direct | `%LOCALAPPDATA%\Programs\WebeSign\websign.exe`, folder added to the user `PATH` | `websign install`: `HKCU\Software\<vendor>\NativeMessagingHosts\dev.websign.host` for every browser, manifests in `%LOCALAPPDATA%\websign\NativeMessagingHosts`, `HKCU\Software\Classes\websign`, Start menu shortcut |
 | Windows store | package folder; alias `websign.exe` in `%LOCALAPPDATA%\Microsoft\WindowsApps` | same keys, written by the app on first start (manifests point at the alias) |
 | macOS direct | `/Applications/WebeSign.app` (or `~/Applications` without admin rights); `~/.local/bin/websign` symlink | `websign install`: manifests in each browser's `NativeMessagingHosts` under `~/Library/Application Support`; URL scheme from `Info.plist` |
-| Linux deb/rpm | `/usr/bin/websign`, `/usr/share/applications/websign.desktop` | postinst runs `websign install --system` (system manifests: the Firefox Snap portal reads only these) and enables `pcscd.socket`; `Depends: libpcsclite1` / `Requires: pcsc-lite-libs`; `Recommends: pcscd, p11-kit` |
-| Linux tar.gz | `~/.local/bin/websign`, `~/.local/share/applications/websign.desktop` | `websign install` (per user); the script offers `sudo websign install --system` for Firefox Snap |
+| Linux deb/rpm | `/usr/bin/websign`, `/usr/share/applications/websign.desktop` | postinst runs `websign install --system` (system manifests; the Firefox Snap portal also reads `~/.mozilla`, which `websign install` writes per user) and enables `pcscd.socket`; `Depends: libpcsclite1` / `Requires: pcsc-lite-libs`; `Recommends: pcscd, p11-kit` |
+| Linux tar.gz | `~/.local/bin/websign`, `~/.local/share/applications/websign.desktop` | `websign install` (per user); per-user manifests also cover the Firefox Snap; the script offers `sudo websign install --system` for other users |
 
 `websign-client` and `@websign/desktop` search these locations in this order
 after `WEBSIGN_EXECUTABLE` and `PATH`.

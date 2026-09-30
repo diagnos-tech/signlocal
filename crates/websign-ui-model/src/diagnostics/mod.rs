@@ -3,4 +3,5 @@
 
 pub mod onboarding;
 pub mod report;
+mod report_lines;
 pub mod status;

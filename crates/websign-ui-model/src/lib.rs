@@ -17,3 +17,6 @@ pub mod confirm;
 pub mod diagnostics;
 pub mod possible;
 pub mod time;
+
+#[cfg(test)]
+mod fixtures;

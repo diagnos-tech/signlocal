@@ -2,6 +2,15 @@
 
 - `common/` — shared helpers of the integration tests
 - `fixtures/` — OpenSSL-generated certificates and vectors
+- `cert_names_personal.rs` — SPEC §6.1a: `given_name`, `surname`, `serial_number`.
+- `ecdsa_brainpool.rs` — SPEC §4.1: Brainpool curves, OIDs and encodings.
+- `present_caller.rs` — SPEC §12: `caller_label`, `consent_key`.
+- `present_document.rs` — SPEC §11: `display_document` and the masks.
+- `present_holder.rs` — SPEC §10: `display_name`, `title_case`.
+- `present_origin.rs` — SPEC §9: `format_origin`.
+- `present_wire.rs` — SPEC §13: `certificate_profile` and the wire mappings.
+- `SPEC-QUESTIONS.md` — points where the spec is silent or ambiguous, with the assumption each test makes.
+- `verify_brainpool.rs` — SPEC §4.1 and §7: `verify` on Brainpool keys.
 - `algorithm.rs` — SPEC §2: `SignatureAlgorithm`, `UnknownAlgorithmError`.
 - `cert.rs` — SPEC §6 and §6.0: parsing `CertInfo` from DER, and `CertError`.
 - `cert_icp_brasil.rs` — SPEC §6.3: ICP-Brasil detection, level, holder, CPF and CNPJ.

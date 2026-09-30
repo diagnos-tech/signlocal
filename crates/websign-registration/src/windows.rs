@@ -24,6 +24,28 @@ fn vendor_key(browser: Browser) -> &'static str {
     }
 }
 
+/// The keys `browser` reads, first match wins: its own, then the ones it
+/// documents falling back to (only Edge: Chromium's, then Chrome's). An
+/// undocumented fallback is left out on purpose: counting a key the browser
+/// may not read would report `Registered` with nothing to repair.
+pub(crate) fn lookup_order(browser: Browser) -> Vec<String> {
+    let vendors: &[Browser] = match browser {
+        Browser::Edge => &[Browser::Chromium, Browser::Chrome],
+        _ => &[],
+    };
+    std::iter::once(browser)
+        .chain(vendors.iter().copied())
+        .map(host_key)
+        .collect()
+}
+
+fn host_key(browser: Browser) -> String {
+    format!(
+        r"{}\NativeMessagingHosts\{NATIVE_HOST}",
+        vendor_key(browser)
+    )
+}
+
 /// Manifest files first (the keys point at them), then one key per distinct
 /// vendor folder.
 pub fn targets(browsers: &[Browser], manifest_dir: &Path) -> Vec<Target> {
@@ -52,10 +74,7 @@ pub fn targets(browsers: &[Browser], manifest_dir: &Path) -> Vec<Target> {
 
     let mut keys: Vec<(String, Vec<&str>, Family)> = Vec::new();
     for &browser in browsers {
-        let subkey = format!(
-            r"{}\NativeMessagingHosts\{NATIVE_HOST}",
-            vendor_key(browser)
-        );
+        let subkey = host_key(browser);
         match keys.iter_mut().find(|(existing, _, _)| *existing == subkey) {
             Some((_, labels, _)) => labels.push(browser.label()),
             None => keys.push((subkey, vec![browser.label()], browser.family())),

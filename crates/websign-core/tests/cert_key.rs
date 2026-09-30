@@ -2,7 +2,7 @@
 
 mod common;
 
-use common::info;
+use common::{BRAINPOOL_R1_KEYS, BRAINPOOL_TWISTED, info};
 use websign_core::{Curve, PublicKeyKind, SignatureAlgorithm};
 
 #[test]
@@ -37,7 +37,6 @@ fn reports_other_algorithms_and_curves_as_unsupported_with_their_oid() {
         // EC keys on a curve this crate does not know report the CURVE's OID.
         ("secp256k1", "1.3.132.0.10"),
         ("secp224r1", "1.3.132.0.33"),
-        ("brainpoolP256r1", "1.3.36.3.3.2.8.1.1.7"),
     ];
     for (name, oid) in cases {
         assert_eq!(
@@ -75,5 +74,51 @@ fn unsupported_keys_support_nothing() {
     };
     for alg in SignatureAlgorithm::ALL {
         assert!(!key.supports(alg), "{alg}");
+    }
+}
+
+#[test]
+fn reads_brainpool_r1_curves_as_named_ec_keys() {
+    // SPEC §4.1: these summarize as `Ec`, not `Unsupported`.
+    for (name, curve) in BRAINPOOL_R1_KEYS {
+        assert_eq!(info(name).key, PublicKeyKind::Ec { curve }, "{name}");
+    }
+    assert_eq!(
+        info("brainpoolP256r1").key,
+        PublicKeyKind::Ec {
+            curve: Curve::BrainpoolP256r1
+        }
+    );
+}
+
+#[test]
+fn reports_twisted_brainpool_curves_as_unsupported_with_the_curve_oid() {
+    for (name, oid) in BRAINPOOL_TWISTED {
+        assert_eq!(
+            info(name).key,
+            PublicKeyKind::Unsupported {
+                oid: oid.to_owned()
+            },
+            "{name}"
+        );
+    }
+}
+
+#[test]
+fn brainpool_ec_keys_support_ecdsa_only() {
+    for (name, _) in BRAINPOOL_R1_KEYS {
+        let key = info(name).key;
+        assert!(key.supports(SignatureAlgorithm::Ecdsa), "{name}");
+        assert!(!key.supports(SignatureAlgorithm::RsaPkcs1v15), "{name}");
+        assert!(!key.supports(SignatureAlgorithm::RsaPss), "{name}");
+    }
+}
+
+#[test]
+fn brainpool_certificates_are_ordinary_signing_certificates() {
+    for (name, _) in BRAINPOOL_R1_KEYS {
+        let info = info(name);
+        assert!(info.can_sign(), "{name}");
+        assert!(info.is_valid_at(1_800_000_000), "{name}");
     }
 }

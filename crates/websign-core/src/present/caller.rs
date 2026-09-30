@@ -38,16 +38,71 @@ pub struct CallerLabel {
     pub verified: bool,
 }
 
+/// Longest product name shown, ellipsis included.
+const MAX_NAME_CHARS: usize = 64;
+
 /// The label to show for `caller`.
 pub fn caller_label(caller: &DesktopCaller) -> CallerLabel {
-    let _ = caller;
-    todo!("SPEC.md §12")
+    let name = caller
+        .product_name
+        .as_deref()
+        .map(str::trim)
+        .filter(|name| !name.is_empty())
+        .map_or_else(|| file_name(caller), shorten);
+    match &caller.signer {
+        Some(CodeSigner::Authenticode { subject }) => CallerLabel {
+            name,
+            detail: subject.clone(),
+            verified: true,
+        },
+        Some(CodeSigner::Apple {
+            team_id,
+            identifier,
+        }) => CallerLabel {
+            name,
+            detail: format!("{identifier} ({team_id})"),
+            verified: true,
+        },
+        None => CallerLabel {
+            name,
+            detail: caller.executable.display().to_string(),
+            verified: false,
+        },
+    }
 }
 
 /// The key consent is remembered under: `"app:<signer>"` for signed
 /// programs (survives updates that move the binary), `"path:<executable>"`
 /// otherwise.
 pub fn consent_key(caller: &DesktopCaller) -> String {
-    let _ = caller;
-    todo!("SPEC.md §12")
+    match &caller.signer {
+        Some(CodeSigner::Authenticode { subject }) => {
+            format!(
+                "app:authenticode:{subject}:{}",
+                file_name(caller).to_lowercase()
+            )
+        }
+        Some(CodeSigner::Apple {
+            team_id,
+            identifier,
+        }) => format!("app:apple:{team_id}:{identifier}"),
+        None => format!("path:{}", caller.executable.display()),
+    }
+}
+
+fn file_name(caller: &DesktopCaller) -> String {
+    caller
+        .executable
+        .file_name()
+        .unwrap_or(caller.executable.as_os_str())
+        .to_string_lossy()
+        .into_owned()
+}
+
+fn shorten(name: &str) -> String {
+    if name.chars().count() <= MAX_NAME_CHARS {
+        return name.to_owned();
+    }
+    let kept: String = name.chars().take(MAX_NAME_CHARS - 1).collect();
+    format!("{}…", kept.trim_end())
 }

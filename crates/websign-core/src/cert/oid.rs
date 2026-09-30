@@ -49,12 +49,19 @@ fn push_arc(text: &mut String, arc: u128) {
 // Distinguished-name attributes (RFC 4519).
 /// 2.5.4.3
 pub(super) const COMMON_NAME: &[u8] = &[0x55, 0x04, 0x03];
+/// 2.5.4.4
+pub(super) const SURNAME: &[u8] = &[0x55, 0x04, 0x04];
+/// 2.5.4.5
+pub(super) const SERIAL_NUMBER: &[u8] = &[0x55, 0x04, 0x05];
 /// 2.5.4.6
 pub(super) const COUNTRY_NAME: &[u8] = &[0x55, 0x04, 0x06];
 /// 2.5.4.10
 pub(super) const ORGANIZATION_NAME: &[u8] = &[0x55, 0x04, 0x0a];
 /// 2.5.4.11
 pub(super) const ORGANIZATIONAL_UNIT_NAME: &[u8] = &[0x55, 0x04, 0x0b];
+
+/// 2.5.4.42
+pub(super) const GIVEN_NAME: &[u8] = &[0x55, 0x04, 0x2a];
 
 // Public key algorithms.
 /// 1.2.840.113549.1.1.1

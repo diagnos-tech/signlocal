@@ -44,6 +44,8 @@ localityName = optional
 organizationName = optional
 organizationalUnitName = optional
 commonName = optional
+givenName = optional
+surname = optional
 serialNumber = optional
 emailAddress = optional
 EOF

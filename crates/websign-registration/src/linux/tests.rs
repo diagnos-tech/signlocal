@@ -59,8 +59,21 @@ fn firefox_uses_the_lowercase_hyphenated_folder() {
 fn a_browser_counts_as_installed_when_its_config_root_exists() {
     for (label, manifest, requires) in manifests(&Browser::ALL) {
         let requires = requires.unwrap_or_else(|| panic!("{label} must require its root"));
+        if label.contains("Snap, through the portal") {
+            continue;
+        }
         assert!(manifest.starts_with(&requires), "{label}: {manifest:?}");
     }
+}
+
+#[test]
+fn snap_firefox_writes_the_host_manifest_the_portal_reads() {
+    let (_, manifest, requires) = manifests(&[Browser::Firefox])
+        .into_iter()
+        .find(|(label, _, _)| label == "Firefox (Snap, through the portal)")
+        .unwrap();
+    assert!(manifest.starts_with("/home/u/.mozilla/native-messaging-hosts"));
+    assert_eq!(requires, Some(PathBuf::from("/home/u/snap/firefox")));
 }
 
 #[test]

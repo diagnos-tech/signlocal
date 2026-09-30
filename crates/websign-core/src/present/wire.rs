@@ -4,11 +4,12 @@
 //! it has its own small enums; these conversions are the only bridge.
 
 use websign_protocol::types::{
-    CertificateProfile, CurveName, HashName, KeyDescription, KeyStorage, SignatureAlgorithmName,
+    CertificateProfile, CurveName, EidasProfile, EidasType, HashName, KeyDescription, KeyStorage,
+    SignatureAlgorithmName,
 };
 
 use crate::algorithm::SignatureAlgorithm;
-use crate::cert::{CertInfo, PublicKeyKind};
+use crate::cert::{CertInfo, IcpLevel, PublicKeyKind, QcType};
 use crate::ecdsa::Curve;
 use crate::hash::HashAlgorithm;
 
@@ -75,6 +76,39 @@ pub fn key_description(key: &PublicKeyKind) -> Option<KeyDescription> {
 /// The certificate profile callers use to enforce their own policy
 /// (`SPEC.md` §13). `hardware` comes from the key store.
 pub fn certificate_profile(info: &CertInfo, hardware: Option<bool>) -> CertificateProfile {
-    let _ = (info, hardware, KeyStorage::Unknown);
-    todo!("SPEC.md §13")
+    CertificateProfile {
+        icp_brasil: info
+            .icp_brasil
+            .as_ref()
+            .map(|icp| icp.level.map_or_else(unknown_level, level_name)),
+        eidas: info.qualified.as_ref().map(|qualified| EidasProfile {
+            qualified: qualified.compliance,
+            qscd: qualified.sscd,
+            types: qualified.types.iter().copied().map(eidas_type).collect(),
+        }),
+        key_storage: match hardware {
+            Some(true) => KeyStorage::Hardware,
+            Some(false) => KeyStorage::Software,
+            None => KeyStorage::Unknown,
+        },
+    }
+}
+
+fn unknown_level() -> String {
+    "ICP-Brasil".to_owned()
+}
+
+fn level_name(level: IcpLevel) -> String {
+    match level {
+        IcpLevel::Other(_) => unknown_level(),
+        known => known.to_string(),
+    }
+}
+
+fn eidas_type(kind: QcType) -> EidasType {
+    match kind {
+        QcType::ESign => EidasType::Esign,
+        QcType::ESeal => EidasType::Eseal,
+        QcType::Web => EidasType::Web,
+    }
 }

@@ -23,34 +23,36 @@ pub(super) fn verify(
         Curve::P256 => p256_verify(point, digest, signature),
         Curve::P384 => p384_verify(point, digest, signature),
         Curve::P521 => p521_verify(point, digest, signature),
-        // TODO(gustavo): SPEC.md §4.1 — verify brainpoolP256r1/P384r1 with the
-        // `bp256`/`bp384` crates. No maintained pure-Rust brainpoolP512r1
-        // verifier exists, so that curve stays unverifiable (`has_verifier`).
-        Curve::BrainpoolP256r1 | Curve::BrainpoolP384r1 | Curve::BrainpoolP512r1 => {
-            Err(VerifyError::UnsupportedKey)
-        }
+        Curve::BrainpoolP256r1 => bp256_verify(point, digest, signature),
+        Curve::BrainpoolP384r1 => bp384_verify(point, digest, signature),
+        // No maintained pure-Rust verifier exists; see `Curve::has_verifier`.
+        Curve::BrainpoolP512r1 => Err(VerifyError::UnsupportedKey),
     }
 }
 
-/// One verifier per curve crate; the crates share a shape but not a type.
+/// One verifier per curve; `ecdsa` is generic over the curve type, and the
+/// curve crates only supply the parameters.
 macro_rules! curve_verifier {
-    ($name:ident, $curve:ident) => {
+    ($name:ident, $curve:ty) => {
         fn $name(point: &[u8], digest: &[u8], signature: &[u8]) -> Result<(), VerifyError> {
-            use $curve::ecdsa::signature::hazmat::PrehashVerifier;
-            use $curve::ecdsa::{Signature, VerifyingKey};
+            use ecdsa::signature::hazmat::PrehashVerifier;
+            use ecdsa::{Signature, VerifyingKey};
 
             // A point that is not on the curve means the certificate carries
             // a key nobody can use, which is not the signature's fault.
-            let key =
-                VerifyingKey::from_sec1_bytes(point).map_err(|_| VerifyError::UnsupportedKey)?;
-            let signature =
-                Signature::from_slice(signature).map_err(|_| VerifyError::InvalidSignature)?;
+            let key = VerifyingKey::<$curve>::from_sec1_bytes(point)
+                .map_err(|_| VerifyError::UnsupportedKey)?;
+            let signature = Signature::<$curve>::from_slice(signature)
+                .map_err(|_| VerifyError::InvalidSignature)?;
             key.verify_prehash(digest, &signature)
                 .map_err(|_| VerifyError::InvalidSignature)
         }
     };
 }
 
-curve_verifier!(p256_verify, p256);
-curve_verifier!(p384_verify, p384);
-curve_verifier!(p521_verify, p521);
+curve_verifier!(p256_verify, p256::NistP256);
+curve_verifier!(p384_verify, p384::NistP384);
+curve_verifier!(p521_verify, p521::NistP521);
+// Only the `r1` (random) Brainpool curves are supported, not the twisted `t1`.
+curve_verifier!(bp256_verify, bp256::r1::BrainpoolP256r1);
+curve_verifier!(bp384_verify, bp384::r1::BrainpoolP384r1);

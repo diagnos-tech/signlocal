@@ -61,14 +61,7 @@ fn verify_fixture(
     )
 }
 
-const UNSUPPORTED_KEYS: [&str; 6] = [
-    "ed25519",
-    "ed448",
-    "secp256k1",
-    "secp224r1",
-    "brainpoolP256r1",
-    "dsa1024",
-];
+const UNSUPPORTED_KEYS: [&str; 5] = ["ed25519", "ed448", "secp256k1", "secp224r1", "dsa1024"];
 
 // --- valid signatures: every hash x algorithm x key ------------------------------------------
 

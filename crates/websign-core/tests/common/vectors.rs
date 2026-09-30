@@ -8,7 +8,7 @@ use websign_core::{Curve, Fingerprint, HashAlgorithm};
 
 use super::{fixture_curve, fixture_hash, fixture_path, hex_decode};
 
-fn records(file: &str) -> Vec<Vec<String>> {
+pub(super) fn records(file: &str) -> Vec<Vec<String>> {
     let path = fixture_path(&format!("vectors/{file}"));
     let text = fs::read_to_string(&path)
         .unwrap_or_else(|e| panic!("cannot read manifest {}: {e}", path.display()));

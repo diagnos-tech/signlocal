@@ -22,6 +22,5 @@ gen_keys() {
   new_pkey ed448 ed448
   new_ec secp256k1 secp256k1
   new_ec secp224r1 secp224r1
-  new_ec brainpoolP256r1 brainpoolP256r1
   openssl dsaparam -genkey -noout -out "$WORK/keys/dsa1024.pem" 1024 2>/dev/null
 }

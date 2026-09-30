@@ -41,24 +41,105 @@ pub struct CertificatesFacts {
 
 /// Browsers tab light.
 pub fn browsers_light(facts: &BrowsersFacts) -> Light {
-    let _ = facts;
-    todo!("SPEC.md §3.1")
+    if facts.connected == 0 || facts.registration_missing_everywhere {
+        Light::Red
+    } else if facts.with_problems > 0 {
+        Light::Yellow
+    } else {
+        Light::Green
+    }
 }
 
 /// Devices tab light.
 pub fn devices_light(facts: &DevicesFacts) -> Light {
-    let _ = facts;
-    todo!("SPEC.md §3.1")
+    if facts.pcscd_stopped {
+        Light::Red
+    } else if facts.devices_without_certificates > 0
+        || facts.drivers_failed > 0
+        || facts.complement_outdated
+    {
+        Light::Yellow
+    } else {
+        Light::Green
+    }
 }
 
 /// Certificates tab light.
 pub fn certificates_light(facts: &CertificatesFacts) -> Light {
-    let _ = facts;
-    todo!("SPEC.md §3.1")
+    if facts.usable == 0 {
+        Light::Red
+    } else if facts.expiring_within_30_days > 0 {
+        Light::Yellow
+    } else {
+        Light::Green
+    }
 }
 
-/// Overall = the worst of the tabs.
+/// Overall = the worst of the tabs; no tabs is `Gray`.
 pub fn overall(lights: &[Light]) -> Light {
-    let _ = lights;
-    todo!("SPEC.md §3.1")
+    lights.iter().copied().max().unwrap_or(Light::Gray)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn browsers() {
+        let ok = BrowsersFacts {
+            connected: 1,
+            ..Default::default()
+        };
+        assert_eq!(browsers_light(&ok), Light::Green);
+        assert_eq!(browsers_light(&BrowsersFacts::default()), Light::Red);
+        let problem = BrowsersFacts {
+            with_problems: 1,
+            ..ok.clone()
+        };
+        assert_eq!(browsers_light(&problem), Light::Yellow);
+        let missing = BrowsersFacts {
+            registration_missing_everywhere: true,
+            ..problem
+        };
+        assert_eq!(browsers_light(&missing), Light::Red);
+    }
+
+    #[test]
+    fn devices() {
+        assert_eq!(devices_light(&DevicesFacts::default()), Light::Green);
+        let outdated = DevicesFacts {
+            complement_outdated: true,
+            ..Default::default()
+        };
+        assert_eq!(devices_light(&outdated), Light::Yellow);
+        let stopped = DevicesFacts {
+            pcscd_stopped: true,
+            ..outdated
+        };
+        assert_eq!(devices_light(&stopped), Light::Red);
+    }
+
+    #[test]
+    fn certificates_and_overall() {
+        let none = CertificatesFacts::default();
+        assert_eq!(certificates_light(&none), Light::Red);
+        let expiring = CertificatesFacts {
+            usable: 2,
+            expiring_within_30_days: 1,
+        };
+        assert_eq!(certificates_light(&expiring), Light::Yellow);
+        assert_eq!(
+            certificates_light(&CertificatesFacts {
+                usable: 2,
+                expiring_within_30_days: 0
+            }),
+            Light::Green
+        );
+        assert_eq!(overall(&[]), Light::Gray);
+        assert_eq!(
+            overall(&[Light::Green, Light::Red, Light::Yellow]),
+            Light::Red
+        );
+        assert_eq!(overall(&[Light::Gray, Light::Green]), Light::Green);
+    }
 }

@@ -17,7 +17,7 @@ gen_key_type_certs() {
   local key
   for key in rsa2048 rsa2048b rsa3072 rsa4096 rsa2047 rsapss2048 \
     p256 p256b p384 p521 \
-    ed25519 ed448 secp256k1 secp224r1 brainpoolP256r1 dsa1024; do
+    ed25519 ed448 secp256k1 secp224r1 dsa1024; do
     leaf "$key" "$key"
   done
 }

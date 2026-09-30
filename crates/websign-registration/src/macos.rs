@@ -15,6 +15,10 @@ fn support_dirs(browser: Browser) -> &'static [(&'static str, &'static str)] {
             ("Google Chrome Dev", "Google/Chrome Dev"),
             ("Google Chrome Canary", "Google/Chrome Canary"),
             ("Google Chrome for Testing", "Google/ChromeForTesting"),
+            // Arc is Chromium-based and keeps its user data in `Arc/User
+            // Data`, where Chromium looks for `NativeMessagingHosts`. It has
+            // no `--browser` value of its own, so it rides with Chrome.
+            ("Arc", "Arc/User Data"),
         ],
         Browser::Chromium => &[("Chromium", "Chromium")],
         Browser::Edge => &[

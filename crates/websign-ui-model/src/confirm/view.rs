@@ -134,6 +134,13 @@ pub enum PrimaryButton {
 
 /// Why the error banner is shown, when it maps to a code.
 pub fn banner_code(failure: &Failure) -> ErrorCode {
-    let _ = failure;
-    todo!("SPEC.md §2.4")
+    match failure {
+        Failure::PinIncorrect { .. } => ErrorCode::PinIncorrect,
+        Failure::PinLocked { .. } => ErrorCode::PinLocked,
+        Failure::TokenRemoved => ErrorCode::TokenRemoved,
+        Failure::DriverFailure { .. } => ErrorCode::DriverFailure,
+        Failure::UnsupportedAlgorithm { .. } => ErrorCode::UnsupportedAlgorithm,
+        Failure::CertificateUnavailable => ErrorCode::CertificateUnavailable,
+        Failure::Internal { .. } => ErrorCode::Internal,
+    }
 }

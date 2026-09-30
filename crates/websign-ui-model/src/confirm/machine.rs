@@ -13,8 +13,12 @@ use websign_protocol::ErrorCode;
 use websign_protocol::messages::DiagnosticsTab;
 
 use super::arming::Arming;
-use super::port::UiCommand;
-use super::view::ConfirmView;
+use super::port::{Failure, OpenRequest, UiCommand};
+use super::slot::CodeSlot;
+use super::view::{ConfirmView, PinError};
+use super::{build, commands, inputs, timers};
+use crate::certs::CertList;
+use crate::possible::PossibleCard;
 
 /// The states of `docs/ux.md` §4.8.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -86,10 +90,32 @@ pub enum Intent {
 }
 
 /// The window's whole state.
+///
+/// Fields are visible to the sibling modules that implement its transitions
+/// ([`commands`], [`inputs`], [`timers`], [`build`]); nothing outside
+/// `confirm` can touch them.
 #[derive(Debug, Clone)]
 pub struct ConfirmModel {
-    state: ConfirmState,
-    arming: Arming,
+    pub(super) state: ConfirmState,
+    pub(super) arming: Arming,
+    pub(super) request: Option<OpenRequest>,
+    pub(super) list: Option<CertList>,
+    pub(super) possible: Vec<PossibleCard>,
+    pub(super) code: CodeSlot,
+    /// Characters typed in the PIN field (the value never reaches the model).
+    pub(super) pin_len: usize,
+    pub(super) pin_error: Option<PinError>,
+    pub(super) remember: bool,
+    pub(super) banner: Option<Failure>,
+    /// Signing path: 0 = primary, 1 = first alternate.
+    pub(super) via: usize,
+    /// When the request times out.
+    pub(super) deadline: Option<Instant>,
+    /// When the success or site-cancelled screen closes.
+    pub(super) hold_until: Option<Instant>,
+    pub(super) cancel_sent: bool,
+    /// Choose mode: the decision was sent and the answer is pending.
+    pub(super) chosen: bool,
 }
 
 impl Default for ConfirmModel {
@@ -104,6 +130,19 @@ impl ConfirmModel {
         ConfirmModel {
             state: ConfirmState::Idle,
             arming: Arming::default(),
+            request: None,
+            list: None,
+            possible: Vec::new(),
+            code: CodeSlot::None,
+            pin_len: 0,
+            pin_error: None,
+            remember: false,
+            banner: None,
+            via: 0,
+            deadline: None,
+            hold_until: None,
+            cancel_sent: false,
+            chosen: false,
         }
     }
 
@@ -114,34 +153,36 @@ impl ConfirmModel {
 
     /// Applies a host command.
     pub fn apply(&mut self, command: UiCommand, now: Instant) {
-        let _ = (command, now);
-        todo!("SPEC.md §2.2")
+        commands::apply(self, command, now);
     }
 
     /// Applies person input; returns the decisions it produced (usually none
     /// or one).
     pub fn input(&mut self, input: UserInput, now: Instant) -> Vec<Intent> {
-        let _ = (input, now);
-        todo!("SPEC.md §2.2")
+        inputs::handle(self, input, now)
     }
 
-    /// Advances timers (success hold, site-cancelled hold, countdown) and
-    /// returns decisions they produced.
+    /// Advances timers (success hold, site-cancelled hold) and returns
+    /// decisions they produced.
     pub fn tick(&mut self, now: Instant) -> Vec<Intent> {
-        let _ = now;
-        todo!("SPEC.md §2.2")
+        timers::tick(self, now)
     }
 
     /// What to draw at `now`.
     pub fn view(&self, now: Instant) -> ConfirmView {
-        let _ = (now, &self.arming);
-        todo!("SPEC.md §2.4")
+        build::view(self, now)
     }
 
     /// The next instant something changes without input (arming completes,
     /// a hold ends, the countdown ticks), for `request_repaint_after`.
     pub fn next_deadline(&self, now: Instant) -> Option<Instant> {
-        let _ = now;
-        todo!("SPEC.md §2.2")
+        timers::next_deadline(self, now)
     }
 }
+
+#[cfg(test)]
+mod edge_tests;
+#[cfg(test)]
+mod rig;
+#[cfg(test)]
+mod tests;

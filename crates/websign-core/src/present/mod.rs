@@ -10,3 +10,6 @@ pub mod document;
 pub mod holder;
 pub mod origin;
 pub mod wire;
+
+#[cfg(test)]
+mod tests;

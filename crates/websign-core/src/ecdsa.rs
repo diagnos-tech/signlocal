@@ -13,8 +13,8 @@ const TAG_INTEGER: u8 = 0x02;
 /// Named curves accepted for ECDSA keys.
 ///
 /// The Brainpool curves (RFC 5639) are used by European national ID cards and
-/// some qualified signature cards. They are declared here so every layer
-/// shares one type; `from_oid` recognizes them once `SPEC.md` §4.1 lands.
+/// some qualified signature cards. The twisted `t1` variants are not
+/// recognized.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Curve {
     P256,
@@ -67,6 +67,9 @@ impl Curve {
             "1.2.840.10045.3.1.7" => Some(Self::P256),
             "1.3.132.0.34" => Some(Self::P384),
             "1.3.132.0.35" => Some(Self::P521),
+            "1.3.36.3.3.2.8.1.1.7" => Some(Self::BrainpoolP256r1),
+            "1.3.36.3.3.2.8.1.1.11" => Some(Self::BrainpoolP384r1),
+            "1.3.36.3.3.2.8.1.1.13" => Some(Self::BrainpoolP512r1),
             _ => None,
         }
     }

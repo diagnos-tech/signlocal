@@ -4,7 +4,18 @@
 //! and `App Paths`) and LaunchServices (macOS), never from profile folders
 //! (profile folders hold personal data; the app never reads them).
 
+use std::path::Path;
+
 use crate::browsers::Browser;
+
+#[cfg(windows)]
+mod file_version;
+#[cfg(target_os = "macos")]
+mod launch_services;
+mod linux;
+mod macos;
+mod platform;
+mod windows;
 
 /// A browser found on this machine.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -27,7 +38,35 @@ pub enum BrowserPackaging {
     Flatpak,
 }
 
-/// Every supported browser installed for this user or system-wide.
+/// Every supported browser installed for this user or system-wide, in
+/// [`Browser::ALL`] order.
 pub fn installed_browsers() -> Vec<InstalledBrowser> {
-    todo!("SPEC.md §2")
+    if cfg!(windows) {
+        windows::detect(&*crate::registry::system(), &platform::file_version)
+    } else if cfg!(target_os = "macos") {
+        macos::detect(&platform::find_bundle)
+    } else {
+        linux::detect(
+            Path::new("/"),
+            &linux::path_dirs(),
+            &platform::flatpak_apps(),
+        )
+    }
+}
+
+/// One entry per browser and packaging, in [`Browser::ALL`] order; the first
+/// sighting of a pair keeps its version.
+fn ordered(found: Vec<InstalledBrowser>) -> Vec<InstalledBrowser> {
+    let mut result: Vec<InstalledBrowser> = Vec::new();
+    for browser in Browser::ALL {
+        for entry in found.iter().filter(|entry| entry.browser == browser) {
+            let seen = result
+                .iter()
+                .any(|kept| kept.browser == browser && kept.packaging == entry.packaging);
+            if !seen {
+                result.push(entry.clone());
+            }
+        }
+    }
+    result
 }

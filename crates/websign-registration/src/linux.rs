@@ -2,8 +2,11 @@
 //!
 //! Chromium-based browsers read `<config dir>/NativeMessagingHosts/`; Firefox
 //! reads `~/.mozilla/native-messaging-hosts/`. Snap Firefox reads the same
-//! folder, because the portal that starts hosts on its behalf runs outside
-//! the sandbox.
+//! folder (or the system one), because the WebExtensions portal that starts
+//! hosts on its behalf runs outside the sandbox; the portal asks the user once
+//! per extension. Flatpak browsers see only their own `~/.var/app/<id>`, so
+//! they get a manifest and a copy of the host there; that copy answers but
+//! cannot reach `pcscd` or system PKCS#11 modules from inside the sandbox.
 
 use std::path::Path;
 
@@ -18,6 +21,7 @@ fn config_dirs(browser: Browser) -> &'static [(&'static str, &'static str)] {
             ("Google Chrome", "google-chrome"),
             ("Google Chrome Beta", "google-chrome-beta"),
             ("Google Chrome Dev", "google-chrome-unstable"),
+            ("Google Chrome Canary", "google-chrome-canary"),
             ("Google Chrome for Testing", "google-chrome-for-testing"),
         ],
         Browser::Chromium => &[("Chromium", "chromium")],
@@ -45,7 +49,7 @@ fn config_dirs(browser: Browser) -> &'static [(&'static str, &'static str)] {
 }
 
 /// `(Flatpak app ID, config folder inside it)`; Firefox keeps `.mozilla`.
-fn flatpak(browser: Browser) -> Option<(&'static str, &'static str)> {
+pub(crate) fn flatpak(browser: Browser) -> Option<(&'static str, &'static str)> {
     Some(match browser {
         Browser::Chrome => ("com.google.Chrome", "google-chrome"),
         Browser::Chromium => ("org.chromium.Chromium", "chromium"),
@@ -63,13 +67,17 @@ pub fn targets(browsers: &[Browser], home: &Path) -> Vec<Target> {
         match browser.family() {
             Family::Firefox => {
                 let root = home.join(".mozilla");
+                let hosts = root.join("native-messaging-hosts");
+                targets.push(Target::file("Firefox", Family::Firefox, &hosts).requiring(&root));
+                // The Snap keeps its profile in `~/snap/firefox`, so
+                // `~/.mozilla` may not exist; the portal still reads it.
                 targets.push(
                     Target::file(
-                        "Firefox (also Snap, through the portal)",
+                        "Firefox (Snap, through the portal)",
                         Family::Firefox,
-                        &root.join("native-messaging-hosts"),
+                        &hosts,
                     )
-                    .requiring(&root),
+                    .requiring(&home.join("snap/firefox")),
                 );
             }
             Family::Chromium => {
@@ -107,7 +115,7 @@ fn flatpak_target(browser: Browser, home: &Path) -> Option<Target> {
         Family::Firefox => app.join(config).join("native-messaging-hosts"),
         Family::Chromium => app.join("config").join(config).join("NativeMessagingHosts"),
     };
-    let copy = hosts_dir.join(format!("{SLUG}-probe"));
+    let copy = hosts_dir.join(SLUG);
     Some(
         Target::file(
             format!("{} (Flatpak)", browser.label()),

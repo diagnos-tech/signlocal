@@ -16,6 +16,7 @@ rsa.workspace = true
 p256.workspace = true
 p384.workspace = true
 p521.workspace = true
+ecdsa = { version = "=0.17.0", default-features = false, features = ["algorithm"] }
 bp256.workspace = true
 bp384.workspace = true
 psl.workspace = true

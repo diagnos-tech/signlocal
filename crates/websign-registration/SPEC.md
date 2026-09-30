@@ -68,3 +68,45 @@ with `update_url` (`https://clients2.google.com/service/update2/crx`,
 
 System targets are written unconditionally (no `requires`), deduplicated by
 path.
+
+## 7. Additions beyond the sections above
+
+- `registry::{Registry, Hive, MemoryRegistry, system}`: the registry trait
+  used by §1 (Windows keys), §2 (Windows detection), §4 and §5; writes are
+  `HKCU`-only by construction. `destination::apply_with` is `apply` against a
+  given registry.
+- Linux user targets also cover Chrome Canary (`google-chrome-canary`) and
+  Snap Firefox (`~/.mozilla/native-messaging-hosts`, written when
+  `~/snap/firefox` exists, because the portal reads the host's folder).
+  macOS user targets add Arc (`Arc/User Data`, selected with Chrome).
+  Flatpak host copies are named `<slug>`.
+- §3 on Windows reads keys in the browser's documented lookup order (Edge:
+  Edge, Chromium, Chrome; every other browser: its own key only) and the
+  first key found decides. A browser with several channels is `Registered` when any
+  channel is; otherwise the first problem in reading order is reported.
+- §3 reads `HKCU` only, although browsers fall back to `HKLM`: the app
+  writes only `HKCU`, which browsers read first, so `Missing` leads the
+  repair button to write the key that wins. A machine-wide key from another
+  installer is not ours to judge.
+- §4 Linux honours an absolute `$XDG_DATA_HOME`. When `xdg-mime` is missing
+  the entry is still written and the outcome is `Skipped` with a reason that
+  says so: the file exists (`unregister` removes it), but nothing made it the
+  default handler, so the caller must not treat the scheme as working.
+  `Written` means both steps ran; an `xdg-mime` that runs and fails is
+  `Failed`.
+  `url_scheme::info_plist_url_types()` gives the macOS `CFBundleURLTypes`
+  fragment for packaging.
+- §5 `preregister::linux_system_files()` gives the external-extension files
+  (`/usr/share/{google-chrome,chromium,microsoft-edge}/extensions/<id>.json`
+  with `external_update_url`) for the Linux packages; empty until a store ID
+  exists.
+- §2 does not report Safari or Arc: `Browser` means "a browser with native
+  messaging manifests", and every per-OS table (`family`, Windows keys,
+  system folders) is exhaustive over it. Safari has no manifest (direct
+  builds do not support it; the store channel's appex handles it later), and
+  Arc is registered as a Chrome channel on macOS
+  (`Arc/User Data/NativeMessagingHosts`). TODO(gustavo): report Safari with
+  the store channel, as its own detection result rather than a `Browser`.
+- Registration outcomes and status reasons name the paths involved, which
+  may contain the user's login name (home folder); callers that log them
+  treat them as personal data.

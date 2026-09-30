@@ -2,11 +2,14 @@
 
 use super::DistinguishedName;
 use super::der::{self, DerError, OBJECT_IDENTIFIER, Reader, SEQUENCE, SET};
-use super::oid::{COMMON_NAME, COUNTRY_NAME, ORGANIZATION_NAME, ORGANIZATIONAL_UNIT_NAME};
+use super::oid::{
+    COMMON_NAME, COUNTRY_NAME, GIVEN_NAME, ORGANIZATION_NAME, ORGANIZATIONAL_UNIT_NAME,
+    SERIAL_NUMBER, SURNAME,
+};
 use super::strings;
 
 impl DistinguishedName {
-    /// Reads CN, O, OU and C from the contents of a `Name`.
+    /// Reads CN, O, OU, C, givenName, surname and serialNumber from the contents of a `Name`.
     ///
     /// Attributes whose string type is not supported, or whose bytes are not
     /// valid for it, are skipped as if absent, so a single-valued attribute
@@ -28,6 +31,9 @@ impl DistinguishedName {
                     ORGANIZATION_NAME => _ = dn.organization.get_or_insert(text),
                     ORGANIZATIONAL_UNIT_NAME => dn.organizational_units.push(text),
                     COUNTRY_NAME => _ = dn.country.get_or_insert(text),
+                    GIVEN_NAME => _ = dn.given_name.get_or_insert(text),
+                    SURNAME => _ = dn.surname.get_or_insert(text),
+                    SERIAL_NUMBER => _ = dn.serial_number.get_or_insert(text),
                     _ => {}
                 }
             }

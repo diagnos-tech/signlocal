@@ -84,9 +84,8 @@ fn rejects_other_oids_and_look_alikes() {
         "1.3.132.0.35.0",
         "1.2.840.10045.3.1.1", // prime192v1
         "1.2.840.10045.3.1.70",
-        "1.2.840.10045.2.1",    // id-ecPublicKey, not a curve
-        "1.3.101.112",          // Ed25519
-        "1.3.36.3.3.2.8.1.1.7", // brainpoolP256r1
+        "1.2.840.10045.2.1", // id-ecPublicKey, not a curve
+        "1.3.101.112",       // Ed25519
         "prime256v1",
         "secp384r1",
         "P-256",

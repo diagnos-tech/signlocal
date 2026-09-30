@@ -14,7 +14,8 @@
 //! Phase-0 kit (`probe/src/nm/register`), where CI proved them on all three
 //! systems, inside the macOS sandbox and from an MSIX package. [`detect`],
 //! [`status`], [`url_scheme`], [`preregister`] and [`system`] are new
-//! (`SPEC.md`).
+//! (`SPEC.md`). Every Windows registry access goes through [`registry`], so
+//! that logic is tested on all systems against an in-memory registry.
 
 #![cfg_attr(
     not(test),
@@ -31,6 +32,7 @@ mod manifest;
 #[cfg(windows)]
 pub mod msix;
 pub mod preregister;
+pub mod registry;
 pub mod status;
 pub mod system;
 pub mod url_scheme;
@@ -50,8 +52,8 @@ pub enum Scope {
     User,
     /// System-wide folders (`/etc/opt/chrome/native-messaging-hosts`,
     /// `/usr/lib/mozilla/native-messaging-hosts`, …). Only the Linux
-    /// packages' post-install step uses it; it is the only place the Firefox
-    /// Snap portal reads.
+    /// packages' post-install step uses it, so the Firefox Snap portal finds
+    /// the host even before the app first runs for a user.
     System,
 }
 
@@ -119,10 +121,11 @@ pub fn run(request: &Request) -> Result<Report, RegistrationError> {
         origins: &origins,
         dry_run: request.dry_run,
     };
+    let registry = registry::system();
     let results = targets
         .into_iter()
         .map(|target| {
-            let outcome = destination::apply(&target, request.action, &context);
+            let outcome = destination::apply_with(&target, request.action, &context, &*registry);
             (target, outcome)
         })
         .collect();

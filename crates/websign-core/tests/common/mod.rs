@@ -5,10 +5,13 @@
 //! OpenSSL. `tests/fixtures/README.md` says what each file is.
 #![allow(dead_code)]
 
+mod brainpool;
 mod der;
 mod names;
 mod vectors;
 
+#[allow(unused_imports)]
+pub use brainpool::*;
 #[allow(unused_imports)]
 pub use der::*;
 #[allow(unused_imports)]
@@ -94,6 +97,9 @@ pub fn fixture_curve(name: &str) -> Curve {
         "p256" => Curve::P256,
         "p384" => Curve::P384,
         "p521" => Curve::P521,
+        "brainpoolP256r1" => Curve::BrainpoolP256r1,
+        "brainpoolP384r1" => Curve::BrainpoolP384r1,
+        "brainpoolP512r1" => Curve::BrainpoolP512r1,
         other => panic!("unknown curve in fixture manifest: {other}"),
     }
 }

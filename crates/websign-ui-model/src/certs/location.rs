@@ -1,6 +1,6 @@
 //! "Where the certificate is", in lay words (`docs/ux.md` §5.7).
 
-use super::candidate::CertCandidate;
+use super::candidate::{CertCandidate, DeviceLabel, KeySource};
 
 /// The location phrase of line 3.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -26,6 +26,20 @@ pub enum Place {
 
 /// The location of `candidate`.
 pub fn location(candidate: &CertCandidate) -> Location {
-    let _ = candidate;
-    todo!("SPEC.md §1.4")
+    let software = candidate.hardware == Some(false);
+    let os_store = matches!(
+        candidate.source,
+        KeySource::Windows | KeySource::MacosKeychain
+    );
+    let place = match &candidate.device {
+        _ if software && os_store => Place::Computer,
+        Some(DeviceLabel::Token { name }) => Place::Token { name: name.clone() },
+        Some(DeviceLabel::CardInReader { .. }) => Place::CardInReader,
+        _ if software => Place::Computer,
+        _ => Place::UnknownHardware,
+    };
+    Location {
+        place,
+        via_driver: matches!(candidate.source, KeySource::Driver { .. }),
+    }
 }

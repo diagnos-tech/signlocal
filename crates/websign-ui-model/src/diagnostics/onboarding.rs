@@ -31,6 +31,81 @@ pub struct OnboardingFacts {
 
 /// The strip for `facts`.
 pub fn onboarding(facts: OnboardingFacts) -> Onboarding {
-    let _ = facts;
-    todo!("SPEC.md §3.2")
+    let extension = if facts.any_extension_connected {
+        StepState::Done
+    } else if facts.any_extension_problem {
+        StepState::Attention
+    } else {
+        StepState::Pending
+    };
+    let done_or_pending = |done: bool| {
+        if done {
+            StepState::Done
+        } else {
+            StepState::Pending
+        }
+    };
+    let mut strip = Onboarding {
+        app: StepState::Done,
+        extension,
+        certificate: done_or_pending(facts.usable_certificates > 0),
+        test_signature: done_or_pending(facts.test_signature_done),
+        visible: false,
+    };
+    let all_done = [
+        strip.app,
+        strip.extension,
+        strip.certificate,
+        strip.test_signature,
+    ]
+    .iter()
+    .all(|step| *step == StepState::Done);
+    strip.visible = !facts.dismissed && !all_done;
+    strip
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn fresh_install_shows_the_strip() {
+        let strip = onboarding(OnboardingFacts::default());
+        assert_eq!(strip.app, StepState::Done);
+        assert_eq!(strip.extension, StepState::Pending);
+        assert_eq!(strip.certificate, StepState::Pending);
+        assert!(strip.visible);
+    }
+
+    #[test]
+    fn extension_problem_needs_attention() {
+        let strip = onboarding(OnboardingFacts {
+            any_extension_problem: true,
+            ..Default::default()
+        });
+        assert_eq!(strip.extension, StepState::Attention);
+        let connected = onboarding(OnboardingFacts {
+            any_extension_problem: true,
+            any_extension_connected: true,
+            ..Default::default()
+        });
+        assert_eq!(connected.extension, StepState::Done);
+    }
+
+    #[test]
+    fn hidden_when_dismissed_or_complete() {
+        let complete = OnboardingFacts {
+            any_extension_connected: true,
+            any_extension_problem: false,
+            usable_certificates: 1,
+            test_signature_done: true,
+            dismissed: false,
+        };
+        assert!(!onboarding(complete).visible);
+        let dismissed = OnboardingFacts {
+            dismissed: true,
+            ..Default::default()
+        };
+        assert!(!onboarding(dismissed).visible);
+    }
 }

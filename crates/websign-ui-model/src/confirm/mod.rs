@@ -3,9 +3,17 @@
 //! rules ([`arming`], §4.7) and the cancel-code rule ([`cancel`], §15).
 
 pub mod arming;
+mod build;
 pub mod cancel;
+mod commands;
+mod helpers;
+mod inputs;
 pub mod machine;
+mod outcome;
+mod pin;
 pub mod port;
+mod slot;
+mod timers;
 pub mod view;
 
 pub use machine::{ConfirmModel, ConfirmState, Intent, UserInput};

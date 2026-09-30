@@ -3,6 +3,8 @@
 //! input types cannot carry names, document numbers, sites, serial numbers,
 //! fingerprints or digests.
 
+use super::report_lines as lines;
+
 /// Everything the report may contain.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct ReportInput {
@@ -92,6 +94,44 @@ pub struct ErrorLine {
 
 /// Renders the report exactly as `docs/ux.md` §8.7 shows it.
 pub fn render(input: &ReportInput) -> String {
-    let _ = input;
-    todo!("SPEC.md §3.3")
+    let mut lines: Vec<String> = lines::header(input).into();
+    section(
+        &mut lines,
+        "browsers:",
+        input.browsers.iter().map(lines::browser),
+    );
+    section(
+        &mut lines,
+        "devices:",
+        input.devices.iter().map(lines::device),
+    );
+    section(
+        &mut lines,
+        "pkcs11:",
+        input.modules.iter().map(lines::module),
+    );
+    lines.push("certificates:".to_owned());
+    lines.extend(lines::certificates(&input.certificates).map(|line| format!("  {line}")));
+    lines.push(format!("complement: {}", input.complement));
+    section(
+        &mut lines,
+        "recent errors (last 20):",
+        lines::recent_errors(&input.recent_errors),
+    );
+    let mut text = lines.join("\n");
+    text.push('\n');
+    text
 }
+
+/// A titled section; `  none` when it has no entries.
+fn section(lines: &mut Vec<String>, title: &str, entries: impl Iterator<Item = String>) {
+    lines.push(title.to_owned());
+    let start = lines.len();
+    lines.extend(entries.map(|entry| format!("  {entry}")));
+    if lines.len() == start {
+        lines.push("  none".to_owned());
+    }
+}
+
+#[cfg(test)]
+mod tests;

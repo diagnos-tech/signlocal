@@ -4,6 +4,11 @@
 //! read, because the classic phishing host is
 //! `yourbank.com.evil.example`. Everything else is dimmed.
 
+mod host;
+mod parse;
+
+use parse::Scheme;
+
 /// An origin split for display and policy.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FormattedOrigin {
@@ -56,6 +61,36 @@ pub enum OriginError {
 
 /// Parses, classifies and splits a serialized origin.
 pub fn format_origin(origin: &str) -> Result<FormattedOrigin, OriginError> {
-    let _ = origin;
-    todo!("SPEC.md §9")
+    let parsed = parse::parse(origin)?;
+    let host = &parsed.host;
+    if parsed.scheme == Scheme::Http && !host.is_loopback() {
+        return Err(OriginError::Insecure);
+    }
+
+    let scheme = parsed.scheme.as_str();
+    let text = host.text();
+    let port = parsed
+        .port
+        .filter(|port| *port != parsed.scheme.default_port());
+    let canonical = match port {
+        Some(port) => format!("{scheme}://{text}:{port}"),
+        None => format!("{scheme}://{text}"),
+    };
+
+    let registrable = host.registrable();
+    let subdomains = text.strip_suffix(registrable.as_str()).unwrap_or_default();
+    let unicode = host.unicode();
+    let warning = host.warning(unicode.is_some());
+    Ok(FormattedOrigin {
+        canonical,
+        prefix: format!("{scheme}://{subdomains}"),
+        registrable,
+        port,
+        unicode,
+        warning,
+        can_remember: !matches!(
+            warning,
+            Some(OriginWarning::Idn | OriginWarning::LocalIp | OriginWarning::PublicIp)
+        ),
+    })
 }
