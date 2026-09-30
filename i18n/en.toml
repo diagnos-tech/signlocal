@@ -294,12 +294,13 @@ todo_card_service = "Start the card service"
 # {command} is a shell command; do not translate it.
 todo_card_service_body = "Tokens and cards need it. Run in a terminal: {command}"
 copy_command = "Copy command"
-# {device} is a device name, e.g. "SafeNet eToken 5110".
-todo_driver = "Install the driver for {device}"
-# {driver} is the vendor's software, e.g. "SafeNet Authentication Client".
-todo_driver_body = "Its certificates show up once {driver} is installed."
-todo_driver_body_generic = "Its certificates show up once the vendor's software is installed."
+todo_driver = "Install the token driver"
+# {device} is a device name, e.g. "SafeNet eToken 5110"; {driver} is the
+# vendor's software, e.g. "SafeNet Authentication Client".
+todo_driver_body = "{device} needs {driver} to show its certificates."
+todo_driver_body_generic = "{device} needs its vendor's software to show its certificates."
 todo_cert = "Connect your certificate"
+todo_test = "Try a test signature"
 todo_test_body = "Sign a sample message to see how signing works."
 
 [browsers]

@@ -56,13 +56,18 @@ never in a web page or in the extension. Desktop programs use the same app throu
 |---|---|---|---|
 | Chromium family: Chrome, Edge, Brave, Opera | CI end to end (Chromium) | CI end to end (Chromium) | CI end to end (Chromium, 6 distributions) |
 | Firefox | built, manual check pending | built, manual check pending | built, manual check pending |
-| Safari | — | built, manual check pending | — |
+| Safari | — | inside the macOS app (macOS 13+); CI builds and checks the bundle, manual check pending | — |
 
 The extension is built for every browser above and the app registers itself with each one it finds.
 CI signs end to end with Chromium and software keys on Windows, macOS, Ubuntu 22.04/24.04, Debian 12,
 Fedora 42, Rocky Linux 9 and Arch Linux; browsers CI cannot drive are checked by hand. Results with real
 browsers, tokens and smart cards, including what is still untested, are in
 [`docs/compatibility.md`](docs/compatibility.md).
+
+**Safari** needs no separate download: its extension ships inside `WebeSign.app`. Until the app is signed by
+Apple, Safari loads it only with **Allow unsigned extensions** (a developer setting it turns off on every
+quit; [steps](docs/install.md#safari)). Keychain certificates and tokens that work with macOS behave as in
+other browsers; tokens with only a PKCS#11 driver may not work from Safari's sandbox.
 
 ## Install
 
@@ -73,7 +78,8 @@ Two parts: the **app** and the **browser extension**. Pick your system in
 - **macOS** (Apple silicon and Intel): installer script, or the universal zip.
 - **Linux** (amd64, arm64): `.deb` (Ubuntu, Debian), `.rpm` (Fedora, Rocky Linux), or the installer script
   for any distribution.
-- **Extension**: [per-browser steps](docs/install.md#browser-extension) until the store listings are live.
+- **Extension**: [per-browser steps](docs/install.md#browser-extension) until the store listings are live;
+  on macOS, Safari's extension comes with the app.
 
 Prereleases are **not code-signed yet**, so SmartScreen and Gatekeeper warn once; every file is listed
 in `SHA256SUMS` and the install scripts verify it ([why](docs/install.md#why-unsigned)).
