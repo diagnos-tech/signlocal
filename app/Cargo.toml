@@ -38,7 +38,8 @@ zeroize.workspace = true
 jiff.workspace = true
 eframe.workspace = true
 egui.workspace = true
-egui-phosphor.workspace = true
+# `subset`: embed only the icons `src/ui/icons.rs` names (docs/ux.md §12).
+egui-phosphor = { workspace = true, features = ["subset"] }
 
 [target.'cfg(windows)'.dependencies]
 windows = { workspace = true, features = [

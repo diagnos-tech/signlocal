@@ -8,6 +8,7 @@ WebeSign: sign with your own certificate from any website or desktop program. St
 - `app/` — the `websign` binary: host process, CLI, windows and OS glue
 - `clients/` — libraries desktop programs use to call the app (Apache-2.0)
 - `crates/` — the libraries of the app, one responsibility each
+- `design/` — design tokens (`tokens.css`), the single source for the app theme and the site
 - `docs/` — documentation
 - `e2e/` — end-to-end tests (Playwright)
 - `extension/` — the WebeSign browser extension (WXT, MV3)
@@ -16,6 +17,7 @@ WebeSign: sign with your own certificate from any website or desktop program. St
 - `safari/` — the Safari web extension bridge (store channel)
 - `scripts/` — scripts shipped to users
 - `sdk/` — `@websign/sdk`: the web SDK (Apache-2.0)
+- `site/` — the project web site (static, seven languages)
 - `xtask/` — `cargo xtask`: repository automation
 - `.editorconfig` — editor settings (UTF-8, LF, indentation)
 - `.gitignore` — files git never tracks (build outputs, keys, PINs)

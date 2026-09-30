@@ -12,7 +12,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --ws-bg-canvas: #0E1016; --ws-bg-surface: #161922; --ws-bg-sunken: #0B0D12; --ws-bg-hover: #1E222D;
-    --ws-accent-soft: #1C2242; --ws-border: #2A2F3C; --ws-border-strong: #6B7488;
+    --ws-accent-soft: #1A1F3C; --ws-border: #2A2F3C; --ws-border-strong: #6B7488;
     --ws-fg: #E7E9EF; --ws-fg-muted: #A3AAB9; --ws-fg-subtle: #8C94A6;
     --ws-accent: #4E5EE4; --ws-accent-hover: #4555DA; --ws-accent-fg: #9DA8FF; --ws-focus: #9DA8FF;
     --ws-warning: #EFB35E; --ws-warning-soft: #2A1F0E; --ws-warning-border: #5C4418;

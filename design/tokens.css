@@ -1,0 +1,183 @@
+/*
+ * WebeSign design tokens: the single source of docs/ux.md §11.
+ *
+ * Used as-is by the extension popup and the site. The app keeps the same
+ * values as Rust constants in app/src/ui/theme/, and a test there reads this
+ * file and fails on any difference, so edit both together.
+ *
+ * Light values sit on :root; dark values follow the OS (prefers-color-scheme)
+ * unless a page pins a theme with data-theme="light" or data-theme="dark".
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* §11.1 Colors (light) */
+  --ws-bg-canvas: #F5F6F9;
+  --ws-bg-surface: #FFFFFF;
+  --ws-bg-sunken: #EDEFF4;
+  --ws-bg-hover: #F1F3F8;
+  --ws-accent-soft: #EEF0FD;
+  --ws-border: #DCE0E8;
+  --ws-border-strong: #848D9F;
+  --ws-fg: #141722;
+  --ws-fg-muted: #545C6D;
+  --ws-fg-subtle: #636B7D;
+  --ws-accent: #3346D1;
+  --ws-accent-hover: #2A3BB8;
+  --ws-accent-pressed: #2332A0;
+  --ws-accent-fg: #3346D1;
+  --ws-on-accent: #FFFFFF;
+  --ws-focus: #3346D1;
+  --ws-success: #127A41;
+  --ws-success-soft: #E6F5EC;
+  --ws-success-border: #A8DCBE;
+  --ws-warning: #935300;
+  --ws-warning-soft: #FFF2D9;
+  --ws-warning-border: #EFCB8A;
+  --ws-danger: #BE242B;
+  --ws-danger-soft: #FDEBEC;
+  --ws-danger-border: #F2B3B6;
+  --ws-shadow-color: #1417221F;
+
+  /* Identicon palette: the same in both themes (≥ 3:1 on every surface). */
+  --ws-id-0: #D6453A;
+  --ws-id-1: #C4610A;
+  --ws-id-2: #3B8A3B;
+  --ws-id-3: #12857B;
+  --ws-id-4: #2D78D2;
+  --ws-id-5: #5A55D6;
+  --ws-id-6: #9549C4;
+  --ws-id-7: #C63E7B;
+
+  /* §11.2 Typography */
+  --ws-font-ui: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ws-font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Consolas, monospace;
+  --ws-font-popup: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  /* font shorthand: weight size/line-height family */
+  --ws-text-caption: 500 12px/16px var(--ws-font-ui);
+  --ws-text-small: 400 12px/16px var(--ws-font-ui);
+  --ws-text-body: 400 14px/20px var(--ws-font-ui);
+  --ws-text-body-strong: 600 14px/20px var(--ws-font-ui);
+  --ws-text-button: 500 14px/20px var(--ws-font-ui);
+  --ws-text-title: 600 16px/22px var(--ws-font-ui);
+  --ws-text-headline: 600 20px/26px var(--ws-font-ui);
+  --ws-text-code: 500 18px/24px var(--ws-font-mono);
+  --ws-text-mono: 400 12px/16px var(--ws-font-mono);
+  --ws-code-letter-spacing: 0.5px;
+
+  /* §11.3 Spacing, sizes and radii */
+  --ws-space-1: 4px;
+  --ws-space-2: 8px;
+  --ws-space-3: 12px;
+  --ws-space-4: 16px;
+  --ws-space-5: 20px;
+  --ws-space-6: 24px;
+  --ws-space-8: 32px;
+  --ws-radius-sm: 4px;
+  --ws-radius-md: 6px;
+  --ws-radius-lg: 10px;
+  --ws-control-sm: 28px;
+  --ws-control-md: 32px;
+  --ws-control-lg: 36px;
+  --ws-row-cert: 72px;
+  --ws-row-compact: 40px;
+  --ws-row-diag: 56px;
+  --ws-icon-sm: 16px;
+  --ws-icon-md: 20px;
+  --ws-icon-lg: 32px;
+  --ws-identicon: 40px;
+  --ws-sidebar: 200px;
+  --ws-popup-width: 320px;
+  --ws-window-confirm-width: 480px;
+  --ws-window-confirm-height: 600px;
+  --ws-window-diagnostics-width: 760px;
+  --ws-window-diagnostics-height: 540px;
+  --ws-focus-width: 2px;
+  --ws-focus-offset: 2px;
+  --ws-shadow-popover: 0 4px 16px 0 var(--ws-shadow-color);
+
+  /* §11.4 Motion */
+  --ws-motion-fast: 120ms;
+  --ws-motion-base: 180ms;
+  --ws-motion-slow: 260ms;
+  --ws-easing: cubic-bezier(0.33, 1, 0.68, 1);
+  --ws-delay-arming: 600ms;
+  --ws-delay-loading: 150ms;
+  --ws-delay-slow-hint: 2000ms;
+  --ws-hold-success: 900ms;
+  --ws-hold-site-cancelled: 1500ms;
+  --ws-timeout-request: 300s;
+}
+
+/* Dark, following the OS. Keep identical to the pinned block below. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ws-bg-canvas: #0E1016;
+    --ws-bg-surface: #161922;
+    --ws-bg-sunken: #0B0D12;
+    --ws-bg-hover: #1E222D;
+    --ws-accent-soft: #1A1F3C;
+    --ws-border: #2A2F3C;
+    --ws-border-strong: #6B7488;
+    --ws-fg: #E7E9EF;
+    --ws-fg-muted: #A3AAB9;
+    --ws-fg-subtle: #8C94A6;
+    --ws-accent: #4E5EE4;
+    --ws-accent-hover: #4555DA;
+    --ws-accent-pressed: #3E4ECC;
+    --ws-accent-fg: #9DA8FF;
+    --ws-on-accent: #FFFFFF;
+    --ws-focus: #9DA8FF;
+    --ws-success: #5BCB8D;
+    --ws-success-soft: #10281B;
+    --ws-success-border: #1F5C3B;
+    --ws-warning: #EFB35E;
+    --ws-warning-soft: #2A1F0E;
+    --ws-warning-border: #5C4418;
+    --ws-danger: #FF868B;
+    --ws-danger-soft: #321519;
+    --ws-danger-border: #6B2429;
+    --ws-shadow-color: #0000008C;
+  }
+}
+
+/* Dark, pinned by the page. */
+:root[data-theme="dark"] {
+  --ws-bg-canvas: #0E1016;
+  --ws-bg-surface: #161922;
+  --ws-bg-sunken: #0B0D12;
+  --ws-bg-hover: #1E222D;
+  --ws-accent-soft: #1A1F3C;
+  --ws-border: #2A2F3C;
+  --ws-border-strong: #6B7488;
+  --ws-fg: #E7E9EF;
+  --ws-fg-muted: #A3AAB9;
+  --ws-fg-subtle: #8C94A6;
+  --ws-accent: #4E5EE4;
+  --ws-accent-hover: #4555DA;
+  --ws-accent-pressed: #3E4ECC;
+  --ws-accent-fg: #9DA8FF;
+  --ws-on-accent: #FFFFFF;
+  --ws-focus: #9DA8FF;
+  --ws-success: #5BCB8D;
+  --ws-success-soft: #10281B;
+  --ws-success-border: #1F5C3B;
+  --ws-warning: #EFB35E;
+  --ws-warning-soft: #2A1F0E;
+  --ws-warning-border: #5C4418;
+  --ws-danger: #FF868B;
+  --ws-danger-soft: #321519;
+  --ws-danger-border: #6B2429;
+  --ws-shadow-color: #0000008C;
+}
+
+/* Reduced motion: animations become instant; safety and state timers
+ * (arming, holds, timeout) keep their values on purpose. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ws-motion-fast: 0ms;
+    --ws-motion-base: 0ms;
+    --ws-motion-slow: 0ms;
+  }
+}

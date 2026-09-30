@@ -1005,7 +1005,7 @@ red) is separate from the accent and reserved for state.
 | `bg-surface` | `#FFFFFF` | `#161922` | Header, footer, cards, list, sidebar |
 | `bg-sunken` | `#EDEFF4` | `#0B0D12` | Fields, identicon well, badges, diagnostics box |
 | `bg-hover` | `#F1F3F8` | `#1E222D` | Hover of rows and secondary buttons |
-| `accent-soft` | `#EEF0FD` | `#1C2242` | Selected row/tab |
+| `accent-soft` | `#EEF0FD` | `#1A1F3C` | Selected row/tab |
 | `border` | `#DCE0E8` | `#2A2F3C` | Dividers and card outlines (decorative) |
 | `border-strong` | `#848D9F` | `#6B7488` | Outline of field, radio, checkbox (≥ 3:1) |
 | `fg` | `#141722` | `#E7E9EF` | Main text |
