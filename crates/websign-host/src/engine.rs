@@ -13,6 +13,7 @@ mod persist;
 mod present;
 mod queueing;
 mod request;
+mod test_signature;
 #[cfg(test)]
 mod tests;
 

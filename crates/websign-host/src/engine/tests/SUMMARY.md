@@ -8,3 +8,4 @@
 - `rig.rs` — A host process over fake ports, driven with JSON frames.
 - `sign.rs` — Scenarios 3 to 6, 9 (cancel) and 10: the happy path, consent, sequence numbers, digest length and deadlines.
 - `signing_failures.rs` — Scenarios 7 and 8, and the other outcomes a key store can report.
+- `test_signature.rs` — Which signatures mark the setup test done (the project site only).

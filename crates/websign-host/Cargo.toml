@@ -26,6 +26,8 @@ dirs.workspace = true
 [features]
 # Fakes of every port (`websign_host::testing`) for other crates' tests.
 testing = []
+# Also treat http://localhost pages as the project's test page (end-to-end runs).
+e2e = []
 
 [dev-dependencies]
 tempfile.workspace = true

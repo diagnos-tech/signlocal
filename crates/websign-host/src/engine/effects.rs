@@ -43,6 +43,10 @@ impl Engine {
         for effect in effects {
             match effect {
                 Effect::Send(message) => {
+                    // A sign result is only sent for a verified signature.
+                    if matches!(message, AppMessage::SignResult(_)) {
+                        self.record_test_signature(key);
+                    }
                     if let Some(id) = self.requests.get(&key).map(|request| request.id.clone()) {
                         self.send(&id, message);
                     }

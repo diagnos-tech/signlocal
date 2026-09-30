@@ -88,8 +88,13 @@ impl Rig {
     }
 
     pub fn sign_begin(&mut self, id: &str) -> Control {
+        self.sign_begin_from(id, "https://app.example")
+    }
+
+    /// `sign.begin` from a page of `origin`.
+    pub fn sign_begin_from(&mut self, id: &str, origin: &str) -> Control {
         self.frame(&format!(
-            r#""id":"{id}","type":"sign.begin",{WEB},"hash":"SHA-256""#
+            r#""id":"{id}","type":"sign.begin","web":{{"origin":"{origin}","topOrigin":"{origin}"}},"hash":"SHA-256""#
         ))
     }
 
@@ -152,7 +157,12 @@ impl Rig {
     /// request key: list, continue (D11) unless the certificate is
     /// consented, chain, digest.
     pub fn until_ready(&mut self, id: &str) -> RequestKey {
-        self.sign_begin(id);
+        self.until_ready_from(id, "https://app.example")
+    }
+
+    /// [`Rig::until_ready`] for a page of `origin`.
+    pub fn until_ready_from(&mut self, id: &str, origin: &str) -> RequestKey {
+        self.sign_begin_from(id, origin);
         let key = Rig::opened(&self.h.ui.take()).expect("window opened").key;
         self.listed(fixture::snapshot());
         let ui = self.h.ui.take();

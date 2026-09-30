@@ -7,3 +7,4 @@ mod queue;
 mod rig;
 mod sign;
 mod signing_failures;
+mod test_signature;

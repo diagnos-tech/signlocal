@@ -16,7 +16,7 @@ path = "src/main.rs"
 # Test builds only (never in releases; CI checks the release binary): the
 # confirmation window confirms by itself once armed and saves a PNG of every
 # state it shows. See docs/architecture/testing.md.
-e2e = ["dep:png"]
+e2e = ["dep:png", "websign-host/e2e"]
 
 [dependencies]
 websign-core.workspace = true
