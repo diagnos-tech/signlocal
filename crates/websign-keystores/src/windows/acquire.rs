@@ -15,11 +15,11 @@ use windows::Win32::Security::Cryptography::{
 use windows::core::BOOL;
 
 use super::capi::{self, CapiKey};
+use super::cert_context::CertContext;
 use super::errors;
 use super::handles::{CryptProv, NcryptKey};
 use super::key_info::KeyLocation;
 use super::ncrypt;
-use super::store::CertContext;
 use crate::{KeystoreError, NcryptPreference, SignRequest};
 use log::trace;
 
@@ -67,7 +67,7 @@ impl AcquiredKey {
         let mut key_spec = CERT_KEY_SPEC(0);
         let mut caller_frees = BOOL(0);
         trace!(
-            "CryptAcquireCertificatePrivateKey(--ncrypt {preference:?}, silent: {silent}, owner window: {})",
+            "CryptAcquireCertificatePrivateKey(preference {preference:?}, silent: {silent}, owner window: {})",
             owner.is_some()
         );
         // SAFETY: `cert` is a live context; the out-pointers are locals; with

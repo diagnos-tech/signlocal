@@ -27,12 +27,17 @@ pub struct Located {
 
 /// Opens the slot that holds `cert_der`: the locator's slot if it still does,
 /// otherwise the first other slot with a token that does.
+///
+/// When no slot holds it, the answer is `NotFound`, unless the locator's own
+/// slot failed: that error (a pulled token, typically) says more. Failures
+/// of other slots (an empty or unformatted token) are not about this key.
 pub fn find_certificate(
     pkcs11: &Pkcs11,
     locator: &Locator,
     cert_der: &[u8],
 ) -> Result<Located, KeystoreError> {
-    let mut slots: Vec<Slot> = Slot::try_from(locator.slot).into_iter().collect();
+    let own = Slot::try_from(locator.slot).ok();
+    let mut slots: Vec<Slot> = own.into_iter().collect();
     let mapper = errors::mapper(Context::default());
     for slot in pkcs11.get_slots_with_token().map_err(&mapper)? {
         if !slots.contains(&slot) {
@@ -40,19 +45,16 @@ pub fn find_certificate(
         }
     }
 
-    let mut first_error = None;
+    let mut own_error = None;
     for slot in slots {
         match holds_certificate(pkcs11, slot, cert_der) {
             Ok(Some(located)) => return Ok(located),
             Ok(None) => {}
-            Err(error) => {
-                first_error.get_or_insert(error);
-            }
+            Err(error) if Some(slot) == own => own_error = Some(error),
+            Err(_) => {}
         }
     }
-    Err(first_error.map_or(KeystoreError::NotFound, |error| {
-        errors::map(error, Context::default())
-    }))
+    Err(own_error.map_or(KeystoreError::NotFound, &mapper))
 }
 
 fn holds_certificate(

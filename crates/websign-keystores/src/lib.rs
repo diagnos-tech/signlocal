@@ -22,6 +22,8 @@
 )]
 
 pub mod contract;
+#[cfg(test)]
+mod fake;
 mod hub;
 pub mod inventory;
 mod model;

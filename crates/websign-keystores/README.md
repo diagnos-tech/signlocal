@@ -11,6 +11,10 @@ signatures; `contract::run` is the suite every adapter must pass.
   `2-mac.md`, `4-linux.md`).
 - Contract: [`SPEC.md`](SPEC.md) — sessions (D5), D9 fallback, device links,
   chains, hub.
-- Tests: `cargo test -p websign-keystores`; contract runs in per-OS CI jobs
-  with SoftHSM2, software KSPs and a temporary keychain.
+- Tests: `cargo test -p websign-keystores`. With SoftHSM2, OpenSC and
+  OpenSSL installed, the PKCS#11 tests create a throwaway token
+  (`tests/support/softhsm-fixture.sh`) and run the contract against it;
+  without them they skip, unless `WEBSIGN_REQUIRE_SOFTHSM` is set (CI). The
+  OS key store contract (`tests/contract_os.rs`) runs in the per-OS jobs,
+  configured through `WEBSIGN_CONTRACT_*` variables.
 - License: GPL-3.0-or-later.

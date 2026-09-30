@@ -1,7 +1,7 @@
 //! Everything every key source can see, parsed and grouped by certificate.
 //! The CLI commands and the native host read the machine through this.
 
-use websign_core::{CertError, CertInfo, Deduped, Fingerprint, dedup_by_fingerprint};
+use websign_core::{CertError, CertInfo, Deduped, Fingerprint, SourceKind, dedup_by_fingerprint};
 
 use super::{FoundKey, Opened, Options, SourceFailure, open_all};
 use log::trace;
@@ -59,10 +59,7 @@ impl Inventory {
     /// Indices into [`Inventory::entries`], one group per certificate, with
     /// OS sources as primary.
     pub fn groups(&self) -> Vec<Deduped<usize>> {
-        dedup_by_fingerprint((0..self.entries.len()).collect(), |&index| {
-            let key = &self.entries[index].key;
-            (Fingerprint::of(&key.cert_der), key.kind)
-        })
+        group_entries(&self.entries)
     }
 
     /// `"<source>: <error>"` for every source that could not be opened or listed.
@@ -73,4 +70,13 @@ impl Inventory {
             .map(|failure| format!("{}: {}", failure.source, failure.error))
             .collect()
     }
+}
+
+/// [`Inventory::groups`] over any slice of entries.
+pub(crate) fn group_entries(entries: &[Entry]) -> Vec<Deduped<usize>> {
+    let keys: Vec<(Fingerprint, SourceKind)> = entries
+        .iter()
+        .map(|entry| (Fingerprint::of(&entry.key.cert_der), entry.key.kind))
+        .collect();
+    dedup_by_fingerprint((0..entries.len()).collect(), |&index| keys[index])
 }

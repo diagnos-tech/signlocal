@@ -8,7 +8,7 @@ use windows::Win32::Security::Cryptography::{
 };
 use windows::core::PWSTR;
 
-use super::store::CertContext;
+use super::cert_context::CertContext;
 use websign_devices::anonymous_reader_name;
 
 /// The key container a certificate points to.
@@ -16,7 +16,7 @@ use websign_devices::anonymous_reader_name;
 /// Certificates with only an in-memory CNG handle (`CERT_NCRYPT_KEY_HANDLE_PROP_ID`)
 /// are not covered: that property is never persisted, so it cannot appear
 /// in a store this process has just opened.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct KeyLocation {
     /// KSP (CNG) or CSP (CAPI) name; empty means the system default.
     pub provider: String,
@@ -27,6 +27,19 @@ pub struct KeyLocation {
     /// `AT_KEYEXCHANGE` or `AT_SIGNATURE` for CAPI keys.
     pub key_spec: u32,
     pub machine_keyset: bool,
+}
+
+/// Leaves the container name out: it may carry the holder's name, and
+/// `Debug` output ends up in logs.
+impl std::fmt::Debug for KeyLocation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("KeyLocation")
+            .field("provider", &self.provider)
+            .field("provider_type", &self.provider_type)
+            .field("key_spec", &self.key_spec)
+            .field("machine_keyset", &self.machine_keyset)
+            .finish_non_exhaustive()
+    }
 }
 
 impl KeyLocation {
@@ -72,10 +85,17 @@ impl KeyLocation {
             };
             format!("{name} [CAPI type {}, {spec}]", self.provider_type)
         };
-        if let Some(reader) = reader(&self.container) {
+        if let Some(reader) = self.qualified_reader() {
             text.push_str(&format!(", reader {}", anonymous_reader_name(reader)));
         }
         text
+    }
+
+    /// The reader named by a fully qualified smart card container name
+    /// (`\\.\<reader>\<container>`), the only form that says where the
+    /// card is without asking the card.
+    pub fn qualified_reader(&self) -> Option<&str> {
+        reader(&self.container)
     }
 }
 

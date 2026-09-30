@@ -50,6 +50,12 @@ fn map_return_value(rv: RvError, function: Function, context: Context) -> Keysto
             KeystoreError::Cancelled
         }
         RvError::UserNotLoggedIn if context.without_pin => KeystoreError::PinRequired,
+        // The session died with the token: the card was pulled, or the
+        // reader reset it (`SPEC.md` §3.1).
+        RvError::DeviceRemoved
+        | RvError::TokenNotPresent
+        | RvError::SessionHandleInvalid
+        | RvError::SessionClosed => KeystoreError::TokenRemoved,
         RvError::MechanismInvalid => {
             KeystoreError::Unsupported("the token does not offer this signing mechanism".to_owned())
         }
@@ -140,6 +146,21 @@ mod tests {
         assert!(matches!(without, KeystoreError::PinRequired));
         let with = map_rv(RvError::UserNotLoggedIn, Function::Sign, false);
         assert!(matches!(with, KeystoreError::Native { code: 0x101, .. }));
+    }
+
+    #[test]
+    fn a_vanished_token_or_session_means_the_token_was_removed() {
+        for rv in [
+            RvError::DeviceRemoved,
+            RvError::TokenNotPresent,
+            RvError::SessionHandleInvalid,
+            RvError::SessionClosed,
+        ] {
+            assert!(matches!(
+                map_rv(rv, Function::Sign, false),
+                KeystoreError::TokenRemoved
+            ));
+        }
     }
 
     #[test]

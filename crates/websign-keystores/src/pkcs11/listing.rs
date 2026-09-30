@@ -8,8 +8,9 @@
 //!   whose `CKA_ID` matches one of them count. Certificates without a match
 //!   (CA certificates stored on the token) are left out.
 //! * If it lists none and requires a login (`CKF_LOGIN_REQUIRED`), the keys
-//!   are assumed to be hidden, so every certificate counts. CA certificates
-//!   may sneak in; the caller filters those by their key usage.
+//!   are assumed to be hidden, so every certificate counts except CA
+//!   certificates (`basicConstraints cA`), which tokens store next to the
+//!   holder's without a key.
 //! * If it lists none and requires no login, there is no key.
 //!
 //! The provider text says which of the three applied.
@@ -19,11 +20,13 @@ use cryptoki::error::Error;
 use cryptoki::slot::{Slot, SlotInfo, TokenInfo};
 use websign_core::SourceKind;
 
+use super::device_link::{self, SlotFacts};
 use super::errors::{self, Context};
+use super::has_key::{counts, visibility};
 use super::locator::Locator;
 use super::objects::{self, StoredCertificate};
-use super::provider::{self, KeyVisibility, PinState, TokenFacts};
-use crate::{FoundKey, KeystoreError, PinPrompt};
+use super::provider::{self, KeyVisibility, PinFlags, TokenFacts};
+use crate::{DeviceLink, FoundKey, KeystoreError, PinPrompt};
 use log::trace;
 
 /// Lists the keys of every slot with a token. A slot that fails is skipped;
@@ -38,9 +41,10 @@ pub fn list(
         .get_slots_with_token()
         .map_err(errors::mapper(Context::default()))?;
     let (mut keys, mut problems) = (Vec::new(), Vec::new());
+    let mut readers = Readers::default();
     for slot in slots {
         trace!("{module_file}: reading slot {} without login", slot.id());
-        match list_slot(pkcs11, slot, keystore, module_file) {
+        match list_slot(pkcs11, slot, keystore, module_file, &mut readers) {
             Ok(found) => keys.extend(found),
             Err(error) => problems.push(format!(
                 "slot {}: {}",
@@ -55,50 +59,71 @@ pub fn list(
     Ok(keys)
 }
 
+/// The PC/SC reader names, scanned at most once per listing and only when a
+/// removable slot needs them.
+#[derive(Debug, Default)]
+struct Readers(Option<Vec<String>>);
+
+impl Readers {
+    fn names(&mut self) -> Vec<String> {
+        self.0
+            .get_or_insert_with(device_link::pcsc_reader_names)
+            .clone()
+    }
+}
+
 fn list_slot(
     pkcs11: &Pkcs11,
     slot: Slot,
     keystore: &str,
     module_file: &str,
+    readers: &mut Readers,
 ) -> Result<Vec<FoundKey>, Error> {
     let token = pkcs11.get_token_info(slot)?;
     let slot_info = pkcs11.get_slot_info(slot)?;
     let session = pkcs11.open_ro_session(slot)?;
     let certificates = objects::certificates(&session)?;
     let key_ids = objects::visible_private_key_ids(&session);
-    Ok(certificates
+    let kept: Vec<(StoredCertificate, KeyVisibility)> = certificates
         .into_iter()
-        .filter_map(|certificate| {
+        .map(|certificate| {
             let keys = visibility(token.login_required(), &key_ids, &certificate.id);
-            (keys != KeyVisibility::Absent).then(|| {
-                found_key(
-                    slot,
-                    &slot_info,
-                    &token,
-                    certificate,
-                    keys,
-                    keystore,
-                    module_file,
-                )
-            })
+            (certificate, keys)
+        })
+        .filter(|(certificate, keys)| counts(*keys, &certificate.der))
+        .collect();
+    if kept.is_empty() {
+        return Ok(Vec::new());
+    }
+    let device = device(&slot_info, &token, readers);
+    Ok(kept
+        .into_iter()
+        .map(|(certificate, keys)| {
+            let found = found_key(
+                slot,
+                &slot_info,
+                &token,
+                certificate,
+                keys,
+                keystore,
+                module_file,
+            );
+            FoundKey {
+                device: device.clone(),
+                ..found
+            }
         })
         .collect())
 }
 
-/// The three-way rule from the module documentation.
-fn visibility(login_required: bool, key_ids: &[Vec<u8>], certificate_id: &[u8]) -> KeyVisibility {
-    if !key_ids.is_empty() {
-        return if key_ids.iter().any(|id| id == certificate_id) {
-            KeyVisibility::Visible
-        } else {
-            KeyVisibility::Absent
-        };
-    }
-    if login_required {
-        KeyVisibility::AfterLogin
-    } else {
-        KeyVisibility::Absent
-    }
+fn device(slot_info: &SlotInfo, token: &TokenInfo, readers: &mut Readers) -> Option<DeviceLink> {
+    let facts = SlotFacts {
+        model: token.model(),
+        manufacturer: token.manufacturer_id(),
+        slot_description: slot_info.slot_description(),
+        removable: slot_info.removable_device(),
+    };
+    device_link::link(&facts, || readers.names())
 }
 
 fn found_key(
@@ -116,7 +141,7 @@ fn found_key(
         slot_description: slot_info.slot_description(),
         module_file,
         keys,
-        pin: PinState {
+        pin: PinFlags {
             count_low: token.user_pin_count_low(),
             final_try: token.user_pin_final_try(),
             locked: token.user_pin_locked(),
@@ -136,41 +161,7 @@ fn found_key(
         pin: PinPrompt::App {
             protected_path: token.protected_authentication_path(),
         },
-        // SPEC.md §3.3: DeviceLink::Pkcs11Token from the token's model and manufacturer.
+        // Filled by the caller, once per slot.
         device: None,
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn ids(list: &[&[u8]]) -> Vec<Vec<u8>> {
-        list.iter().map(|id| id.to_vec()).collect()
-    }
-
-    #[test]
-    fn a_visible_key_with_the_same_id_makes_the_certificate_count() {
-        let keys = ids(&[&[1], &[2]]);
-        assert_eq!(visibility(true, &keys, &[2]), KeyVisibility::Visible);
-        assert_eq!(visibility(false, &keys, &[2]), KeyVisibility::Visible);
-    }
-
-    #[test]
-    fn once_keys_are_visible_certificates_without_one_are_left_out() {
-        // CA certificates stored next to the user's certificate on the token.
-        let keys = ids(&[&[1]]);
-        assert_eq!(visibility(true, &keys, &[9]), KeyVisibility::Absent);
-        assert_eq!(visibility(true, &keys, &[]), KeyVisibility::Absent);
-    }
-
-    #[test]
-    fn hidden_keys_are_assumed_when_a_login_is_required() {
-        assert_eq!(visibility(true, &[], &[7]), KeyVisibility::AfterLogin);
-    }
-
-    #[test]
-    fn no_keys_and_no_login_means_no_key() {
-        assert_eq!(visibility(false, &[], &[7]), KeyVisibility::Absent);
     }
 }

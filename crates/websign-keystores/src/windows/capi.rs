@@ -6,13 +6,13 @@ use std::ptr;
 use websign_core::{HashAlgorithm, SignatureAlgorithm};
 use windows::Win32::Foundation::{ERROR_MORE_DATA, HWND, NTE_BAD_ALGID};
 use windows::Win32::Security::Cryptography::{
-    ALG_ID, CALG_SHA_256, CALG_SHA_384, CALG_SHA_512, CRYPT_MACHINE_KEYSET, CRYPT_SILENT,
-    CryptAcquireContextW, CryptSetHashParam, CryptSetProvParam, CryptSignHashW, HP_HASHVAL,
-    MS_ENH_RSA_AES_PROV_W, PP_CLIENT_HWND, PROV_RSA_AES, PROV_RSA_FULL,
+    ALG_ID, CALG_SHA_256, CALG_SHA_384, CALG_SHA_512, CryptSetHashParam, CryptSetProvParam,
+    CryptSignHashW, HP_HASHVAL, PP_CLIENT_HWND,
 };
-use windows::core::{HRESULT, HSTRING, PCWSTR};
+use windows::core::{HRESULT, PCWSTR};
 
 use super::MAX_SIGNATURE_LEN;
+use super::aes_reopen::{needs_aes_provider, open_in_aes_provider};
 use super::errors;
 use super::handles::{CryptHash, CryptProv};
 use super::key_info::KeyLocation;
@@ -22,14 +22,6 @@ use log::trace;
 pub const API: &str = "CryptSignHash";
 /// [`API`] after reopening the container in the AES CSP.
 pub const API_VIA_AES: &str = "CryptSignHash (PROV_RSA_AES)";
-
-/// Microsoft's `PROV_RSA_FULL` software CSPs, which predate SHA-2. The
-/// certificate import wizard puts PFX keys (A1 certificates) in them.
-const SHA1_ONLY_CSPS: [&str; 3] = [
-    "Microsoft Base Cryptographic Provider v1.0",
-    "Microsoft Enhanced Cryptographic Provider v1.0",
-    "Microsoft Strong Cryptographic Provider",
-];
 
 /// A CAPI key ready to sign.
 #[derive(Debug)]
@@ -73,41 +65,6 @@ impl CapiKey {
     }
 }
 
-fn needs_aes_provider(location: &KeyLocation) -> bool {
-    location.provider_type == PROV_RSA_FULL
-        && SHA1_ONLY_CSPS
-            .iter()
-            .any(|name| name.eq_ignore_ascii_case(&location.provider))
-}
-
-fn open_in_aes_provider(location: &KeyLocation, silent: bool) -> Result<CryptProv, KeystoreError> {
-    let container = HSTRING::from(location.container.as_str());
-    let mut flags = if location.machine_keyset {
-        CRYPT_MACHINE_KEYSET.0
-    } else {
-        0
-    };
-    if silent {
-        flags |= CRYPT_SILENT;
-    }
-    trace!("CryptAcquireContext(same container, Enhanced RSA and AES CSP, silent: {silent})");
-    let mut handle = 0usize;
-    // SAFETY: container and provider names are NUL-terminated and outlive
-    // the call; `handle` is a live out-pointer.
-    unsafe {
-        CryptAcquireContextW(
-            &mut handle,
-            &container,
-            MS_ENH_RSA_AES_PROV_W,
-            PROV_RSA_AES,
-            flags,
-        )
-    }
-    .map_err(|error| errors::native("CryptAcquireContext", &error))?;
-    // SAFETY: just acquired; released only by the returned value.
-    Ok(unsafe { CryptProv::new(handle, true) })
-}
-
 /// Signs with RSASSA-PKCS1-v1_5, the only scheme CAPI has.
 pub fn sign(
     key: &CapiKey,
@@ -116,7 +73,7 @@ pub fn sign(
 ) -> Result<Vec<u8>, KeystoreError> {
     if request.algorithm != SignatureAlgorithm::RsaPkcs1v15 {
         return Err(KeystoreError::Unsupported(format!(
-            "legacy CAPI key: {} needs CNG (try --ncrypt prefer)",
+            "{} needs CNG, and this key's CSP only signs through legacy CAPI",
             request.algorithm
         )));
     }
@@ -131,7 +88,7 @@ pub fn sign(
     let hash = CryptHash::create(&key.context, algorithm_id(request.hash)).map_err(|error| {
         if error.code() == NTE_BAD_ALGID {
             KeystoreError::Unsupported(format!(
-                "CSP \"{}\" cannot sign {} hashes (try --ncrypt prefer)",
+                "CSP \"{}\" cannot sign {} hashes",
                 key.provider, request.hash
             ))
         } else {
@@ -196,45 +153,5 @@ fn algorithm_id(hash: HashAlgorithm) -> ALG_ID {
         HashAlgorithm::Sha256 => CALG_SHA_256,
         HashAlgorithm::Sha384 => CALG_SHA_384,
         HashAlgorithm::Sha512 => CALG_SHA_512,
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::needs_aes_provider;
-    use crate::windows::key_info::KeyLocation;
-
-    fn location(provider: &str, provider_type: u32) -> KeyLocation {
-        KeyLocation {
-            provider: provider.to_owned(),
-            provider_type,
-            container: String::new(),
-            key_spec: 1,
-            machine_keyset: false,
-        }
-    }
-
-    #[test]
-    fn only_microsoft_sha1_software_csps_are_reopened() {
-        assert!(needs_aes_provider(&location(
-            "Microsoft Enhanced Cryptographic Provider v1.0",
-            1
-        )));
-        assert!(needs_aes_provider(&location(
-            "microsoft base cryptographic provider v1.0",
-            1
-        )));
-        assert!(!needs_aes_provider(&location(
-            "Microsoft Enhanced RSA and AES Cryptographic Provider",
-            24
-        )));
-        assert!(!needs_aes_provider(&location(
-            "Microsoft Base Smart Card Crypto Provider",
-            1
-        )));
-        assert!(!needs_aes_provider(&location(
-            "eToken Base Cryptographic Provider",
-            1
-        )));
     }
 }

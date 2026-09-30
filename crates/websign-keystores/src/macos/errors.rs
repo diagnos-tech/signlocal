@@ -1,16 +1,11 @@
-//! Security.framework and CryptoTokenKit failures turned into
-//! [`KeystoreError`], so the app can tell a dismissed PIN dialog or a wrong
-//! PIN apart from a real failure.
+//! Security.framework and CryptoTokenKit `CFError`s turned into
+//! [`KeystoreError`], so the app can tell a dismissed PIN dialog, a wrong or
+//! blocked PIN and a pulled token apart from a real failure.
 
 use core_foundation::error::CFError;
-use security_framework::base::Error as SecError;
 
+use super::{status, user_info};
 use crate::KeystoreError;
-
-/// `errSecUserCanceled`: the user dismissed the OS PIN or password dialog.
-const ERR_SEC_USER_CANCELED: i32 = -128;
-/// `errSecAuthFailed`: wrong PIN, or wrong keychain password.
-const ERR_SEC_AUTH_FAILED: i32 = -25293;
 
 /// `NSOSStatusErrorDomain`: the error code is an `OSStatus`.
 const OSSTATUS_DOMAIN: &str = "NSOSStatusErrorDomain";
@@ -18,113 +13,96 @@ const OSSTATUS_DOMAIN: &str = "NSOSStatusErrorDomain";
 /// in this domain unchanged (see `SecCTKKey.m`), so a smart card PIN dialog
 /// that is cancelled arrives as a CryptoTokenKit code, not an `OSStatus`.
 const CTK_DOMAIN: &str = "CryptoTokenKit";
-/// `TKErrorCodeCanceledByUser` (`TKError.h`).
-const CTK_CANCELED_BY_USER: isize = -4;
-/// `TKErrorCodeAuthenticationFailed` (`TKError.h`).
-const CTK_AUTHENTICATION_FAILED: isize = -5;
 
-/// Maps an `OSStatus` returned by the native call `api`.
-pub fn from_status(api: &'static str, status: i32) -> KeystoreError {
-    match status {
-        ERR_SEC_USER_CANCELED => KeystoreError::Cancelled,
-        ERR_SEC_AUTH_FAILED => KeystoreError::WrongPin,
-        _ => KeystoreError::Native {
-            api,
-            code: i64::from(status),
-            message: status_message(status),
-        },
-    }
+/// `TKErrorCode` values (`TKError.h`), with their symbolic names.
+mod tk {
+    pub const NOT_IMPLEMENTED: isize = -1;
+    pub const CANCELED_BY_USER: isize = -4;
+    pub const AUTHENTICATION_FAILED: isize = -5;
+    pub const OBJECT_NOT_FOUND: isize = -6;
+    pub const TOKEN_NOT_FOUND: isize = -7;
+    pub const AUTHENTICATION_NEEDED: isize = -9;
+
+    pub const NAMES: &[(isize, &str)] = &[
+        (NOT_IMPLEMENTED, "TKErrorCodeNotImplemented"),
+        (-2, "TKErrorCodeCommunicationError"),
+        (-3, "TKErrorCodeCorruptedData"),
+        (CANCELED_BY_USER, "TKErrorCodeCanceledByUser"),
+        (AUTHENTICATION_FAILED, "TKErrorCodeAuthenticationFailed"),
+        (OBJECT_NOT_FOUND, "TKErrorCodeObjectNotFound"),
+        (TOKEN_NOT_FOUND, "TKErrorCodeTokenNotFound"),
+        (-8, "TKErrorCodeBadParameter"),
+        (AUTHENTICATION_NEEDED, "TKErrorCodeAuthenticationNeeded"),
+    ];
+}
+
+/// What [`classify`] may need beyond domain and code; each is read only for
+/// the errors that need it.
+struct Details<D, R> {
+    /// The system's description of the error.
+    describe: D,
+    /// PIN attempts left, when the token driver reported them.
+    remaining_attempts: R,
 }
 
 /// Maps the `CFError` reported by the native call `api`.
 pub fn from_cf_error(api: &'static str, error: &CFError) -> KeystoreError {
     let domain = error.domain().to_string();
-    let code = error.code();
-    classify(api, &domain, code, || error.description().to_string())
+    let details = Details {
+        describe: || error.description().to_string(),
+        remaining_attempts: || user_info::remaining_attempts(error),
+    };
+    classify(api, &domain, error.code(), details)
 }
 
-/// Pure core of [`from_cf_error`]; `describe` is only called for errors that
-/// are reported as they are.
+/// Pure core of [`from_cf_error`].
 fn classify(
     api: &'static str,
     domain: &str,
     code: isize,
-    describe: impl FnOnce() -> String,
+    details: Details<impl FnOnce() -> String, impl FnOnce() -> Option<i64>>,
 ) -> KeystoreError {
     match domain {
         OSSTATUS_DOMAIN => match i32::try_from(code) {
-            Ok(status) => from_status(api, status),
-            Err(_) => native(api, domain, code, &describe()),
+            Ok(code) => status::from_status(api, code),
+            Err(_) => native(api, domain, code, &(details.describe)()),
         },
-        CTK_DOMAIN if code == CTK_CANCELED_BY_USER => KeystoreError::Cancelled,
-        CTK_DOMAIN if code == CTK_AUTHENTICATION_FAILED => KeystoreError::WrongPin,
-        // TODO(gustavo): a blocked PIN arrives as AuthenticationFailed with
-        // zero tries left in the userInfo; map it to PinLocked once seen on a
-        // real token.
-        _ => native(api, domain, code, &describe()),
+        CTK_DOMAIN => match code {
+            tk::CANCELED_BY_USER => KeystoreError::Cancelled,
+            // TODO(gustavo): confirm with a real token which userInfo entry
+            // carries the attempts left; until then a blocked PIN may be
+            // reported as WrongPin.
+            tk::AUTHENTICATION_FAILED if (details.remaining_attempts)() == Some(0) => {
+                KeystoreError::PinLocked
+            }
+            tk::AUTHENTICATION_FAILED => KeystoreError::WrongPin,
+            tk::AUTHENTICATION_NEEDED => KeystoreError::PinRequired,
+            tk::TOKEN_NOT_FOUND => KeystoreError::TokenRemoved,
+            tk::OBJECT_NOT_FOUND => KeystoreError::NotFound,
+            tk::NOT_IMPLEMENTED => {
+                KeystoreError::Unsupported(format!("{api}: TKErrorCodeNotImplemented"))
+            }
+            _ => native(api, domain, code, &(details.describe)()),
+        },
+        _ => native(api, domain, code, &(details.describe)()),
     }
 }
 
 fn native(api: &'static str, domain: &str, code: isize, description: &str) -> KeystoreError {
+    let symbol = match domain {
+        CTK_DOMAIN => tk::NAMES.iter().find(|(c, _)| *c == code).map(|(_, n)| *n),
+        _ => None,
+    };
     KeystoreError::Native {
         api,
         // CFIndex is 64 bits on every macOS target.
         code: code as i64,
-        message: format!("{domain}: {description}"),
+        message: match symbol {
+            Some(symbol) => format!("{domain} {symbol}: {description}"),
+            None => format!("{domain}: {description}"),
+        },
     }
-}
-
-/// `SecCopyErrorMessageString`, with the bare number when the system has no text.
-fn status_message(status: i32) -> String {
-    SecError::from_code(status)
-        .message()
-        .unwrap_or_else(|| format!("OSStatus {status}"))
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn unreachable_description() -> String {
-        panic!("description is only needed for errors reported as they are")
-    }
-
-    #[test]
-    fn cancellation_in_both_domains() {
-        for (domain, code) in [(OSSTATUS_DOMAIN, -128), (CTK_DOMAIN, -4)] {
-            let error = classify("x", domain, code, unreachable_description);
-            assert!(matches!(error, KeystoreError::Cancelled), "{domain} {code}");
-        }
-    }
-
-    #[test]
-    fn wrong_pin_in_both_domains() {
-        for (domain, code) in [(OSSTATUS_DOMAIN, -25293), (CTK_DOMAIN, -5)] {
-            let error = classify("x", domain, code, unreachable_description);
-            assert!(matches!(error, KeystoreError::WrongPin), "{domain} {code}");
-        }
-    }
-
-    #[test]
-    fn anything_else_keeps_api_code_and_domain() {
-        let error = classify("SecKeyCreateSignature", CTK_DOMAIN, -7, || {
-            "token not found".to_owned()
-        });
-        let KeystoreError::Native { api, code, message } = error else {
-            panic!("expected Native, got {error:?}");
-        };
-        assert_eq!(api, "SecKeyCreateSignature");
-        assert_eq!(code, -7);
-        assert_eq!(message, "CryptoTokenKit: token not found");
-    }
-
-    #[test]
-    fn osstatus_messages_come_from_the_system() {
-        // errSecItemNotFound
-        let KeystoreError::Native { code, message, .. } = from_status("x", -25300) else {
-            panic!("expected Native");
-        };
-        assert_eq!(code, -25300);
-        assert!(!message.is_empty());
-    }
-}
+mod tests;

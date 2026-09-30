@@ -11,7 +11,7 @@ use security_framework::key::{Algorithm, SecKey};
 use security_framework_sys::key::{SecKeyIsAlgorithmSupported, kSecKeyOperationTypeSign};
 use websign_core::{CertInfo, Curve, PublicKeyKind, SignatureAlgorithm, ecdsa};
 
-use super::{algorithm, errors};
+use super::{algorithm, errors, status};
 use crate::{KeystoreError, SignRequest, Signature};
 
 const API: &str = "SecKeyCreateSignature";
@@ -35,7 +35,7 @@ pub fn sign(
     };
     let key = identity
         .private_key()
-        .map_err(|error| errors::from_status("SecIdentityCopyPrivateKey", error.code()))?;
+        .map_err(|error| status::from_status("SecIdentityCopyPrivateKey", error.code()))?;
     let sec_algorithm = algorithm::for_digest(request.hash, request.algorithm);
     if !supports(&key, sec_algorithm) {
         return Err(KeystoreError::Unsupported(format!(

@@ -23,13 +23,13 @@ pub enum KeyVisibility {
 
 /// The token's own warning about the user PIN, from `CKF_USER_PIN_*`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub struct PinState {
+pub struct PinFlags {
     pub count_low: bool,
     pub final_try: bool,
     pub locked: bool,
 }
 
-impl PinState {
+impl PinFlags {
     /// Short text for the interface's "few attempts left" hints.
     fn note(self) -> Option<&'static str> {
         if self.locked {
@@ -53,7 +53,7 @@ pub struct TokenFacts<'a> {
     /// File name of the PKCS#11 module, e.g. `libeTPkcs11.so`.
     pub module_file: &'a str,
     pub keys: KeyVisibility,
-    pub pin: PinState,
+    pub pin: PinFlags,
 }
 
 /// `"eToken (SafeNet, Inc.); slot "Alcor Micro AU9540 00 00"; libeTPkcs11.so; key hidden until login"`.
@@ -116,7 +116,7 @@ mod tests {
             slot_description: "Alcor Micro AU9540 00 00",
             module_file: "libeTPkcs11.so",
             keys: KeyVisibility::AfterLogin,
-            pin: PinState::default(),
+            pin: PinFlags::default(),
         }
     }
 
@@ -157,14 +157,14 @@ mod tests {
     fn pin_warnings_follow_severity() {
         let with = |pin| describe(&TokenFacts { pin, ..facts() });
         assert!(
-            with(PinState {
+            with(PinFlags {
                 count_low: true,
-                ..PinState::default()
+                ..PinFlags::default()
             })
             .ends_with("PIN attempts running low")
         );
         assert!(
-            with(PinState {
+            with(PinFlags {
                 count_low: true,
                 final_try: true,
                 locked: false
@@ -172,7 +172,7 @@ mod tests {
             .ends_with("last PIN attempt")
         );
         assert!(
-            with(PinState {
+            with(PinFlags {
                 count_low: true,
                 final_try: true,
                 locked: true

@@ -6,11 +6,16 @@
 //! is reported as a [`SourceFailure`] and never stops the others.
 
 mod always_authenticate;
+mod cert_names;
+mod chain;
 mod ckr;
+mod device_link;
 mod discovery;
 mod errors;
 mod file_id;
 mod finder;
+mod has_key;
+mod key_checks;
 mod keystore;
 mod known_paths;
 mod listing;
@@ -21,7 +26,9 @@ mod module;
 mod objects;
 mod p11kit;
 mod path_patterns;
+mod pin_state;
 mod provider;
+mod sessions;
 mod signing;
 
 use std::path::Path;

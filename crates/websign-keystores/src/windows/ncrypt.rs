@@ -24,6 +24,7 @@ pub const API: &str = "NCryptSignHash";
 /// Signs the digest. ECDSA comes back as raw `r || s`, RSA as the
 /// big-endian signature block: both already in their final format. With
 /// `silent`, a provider that would need UI fails instead of showing it.
+/// The digest length was already checked by [`super::request::check`].
 pub fn sign(
     key: &NcryptKey,
     request: &SignRequest<'_>,

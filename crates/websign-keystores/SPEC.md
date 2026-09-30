@@ -27,6 +27,11 @@ suite (§7) is the acceptance test of every adapter.
    symbolic name (`CKR_DEVICE_ERROR`, `NTE_BAD_KEYSET`, `errSecAuthFailed`).
 7. `unsafe` only here, with `// SAFETY:`; every handle in an RAII type.
 8. Nothing is `Send`; the host confines the hub to one thread.
+9. A locator only finds a key; `sign` and `chain` act only when the
+   certificate found now has exactly the bytes of `FoundKey.cert_der`
+   (PKCS#11: by DER; Windows: thumbprint lookup, then byte comparison;
+   macOS: the locator must equal the SHA-256 of `cert_der`). Otherwise
+   `NotFound` (contract check `vanished-key`).
 
 ## 2. Model (promoted, extended)
 
@@ -77,9 +82,10 @@ matches a reader seen by PC/SC.
 
 ### 3.4 `chain` (NEW)
 
-CA certificates stored on the same token (`CKO_CERTIFICATE`, `CKA_CERTIFICATE_CATEGORY`
-authority or `basicConstraints cA`), ordered issuer-first by matching
-subject/issuer DN, leaf excluded, at most 8.
+CA certificates stored on the same token (`CKO_CERTIFICATE` with
+`basicConstraints cA`), walked from the leaf by comparing the raw DER issuer
+and subject names byte for byte, nearest issuer first, stopping at a
+self-signed certificate; leaf excluded, at most 8.
 
 ## 4. Windows (`windows/`)
 
@@ -102,15 +108,24 @@ for browser-started hosts).
 Default `Prefer`. When acquiring or signing with `Prefer` fails for a key
 whose provider is a CSP (`dwProvType != 0`) with `NTE_BAD_PROVIDER`,
 `NTE_PROV_TYPE_NOT_DEF`, `NTE_NOT_SUPPORTED` or `SCARD_E_UNSUPPORTED_FEATURE`,
-retry once with `Allow` and remember `Allow` for that locator. PSS through
-`Allow` on a CSP → `Unsupported`.
+retry once with `Allow` and remember `Allow` for that locator (for the
+life of the keystore). The "not supported" family (including
+`NTE_BAD_ALGID`) arrives mapped to `Unsupported`, and any `Unsupported`
+from a CSP key under `Prefer` retries. Cancellation and PIN errors never
+retry. PSS through `Allow` on a CSP → `Unsupported`. `NTE_BAD_KEYSET`
+stays `Native` (card CSPs also return it when the card is absent, and the
+host then offers an alternate path, §6).
 
 ### 4.3 Device link (NEW)
 
-`NCRYPT_READER_PROPERTY` (CNG) or `PP_SMARTCARD_READER` (CAPI) read without
-opening the key when possible → `Reader { name: anonymous_reader_name }`;
-fully qualified container names `\\.\<reader>\` are also parsed. Unknown →
-`None`.
+A fully qualified container name `\\.\<reader>\…` names the reader at no
+cost. Otherwise, only for hardware keys of Microsoft's minidriver providers
+(Smart Card KSP, Base Smart Card CSP), `NCRYPT_READER_PROPERTY` /
+`PP_SMARTCARD_READER` is read with `NCRYPT_SILENT_FLAG` / `CRYPT_SILENT`:
+they answer from the card's public container map, never show UI and never
+need the PIN, which keeps §1 rule 1. Third-party providers are never asked
+while listing. → `Reader { name: anonymous_reader_name }`; unknown → `None`.
+`TODO(gustavo)`: confirm with real cards that the query adds no UI or delay.
 
 ### 4.4 `chain` (NEW)
 
@@ -126,8 +141,13 @@ the `CryptoTokenKit` error domain; home from `getpwuid_r` when sandboxed.
 
 ### 5.1 Serialization (NEW)
 
-All Security.framework calls happen on the hub's thread only (the host
-guarantees it); no internal locking needed.
+All Security.framework calls happen on the hub's thread (the host
+guarantees it). The adapter also takes one process-wide lock around each
+`list`, `sign` and `chain` (Chromium does the same, the legacy keychain code
+is not thread-safe), so a diagnostics thread or a second hub cannot race it.
+The lock is held while the OS PIN dialog is open inside
+`SecKeyCreateSignature`; that blocks nothing the thread confinement does not
+already block, and cancelling is done in the OS dialog itself.
 
 ### 5.2 Device link (NEW)
 
@@ -155,6 +175,9 @@ network evaluation, leaf excluded, at most 8.
   alternate (`docs/ux.md` §5.11).
 - `chain`, `pin_state`: route likewise; unknown key → empty/`None`.
 - `end_sessions()`: calls every keystore's `end_sessions`.
+- `invalidate()` drops only the listing: sources stay open (modules loaded,
+  tokens unlocked). `with_sources(opened)` builds a hub over sources the
+  caller opened (fakes in tests, a chosen subset).
 
 ## 7. Contract suite (`contract::run`)
 
@@ -163,14 +186,28 @@ Checks, each with a stable name:
 | Check | Expectation |
 |---|---|
 | `lists-expected` | every fingerprint of `fixture.expected` is listed exactly once by this source |
-| `list-is-quiet` | listing twice returns the same set; no `WrongPin`/`PinRequired` from `list` |
-| `provider-is-anonymous` | `provider` contains no token label, serial or holder name of the fixture |
+| `list-is-quiet` | listing twice returns the same set; no `WrongPin`/`PinRequired` from `list`; no app-PIN token reports `unlocked` after `list` |
+| `provider-is-anonymous` | `provider` contains none of `fixture.private_text` (token labels, serials, container names), nor the certificate's display name, CN, subject serial number or (≥ 8 hex digits) certificate serial |
 | `signs-every-combination` | every listed key signs SHA-256/384/512 × each supported algorithm and `websign_core::verify` accepts |
 | `rejects-wrong-length` | a 31-byte digest for SHA-256 → error, never a signature |
+| `vanished-key` | signing a listed key whose `cert_der` was altered (last byte flipped) → `NotFound` or `TokenRemoved`, never a signature (§1 rule 9) |
 | `wrong-pin` (if `wrong_pin`) | `WrongPin`; then `pin_state().count_low` or not, per token; then the right PIN signs |
 | `session-reuse` (PKCS#11) | second signature without PIN succeeds; after `end_sessions` → `PinRequired` |
 | `always-authenticate` (if the fixture has one) | every signature needs the PIN |
 | `chain-best-effort` | `chain` never panics; leaf never included |
+
+`Fixture { expected, pin, wrong_pin, private_text }` (`Default` = nothing
+expected). Only `expected` keys are signed with, so real cards on a
+developer machine are never touched.
+
+Runners: `tests/pkcs11_softhsm.rs` (SoftHSM2 token made by
+`tests/support/softhsm-fixture.sh`; skipped without SoftHSM2 unless
+`WEBSIGN_REQUIRE_SOFTHSM` is set) and `tests/contract_os.rs` (the OS store,
+selected by `WEBSIGN_CONTRACT_SOURCE` = `windows` | `macos:keychain` |
+`macos:ctk`, with `WEBSIGN_CONTRACT_EXPECTED` and
+`WEBSIGN_CONTRACT_PRIVATE_TEXT` as comma-separated lists; skipped without
+the source; opened with `silent` so a key wanting UI fails instead of
+hanging).
 
 Fixtures per OS job: Linux/macOS/Windows SoftHSM2 (`kit/linux/softhsm-setup.sh`
 promoted by the CI track), Windows software KSP + legacy CSP keys

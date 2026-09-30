@@ -13,7 +13,7 @@ use security_framework::identity::SecIdentity;
 use security_framework::item::{ItemClass, ItemSearchOptions, Limit, Reference, SearchResult};
 use security_framework_sys::base::errSecItemNotFound;
 
-use super::{errors, token};
+use super::{status, token};
 use crate::KeystoreError;
 
 /// Where to look for identities.
@@ -26,12 +26,21 @@ pub enum Scope {
 }
 
 /// An identity with the facts the key source needs up front.
-#[derive(Debug)]
 pub struct Identity {
     pub sec_identity: SecIdentity,
     pub cert_der: Vec<u8>,
     /// `kSecAttrTokenID` of the private key; `None` for keychain files.
     pub token_id: Option<String>,
+}
+
+/// Only the token's driver: the instance part of a token ID is often the
+/// card's serial number, and `Debug` output ends up in logs.
+impl std::fmt::Debug for Identity {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Identity")
+            .field("driver", &self.token_id.as_deref().map(token::driver))
+            .finish_non_exhaustive()
+    }
 }
 
 /// What a search found. Identities that could not be read are counted in
@@ -71,7 +80,7 @@ fn search(scope: Scope) -> Result<Vec<SecIdentity>, KeystoreError> {
     match query.search() {
         Ok(results) => Ok(results.into_iter().filter_map(as_identity).collect()),
         Err(error) if error.code() == errSecItemNotFound => Ok(Vec::new()),
-        Err(error) => Err(errors::from_status("SecItemCopyMatching", error.code())),
+        Err(error) => Err(status::from_status("SecItemCopyMatching", error.code())),
     }
 }
 
@@ -85,10 +94,10 @@ fn as_identity(result: SearchResult) -> Option<SecIdentity> {
 fn read(identity: SecIdentity) -> Result<Identity, KeystoreError> {
     let certificate = identity
         .certificate()
-        .map_err(|e| errors::from_status("SecIdentityCopyCertificate", e.code()))?;
+        .map_err(|e| status::from_status("SecIdentityCopyCertificate", e.code()))?;
     let key = identity
         .private_key()
-        .map_err(|e| errors::from_status("SecIdentityCopyPrivateKey", e.code()))?;
+        .map_err(|e| status::from_status("SecIdentityCopyPrivateKey", e.code()))?;
     Ok(Identity {
         cert_der: certificate.to_der(),
         token_id: token::token_id(&key),
