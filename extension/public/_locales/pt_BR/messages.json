@@ -1,15 +1,15 @@
 {
   "extension_description": {
-    "message": "Assine em qualquer site com seu certificado digital: token USB, cartão inteligente ou certificado instalado no computador."
+    "message": "Use seu cartão inteligente, token USB ou certificado do sistema para assinar em qualquer site. Gratuito e de código aberto."
   },
   "extension_name": {
     "message": "WebeSign"
   },
   "popup_activate": {
-    "message": "Já instalei? Ativar o app"
+    "message": "Já instalou? Conclua a configuração"
   },
   "popup_checking": {
-    "message": "Verificando…"
+    "message": "Procurando o app…"
   },
   "popup_download": {
     "message": "Baixar para $os$",
@@ -22,8 +22,24 @@
   "popup_error_body": {
     "message": "Tente de novo. Se continuar, reinicie o computador."
   },
+  "popup_error_code": {
+    "message": "Código de erro: $code$",
+    "placeholders": {
+      "code": {
+        "content": "$1"
+      }
+    }
+  },
   "popup_error_title": {
     "message": "O app não respondeu"
+  },
+  "popup_footer_extension": {
+    "message": "Extensão $ext$",
+    "placeholders": {
+      "ext": {
+        "content": "$1"
+      }
+    }
   },
   "popup_footer_versions": {
     "message": "Extensão $ext$ · App $app$",
@@ -40,7 +56,10 @@
     "message": "A extensão precisa do app no computador para assinar."
   },
   "popup_missing_title": {
-    "message": "Falta instalar o app WebeSign"
+    "message": "Instale o app WebeSign"
+  },
+  "popup_new_tab": {
+    "message": "Abre em uma nova aba"
   },
   "popup_open_diagnostics": {
     "message": "Abrir diagnóstico"
@@ -79,11 +98,17 @@
   "popup_retry": {
     "message": "Tentar de novo"
   },
+  "popup_test": {
+    "message": "Teste sua configuração"
+  },
   "popup_unsupported_body": {
     "message": "Use um computador com Windows, macOS ou Linux."
   },
   "popup_unsupported_title": {
     "message": "O WebeSign ainda não funciona neste sistema"
+  },
+  "popup_update": {
+    "message": "Baixar a atualização"
   },
   "popup_update_in": {
     "message": "Atualizar na $store$",
@@ -101,6 +126,15 @@
   },
   "store_linux": {
     "message": "página de download"
+  },
+  "store_listing_description": {
+    "message": "Use seu cartão inteligente, token USB ou certificado do sistema para assinar em qualquer site. Funciona com Chrome, Edge, Firefox, Opera, Brave e Safari no Windows, macOS e Linux. Software livre e de código aberto para todos.\n\nQuando um site pede uma assinatura, o aplicativo WebeSign abre a própria janela no seu computador: você vê quem está pedindo, escolhe o certificado, confere o código de conferência e confirma. O PIN é digitado no aplicativo ou na janela do sistema operacional, nunca numa página da web.\n\n• Funciona com os certificados que você já tem: tokens USB, cartões inteligentes e certificados instalados no computador.\n• O site envia apenas uma impressão digital (hash) do documento; o documento nunca sai dele.\n• Toda assinatura pede a sua confirmação, e cada site precisa da sua permissão, que você pode revogar quando quiser.\n• Sem conta, sem rastreadores, sem serviço em segundo plano e sem porta de rede aberta.\n\nA extensão funciona junto com o aplicativo WebeSign, gratuito, para Windows, macOS e Linux, disponível no site do projeto. Código-fonte: GPL-3.0-or-later; bibliotecas para desenvolvedores: Apache-2.0."
+  },
+  "store_listing_name": {
+    "message": "WebeSign: assine com seu certificado"
+  },
+  "store_listing_summary": {
+    "message": "Assine em qualquer site com seu cartão inteligente, token USB ou certificado do sistema. Windows, macOS e Linux. Livre e aberto."
   },
   "store_microsoft": {
     "message": "Microsoft Store"

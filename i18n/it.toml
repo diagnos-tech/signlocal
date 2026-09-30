@@ -378,26 +378,37 @@ copy_diagnostics = "Copia diagnostica"
 close_window = "Chiudi la finestra"
 
 [popup]
-checking = "Verifica in corso…"
+checking = "Ricerca dell’app…"
 ready_title = "Pronto per firmare"
 ready_body = "L’app WebeSign {version} è collegata a questo browser."
+# Link to the site's test page; same words as the site's “Test your setup”.
+test = "Prova la tua configurazione"
 open_diagnostics = "Apri diagnostica"
-missing_title = "L’app WebeSign non è installata"
+missing_title = "Installa l’app WebeSign"
 missing_body = "Per firmare, l’estensione ha bisogno dell’app sul tuo computer."
 download = "Scarica per {os}"
-activate = "Già installata? Attiva l’app"
+# Link to the site's /activate/ page; same words as its link on the site.
+activate = "Già installata? Completa la configurazione"
 outdated_title = "Aggiorna l’app WebeSign"
 outdated_body = "Hai la versione {installed}. Questo browser richiede la {required} o successiva."
+# Opens the download page until the app is in the stores (then update_in is used).
+update = "Scarica l’aggiornamento"
 # {store} is store.microsoft, store.apple or store.linux.
 update_in = "Aggiorna in {store}"
 error_title = "L’app non ha risposto"
 error_body = "Riprova. Se il problema persiste, riavvia il computer."
+# {code} is a technical code such as Timeout, for support; never translated.
+error_code = "Codice di errore: {code}"
 retry = "Riprova"
 redownload = "Scarica di nuovo"
 unsupported_title = "WebeSign non funziona ancora su questo sistema"
 unsupported_body = "Usa un computer con Windows, macOS o Linux."
 footer_versions = "Estensione {ext} · App {app}"
+# Footer when the app's version is unknown (not installed or not answering).
+footer_extension = "Estensione {ext}"
 privacy = "Privacy"
+# Read by screen readers after each link's name.
+new_tab = "Si apre in una nuova scheda"
 
 [store]
 microsoft = "Microsoft Store"
@@ -405,12 +416,26 @@ apple = "Mac App Store"
 linux = "pagina di download"
 # Direct (unsigned) builds are updated from the GitHub Releases page.
 github = "la pagina di download"
+# Store listing (Chrome Web Store, Edge Add-ons, AMO, Opera add-ons).
+listing_name = "WebeSign: firma con il tuo certificato"
+listing_summary = "Usa la tua smart card, il token USB o un certificato del sistema per firmare su qualsiasi sito. Windows, macOS e Linux. Libero."
+listing_description = """
+Usa la tua smart card, il tuo token USB o un certificato del sistema per firmare su qualsiasi sito web. Funziona con Chrome, Edge, Firefox, Opera, Brave e Safari su Windows, macOS e Linux. Libero e open source, per tutti.
+
+Quando un sito chiede una firma, l'app WebeSign apre la sua finestra sul tuo computer: vedi chi la chiede, scegli il certificato, controlli il codice di verifica e confermi. Il PIN si digita nell'app o nella finestra del sistema operativo, mai in una pagina web.
+
+• Funziona con i certificati che hai già: token USB, smart card (come la CNS) e certificati installati sul computer.
+• Il sito invia solo un'impronta (hash) del documento; il documento non lo lascia mai.
+• Ogni firma ti chiede conferma, e ogni sito ha bisogno del tuo permesso, che puoi revocare in qualsiasi momento.
+• Nessun account, nessun tracker, nessun servizio in background e nessuna porta di rete aperta.
+
+L'estensione funziona insieme all'app WebeSign, gratuita, per Windows, macOS e Linux, disponibile sul sito del progetto. Codice sorgente: GPL-3.0-or-later; librerie per sviluppatori: Apache-2.0."""
 
 [extension]
 # Extension name in browser stores; keep the product name.
 name = "WebeSign"
 # One-line description in browser stores (at most 132 characters).
-description = "Firma su qualsiasi sito con il tuo certificato digitale: token USB, smart card o certificato installato sul computer."
+description = "Usa la tua smart card, il token USB o il certificato del sistema per firmare su qualsiasi sito. Gratuito e open source per tutti."
 
 # Window texts for errors (docs/ux.md §15). `title` is bold, `body` below it.
 [errors.insecure_origin]

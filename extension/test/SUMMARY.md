@@ -7,9 +7,11 @@
 - `i18n.test.ts` — Popup message keys and placeholders per state, in all locales.
 - `manifest.test.ts` — Manifest per target and channel (permissions, pinned ID, CSP, Gecko) and content-script matches.
 - `origin.test.ts` — `webContext`: secure contexts, loopback http, stamped origins; every accepted loopback name is reachable by the content script.
+- `popup-a11y.test.ts` — Popup live region, icons, links that open tabs, focus, and Open diagnostics.
 - `popup-handler.test.ts` — Background answers to the popup, sender checks and the "!" badge.
 - `popup-state.test.ts` — The six popup states derived from probe facts.
-- `popup-view.test.ts` — Popup DOM per state (happy-dom): texts, links, actions, focus and accessibility.
+- `popup-harness.ts` — Shared setup of the popup DOM tests (fake browser, echoing messages, probe answers).
+- `popup-view.test.ts` — Popup DOM per state (happy-dom): texts, links, actions and footer versions.
 - `relay-handler.test.ts` — Background relay side: sender checks, origin from the browser, reply routing, document goodbyes.
 - `relay.test.ts` — Content relay: well-formed same-window messages only, no forged fields, replies bound to the document.
 - `router-app-state.test.ts` — Router with an outdated app and a missing native host.

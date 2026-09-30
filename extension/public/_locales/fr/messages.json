@@ -1,15 +1,15 @@
 {
   "extension_description": {
-    "message": "Signez sur tout site avec votre certificat numérique : jeton USB, carte à puce ou certificat installé sur votre ordinateur."
+    "message": "Utilisez votre carte à puce, jeton USB ou certificat du système pour signer sur tout site web. Gratuit et open source pour tous."
   },
   "extension_name": {
     "message": "WebeSign"
   },
   "popup_activate": {
-    "message": "Déjà installée ? Activer l’application"
+    "message": "Déjà installée ? Terminez la configuration"
   },
   "popup_checking": {
-    "message": "Vérification…"
+    "message": "Recherche de l’application…"
   },
   "popup_download": {
     "message": "Télécharger pour $os$",
@@ -22,8 +22,24 @@
   "popup_error_body": {
     "message": "Réessayez. Si le problème persiste, redémarrez votre ordinateur."
   },
+  "popup_error_code": {
+    "message": "Code d’erreur : $code$",
+    "placeholders": {
+      "code": {
+        "content": "$1"
+      }
+    }
+  },
   "popup_error_title": {
     "message": "L’application n’a pas répondu"
+  },
+  "popup_footer_extension": {
+    "message": "Extension $ext$",
+    "placeholders": {
+      "ext": {
+        "content": "$1"
+      }
+    }
   },
   "popup_footer_versions": {
     "message": "Extension $ext$ · Application $app$",
@@ -40,7 +56,10 @@
     "message": "L’extension a besoin de l’application sur votre ordinateur pour signer."
   },
   "popup_missing_title": {
-    "message": "L’application WebeSign n’est pas installée"
+    "message": "Installez l’application WebeSign"
+  },
+  "popup_new_tab": {
+    "message": "S’ouvre dans un nouvel onglet"
   },
   "popup_open_diagnostics": {
     "message": "Ouvrir le diagnostic"
@@ -79,11 +98,17 @@
   "popup_retry": {
     "message": "Réessayer"
   },
+  "popup_test": {
+    "message": "Testez votre installation"
+  },
   "popup_unsupported_body": {
     "message": "Utilisez un ordinateur sous Windows, macOS ou Linux."
   },
   "popup_unsupported_title": {
     "message": "WebeSign ne fonctionne pas encore sur ce système"
+  },
+  "popup_update": {
+    "message": "Télécharger la mise à jour"
   },
   "popup_update_in": {
     "message": "Mettre à jour dans $store$",
@@ -101,6 +126,15 @@
   },
   "store_linux": {
     "message": "page de téléchargement"
+  },
+  "store_listing_description": {
+    "message": "Utilisez votre carte à puce, votre jeton USB ou un certificat du système pour signer sur n'importe quel site web. Fonctionne avec Chrome, Edge, Firefox, Opera, Brave et Safari sous Windows, macOS et Linux. Libre et open source, pour tous.\n\nQuand un site demande une signature, l'application WebeSign ouvre sa propre fenêtre sur votre ordinateur : vous voyez qui la demande, choisissez votre certificat, vérifiez le code de vérification et confirmez. Le code PIN se saisit dans l'application ou dans la fenêtre du système, jamais dans une page web.\n\n• Fonctionne avec les certificats que vous avez déjà : jetons USB, cartes à puce et certificats installés sur l'ordinateur.\n• Le site n'envoie qu'une empreinte (hash) du document ; le document lui-même ne le quitte jamais.\n• Chaque signature vous demande confirmation, et chaque site a besoin de votre autorisation, révocable à tout moment.\n• Aucun compte, aucun traceur, aucun service en arrière-plan et aucun port réseau ouvert.\n\nL'extension fonctionne avec l'application WebeSign, gratuite, pour Windows, macOS et Linux, disponible sur le site du projet. Code source : GPL-3.0-or-later ; bibliothèques pour développeurs : Apache-2.0."
+  },
+  "store_listing_name": {
+    "message": "WebeSign : signez avec votre certificat"
+  },
+  "store_listing_summary": {
+    "message": "Signez sur n'importe quel site avec votre carte à puce, votre jeton USB ou un certificat du système. Windows, macOS, Linux. Libre."
   },
   "store_microsoft": {
     "message": "Microsoft Store"

@@ -195,16 +195,24 @@ ok and older → `outdated {installed, required: min}`; `AppMissing` →
 `error {code}`. The probe is `{ok: true, appVersion} | {ok: false, code,
 details?: {installed?, required?}}`.
 
-View per `docs/ux.md` §9 with `browser.i18n.getMessage`; the card is a
-`role="status"` section inside a `aria-live="polite"` root; icons are
-`aria-hidden`; the primary button takes focus; links open in a new tab with
-`rel="noopener noreferrer"` and point to the site's English pages
-(`HOMEPAGE` + `download.html`, `privacy.html`, and `test/` for "Activate the
-app", which follows the extension's announcement live). "Open diagnostics"
-sends `diagnostics.open` and closes the popup (a failure re-checks
-instead); "Try again" probes again. The toolbar badge shows `!` in
-missing/outdated/error and clears in ready. Total popup size (popup.html
-and the scripts and styles it loads) < 15 KB, checked by `bun run size`.
+View per `docs/ux.md` §9 with `browser.i18n.getMessage`, placeholders
+filled by name (the generated catalogs number them alphabetically). The
+frame (header, status, actions, footer) is drawn at once and kept; the
+status is one persistent `role="status"` region whose content changes;
+icons are `aria-hidden`; focus is not taken on open, and moves to the new
+primary action when a repaint removes the focused one ("Try again").
+Links point to the site's pages (`HOMEPAGE` + `download.html#<os>`,
+`activate/`, `test/`, `privacy.html`), carry `rel="noopener noreferrer"`
+and an "opens in a new tab" description, and a plain click opens them with
+`tabs.create` and closes the popup (Safari's popover ignores
+`target=_blank`). "Open diagnostics" sends `diagnostics.open` once (the
+actions are `aria-busy` meanwhile) and closes the popup (a failure
+re-checks instead); "Try again" probes again. The toolbar badge shows `!`
+in missing/outdated/error and clears in ready. Total popup size
+(popup.html and the scripts and styles it loads) < 15 KB, checked by
+`bun run size`. `wxt build --mode fixtures` adds `src/popup/fixture.ts`
+(answers from the query string) for `scripts/screenshots.ts`; production
+builds drop it.
 
 ## 5. `isOlder(version, minimum)`
 

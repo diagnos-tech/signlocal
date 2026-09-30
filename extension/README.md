@@ -10,7 +10,8 @@ Chrome, Edge, Firefox and Safari.
 - Proven reference: `docs/prototypes/kit/extension/`.
 - Scripts: `bun run dev`, `bun run build` (chrome, edge, firefox, safari),
   `bun run zip`, `bun run typecheck`, `bun run test`, `bun run size` (popup
-  budget, after a build). `bun install` runs `wxt prepare` (generates `.wxt/`).
+  budget, after a build), `bun scripts/screenshots.ts` (every popup state into
+  `docs/screenshots/popup/`). `bun install` runs `wxt prepare` (generates `.wxt/`).
 - Channels (`WEBSIGN_CHANNEL`): `direct` (default) is the release zip people
   load unpacked; its Chromium builds carry `project.toml`'s `dev_key`, so the
   extension ID equals `dev_id`, the ID the app's native host manifest allows.

@@ -1,15 +1,15 @@
 {
   "extension_description": {
-    "message": "Firma su qualsiasi sito con il tuo certificato digitale: token USB, smart card o certificato installato sul computer."
+    "message": "Usa la tua smart card, il token USB o il certificato del sistema per firmare su qualsiasi sito. Gratuito e open source per tutti."
   },
   "extension_name": {
     "message": "WebeSign"
   },
   "popup_activate": {
-    "message": "Già installata? Attiva l’app"
+    "message": "Già installata? Completa la configurazione"
   },
   "popup_checking": {
-    "message": "Verifica in corso…"
+    "message": "Ricerca dell’app…"
   },
   "popup_download": {
     "message": "Scarica per $os$",
@@ -22,8 +22,24 @@
   "popup_error_body": {
     "message": "Riprova. Se il problema persiste, riavvia il computer."
   },
+  "popup_error_code": {
+    "message": "Codice di errore: $code$",
+    "placeholders": {
+      "code": {
+        "content": "$1"
+      }
+    }
+  },
   "popup_error_title": {
     "message": "L’app non ha risposto"
+  },
+  "popup_footer_extension": {
+    "message": "Estensione $ext$",
+    "placeholders": {
+      "ext": {
+        "content": "$1"
+      }
+    }
   },
   "popup_footer_versions": {
     "message": "Estensione $ext$ · App $app$",
@@ -40,7 +56,10 @@
     "message": "Per firmare, l’estensione ha bisogno dell’app sul tuo computer."
   },
   "popup_missing_title": {
-    "message": "L’app WebeSign non è installata"
+    "message": "Installa l’app WebeSign"
+  },
+  "popup_new_tab": {
+    "message": "Si apre in una nuova scheda"
   },
   "popup_open_diagnostics": {
     "message": "Apri diagnostica"
@@ -79,11 +98,17 @@
   "popup_retry": {
     "message": "Riprova"
   },
+  "popup_test": {
+    "message": "Prova la tua configurazione"
+  },
   "popup_unsupported_body": {
     "message": "Usa un computer con Windows, macOS o Linux."
   },
   "popup_unsupported_title": {
     "message": "WebeSign non funziona ancora su questo sistema"
+  },
+  "popup_update": {
+    "message": "Scarica l’aggiornamento"
   },
   "popup_update_in": {
     "message": "Aggiorna in $store$",
@@ -101,6 +126,15 @@
   },
   "store_linux": {
     "message": "pagina di download"
+  },
+  "store_listing_description": {
+    "message": "Usa la tua smart card, il tuo token USB o un certificato del sistema per firmare su qualsiasi sito web. Funziona con Chrome, Edge, Firefox, Opera, Brave e Safari su Windows, macOS e Linux. Libero e open source, per tutti.\n\nQuando un sito chiede una firma, l'app WebeSign apre la sua finestra sul tuo computer: vedi chi la chiede, scegli il certificato, controlli il codice di verifica e confermi. Il PIN si digita nell'app o nella finestra del sistema operativo, mai in una pagina web.\n\n• Funziona con i certificati che hai già: token USB, smart card (come la CNS) e certificati installati sul computer.\n• Il sito invia solo un'impronta (hash) del documento; il documento non lo lascia mai.\n• Ogni firma ti chiede conferma, e ogni sito ha bisogno del tuo permesso, che puoi revocare in qualsiasi momento.\n• Nessun account, nessun tracker, nessun servizio in background e nessuna porta di rete aperta.\n\nL'estensione funziona insieme all'app WebeSign, gratuita, per Windows, macOS e Linux, disponibile sul sito del progetto. Codice sorgente: GPL-3.0-or-later; librerie per sviluppatori: Apache-2.0."
+  },
+  "store_listing_name": {
+    "message": "WebeSign: firma con il tuo certificato"
+  },
+  "store_listing_summary": {
+    "message": "Usa la tua smart card, il token USB o un certificato del sistema per firmare su qualsiasi sito. Windows, macOS e Linux. Libero."
   },
   "store_microsoft": {
     "message": "Microsoft Store"

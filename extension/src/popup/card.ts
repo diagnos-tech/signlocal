@@ -3,14 +3,18 @@
  * comes from `browser.i18n`, links from project.toml, actions are callbacks.
  */
 
-import { browser } from "wxt/browser";
-import { HOMEPAGE } from "../generated";
+import { t } from "./i18n";
 import type { IconName } from "./icons";
+import { ACTIVATE_URL, downloadUrl, type Platform, TEST_URL } from "./links";
 import type { PopupState } from "./state";
 
-/** A button or link under the status card. */
+/**
+ * A button (runs in the popup) or a link (opens a tab). Links get the
+ * "opens in a new tab" arrow; `icon` leads a button's label.
+ */
 export interface Action {
   readonly label: string;
+  readonly icon?: IconName;
   readonly href?: string;
   readonly run?: () => void;
 }
@@ -21,42 +25,11 @@ export interface Card {
   readonly tone: "neutral" | "accent" | "success" | "warning" | "danger";
   readonly title: string;
   readonly body?: string;
-  /** Technical detail in monospace (the error code). */
+  /** Technical detail in monospace (the error code), for support. */
   readonly code?: string;
   readonly primary?: Action;
   readonly secondary?: Action;
 }
-
-/** Desktop OS the popup can name, from `runtime.getPlatformInfo().os`. */
-export type Platform = "win" | "mac" | "linux";
-
-/** Localized text; falls back to the key so a missing string is visible, not blank. */
-export function t(key: string, ...substitutions: string[]): string {
-  return browser.i18n.getMessage(key as never, substitutions) || key;
-}
-
-const OS_NAME: Readonly<Record<Platform, string>> = {
-  win: "Windows",
-  mac: "macOS",
-  linux: "Linux",
-};
-const STORE_KEY: Readonly<Record<Platform, string>> = {
-  win: "store_microsoft",
-  mac: "store_apple",
-  linux: "store_linux",
-};
-
-// TODO(gustavo): per-store URLs once the app is published; until then every path is the site.
-/** The site's download page (every OS; the stores come later). */
-export const DOWNLOAD_URL = `${HOMEPAGE}download.html`;
-/**
- * Where people finish activating an installed app (docs/ux.md §9): the
- * site's test page follows the extension's announcement live and can open
- * the app through its URL scheme, which stays open while the popup cannot.
- */
-export const ACTIVATE_URL = `${HOMEPAGE}activate/`;
-/** The privacy notice. */
-export const PRIVACY_URL = `${HOMEPAGE}privacy.html`;
 
 /** Callbacks the cards can trigger. */
 export interface Handlers {
@@ -64,9 +37,15 @@ export interface Handlers {
   readonly retry: () => void;
 }
 
+const OS_NAME: Readonly<Record<Platform, string>> = {
+  win: "Windows",
+  mac: "macOS",
+  linux: "Linux",
+};
+
 /**
- * The card for `state`; `os` picks the download and store wording (the generic
- * download page when the platform is unknown).
+ * The card for `state`; `os` picks the download section and its label
+ * (Linux's when the platform is unknown, which only `unsupported` reaches).
  */
 export function cardFor(state: PopupState, os: Platform | null, on: Handlers): Card {
   const platform = os ?? "linux";
@@ -74,32 +53,38 @@ export function cardFor(state: PopupState, os: Platform | null, on: Handlers): C
     case "checking":
       return { icon: "spinner", tone: "neutral", title: t("popup_checking") };
     case "ready":
+      // Testing is what people who open a working popup want next; Diagnostics is for trouble.
       return {
         icon: "check-circle",
         tone: "success",
         title: t("popup_ready_title"),
-        body: t("popup_ready_body", state.appVersion),
-        primary: { label: t("popup_open_diagnostics"), run: on.diagnostics },
+        body: t("popup_ready_body", { version: state.appVersion }),
+        primary: { label: t("popup_test"), href: TEST_URL },
+        secondary: { label: t("popup_open_diagnostics"), icon: "pulse", run: on.diagnostics },
       };
     case "missing":
       return {
-        icon: "download-simple",
+        icon: "download",
         tone: "accent",
         title: t("popup_missing_title"),
         body: t("popup_missing_body"),
-        primary: { label: t("popup_download", OS_NAME[platform]), href: DOWNLOAD_URL },
+        primary: {
+          label: t("popup_download", { os: OS_NAME[platform] }),
+          href: downloadUrl(platform),
+        },
         secondary: { label: t("popup_activate"), href: ACTIVATE_URL },
       };
     case "outdated":
+      // TODO(gustavo): "popup_update_in" with the OS's store once the app is published there.
       return {
         icon: "warning",
         tone: "warning",
         title: t("popup_outdated_title"),
-        body: t("popup_outdated_body", state.installed || "?", state.required),
-        primary: {
-          label: t("popup_update_in", t(STORE_KEY[platform])),
-          href: DOWNLOAD_URL,
-        },
+        body: t("popup_outdated_body", {
+          installed: state.installed || "?",
+          required: state.required,
+        }),
+        primary: { label: t("popup_update"), href: downloadUrl(platform) },
       };
     case "error":
       return {
@@ -107,9 +92,9 @@ export function cardFor(state: PopupState, os: Platform | null, on: Handlers): C
         tone: "danger",
         title: t("popup_error_title"),
         body: t("popup_error_body"),
-        code: state.code,
-        primary: { label: t("popup_retry"), run: on.retry },
-        secondary: { label: t("popup_redownload"), href: DOWNLOAD_URL },
+        code: t("popup_error_code", { code: state.code }),
+        primary: { label: t("popup_retry"), icon: "retry", run: on.retry },
+        secondary: { label: t("popup_redownload"), href: downloadUrl(platform) },
       };
     case "unsupported":
       return {

@@ -378,26 +378,37 @@ copy_diagnostics = "Copiar diagnóstico"
 close_window = "Cerrar la ventana"
 
 [popup]
-checking = "Comprobando…"
+checking = "Buscando la app…"
 ready_title = "Listo para firmar"
 ready_body = "La app WebeSign {version} está conectada a este navegador."
+# Link to the site's test page; same words as the site's “Test your setup”.
+test = "Pruebe su configuración"
 open_diagnostics = "Abrir diagnóstico"
-missing_title = "La app WebeSign no está instalada"
+missing_title = "Instale la app WebeSign"
 missing_body = "La extensión necesita la app en su equipo para firmar."
 download = "Descargar para {os}"
-activate = "¿Ya la instaló? Activar la app"
+# Link to the site's /activate/ page; same words as its link on the site.
+activate = "¿Ya la instaló? Termine la configuración"
 outdated_title = "Actualice la app WebeSign"
 outdated_body = "Tiene la versión {installed}. Este navegador requiere la {required} o posterior."
+# Opens the download page until the app is in the stores (then update_in is used).
+update = "Descargar la actualización"
 # {store} is store.microsoft, store.apple or store.linux.
 update_in = "Actualizar en {store}"
 error_title = "La app no respondió"
 error_body = "Inténtelo de nuevo. Si continúa, reinicie el equipo."
+# {code} is a technical code such as Timeout, for support; never translated.
+error_code = "Código de error: {code}"
 retry = "Intentar de nuevo"
 redownload = "Descargar de nuevo"
 unsupported_title = "WebeSign aún no funciona en este sistema"
 unsupported_body = "Use un equipo con Windows, macOS o Linux."
 footer_versions = "Extensión {ext} · App {app}"
+# Footer when the app's version is unknown (not installed or not answering).
+footer_extension = "Extensión {ext}"
 privacy = "Privacidad"
+# Read by screen readers after each link's name.
+new_tab = "Se abre en una pestaña nueva"
 
 [store]
 microsoft = "Microsoft Store"
@@ -405,12 +416,26 @@ apple = "Mac App Store"
 linux = "página de descarga"
 # Direct (unsigned) builds are updated from the GitHub Releases page.
 github = "la página de descarga"
+# Store listing (Chrome Web Store, Edge Add-ons, AMO, Opera add-ons).
+listing_name = "WebeSign: firme con su certificado"
+listing_summary = "Firme en cualquier web con su tarjeta inteligente, token USB o certificado del sistema. Windows, macOS y Linux. Libre y abierto."
+listing_description = """
+Use su tarjeta inteligente, token USB o certificado del sistema para firmar en cualquier sitio web. Funciona con Chrome, Edge, Firefox, Opera, Brave y Safari en Windows, macOS y Linux. Software libre y de código abierto para todos.
+
+Cuando un sitio web pide una firma, la aplicación WebeSign abre su propia ventana en su ordenador: usted ve quién la pide, elige el certificado, comprueba el código de verificación y confirma. El PIN se escribe en la aplicación o en la ventana del sistema operativo, nunca en una página web.
+
+• Funciona con los certificados que ya tiene: tokens USB, tarjetas inteligentes (como el DNIe) y certificados instalados en el ordenador.
+• El sitio envía solo una huella (hash) del documento; el documento nunca sale de él.
+• Cada firma le pide confirmación, y cada sitio necesita su permiso, que puede retirar cuando quiera.
+• Sin cuenta, sin rastreadores, sin servicio en segundo plano y sin puertos de red abiertos.
+
+La extensión funciona junto con la aplicación WebeSign, gratuita, para Windows, macOS y Linux, disponible en el sitio web del proyecto. Código fuente: GPL-3.0-or-later; bibliotecas para desarrolladores: Apache-2.0."""
 
 [extension]
 # Extension name in browser stores; keep the product name.
 name = "WebeSign"
 # One-line description in browser stores (at most 132 characters).
-description = "Firme en cualquier sitio web con su certificado digital: token USB, tarjeta inteligente o certificado instalado en su equipo."
+description = "Use su tarjeta inteligente, token USB o certificado del sistema para firmar en cualquier sitio web. Gratis y de código abierto."
 
 # Window texts for errors (docs/ux.md §15). `title` is bold, `body` below it.
 [errors.insecure_origin]

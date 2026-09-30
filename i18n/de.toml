@@ -378,26 +378,37 @@ copy_diagnostics = "Diagnose kopieren"
 close_window = "Fenster schließen"
 
 [popup]
-checking = "Wird geprüft…"
+checking = "App wird gesucht…"
 ready_title = "Bereit zum Signieren"
 ready_body = "Die WebeSign-App {version} ist mit diesem Browser verbunden."
+# Link to the site's test page; same words as the site's “Test your setup”.
+test = "Ihre Einrichtung testen"
 open_diagnostics = "Diagnose öffnen"
-missing_title = "Die WebeSign-App ist nicht installiert"
+missing_title = "WebeSign-App installieren"
 missing_body = "Zum Signieren benötigt die Erweiterung die App auf Ihrem Computer."
 download = "Für {os} herunterladen"
-activate = "Bereits installiert? App aktivieren"
+# Link to the site's /activate/ page; same words as its link on the site.
+activate = "Schon installiert? Einrichtung abschließen"
 outdated_title = "WebeSign-App aktualisieren"
 outdated_body = "Sie haben Version {installed}. Dieser Browser benötigt {required} oder neuer."
+# Opens the download page until the app is in the stores (then update_in is used).
+update = "Update herunterladen"
 # {store} is store.microsoft, store.apple or store.linux.
 update_in = "In {store} aktualisieren"
 error_title = "Die App hat nicht geantwortet"
 error_body = "Versuchen Sie es erneut. Wenn das Problem bestehen bleibt, starten Sie Ihren Computer neu."
+# {code} is a technical code such as Timeout, for support; never translated.
+error_code = "Fehlercode: {code}"
 retry = "Erneut versuchen"
 redownload = "Erneut herunterladen"
 unsupported_title = "WebeSign funktioniert auf diesem System noch nicht"
 unsupported_body = "Verwenden Sie einen Computer mit Windows, macOS oder Linux."
 footer_versions = "Erweiterung {ext} · App {app}"
+# Footer when the app's version is unknown (not installed or not answering).
+footer_extension = "Erweiterung {ext}"
 privacy = "Datenschutz"
+# Read by screen readers after each link's name.
+new_tab = "Öffnet sich in einem neuen Tab"
 
 [store]
 microsoft = "Microsoft Store"
@@ -405,12 +416,26 @@ apple = "Mac App Store"
 linux = "Download-Seite"
 # Direct (unsigned) builds are updated from the GitHub Releases page.
 github = "die Download-Seite"
+# Store listing (Chrome Web Store, Edge Add-ons, AMO, Opera add-ons).
+listing_name = "WebeSign: mit Ihrem Zertifikat signieren"
+listing_summary = "Signieren Sie auf jeder Website mit Smartcard, USB-Token oder Systemzertifikat. Windows, macOS und Linux. Frei und Open Source."
+listing_description = """
+Signieren Sie auf jeder Website mit Ihrer Smartcard, Ihrem USB-Token oder einem Zertifikat Ihres Betriebssystems. Funktioniert mit Chrome, Edge, Firefox, Opera, Brave und Safari unter Windows, macOS und Linux. Frei und Open Source für alle.
+
+Wenn eine Website eine Signatur anfordert, öffnet die WebeSign-App ein eigenes Fenster auf Ihrem Computer: Sie sehen, wer anfragt, wählen Ihr Zertifikat, prüfen den Prüfcode und bestätigen. Die PIN geben Sie in der App oder im Fenster des Betriebssystems ein, nie auf einer Webseite.
+
+• Funktioniert mit den Zertifikaten, die Sie schon haben: USB-Tokens, Smartcards und auf dem Computer installierte Zertifikate.
+• Die Website sendet nur einen Fingerabdruck (Hash) des Dokuments; das Dokument selbst verlässt sie nie.
+• Jede Signatur braucht Ihre Bestätigung, und jede Website Ihre Erlaubnis, die Sie jederzeit widerrufen können.
+• Kein Konto, keine Tracker, kein Hintergrunddienst und kein offener Netzwerkport.
+
+Die Erweiterung arbeitet mit der kostenlosen WebeSign-App für Windows, macOS und Linux zusammen, erhältlich auf der Projektwebsite. Quellcode: GPL-3.0-or-later; Entwicklerbibliotheken: Apache-2.0."""
 
 [extension]
 # Extension name in browser stores; keep the product name.
 name = "WebeSign"
 # One-line description in browser stores (at most 132 characters).
-description = "Signieren Sie auf jeder Website mit Ihrem digitalen Zertifikat: USB-Token, Chipkarte oder auf dem Computer installiertes Zertifikat."
+description = "Signieren Sie auf jeder Website mit Chipkarte, USB-Token oder Zertifikat des Betriebssystems. Kostenlos und Open Source für alle."
 
 # Window texts for errors (docs/ux.md §15). `title` is bold, `body` below it.
 [errors.insecure_origin]
