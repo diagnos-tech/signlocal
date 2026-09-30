@@ -39,8 +39,10 @@ unsafe extern "C" {
 struct Owned(CFTypeRef);
 
 impl Owned {
+    /// `None` for null. Lazy on purpose: an eagerly built `Self(null)` would
+    /// be dropped at once, and `CFRelease(NULL)` traps (SIGTRAP).
     fn new(value: CFTypeRef) -> Option<Self> {
-        (!value.is_null()).then_some(Self(value))
+        (!value.is_null()).then(|| Self(value))
     }
 }
 
@@ -95,4 +97,19 @@ fn version(url: CFTypeRef) -> Option<String> {
     // SAFETY: on success the buffer holds a NUL-terminated string.
     let text = unsafe { CStr::from_ptr(buffer.as_ptr()) };
     text.to_str().ok().map(str::to_owned)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_null_object_is_none_and_never_released() {
+        assert!(Owned::new(std::ptr::null()).is_none());
+    }
+
+    #[test]
+    fn an_unregistered_bundle_id_is_not_found() {
+        assert_eq!(find("br.invalid.websign.no-such-app"), None);
+    }
 }

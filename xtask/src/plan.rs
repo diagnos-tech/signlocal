@@ -97,7 +97,9 @@ fn collect_stale(
         return Ok(());
     }
     for (name, is_dir) in list_dir(&root.join(dir))? {
-        let relative = dir.join(name);
+        // `/` like the planned paths, so reports read the same on Windows
+        // (where `Path::join` would insert `\`); lookups compare components.
+        let relative = PathBuf::from(format!("{}/{name}", dir.display()));
         if is_dir {
             collect_stale(root, &relative, planned, stale)?;
         } else if !planned.contains(relative.as_path()) {

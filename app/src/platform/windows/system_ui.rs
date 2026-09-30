@@ -91,7 +91,7 @@ impl Certificate {
         // SAFETY: Windows copies `der`; null means it did not parse.
         let context =
             unsafe { CertCreateCertificateContext(X509_ASN_ENCODING | PKCS_7_ASN_ENCODING, der) };
-        (!context.is_null()).then_some(Self(context))
+        (!context.is_null()).then(|| Self(context))
     }
 }
 

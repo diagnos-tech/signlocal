@@ -74,7 +74,7 @@ impl Admin {
         // SAFETY: `handle` is writable; `algorithm` is a static string or
         // null (the default, SHA-1); no subsystem = the default one.
         unsafe { CryptCATAdminAcquireContext2(&mut handle, None, algorithm, None, None) }.ok()?;
-        (handle != 0).then_some(Self(handle))
+        (handle != 0).then(|| Self(handle))
     }
 
     /// The file's hash as catalogs of this context's algorithm list it.
@@ -101,7 +101,7 @@ impl Admin {
     fn catalog_listing(&self, hash: &[u8]) -> Option<CatalogContext<'_>> {
         // SAFETY: a live context and a hash slice; 0 means none found.
         let info = unsafe { CryptCATAdminEnumCatalogFromHash(self.0, hash, None, None) };
-        (info != 0).then_some(CatalogContext { admin: self, info })
+        (info != 0).then(|| CatalogContext { admin: self, info })
     }
 }
 
