@@ -10,6 +10,7 @@ decision is proven (or refuted) with real code. Each proof has a document with t
 | 2 | Mac: sandboxed app writes manifests, Chrome starts the host and signs through CryptoTokenKit, Safari bridge | [2-mac.md](2-mac.md) | CI ✅ (sandbox, manifests, host, Keychain); real Mac and Safari still missing |
 | 3 | Tokens on Mac: which middlewares expose the token to CryptoTokenKit; PKCS#11 inside the sandbox | [3-tokens-mac.md](3-tokens-mac.md) | CI: PKCS#11 ❌ in the sandbox → complement for PKCS#11-only tokens; token matrix still missing |
 | 4 | Linux: signing through p11-kit, native messaging (including Firefox Snap) | [4-linux.md](4-linux.md) | ✅ SoftHSM2/p11-kit + Chromium end to end (local and CI); real token and Firefox Snap still missing |
+| 5 | UI screenshots: real window (wgpu/glow) and headless egui_kittest on every OS | [5-ui-screenshots.md](5-ui-screenshots.md) | CI: kittest ✅ on 7/7 systems; window ✅ on Windows, macOS, Ubuntu, ❌ in bare containers (missing X11 libs); wgpu→glow fallback untested |
 
 ## The kit
 
