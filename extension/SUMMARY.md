@@ -1,5 +1,6 @@
 # extension
 
+- `public/` — static files copied into the extension: the generated `_locales/`
 - `src/` — sources of the extension
 - `test/` — Vitest tests of the extension modules
 - `README.md` — what this component is, how to build and test it, where its contract lives

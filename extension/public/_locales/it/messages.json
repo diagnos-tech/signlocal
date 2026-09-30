@@ -1,0 +1,108 @@
+{
+  "extension_description": {
+    "message": "Firma su qualsiasi sito con il tuo certificato digitale: token USB, smart card o certificato installato sul computer."
+  },
+  "extension_name": {
+    "message": "WebeSign"
+  },
+  "popup_activate": {
+    "message": "Già installata? Attiva l’app"
+  },
+  "popup_checking": {
+    "message": "Verifica in corso…"
+  },
+  "popup_download": {
+    "message": "Scarica per $os$",
+    "placeholders": {
+      "os": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_error_body": {
+    "message": "Riprova. Se il problema persiste, riavvia il computer."
+  },
+  "popup_error_title": {
+    "message": "L’app non ha risposto"
+  },
+  "popup_footer_versions": {
+    "message": "Estensione $ext$ · App $app$",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      },
+      "ext": {
+        "content": "$2"
+      }
+    }
+  },
+  "popup_missing_body": {
+    "message": "Per firmare, l’estensione ha bisogno dell’app sul tuo computer."
+  },
+  "popup_missing_title": {
+    "message": "L’app WebeSign non è installata"
+  },
+  "popup_open_diagnostics": {
+    "message": "Apri diagnostica"
+  },
+  "popup_outdated_body": {
+    "message": "Hai la versione $installed$. Questo browser richiede la $required$ o successiva.",
+    "placeholders": {
+      "installed": {
+        "content": "$1"
+      },
+      "required": {
+        "content": "$2"
+      }
+    }
+  },
+  "popup_outdated_title": {
+    "message": "Aggiorna l’app WebeSign"
+  },
+  "popup_privacy": {
+    "message": "Privacy"
+  },
+  "popup_ready_body": {
+    "message": "L’app WebeSign $version$ è collegata a questo browser.",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_ready_title": {
+    "message": "Pronto per firmare"
+  },
+  "popup_redownload": {
+    "message": "Scarica di nuovo"
+  },
+  "popup_retry": {
+    "message": "Riprova"
+  },
+  "popup_unsupported_body": {
+    "message": "Usa un computer con Windows, macOS o Linux."
+  },
+  "popup_unsupported_title": {
+    "message": "WebeSign non funziona ancora su questo sistema"
+  },
+  "popup_update_in": {
+    "message": "Aggiorna in $store$",
+    "placeholders": {
+      "store": {
+        "content": "$1"
+      }
+    }
+  },
+  "store_apple": {
+    "message": "Mac App Store"
+  },
+  "store_github": {
+    "message": "la pagina di download"
+  },
+  "store_linux": {
+    "message": "pagina di download"
+  },
+  "store_microsoft": {
+    "message": "Microsoft Store"
+  }
+}

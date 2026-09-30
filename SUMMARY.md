@@ -3,6 +3,7 @@
 WebeSign: sign with your own certificate from any website or desktop program. Start with README.md.
 
 - `.cargo/` — Cargo configuration shared by every build
+- `.gitattributes` — LF line endings everywhere and binary types
 - `.github/` — GitHub configuration
 - `app/` — the `websign` binary: host process, CLI, windows and OS glue
 - `clients/` — libraries desktop programs use to call the app (Apache-2.0)

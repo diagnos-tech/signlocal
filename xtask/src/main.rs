@@ -8,9 +8,15 @@
 )]
 
 mod check;
+mod fsutil;
 mod generate;
+mod i18n_files;
 mod package;
+mod plan;
+mod root;
 mod screenshots;
+#[cfg(test)]
+mod testutil;
 
 use std::process::ExitCode;
 
@@ -27,7 +33,7 @@ struct Cli {
 #[derive(Debug, Subcommand)]
 enum Command {
     /// Regenerate every derived file (TypeScript types, extension locales,
-    /// SDK messages, extension manifest values).
+    /// SDK messages, project constants for TypeScript).
     Gen(generate::GenArgs),
     /// Verify repository invariants (SUMMARY.md, i18n, generated files, e2e
     /// feature absent from release builds).

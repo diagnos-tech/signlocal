@@ -42,11 +42,28 @@ through messages, not linking, and the SDK, the client libraries and the
 protocol crate are Apache-2.0. The license includes an additional permission
 for app-store distribution — see [`LICENSE`](LICENSE).
 
+## Install
+
+Prerelease builds are unsigned: follow [`docs/install.md`](docs/install.md)
+(Windows, macOS, Linux, browser extension, uninstall). While the repository is
+private, download with `gh release download --repo diagnos-tech/web-esign`.
+Website: [`site/`](site/).
+
+## Unsigned builds
+
+Releases are not code-signed yet, so each system warns once. Windows
+SmartScreen says "Windows protected your PC" (**More info → Run anyway**);
+macOS Gatekeeper says the developer cannot be verified (right-click → **Open**);
+release Firefox only loads the extension temporarily. The install scripts
+avoid the first two; details and checksum verification in
+[`docs/install.md`](docs/install.md#why-unsigned).
+
 ## Documentation
 
+- [`docs/install.md`](docs/install.md) — install and uninstall per operating system
 - [`docs/architecture/`](docs/architecture/) — contracts: protocol, web and desktop APIs, security, testing, packaging
 - [`docs/plan.md`](docs/plan.md) — implementation plan and decisions
-- [`docs/ux.md`](docs/ux.md) — interface specification (pt-BR; English translation planned)
+- [`docs/ux.md`](docs/ux.md) — interface specification
 - [`docs/prototypes/`](docs/prototypes/) — risk proofs per operating system
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — how to contribute (DCO required)
 
