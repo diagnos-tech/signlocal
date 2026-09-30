@@ -44,6 +44,8 @@ names the file or crate that must enforce it and the test that proves it.
 | T13 | Replay of a signature request | Each signature needs a fresh confirmation; no batch signing (D4); requests expire (300 s) | host | scenario tests |
 | T14 | Denial of service by a page | Queue limit (`Busy`), per-connection limit, frame size limits, timeouts | protocol limits, host queue | scenario tests |
 | T15 | Store sandbox escapes (later channel) | macOS entitlements limited to `NativeMessagingHosts` folders; Safari socket peer checked by code-signing requirement | `packaging/macos`, `safari/` | review; store review |
+| T16 | One tab reads, feeds or cancels another tab's request over the shared native port | Native ids are `<tab>.<frame>.<pageId>` with tab and frame from `MessageSender`; app messages go only to the exact id's entry and back to that tab and frame; continuations (`sign.digest`, `cancel`) resolve only within the sender's own ids; replies carry the requesting document's token, so a reply racing a navigation is dropped instead of reaching the next page | extension `background/requests.ts`, `router.ts`, `content/relay.ts` | router and relay tests ("one shared port, isolated tabs", "drops a reply meant for another document") |
+| T17 | The extension itself becomes an attack surface | Permission `nativeMessaging` only (no host permissions, no web-accessible resources, no `externally_connectable`); extension pages under `default-src 'none'; script-src 'self'` CSP, no remote code, no `eval`; the content script posts only to `location.origin` and runs only on secure contexts; no logging | `extension/build/manifest.ts`, `entrypoints/content.ts` | manifest tests |
 
 ## Out of scope
 

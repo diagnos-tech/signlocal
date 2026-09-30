@@ -184,3 +184,23 @@ describe("route: status is answered by the extension", () => {
     });
   });
 });
+
+describe("route: status when the app stays silent", () => {
+  it("answers with the hello's app and remembered false after 1.5 s (inside the SDK's 5 s)", async () => {
+    vi.useFakeTimers();
+    try {
+      router.route(sender(), "p1", { type: "status" }, reply);
+      await vi.advanceTimersByTimeAsync(1_499);
+      expect(replies).toEqual([]);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(replies).toMatchObject([
+        { type: "status", app: { version: "1.4.0" }, appOutdated: false, remembered: false },
+      ]);
+      conn.emit("5.0.p1", { type: "status", app: appInfo("1.4.0"), remembered: true });
+      await vi.advanceTimersByTimeAsync(0);
+      expect(replies).toHaveLength(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});

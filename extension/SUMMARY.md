@@ -1,5 +1,7 @@
 # extension
 
+- `build/` — build-time code: the manifest per target and channel (`manifest.ts`)
+- `scripts/` — CI helpers: `size.ts`, the popup's 15 KB budget check
 - `public/` — static files copied into the extension: the generated `_locales/`
 - `src/` — sources of the extension
 - `test/` — Vitest tests of the extension modules

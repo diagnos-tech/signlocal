@@ -333,6 +333,7 @@ jobs:
           bunx wxt zip -b edge
           bunx wxt zip -b firefox --mv3
           bunx wxt zip -b safari
+          bun run size
       - uses: actions/upload-artifact@v4
         with:
           name: websign-extension-zips

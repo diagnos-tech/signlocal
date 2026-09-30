@@ -180,6 +180,17 @@ equivalents live in the same table.
 | Theme | Follows the system (light/dark) | Consistency with the OS. |
 | Source of truth for the site | Origin sent by the extension ([R5](#r5-the-extension-reports-origin-frame-and-browser)) | P1. |
 
+**Decision (position):** the window is centered on the monitor winit reports for it (`current_monitor`, else the
+primary), once, when the process creates it; between queued requests it is hidden and shown again where it was.
+winit 0.30 / eframe 0.36 expose no global pointer position, so "the monitor with the pointer" needs a platform call
+(`GetCursorPos` + `MonitorFromPoint`, `NSEvent.mouseLocation`, `XQueryPointer`; Wayland gives none) in
+`app/src/platform/` and a `ViewportCommand::OuterPosition` before showing. Until then the OS's own placement of a
+new top-level window (usually the active monitor) applies.
+
+**Decision (OS title):** a host longer than 40 characters is cut from the **left** with "…" in the OS title
+(taskbars cut titles at the end, where the registrable domain is); the registrable domain and the port are never
+cut, even if that exceeds 40.
+
 `TODO(gustavo)`: prove in Phase 0 whether Windows hands focus to the window when the host is already running
 (connection kept open). If it does not: window on top, `FlashWindowEx`, and the button's arming only starts
 when the user clicks the window (the first click only focuses, it triggers nothing).
@@ -408,6 +419,12 @@ PIN block (token driver):
   in the footer and the user clicks Sign again; if `SCARD_W_CHV_BLOCKED` comes back, PIN locked state.
 - There is no Caps Lock warning: egui/winit does not expose the key's state reliably.
 
+**Decision:** the OS named in the footer hint is the **key's store**, not the running system: a key in the
+Windows store says "Windows", a Keychain/CryptoTokenKit key says "macOS". A token driver (PKCS#11) has no system
+dialog (`C_Login` needs the PIN from us), so a driver key the host marks "system PIN" gets our field with no stated
+length limits; Linux therefore never shows the OS hint. The window drops "always on top" only while an OS dialog
+is asking (`signing` with a store key).
+
 ### 4.7 Buttons, arming, and accidental-click prevention
 
 | Rule | Value | Why |
@@ -426,6 +443,13 @@ on a recoverable error, `Try again`. In Choose mode: `Use this certificate` (`ac
 Cancel stays enabled at all times, except during signing through the system or the reader's keypad (neither
 API allows aborting); in that case it shows `Please wait…`.
 
+**Decision (moving the selection):** "discarded during arming" applies to keys and clicks that land on a window
+just shown or just refocused. Once the window has been armed since it last gained focus or took a request, a
+selection change (click, ↑/↓, Home/End) is taken even while the re-arm it caused runs: a selection approves
+nothing and re-arms Sign, and otherwise each arrow would wait 600 ms for the previous one. Every other key typed
+before arming (Enter, Space, Tab, text, paste, IME) is dropped before any widget sees it and its text is wiped;
+Esc and key releases always pass.
+
 ### 4.8 State machine
 
 | State | What it shows | Exits |
@@ -442,6 +466,11 @@ API allows aborting); in that case it shows `Please wait…`.
 | `site_cancelled` | "{site} cancelled the request." (the tab closed or navigated) | Closes after 1.5 s |
 | `timeout` | After **5 min** without a decision | Closes; SDK receives `Timeout` |
 | `blocked_origin` | Only through a bug (R5): `InsecureOrigin` error, no Sign | Close |
+
+**Decision (`loading_certs` timing):** the 150 ms skeleton and the 2 s "Still reading {device}" are counted by the
+UI model from the start of the listing (the request opening, or "Scan again"), so they appear in tests and screen
+readers exactly as drawn. The device name comes from the host's `SlowListing` command; until the host sends it,
+only "Looking for certificates…" shows.
 
 **Why close on success:** the user's next step is on the site; 900 ms is enough to see that it worked.
 The result is sent before the animation, so the site does not wait for it.
@@ -673,6 +702,11 @@ The "Details" link (only on the selected row) expands the row in `motion-base` w
 
 "View in system" button (`cert.details.view_in_system`): opens the OS viewer
 (`CryptUIDlgViewContext` on Windows, `SFCertificatePanel` on Mac, `gcr-viewer` on Linux if present).
+
+**Decision:** the button is not shown yet. Every OS viewer needs the certificate's DER, and the window only
+receives the parsed `CertInfo`; the host holds the DER (`KeySnapshot.certificates`). Proposed contract: a
+`UiEvent::ViewCertificate { key, fingerprint }` answered by the engine, which opens the viewer with the DER and
+our window as the parent. The window never receives certificate bodies.
 
 ### 5.13 Many certificates
 

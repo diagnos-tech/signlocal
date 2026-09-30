@@ -9,8 +9,11 @@ export const IDLE_CLOSE_MS = 60_000;
 /** The app must answer `hello` within this time (protocol.md §8). */
 export const HELLO_TIMEOUT_MS = 3_000;
 
-/** `status` never waits for a person, so it gets a short leash. */
-export const STATUS_TIMEOUT_MS = 10_000;
+/**
+ * `status` never waits for a person, so it gets a short leash: hello (≤ 3 s)
+ * plus this stays under the SDK's 5 s, so the page always gets our answer.
+ */
+export const STATUS_TIMEOUT_MS = 1_500;
 
 /** Longest page-chosen request id; leaves room for "<tab>.<frame>." in 64. */
 export const MAX_PAGE_ID_LEN = 40;

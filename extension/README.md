@@ -8,7 +8,12 @@ Chrome, Edge, Firefox and Safari.
 
 - Contract: [`SPEC.md`](SPEC.md); wire: [`docs/architecture/protocol.md`](../docs/architecture/protocol.md).
 - Proven reference: `docs/prototypes/kit/extension/`.
-- Scripts: `bun run dev`, `bun run build`, `bun run typecheck`, `bun run test`.
-  `bun install` runs `wxt prepare` (generates `.wxt/`).
+- Scripts: `bun run dev`, `bun run build` (chrome, edge, firefox, safari),
+  `bun run zip`, `bun run typecheck`, `bun run test`, `bun run size` (popup
+  budget, after a build). `bun install` runs `wxt prepare` (generates `.wxt/`).
+- Channels (`WEBSIGN_CHANNEL`): `direct` (default) is the release zip people
+  load unpacked; its Chromium builds carry `project.toml`'s `dev_key`, so the
+  extension ID equals `dev_id`, the ID the app's native host manifest allows.
+  `store` (`bun run zip:store`) leaves the key out: the stores assign the ID.
 - Locales in `public/_locales` are generated from `i18n/` by `cargo xtask gen`.
 - License: GPL-3.0-or-later.
