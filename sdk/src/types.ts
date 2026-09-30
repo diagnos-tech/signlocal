@@ -1,6 +1,6 @@
 /** Public types of the SDK. Wire types are generated; these are the friendly shapes. */
 
-import type { CurveName, EidasType, KeyStorage } from "./generated";
+import type { CurveName, EidasType, KeyStorage } from "./generated/index.js";
 
 /** A hash the digest was computed with. */
 export type HashAlgorithm = "SHA-256" | "SHA-384" | "SHA-512";

@@ -23,7 +23,8 @@
   "scripts": {
     "typecheck": "tsc --noEmit -p .",
     "build": "tsc -p tsconfig.build.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "size": "bun scripts/size.ts"
   },
   "devDependencies": {
     "typescript": "7.0.2",

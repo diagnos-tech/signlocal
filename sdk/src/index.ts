@@ -9,14 +9,14 @@
  * @packageDocumentation
  */
 
-export { certificates } from "./certificates";
-export { onChange } from "./change";
-export type { ErrorCode } from "./errors";
-export { WebSignError } from "./errors";
-export { fingerprint } from "./fingerprint";
-export { installUrl } from "./install";
-export { sign } from "./sign";
-export { status } from "./status";
+export { certificates } from "./certificates.js";
+export { onChange } from "./change.js";
+export type { ErrorCode } from "./errors.js";
+export { WebSignError } from "./errors.js";
+export { fingerprint } from "./fingerprint.js";
+export { installUrl } from "./install.js";
+export { sign } from "./sign.js";
+export { status } from "./status.js";
 export type {
   Certificate,
   CertificateOptions,
@@ -29,4 +29,4 @@ export type {
   SignResult,
   Status,
   VerificationCode,
-} from "./types";
+} from "./types.js";

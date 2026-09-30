@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as sdk from "../src/index";
 
-// Contract smoke test: the public surface exists. Behavior tests are written
-// by the SDK track from SPEC.md.
+// Smoke test: the documented public surface exists (the exact key set is in security.test.ts).
 describe("public API", () => {
   it("exports every documented function", () => {
     for (const name of [

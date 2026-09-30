@@ -1,5 +1,10 @@
 {
   "extends": "./tsconfig.json",
-  "compilerOptions": { "rootDir": "src", "noEmit": false },
+  "compilerOptions": {
+    "rootDir": "src",
+    "noEmit": false,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext"
+  },
   "include": ["src"]
 }
