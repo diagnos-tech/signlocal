@@ -58,16 +58,16 @@ on Ubuntu 24.04 and Windows for every push that touches the signing path, and on
 its own table (OS, browser, version, result) to the job summary and the `browsers-<os>` artifact; copy the
 results here when they change.
 
-Legend as above; ⏳ = runs in CI, no result recorded here yet; 🔧 = failed in CI, fixed, waiting for the next run;
+Legend as above; ⏳ = runs in CI, no result recorded here yet;
 — = not offered on that OS. Brave and Opera versions are the Chromium version the run reports.
 
 | Browser | Ubuntu 24.04 | Windows (latest runner) | macOS (latest runner) | How CI gets it |
 |---|---|---|---|---|
 | Google Chrome (stable) | ✅ 154 (local run, 2026-09-30) | ✅ 153 (CI, 2026-09-30) | ✅ 152 (CI, 2026-09-30) | preinstalled; else brew cask |
 | Microsoft Edge (stable) | ✅ 154 (local run, 2026-09-30) | ✅ 153 (CI, 2026-09-30) | ✅ 152 (CI, 2026-09-30) | preinstalled; else Microsoft's apt repository / brew cask |
-| Brave (stable) | ✅ 1.96 (local run, 2026-09-30) | ✅ Chromium 154 (CI, 2026-09-30) | 🔧 signs (CI, 2026-09-30) since registration writes Google Chrome's folder, which Brave reads; the run now turns Brave's updater off, which held its close, pending CI | Brave's apt repository; choco `brave`; brew cask |
+| Brave (stable) | ✅ 1.96 (local run, 2026-09-30) | ✅ Chromium 154 (CI, 2026-09-30) | ✅ Chromium 152 (CI, 2026-09-30); Brave on macOS reads Google Chrome's folder, so registration writes there | Brave's apt repository; choco `brave`; brew cask |
 | Opera (stable) | ✅ 136 (local run, 2026-09-30) | ✅ Chromium 152 (CI, 2026-09-30) | ✅ Chromium 151 (CI, 2026-09-30) | Opera's apt repository; choco `opera`; brew cask |
-| Firefox (release) | ✅ 157 (local run, 2026-09-30) | 🔧 signs (156, CI, 2026-09-30); the harness now waits for Firefox's first tab to get its id, pending CI | ✅ 155 (CI, 2026-09-30) | Mozilla's tarball on Linux; preinstalled; brew cask |
+| Firefox (release) | ✅ 157 (local run, 2026-09-30) | ✅ 156 (CI, 2026-09-30) | ✅ 155 (CI, 2026-09-30) | Mozilla's tarball on Linux; preinstalled; brew cask |
 | Firefox ESR | ✅ 140 (local run, 2026-09-30) | | | Mozilla's tarball (Linux only) |
 | Vivaldi | ⚠️ registration traced, not run: Playwright crashes Vivaldi 8.2 | | | not in CI |
 | Safari | — | — | see [install.md](install.md#safari) | not in this suite |
