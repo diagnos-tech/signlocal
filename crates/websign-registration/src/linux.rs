@@ -1,20 +1,25 @@
 //! Where Linux browsers look for user-level native messaging manifests.
 //!
-//! Chromium-based browsers read `<config dir>/NativeMessagingHosts/`; Firefox
-//! reads `~/.mozilla/native-messaging-hosts/`. Snap Firefox reads the same
+//! Chromium-based browsers read `<config dir>/NativeMessagingHosts/` under
+//! `$XDG_CONFIG_HOME` (default `~/.config`); Firefox reads
+//! `~/.mozilla/native-messaging-hosts/`. Opera reads Google Chrome's folder
+//! instead of its own, and Brave reads its default folder even when started
+//! with another `--user-data-dir` (both traced, `docs/research/native-messaging.md`
+//! §3.3). Snap Firefox reads the same
 //! folder (or the system one), because the WebExtensions portal that starts
 //! hosts on its behalf runs outside the sandbox; the portal asks the user once
 //! per extension. Flatpak browsers see only their own `~/.var/app/<id>`, so
 //! they get a manifest and a copy of the host there; that copy answers but
 //! cannot reach `pcscd` or system PKCS#11 modules from inside the sandbox.
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use super::browsers::{Browser, Family};
 use super::destination::Target;
 use websign_project::SLUG;
 
-/// `(label, folder under ~/.config)` for each channel of a Chromium browser.
+/// `(label, folder under the config home)` for each channel of a Chromium
+/// browser: the folder that must exist for the browser to count as installed.
 fn config_dirs(browser: Browser) -> &'static [(&'static str, &'static str)] {
     match browser {
         Browser::Chrome => &[
@@ -48,6 +53,22 @@ fn config_dirs(browser: Browser) -> &'static [(&'static str, &'static str)] {
     }
 }
 
+/// The folder under the config home whose `NativeMessagingHosts` the browser
+/// reads, when it is not the browser's own: every Opera channel reads Google
+/// Chrome's.
+fn hosts_owner(browser: Browser) -> Option<&'static str> {
+    (browser == Browser::Opera).then_some("google-chrome")
+}
+
+/// `$XDG_CONFIG_HOME` when it is absolute (the XDG rule, which Chromium
+/// follows), else `<home>/.config`.
+pub fn config_home(home: &Path) -> PathBuf {
+    std::env::var_os("XDG_CONFIG_HOME")
+        .map(PathBuf::from)
+        .filter(|dir| dir.is_absolute())
+        .unwrap_or_else(|| home.join(".config"))
+}
+
 /// `(Flatpak app ID, config folder inside it)`; Firefox keeps `.mozilla`.
 pub(crate) fn flatpak(browser: Browser) -> Option<(&'static str, &'static str)> {
     Some(match browser {
@@ -56,12 +77,14 @@ pub(crate) fn flatpak(browser: Browser) -> Option<(&'static str, &'static str)> 
         Browser::Edge => ("com.microsoft.Edge", "microsoft-edge"),
         Browser::Brave => ("com.brave.Browser", "BraveSoftware/Brave-Browser"),
         Browser::Vivaldi => ("com.vivaldi.Vivaldi", "vivaldi"),
-        Browser::Opera => ("com.opera.Opera", "opera"),
+        Browser::Opera => ("com.opera.Opera", "google-chrome"),
         Browser::Firefox => ("org.mozilla.firefox", ".mozilla"),
     })
 }
 
-pub fn targets(browsers: &[Browser], home: &Path) -> Vec<Target> {
+/// Per-user targets; `config` is [`config_home`] (a parameter so tests need
+/// no environment).
+pub fn targets(browsers: &[Browser], home: &Path, config: &Path) -> Vec<Target> {
     let mut targets = Vec::new();
     for &browser in browsers {
         match browser.family() {
@@ -82,10 +105,15 @@ pub fn targets(browsers: &[Browser], home: &Path) -> Vec<Target> {
             }
             Family::Chromium => {
                 for (label, dir) in config_dirs(browser) {
-                    let root = home.join(".config").join(dir);
+                    let root = config.join(dir);
+                    let hosts = config.join(hosts_owner(browser).unwrap_or(dir));
                     targets.push(
-                        Target::file(*label, Family::Chromium, &root.join("NativeMessagingHosts"))
-                            .requiring(&root),
+                        Target::file(
+                            *label,
+                            Family::Chromium,
+                            &hosts.join("NativeMessagingHosts"),
+                        )
+                        .requiring(&root),
                     );
                 }
             }

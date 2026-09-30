@@ -158,7 +158,8 @@ pub fn plan(request: &Request) -> Result<Vec<Target>, RegistrationError> {
         return Ok(system::targets(&browsers, &lib_dirs));
     }
     if cfg!(target_os = "linux") {
-        Ok(linux::targets(&browsers, &real_home()?))
+        let home = real_home()?;
+        Ok(linux::targets(&browsers, &home, &linux::config_home(&home)))
     } else if cfg!(target_os = "macos") {
         Ok(macos::targets(&browsers, &real_home()?))
     } else if cfg!(windows) {

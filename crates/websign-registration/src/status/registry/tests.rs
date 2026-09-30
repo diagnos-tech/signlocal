@@ -59,7 +59,7 @@ fn a_key_pointing_to_a_deleted_manifest_is_broken() {
 }
 
 #[test]
-fn edge_falls_back_to_chromes_key() {
+fn chromes_key_is_the_last_fallback_of_chromium_browsers() {
     let folder = tempfile::tempdir().unwrap();
     let registry = MemoryRegistry::new();
     install(&registry, folder.path(), &[Browser::Chrome]);
@@ -67,13 +67,17 @@ fn edge_falls_back_to_chromes_key() {
         state(Browser::Edge, &registry, &host()),
         RegistrationState::Registered
     );
-    for browser in [Browser::Firefox, Browser::Brave, Browser::Vivaldi] {
+    for browser in [Browser::Brave, Browser::Vivaldi, Browser::Opera] {
         assert_eq!(
             state(browser, &registry, &host()),
-            RegistrationState::Missing,
-            "{browser:?} documents no fallback to Chrome's key"
+            RegistrationState::Registered,
+            "{browser:?} reads Chrome's key last"
         );
     }
+    assert_eq!(
+        state(Browser::Firefox, &registry, &host()),
+        RegistrationState::Missing
+    );
 }
 
 #[test]

@@ -6,5 +6,5 @@
     "types": ["node"],
     "allowImportingTsExtensions": true
   },
-  "include": ["tests", "audit", "lib", "playwright.config.ts"]
+  "include": ["tests", "browsers", "audit", "lib", "playwright.config.ts"]
 }

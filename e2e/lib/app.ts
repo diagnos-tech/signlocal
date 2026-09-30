@@ -19,7 +19,7 @@ const run = promisify(execFile);
 export type Confirm = "sign" | "choose" | "remember" | "cancel" | "wait";
 
 /** Per-run folders, made once by `global-setup.ts` (WEBSIGN_E2E_HOME). */
-function runHome(): string {
+export function runHome(): string {
   const home = process.env.WEBSIGN_E2E_HOME;
   if (home === undefined) throw new Error("WEBSIGN_E2E_HOME is not set: run through playwright");
   return home;
@@ -67,6 +67,8 @@ export function appEnv(
   if (platform() === "linux") {
     vars.XDG_CONFIG_HOME = join(runHome(), "config");
     vars.XDG_STATE_HOME = join(runHome(), "state");
+    // A named browser and its registration live in a private home too.
+    if (env.browserName !== undefined) vars.HOME = join(runHome(), "home");
   }
   if (env.keys.kind === "softhsm") {
     vars.SOFTHSM2_CONF = env.keys.token.conf;

@@ -15,20 +15,21 @@
 use std::path::{Path, PathBuf};
 
 use crate::browsers::{Browser, Family};
-use crate::destination::{Location, Target};
+use crate::destination::Target;
 
-/// The `native-messaging-hosts` folder each Chromium browser reads under
-/// `/etc`. Brave and Opera have no folder of their own and read Chrome's.
-fn chromium_dir(browser: Browser) -> Option<&'static str> {
-    Some(match browser {
-        Browser::Chrome | Browser::Brave | Browser::Opera => {
-            "/etc/opt/chrome/native-messaging-hosts"
-        }
-        Browser::Chromium => "/etc/chromium/native-messaging-hosts",
-        Browser::Edge => "/etc/opt/edge/native-messaging-hosts",
-        Browser::Vivaldi => "/etc/opt/vivaldi/native-messaging-hosts",
-        Browser::Firefox => return None,
-    })
+const CHROME: &str = "/etc/opt/chrome/native-messaging-hosts";
+
+/// The `native-messaging-hosts` folders each Chromium browser reads under
+/// `/etc`, in its reading order; the first is the one written. Brave, Opera
+/// and Vivaldi read only Chrome's, Edge falls back to it (traced on Linux,
+/// `docs/research/native-messaging.md` §3.3).
+fn chromium_dirs(browser: Browser) -> &'static [&'static str] {
+    match browser {
+        Browser::Chrome | Browser::Brave | Browser::Opera | Browser::Vivaldi => &[CHROME],
+        Browser::Chromium => &["/etc/chromium/native-messaging-hosts"],
+        Browser::Edge => &["/etc/opt/edge/native-messaging-hosts", CHROME],
+        Browser::Firefox => &[],
+    }
 }
 
 /// System-wide targets for `browsers`, with `lib_dirs` the distro's library
@@ -37,14 +38,10 @@ fn chromium_dir(browser: Browser) -> Option<&'static str> {
 pub fn targets(browsers: &[Browser], lib_dirs: &[&Path]) -> Vec<Target> {
     let mut targets: Vec<Target> = Vec::new();
     for &browser in browsers {
-        let dirs: Vec<PathBuf> = match chromium_dir(browser) {
-            Some(dir) => vec![PathBuf::from(dir)],
-            None => lib_dirs
-                .iter()
-                .map(|lib| lib.join("mozilla/native-messaging-hosts"))
-                .collect(),
-        };
-        for dir in dirs {
+        for dir in folders(browser, lib_dirs)
+            .into_iter()
+            .take(written(browser))
+        {
             let candidate = Target::file(browser.label(), browser.family(), &dir);
             match targets
                 .iter_mut()
@@ -62,14 +59,32 @@ pub fn targets(browsers: &[Browser], lib_dirs: &[&Path]) -> Vec<Target> {
     targets
 }
 
+/// Every folder `browser` reads, in its reading order.
+fn folders(browser: Browser, lib_dirs: &[&Path]) -> Vec<PathBuf> {
+    match browser.family() {
+        Family::Chromium => chromium_dirs(browser).iter().map(PathBuf::from).collect(),
+        Family::Firefox => lib_dirs
+            .iter()
+            .map(|lib| lib.join("mozilla/native-messaging-hosts"))
+            .collect(),
+    }
+}
+
+/// How many of [`folders`] are written: Firefox reads every library root
+/// (which one exists depends on the distro), a Chromium browser only needs
+/// the first folder it reads.
+fn written(browser: Browser) -> usize {
+    match browser.family() {
+        Family::Chromium => 1,
+        Family::Firefox => usize::MAX,
+    }
+}
+
 /// The system manifest paths `browser` reads, in its reading order.
 pub(crate) fn manifests(browser: Browser, lib_dirs: &[&Path]) -> Vec<(Family, PathBuf)> {
-    targets(&[browser], lib_dirs)
+    folders(browser, lib_dirs)
         .into_iter()
-        .filter_map(|target| match target.location {
-            Location::File { manifest, .. } => Some((target.family, manifest)),
-            Location::Registry { .. } => None,
-        })
+        .map(|dir| (browser.family(), dir.join(crate::manifest::file_name())))
         .collect()
 }
 

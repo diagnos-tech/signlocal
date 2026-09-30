@@ -1,9 +1,12 @@
 //! Where macOS browsers look for user-level native messaging manifests:
 //! `NativeMessagingHosts/` inside each browser's Application Support folder.
+//! Opera reads Google Chrome's folder (it does on Linux, traced, and Opera's
+//! developers said so for macOS), so an installed Opera also gets a manifest
+//! there; its own folder is written too in case a release reads it.
 
 use std::path::Path;
 
-use super::browsers::Browser;
+use super::browsers::{Browser, Family};
 use super::destination::Target;
 
 /// `(label, folder under ~/Library/Application Support)` per channel.
@@ -35,7 +38,9 @@ fn support_dirs(browser: Browser) -> &'static [(&'static str, &'static str)] {
         Browser::Vivaldi => &[("Vivaldi", "Vivaldi")],
         Browser::Opera => &[
             ("Opera", "com.operasoftware.Opera"),
+            ("Opera Beta", "com.operasoftware.OperaNext"),
             ("Opera Developer", "com.operasoftware.OperaDeveloper"),
+            ("Opera GX", "com.operasoftware.OperaGX"),
         ],
         Browser::Firefox => &[("Firefox", "Mozilla")],
     }
@@ -45,19 +50,28 @@ fn support_dirs(browser: Browser) -> &'static [(&'static str, &'static str)] {
 /// user database for it, because `$HOME` points into its container.
 pub fn targets(browsers: &[Browser], home: &Path) -> Vec<Target> {
     let support = home.join("Library/Application Support");
-    browsers
-        .iter()
-        .flat_map(|&browser| {
-            support_dirs(browser)
-                .iter()
-                .map(move |&(label, dir)| (browser, label, dir))
-        })
-        .map(|(browser, label, dir)| {
+    let mut targets = Vec::new();
+    for &browser in browsers {
+        for &(label, dir) in support_dirs(browser) {
             let root = support.join(dir);
-            Target::file(label, browser.family(), &root.join("NativeMessagingHosts"))
-                .requiring(&root)
-        })
-        .collect()
+            targets.push(
+                Target::file(label, browser.family(), &root.join("NativeMessagingHosts"))
+                    .requiring(&root),
+            );
+            if browser == Browser::Opera {
+                let chrome = support.join("Google/Chrome/NativeMessagingHosts");
+                targets.push(
+                    Target::file(
+                        format!("{label} (Chrome's folder)"),
+                        Family::Chromium,
+                        &chrome,
+                    )
+                    .requiring(&root),
+                );
+            }
+        }
+    }
+    targets
 }
 
 #[cfg(test)]
@@ -65,7 +79,6 @@ mod tests {
     use std::path::PathBuf;
 
     use super::*;
-    use crate::browsers::Family;
     use crate::destination::Location;
     use crate::manifest;
 
@@ -102,6 +115,27 @@ mod tests {
     }
 
     #[test]
+    fn opera_also_writes_into_chromes_folder_once_its_own_exists() {
+        let base = PathBuf::from("/Users/u/Library/Application Support");
+        let gx = targets(&[Browser::Opera], Path::new("/Users/u"))
+            .into_iter()
+            .find(|t| t.label == "Opera GX (Chrome's folder)")
+            .expect("Opera GX writes Chrome's folder");
+        let Location::File {
+            manifest, requires, ..
+        } = gx.location
+        else {
+            panic!("files only");
+        };
+        assert_eq!(
+            manifest,
+            base.join("Google/Chrome/NativeMessagingHosts")
+                .join(manifest::file_name())
+        );
+        assert_eq!(requires, Some(base.join("com.operasoftware.OperaGX")));
+    }
+
+    #[test]
     fn every_target_requires_the_browsers_own_folder() {
         for target in targets(&Browser::ALL, Path::new("/Users/u")) {
             let Location::File {
@@ -110,6 +144,9 @@ mod tests {
             else {
                 panic!("files only");
             };
+            if target.label.ends_with("(Chrome's folder)") {
+                continue;
+            }
             assert!(manifest.starts_with(requires.expect("must require its root")));
         }
     }

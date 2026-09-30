@@ -53,7 +53,7 @@ Behavior that only real devices can confirm; tick each one in the PR that record
 | Windows 11 | Firefox | MSIX (alias) | | | | |
 | Windows 10 22H2 | Chrome | MSIX (alias) | | | | |
 | macOS 15 | Chrome | sandboxed app | | | | |
-| macOS 15 | Safari | store app + appex | | | | |
+| macOS 15 | Safari | `WebeSign.app` (direct, unsigned) with its appex; see [Safari](#safari-macos) | | | | |
 | Ubuntu 24.04 | Chrome (deb) | .deb | | | | |
 | Ubuntu 24.04 | Firefox (Snap, portal) | .deb | | | | |
 | Fedora | Firefox (rpm) | .rpm | | | | |

@@ -25,8 +25,13 @@ fn bundle_ids(browser: Browser) -> &'static [&'static str] {
             "com.brave.Browser.beta",
             "com.brave.Browser.nightly",
         ],
-        Browser::Vivaldi => &["com.vivaldi.Vivaldi"],
-        Browser::Opera => &["com.operasoftware.Opera"],
+        Browser::Vivaldi => &["com.vivaldi.Vivaldi", "com.vivaldi.Vivaldi.snapshot"],
+        Browser::Opera => &[
+            "com.operasoftware.Opera",
+            "com.operasoftware.OperaNext",
+            "com.operasoftware.OperaDeveloper",
+            "com.operasoftware.OperaGX",
+        ],
         Browser::Firefox => &[
             "org.mozilla.firefox",
             "org.mozilla.firefoxdeveloperedition",

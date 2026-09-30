@@ -64,7 +64,7 @@ fn candidates(browser: Browser, home: &Path) -> Vec<Candidate> {
     let user = if cfg!(target_os = "macos") {
         crate::macos::targets(&[browser], home)
     } else {
-        crate::linux::targets(&[browser], home)
+        crate::linux::targets(&[browser], home, &crate::linux::config_home(home))
     };
     let mut all = file_candidates(user);
     if cfg!(target_os = "linux") {

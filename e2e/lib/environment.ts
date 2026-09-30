@@ -18,6 +18,10 @@
  *   (`docs/prototypes/kit/macos/lib/common.sh`), the e2e binary allowed in
  *   its partition list; CI copies their certificates to WEBSIGN_E2E_CERTS.
  *
+ * WEBSIGN_E2E_BROWSER_NAME names an installed browser to prove
+ * (`lib/browsers.ts`); the suite then registers the host as a person's
+ * install does.
+ *
  * WEBSIGN_E2E_WINDOW=headless is for machines without a display: the app
  * then decides without its window (`WEBSIGN_E2E_HEADLESS=1`) and the
  * scenarios about the window are skipped.
@@ -27,6 +31,8 @@ import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+import { BROWSER_NAMES, type BrowserName } from "./browsers.ts";
 
 /** The repository root. */
 export const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -48,12 +54,23 @@ export type KeySource =
 export interface E2eEnvironment {
   /** `websign` built with `--features e2e` (WEBSIGN_E2E_APP). */
   readonly app: string;
-  /** Unpacked chromium extension (WEBSIGN_E2E_EXTENSION, default extension/.output/chrome-mv3). */
+  /**
+   * Unpacked extension (WEBSIGN_E2E_EXTENSION), by default the build for
+   * the browser's engine: extension/.output/chrome-mv3 or firefox-mv3.
+   */
   readonly extension: string;
   /** Screenshot folder (WEBSIGN_E2E_SCREENSHOTS). */
   readonly screenshots: string;
   /** Browser executable to use instead of Playwright's (WEBSIGN_E2E_BROWSER). */
   readonly browser?: string;
+  /**
+   * The installed browser this run proves (WEBSIGN_E2E_BROWSER_NAME, with
+   * WEBSIGN_E2E_BROWSER its executable): registered as `websign install`
+   * does, and only the cross-browser suite (`browsers/`) runs. Unset: the
+   * full suite in Playwright's Chromium (or WEBSIGN_E2E_BROWSER), with the
+   * host registered in the throwaway profile.
+   */
+  readonly browserName?: BrowserName;
   readonly keys: KeySource;
   /** The confirmation window opens (false: WEBSIGN_E2E_WINDOW=headless). */
   readonly window: boolean;
@@ -63,20 +80,39 @@ export interface E2eEnvironment {
 export function environment(): E2eEnvironment {
   const env = process.env;
   const app = required("WEBSIGN_E2E_APP", "the `websign` binary built with --features e2e");
-  const extension = env.WEBSIGN_E2E_EXTENSION ?? join(REPO, "extension/.output/chrome-mv3");
-  mustExist(extension, "WEBSIGN_E2E_EXTENSION (build it with `bunx wxt build -b chrome`)");
+  const browserName = named(env.WEBSIGN_E2E_BROWSER_NAME);
+  const build = browserName === "firefox" ? "firefox-mv3" : "chrome-mv3";
+  const extension = env.WEBSIGN_E2E_EXTENSION ?? join(REPO, "extension/.output", build);
+  mustExist(extension, `WEBSIGN_E2E_EXTENSION (build it with \`bunx wxt build\`: ${build})`);
   const screenshots = env.WEBSIGN_E2E_SCREENSHOTS ?? join(tmpdir(), "websign-e2e-screenshots");
   mkdirSync(screenshots, { recursive: true });
   const browser = env.WEBSIGN_E2E_BROWSER;
   if (browser !== undefined) mustExist(browser, "WEBSIGN_E2E_BROWSER");
+  if (browserName !== undefined && browser === undefined) {
+    throw new Error(
+      "WEBSIGN_E2E_BROWSER_NAME needs WEBSIGN_E2E_BROWSER (the browser's executable)",
+    );
+  }
   return {
     app,
     extension,
     screenshots,
     ...(browser === undefined ? {} : { browser }),
+    ...(browserName === undefined ? {} : { browserName }),
     keys: keySource(),
     window: env.WEBSIGN_E2E_WINDOW !== "headless",
   };
+}
+
+function named(value: string | undefined): BrowserName | undefined {
+  if (value === undefined || value === "") return undefined;
+  const name = BROWSER_NAMES.find((known) => known === value);
+  if (name === undefined) {
+    throw new Error(
+      `WEBSIGN_E2E_BROWSER_NAME=${value}: expected one of ${BROWSER_NAMES.join(", ")}`,
+    );
+  }
+  return name;
 }
 
 function keySource(): KeySource {

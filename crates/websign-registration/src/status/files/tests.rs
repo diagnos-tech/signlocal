@@ -19,7 +19,7 @@ fn register(home: &Path, browsers: &[Browser], host: &str) {
         origins: &origins,
         dry_run: false,
     };
-    for target in linux::targets(browsers, home) {
+    for target in linux::targets(browsers, home, &home.join(".config")) {
         destination::apply(&target, Action::Install, &context);
     }
 }
@@ -28,7 +28,7 @@ fn register(home: &Path, browsers: &[Browser], host: &str) {
 /// home (`.config`, `.var/app`), and `register` writes that layout, so the
 /// platform's own candidates (`~/Library` on macOS) would never see them.
 fn user_candidates(browser: Browser, home: &Path) -> Vec<Candidate> {
-    file_candidates(linux::targets(&[browser], home))
+    file_candidates(linux::targets(&[browser], home, &home.join(".config")))
 }
 
 #[test]

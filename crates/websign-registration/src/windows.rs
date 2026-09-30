@@ -1,10 +1,13 @@
-//! How Windows browsers find hosts: a `HKCU` key per browser whose default
-//! value is the path of a manifest file that can live anywhere.
+//! How Windows browsers find hosts: a `HKCU` key whose default value is the
+//! path of a manifest file that can live anywhere.
 //!
-//! Chrome, Opera and every Chrome-derived browser without a key of its own
-//! read Chrome's; Edge, Chromium, Brave, Vivaldi and Firefox have theirs.
-//! Chrome tries `HKCU` before `HKLM`, so a per-user key is enough and needs
-//! no elevation.
+//! Chromium's own code reads `Software\Chromium` (only in Chromium-branded
+//! builds) and then `Software\Google\Chrome` (`launch_context_win.cc`); Edge
+//! documents its own key first. Brave, Vivaldi and Opera document nothing:
+//! their Linux builds read Chrome's system folder (traced), and third parties
+//! register Brave and Vivaldi under their own vendor keys, so those browsers
+//! get every key they may read. Browsers try `HKCU` before `HKLM`, so a
+//! per-user key is enough and needs no elevation.
 
 use std::path::Path;
 
@@ -12,38 +15,43 @@ use super::browsers::{Browser, Family};
 use super::destination::{Location, Target};
 use websign_project::NATIVE_HOST;
 
-/// The `HKCU\Software\...` folder holding a browser's `NativeMessagingHosts`.
-fn vendor_key(browser: Browser) -> &'static str {
+const CHROME: &str = r"Software\Google\Chrome";
+const CHROMIUM: &str = r"Software\Chromium";
+
+/// The `HKCU\Software\...` folders whose `NativeMessagingHosts` `browser`
+/// reads, first match wins.
+fn vendor_keys(browser: Browser) -> &'static [&'static str] {
     match browser {
-        Browser::Chrome | Browser::Opera => r"Software\Google\Chrome",
-        Browser::Chromium => r"Software\Chromium",
-        Browser::Edge => r"Software\Microsoft\Edge",
-        Browser::Brave => r"Software\BraveSoftware\Brave-Browser",
-        Browser::Vivaldi => r"Software\Vivaldi",
-        Browser::Firefox => r"Software\Mozilla",
+        Browser::Chrome => &[CHROME],
+        Browser::Chromium => &[CHROMIUM, CHROME],
+        Browser::Edge => &[r"Software\Microsoft\Edge", CHROMIUM, CHROME],
+        Browser::Brave => &[r"Software\BraveSoftware\Brave-Browser", CHROMIUM, CHROME],
+        Browser::Vivaldi => &[r"Software\Vivaldi", CHROMIUM, CHROME],
+        Browser::Opera => &[CHROMIUM, CHROME],
+        Browser::Firefox => &[r"Software\Mozilla"],
     }
 }
 
-/// The keys `browser` reads, first match wins: its own, then the ones it
-/// documents falling back to (only Edge: Chromium's, then Chrome's). An
-/// undocumented fallback is left out on purpose: counting a key the browser
-/// may not read would report `Registered` with nothing to repair.
+/// How many of [`vendor_keys`] are written: a documented own key wins, so
+/// Edge (and every single-key browser) needs one; for the others the
+/// vendors publish nothing, so every key they may read is written.
+fn written(browser: Browser) -> usize {
+    match browser {
+        Browser::Edge => 1,
+        _ => usize::MAX,
+    }
+}
+
+/// The keys `browser` reads, in its reading order.
 pub(crate) fn lookup_order(browser: Browser) -> Vec<String> {
-    let vendors: &[Browser] = match browser {
-        Browser::Edge => &[Browser::Chromium, Browser::Chrome],
-        _ => &[],
-    };
-    std::iter::once(browser)
-        .chain(vendors.iter().copied())
-        .map(host_key)
+    vendor_keys(browser)
+        .iter()
+        .map(|vendor| host_key(vendor))
         .collect()
 }
 
-fn host_key(browser: Browser) -> String {
-    format!(
-        r"{}\NativeMessagingHosts\{NATIVE_HOST}",
-        vendor_key(browser)
-    )
+fn host_key(vendor: &str) -> String {
+    format!(r"{vendor}\NativeMessagingHosts\{NATIVE_HOST}")
 }
 
 /// Manifest files first (the keys point at them), then one key per distinct
@@ -74,10 +82,12 @@ pub fn targets(browsers: &[Browser], manifest_dir: &Path) -> Vec<Target> {
 
     let mut keys: Vec<(String, Vec<&str>, Family)> = Vec::new();
     for &browser in browsers {
-        let subkey = host_key(browser);
-        match keys.iter_mut().find(|(existing, _, _)| *existing == subkey) {
-            Some((_, labels, _)) => labels.push(browser.label()),
-            None => keys.push((subkey, vec![browser.label()], browser.family())),
+        for vendor in vendor_keys(browser).iter().take(written(browser)) {
+            let subkey = host_key(vendor);
+            match keys.iter_mut().find(|(existing, _, _)| *existing == subkey) {
+                Some((_, labels, _)) => labels.push(browser.label()),
+                None => keys.push((subkey, vec![browser.label()], browser.family())),
+            }
         }
     }
     for (subkey, labels, family) in keys {
@@ -112,12 +122,27 @@ mod tests {
     #[test]
     fn chrome_and_opera_share_chromes_key() {
         let keys = keys(&[Browser::Chrome, Browser::Opera]);
-        assert_eq!(keys.len(), 1);
-        assert_eq!(keys[0].0, "Google Chrome, Opera");
-        assert_eq!(
-            keys[0].1,
-            format!(r"Software\Google\Chrome\NativeMessagingHosts\{NATIVE_HOST}")
-        );
+        let chrome = format!(r"Software\Google\Chrome\NativeMessagingHosts\{NATIVE_HOST}");
+        let shared: Vec<_> = keys.iter().filter(|(_, key)| *key == chrome).collect();
+        assert_eq!(shared.len(), 1);
+        assert_eq!(shared[0].0, "Google Chrome, Opera");
+    }
+
+    #[test]
+    fn browsers_without_a_documented_key_get_every_key_they_may_read() {
+        for browser in [Browser::Brave, Browser::Vivaldi, Browser::Opera] {
+            let written: Vec<String> = keys(&[browser]).into_iter().map(|(_, key)| key).collect();
+            assert_eq!(written, lookup_order(browser), "{browser:?}");
+            assert!(
+                written
+                    .last()
+                    .unwrap()
+                    .starts_with(r"Software\Google\Chrome")
+            );
+        }
+        let edge = keys(&[Browser::Edge]);
+        assert_eq!(edge.len(), 1, "Edge's documented key wins");
+        assert!(edge[0].1.starts_with(r"Software\Microsoft\Edge"));
     }
 
     #[test]
