@@ -216,8 +216,9 @@ on macOS is the whole download. The build is not signed by Apple yet, so Safari 
 **What is different in Safari.** Safari runs the extension's native part in a sandbox, and the WebeSign window it
 opens runs in that sandbox too. Certificates in the Keychain and tokens that work with macOS (CryptoTokenKit)
 behave as in other browsers. Sites you choose to remember, and the diagnostics of Safari connections, are kept
-separately from the other browsers'. Token drivers that are only PKCS#11 modules load from `/Applications`,
-`/Library`, `/usr/local/lib` or `/opt/homebrew/lib`.
+separately from the other browsers'. Token drivers that are only PKCS#11 modules may not work in Safari: the sandbox limits which driver files can be
+loaded (`/Applications`, `/Library`, `/usr/local/lib` and `/opt/homebrew/lib` are tried), and this has not been
+verified with a real token yet. If your token does not show up in Safari, use another browser.
 
 **Uninstall.** Untick WebeSign in **Settings → Extensions**; deleting the app removes the extension.
 

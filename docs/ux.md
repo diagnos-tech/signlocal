@@ -901,8 +901,8 @@ hold this back: the Devices light still shows it.
 "Test your setup" (the same words as the popup and the site) opens `{HOMEPAGE}test/` in the default browser: the page
 generates 32 random bytes, calls `sign()`, shows the **same verification code**, and the result ("It worked. Signed
 with Ana Beatriz Souza, ICP-Brasil A3."). **Why:** it teaches the habit of checking the code before the first real
-report. `TODO(gustavo)`: the host marks the test done (`settings.test_signature_done`) when a signature for the
-project's own site succeeds; until then the ready card stays until hidden.
+report. The host marks the test done (`settings.test_signature_done`) when a signature for the
+project's own site (the origin of `HOMEPAGE`) succeeds, and the ready card then gives way to the normal view.
 
 ### 8.3 Browsers tab
 

@@ -41,7 +41,7 @@ tokens — and with any format the caller builds (PAdES, CAdES, XAdES, JAdES…)
 | Project IDs | `crates/websign-project` | Rust | Apache-2.0 | `project.toml` as constants |
 | Node client | `clients/node` | TypeScript | Apache-2.0 | `@websign/desktop` |
 | Rust client | `clients/rust` | Rust | Apache-2.0 | `websign-client` |
-| Safari bridge | `safari/` | Swift | GPL-3.0-or-later | appex that relays to the app (store channel) |
+| Safari bridge | `safari/` | Swift | GPL-3.0-or-later | app extension inside `WebeSign.app` (direct builds, macOS 13+); starts its own sandboxed host and relays to it |
 | Device hints | `devices.json` | JSON | CC0-1.0 | VID:PID/ATR → model → driver per OS |
 | Packaging | `packaging/`, `scripts/install/` | shell, PowerShell, manifests | GPL-3.0-or-later | artifacts and one-line installers |
 | E2E | `e2e/` | TypeScript (Playwright) | GPL-3.0-or-later | page → extension → app → software key, with screenshots |
@@ -179,6 +179,10 @@ folders whose path ends in the app's own name.
 ## Channels
 
 `direct` (now, unsigned): zip/tar/deb/rpm/`.app` zip from GitHub Releases, not
-sandboxed. `store` (later, D10): MSIX and Mac App Store (+ the Safari appex).
+sandboxed. `store` (later, D10): MSIX and Mac App Store.
+Safari is not store-only: the direct `.app` already carries the Safari app extension (macOS 13+, loaded with
+"Allow Unsigned Extensions" while the build is unsigned; `TODO(gustavo)`: Developer ID signing, notarization and the
+App Store). Its host runs sandboxed inside the appex: Keychain works and the CryptoTokenKit query runs (no real token
+tried yet); PKCS#11-only tokens may not work there.
 Same code; the differences are detected at run time (package identity,
 sandbox) — never build forks. See [packaging-and-release.md](packaging-and-release.md).

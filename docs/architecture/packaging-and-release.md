@@ -29,6 +29,11 @@ native runner of each OS; the release job assembles and publishes.
 
 ### Safari appex
 
+Safari ships in the **direct** channel, inside `WebeSign.app` (macOS 13+); the unsigned prerelease needs "Allow
+Unsigned Extensions". `TODO(gustavo)`: Developer ID signing, notarization and the Mac App Store. The host runs
+sandboxed in the appex: Keychain works and the CryptoTokenKit query runs (no real token tried yet), but PKCS#11-only
+tokens may not work, because the sandbox limits which driver files it can load.
+
 `cargo xtask package --target universal-apple-darwin` (`xtask/src/package/safari.rs`)
 adds the app extension Safari requires ([`safari/SPEC.md`](../../safari/SPEC.md)):
 

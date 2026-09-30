@@ -33,6 +33,12 @@ from `i18n/`; name, description and toolbar title are `__MSG_…__`.
 
 ### 2.1 Connection
 
+**Safari.** Safari has no `connectNative` stdio stream: `runtime.sendNativeMessage` is one question with one answer
+and the app extension can never speak first. `safari-port.ts` therefore builds a `NativePort` from relay sessions
+(open, send in order, one outstanding long poll for what the host says, close), and `safari-relay.ts` holds the relay
+contract and a strict reader for its replies (`safari/SPEC.md` §1–3). Everything below applies to the resulting port
+unchanged.
+
 - One native port per background lifetime, opened on first need and shared
   by every tab: `connect(reason = "page")` →
   `runtime.connectNative(NATIVE_HOST)`; first message `hello` with `client
