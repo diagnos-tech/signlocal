@@ -99,7 +99,7 @@ pub fn todo(catalog: &Catalog, facts: &Facts, step: Step, state: StepState) -> T
 
 type Parts = (Icon, String, String, Option<(String, Option<Icon>, Action)>);
 
-/// [Repair] rewrites every browser's registration; the notice names the
+/// **Repair** rewrites every browser's registration; the notice names the
 /// first browser to restart.
 fn repair(catalog: &Catalog, facts: &Facts) -> Option<(String, Option<Icon>, Action)> {
     let browser = facts.browsers.first()?.browser.label().to_owned();
@@ -110,7 +110,7 @@ fn repair(catalog: &Catalog, facts: &Facts) -> Option<(String, Option<Icon>, Act
     ))
 }
 
-/// The browsers the extension has not connected from, by name; [Repair]
+/// The browsers the extension has not connected from, by name; **Repair**
 /// when a browser cannot start the app, else the install page.
 fn extension(catalog: &Catalog, facts: &Facts, state: StepState) -> Parts {
     let waiting: Vec<&str> = facts

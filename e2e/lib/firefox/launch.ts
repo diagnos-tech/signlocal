@@ -80,13 +80,7 @@ export async function launchFirefox(
     await bidi.send("webExtension.install", {
       extensionData: { type: "path", path: env.extension },
     });
-    const tree = await bidi.send<{ contexts: ReadonlyArray<{ context: string }> }>(
-      "browsingContext.getTree",
-      { maxDepth: 0 },
-    );
-    const first = tree.contexts[0];
-    if (first === undefined) throw new Error("Firefox opened no tab");
-    const tab = new FirefoxTab(bidi, first.context);
+    const tab = new FirefoxTab(bidi, await firstTab(bidi));
     const server = await startServer();
     return {
       server,
@@ -106,6 +100,25 @@ export async function launchFirefox(
     await stop().catch((cleanup: unknown) => console.warn(`Firefox cleanup failed: ${cleanup}`));
     throw error;
   }
+}
+
+/**
+ * The id of the tab Firefox opened. Firefox listens before its first window
+ * has finished starting, and until then lists that tab with a null id (seen
+ * on Windows runners); navigating it fails, so wait for a real id.
+ */
+async function firstTab(bidi: Bidi): Promise<string> {
+  const deadline = Date.now() + START_TIMEOUT;
+  while (Date.now() < deadline) {
+    const tree = await bidi.send<{ contexts: ReadonlyArray<{ context: string | null }> }>(
+      "browsingContext.getTree",
+      { maxDepth: 0 },
+    );
+    const id = tree.contexts[0]?.context;
+    if (typeof id === "string") return id;
+    await new Promise((done) => setTimeout(done, 200));
+  }
+  throw new Error("Firefox opened no usable tab");
 }
 
 /**

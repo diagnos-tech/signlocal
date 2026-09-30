@@ -49,6 +49,14 @@ export interface Session {
   close(): Promise<void>;
 }
 
+/**
+ * Brave's switch that turns its updater off (Sparkle on macOS). The cask CI
+ * installs may lag the current release; Sparkle then downloads the update
+ * while the suite runs and installs it when the browser is told to quit,
+ * holding that close past the hook's timeout.
+ */
+const BRAVE_ARGS = ["--disable-brave-update"];
+
 /** Launches Chromium as `options` say. */
 export async function launch(env: E2eEnvironment, options: LaunchOptions): Promise<Session> {
   const withExtension = options.extension ?? true;
@@ -64,6 +72,7 @@ export async function launch(env: E2eEnvironment, options: LaunchOptions): Promi
     args: [
       "--window-position=0,0",
       "--window-size=520,700",
+      ...(env.browserName === "brave" ? BRAVE_ARGS : []),
       ...(!withExtension
         ? []
         : named

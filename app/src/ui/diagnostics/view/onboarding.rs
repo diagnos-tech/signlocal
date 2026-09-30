@@ -105,7 +105,7 @@ fn checklist(
     }
 }
 
-/// `list-checks` "Getting started" on the left; "2 of 5 done" and [Hide]
+/// `list-checks` "Getting started" on the left; "2 of 5 done" and **Hide**
 /// on the right.
 fn heading(ui: &mut Ui, screen: &Screen<'_>, progress: &str, actions: &mut Vec<Action>) {
     let c = theme::colors(ui.ctx());

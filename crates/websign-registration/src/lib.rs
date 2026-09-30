@@ -3,7 +3,7 @@
 //! for diagnostics.
 //!
 //! Registration writes only for browsers that are there: their folder
-//! exists or they are detected ([`presence`]); a `~/.config/vivaldi` for a
+//! exists or they are detected (see `presence.rs`); a `~/.config/vivaldi` for a
 //! machine without Vivaldi would litter the home directory and mislead tools
 //! that treat the folder as an install. The app registers again on every
 //! start, so a browser installed later is picked up. On Windows, registry

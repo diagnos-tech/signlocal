@@ -7,7 +7,7 @@
 //! let the OS ask for the PIN or password.
 //!
 //! Every Security.framework call runs under one process-wide lock
-//! ([`serial`]), taken here and only here so it is never nested.
+//! (the `serial` module), taken here and only here so it is never nested.
 
 mod algorithm;
 mod capabilities;
