@@ -40,29 +40,29 @@ native runner of each OS; the release job assembles and publishes.
 `websign-client` and `@websign/desktop` search these locations in this order
 after `WEBSIGN_EXECUTABLE` and `PATH`.
 
-## One-line install
+## Install commands
 
-Public repository (after it opens):
+Releases stay GitHub **prereleases** while the builds are unsigned, and both
+`releases/latest` and a bare `gh release download` skip prereleases, so every
+command names the tag. Each one downloads, verifies `SHA256SUMS`, then runs;
+nothing is piped into a shell. [`docs/install.md`](../install.md) has the full
+per-OS steps; the shape is:
 
 ```sh
-# macOS and Linux
-curl -fsSL https://github.com/diagnos-tech/web-esign/releases/latest/download/install.sh | sh
+# macOS and Linux (private repository: authenticated with gh)
+gh release download v<version> --repo diagnos-tech/web-esign --pattern install.sh --pattern SHA256SUMS
+sha256sum --ignore-missing -c SHA256SUMS && sh install.sh --version <version>   # macOS: shasum -a 256
 ```
 
 ```powershell
-# Windows (PowerShell)
-irm https://github.com/diagnos-tech/web-esign/releases/latest/download/install.ps1 | iex
+# Windows (private repository: authenticated with gh)
+gh release download v<version> --repo diagnos-tech/web-esign --pattern install.ps1 --pattern SHA256SUMS
+# verify install.ps1 against SHA256SUMS (docs/install.md), then:
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Version <version>
 ```
 
-While the repository is **private**, downloads need authentication:
-
-```sh
-gh release download --repo diagnos-tech/web-esign --pattern install.sh && sh install.sh
-```
-
-```powershell
-gh release download --repo diagnos-tech/web-esign --pattern install.ps1; ./install.ps1
-```
+Once the repository is public, the same files come from
+`https://github.com/diagnos-tech/web-esign/releases/download/v<version>/`.
 
 The scripts use `gh` when it is installed and logged in, else
 `WEBSIGN_GITHUB_TOKEN` as a bearer token, else anonymous HTTPS. They:
