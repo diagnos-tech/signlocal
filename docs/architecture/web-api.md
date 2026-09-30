@@ -46,7 +46,7 @@ interface Certificate {
 interface Status {
   extension: { installed: boolean; version?: string };
   app: { installed: boolean; version?: string; outdated: boolean };
-  remembered: boolean;   // certificates() will answer without a window
+  remembered: boolean;   // certificates() will answer without a window (for certificates already consented to)
   ready: boolean;        // extension + compatible app
 }
 
@@ -125,7 +125,7 @@ const ok = c.profile.icpBrasil?.match(/^A[34]$/) || (c.profile.eidas?.qualified 
 | Call | Window | Resolves with | Typical rejections |
 |---|---|---|---|
 | `status()` | never | `Status` (never rejects; missing pieces are `installed: false`) | — |
-| `certificates()` | choose mode, unless remembered | `[chosen]` or the remembered ones | `ExtensionMissing`, `AppMissing`, `AppOutdated`, `UserCancelled`, `NoCertificates`, `Timeout`, `Busy` |
+| `certificates()` | choose mode, unless remembered (only for certificates in the caller's consent record; anything else needs Continue) | `[chosen]` or the remembered ones | `ExtensionMissing`, `AppMissing`, `AppOutdated`, `UserCancelled`, `NoCertificates`, `Timeout`, `Busy` |
 | `sign()` | always | `SignResult` | the above + `PinLocked`, `TokenRemoved`, `DriverFailure`, `UnsupportedAlgorithm`, `CertificateUnavailable`, `CertificateNotValid`, `InvalidRequest`, `Aborted` |
 
 - Digest length is validated in the SDK before sending (`InvalidRequest`

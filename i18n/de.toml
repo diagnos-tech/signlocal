@@ -491,8 +491,8 @@ title = "Signatur abgebrochen"
 body = "Sie haben die Signatur abgebrochen."
 
 [site.errors.timeout]
-title = "Die Anfrage ist abgelaufen"
-body = "Innerhalb von 5 Minuten hat niemand geantwortet. Versuchen Sie es erneut."
+title = "Die Anfrage hat zu lange gedauert"
+body = "Sie wurde angehalten, weil niemand rechtzeitig geantwortet hat oder das Dokument zu lange zur Vorbereitung brauchte. Versuchen Sie es erneut."
 
 [site.errors.no_certificates]
 title = "Keine Zertifikate gefunden"

@@ -212,7 +212,7 @@ send it; the extension never forwards it from a page.
              ┌─────────┐ front of queue ┌─────────┐ listed ┌───────────┐
  sign.begin ─▶ Queued  ├───────────────▶│ Listing ├───────▶│ Selecting │◀──────────────┐
              └─────────┘                └─────────┘        └─────┬─────┘               │
-                                                  release (auto if remembered,         │
+                                                  release (auto if consented,          │
                                                   else "Continue" — D11)               │
                                                                  ▼                     │ person switches
                                        need_digest(seq=n) ┌────────────────────┐       │ certificate
@@ -239,10 +239,13 @@ Rules:
    the digest is asked for afterwards, because PAdES/CAdES put the certificate
    inside the signed attributes (`signing-certificate-v2`).
 2. **Release of the certificate (D11).** `sign.need_digest` discloses the
-   certificate to the caller. For a *remembered* caller the preselected
-   certificate is released at once (the person already consented to "which
-   certificate I use"). For anyone else it is released only when the person
-   clicks **Continue** — otherwise any site could call `sign()` and cancel to
+   certificate to the caller. Consent is per caller **and** certificate
+   fingerprint: a certificate in the caller's consent record is released at
+   once (the person already agreed to "which certificate I use"). Any other
+   certificate — for a remembered caller too: the preselected row, one the
+   person moves to, one named by `sign.begin.certificate` — is released only
+   when the person clicks **Continue**. Callers that cannot be remembered
+   (§6) never have a record. Otherwise any site could call `sign()` and cancel to
    harvest the holder's name and CPF, defeating D2.
 3. **Switching certificate** issues a new `need_digest` with `seq + 1`; a
    digest for an older `seq` is ignored silently (it may be in flight). The
@@ -281,7 +284,8 @@ Consequences:
   `websign connect`.
 - A malicious local program can start `websign connect`, but the window names
   *that* program, and it is not remembered unless the person ticks
-  "Remember this program". Unsigned programs are shown with an "Unverified
+  "Remember this program" (never offered for script hosts such as `node`,
+  `python`, `bash` or `powershell`, whose identity every script shares). Unsigned programs are shown with an "Unverified
   program" warning.
 - Local malware running as the user can already do most things the user can;
   the confirmation window and the PIN are the line we hold

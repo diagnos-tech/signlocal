@@ -491,8 +491,8 @@ title = "Firma annullata"
 body = "Hai annullato la firma."
 
 [site.errors.timeout]
-title = "La richiesta è scaduta"
-body = "Nessuno ha risposto per 5 minuti. Riprova."
+title = "La richiesta ha richiesto troppo tempo"
+body = "È stata interrotta perché nessuno ha risposto in tempo o il documento ha impiegato troppo a prepararsi. Riprova."
 
 [site.errors.no_certificates]
 title = "Nessun certificato trovato"

@@ -70,8 +70,8 @@ export const MESSAGES: Readonly<Record<MessageLocale, LocaleMessages>> = {
       body: "Your token PIN is locked. Unlock it with the PUK and try again.",
     },
     Timeout: {
-      title: "The request expired",
-      body: "Nobody answered for 5 minutes. Try again.",
+      title: "The request took too long and was stopped",
+      body: "Nobody answered in time, or the document took too long to prepare. Try again.",
     },
     TokenRemoved: {
       title: "The token was removed",
@@ -140,8 +140,8 @@ export const MESSAGES: Readonly<Record<MessageLocale, LocaleMessages>> = {
       body: "O PIN do seu token está bloqueado. Desbloqueie com o PUK e tente de novo.",
     },
     Timeout: {
-      title: "O pedido expirou",
-      body: "Ninguém respondeu em 5 minutos. Tente de novo.",
+      title: "O pedido demorou demais",
+      body: "Ele foi interrompido porque ninguém respondeu a tempo ou o documento demorou demais para ficar pronto. Tente de novo.",
     },
     TokenRemoved: {
       title: "O token foi removido",
@@ -210,8 +210,8 @@ export const MESSAGES: Readonly<Record<MessageLocale, LocaleMessages>> = {
       body: "O PIN do seu token está bloqueado. Desbloqueie-o com o PUK e tente novamente.",
     },
     Timeout: {
-      title: "O pedido expirou",
-      body: "Ninguém respondeu em 5 minutos. Tente novamente.",
+      title: "O pedido demorou demasiado",
+      body: "Foi interrompido porque ninguém respondeu a tempo ou o documento demorou demasiado a ficar pronto. Tente novamente.",
     },
     TokenRemoved: {
       title: "O token foi removido",
@@ -280,8 +280,8 @@ export const MESSAGES: Readonly<Record<MessageLocale, LocaleMessages>> = {
       body: "El PIN de su token está bloqueado. Desbloquéelo con el PUK e inténtelo de nuevo.",
     },
     Timeout: {
-      title: "La solicitud caducó",
-      body: "Nadie respondió en 5 minutos. Inténtelo de nuevo.",
+      title: "La solicitud tardó demasiado",
+      body: "Se detuvo porque nadie respondió a tiempo o el documento tardó demasiado en prepararse. Inténtelo de nuevo.",
     },
     TokenRemoved: {
       title: "Se retiró el token",
@@ -350,8 +350,8 @@ export const MESSAGES: Readonly<Record<MessageLocale, LocaleMessages>> = {
       body: "Le PIN de votre jeton est bloqué. Déverrouillez-le avec le PUK, puis réessayez.",
     },
     Timeout: {
-      title: "La demande a expiré",
-      body: "Personne n’a répondu pendant 5 minutes. Réessayez.",
+      title: "La demande a pris trop de temps",
+      body: "Elle a été interrompue : personne n’a répondu à temps ou le document a mis trop de temps à se préparer. Réessayez.",
     },
     TokenRemoved: {
       title: "Le jeton a été retiré",
@@ -420,8 +420,8 @@ export const MESSAGES: Readonly<Record<MessageLocale, LocaleMessages>> = {
       body: "Il PIN del token è bloccato. Sbloccalo con il PUK e riprova.",
     },
     Timeout: {
-      title: "La richiesta è scaduta",
-      body: "Nessuno ha risposto per 5 minuti. Riprova.",
+      title: "La richiesta ha richiesto troppo tempo",
+      body: "È stata interrotta perché nessuno ha risposto in tempo o il documento ha impiegato troppo a prepararsi. Riprova.",
     },
     TokenRemoved: {
       title: "Il token è stato rimosso",
@@ -490,8 +490,8 @@ export const MESSAGES: Readonly<Record<MessageLocale, LocaleMessages>> = {
       body: "Die PIN Ihres Tokens ist gesperrt. Entsperren Sie sie mit der PUK und versuchen Sie es erneut.",
     },
     Timeout: {
-      title: "Die Anfrage ist abgelaufen",
-      body: "Innerhalb von 5 Minuten hat niemand geantwortet. Versuchen Sie es erneut.",
+      title: "Die Anfrage hat zu lange gedauert",
+      body: "Sie wurde angehalten, weil niemand rechtzeitig geantwortet hat oder das Dokument zu lange zur Vorbereitung brauchte. Versuchen Sie es erneut.",
     },
     TokenRemoved: {
       title: "Der Token wurde entfernt",

@@ -501,8 +501,8 @@ title = "Signature cancelled"
 body = "You cancelled the signature."
 
 [site.errors.timeout]
-title = "The request expired"
-body = "Nobody answered for 5 minutes. Try again."
+title = "The request took too long and was stopped"
+body = "Nobody answered in time, or the document took too long to prepare. Try again."
 
 [site.errors.no_certificates]
 title = "No certificates found"

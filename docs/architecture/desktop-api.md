@@ -113,13 +113,18 @@ The window shows the calling program instead of a web origin:
   through a system catalog such as `cmd.exe`; macOS team ID + identifier,
   checked on the parent's audit token when it is our stdin peer), else the
   executable path with an "Unverified program" warning;
-- a shell parent (`bash`, `zsh`, `cmd.exe`, `powershell`, `Terminal`) is shown
-  as itself — the person typed the command.
+- a script host (interpreters, shells and terminal hosts: `node`, `python`,
+  `bash`, `zsh`, `cmd.exe`, `powershell`, `Terminal`, …) is shown as "a script
+  run by {program}", because every script it runs shares its identity; the
+  list lives in `websign-core` `present/caller/script_hosts.rs`.
 
 "Remember this program" stores consent under `app:<signer>` for signed
 programs (survives updates that move the binary) or `path:<executable>`
-otherwise. Remembered programs get `choose` without a window; every signature
-still asks for confirmation. Revocation: Diagnostics › Browsers › Allowed
+otherwise. Script hosts can never be remembered (no checkbox; a stored record
+is ignored). Consent is per program and certificate fingerprint: a remembered
+program gets `choose` without a window for the certificates in its record, and
+any other certificate needs **Continue**; every signature still asks for
+confirmation. Revocation: Diagnostics › Browsers › Allowed
 programs.
 
 ## 7. Client libraries

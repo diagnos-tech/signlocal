@@ -491,8 +491,8 @@ title = "Firma cancelada"
 body = "Usted canceló la firma."
 
 [site.errors.timeout]
-title = "La solicitud caducó"
-body = "Nadie respondió en 5 minutos. Inténtelo de nuevo."
+title = "La solicitud tardó demasiado"
+body = "Se detuvo porque nadie respondió a tiempo o el documento tardó demasiado en prepararse. Inténtelo de nuevo."
 
 [site.errors.no_certificates]
 title = "No se encontró ningún certificado"

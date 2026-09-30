@@ -491,8 +491,8 @@ title = "Assinatura cancelada"
 body = "Cancelou a assinatura."
 
 [site.errors.timeout]
-title = "O pedido expirou"
-body = "Ninguém respondeu em 5 minutos. Tente novamente."
+title = "O pedido demorou demasiado"
+body = "Foi interrompido porque ninguém respondeu a tempo ou o documento demorou demasiado a ficar pronto. Tente novamente."
 
 [site.errors.no_certificates]
 title = "Nenhum certificado encontrado"

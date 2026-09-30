@@ -491,8 +491,8 @@ title = "Signature annulée"
 body = "Vous avez annulé la signature."
 
 [site.errors.timeout]
-title = "La demande a expiré"
-body = "Personne n’a répondu pendant 5 minutes. Réessayez."
+title = "La demande a pris trop de temps"
+body = "Elle a été interrompue : personne n’a répondu à temps ou le document a mis trop de temps à se préparer. Réessayez."
 
 [site.errors.no_certificates]
 title = "Aucun certificat trouvé"
