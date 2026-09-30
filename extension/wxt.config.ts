@@ -1,35 +1,24 @@
 /**
  * WXT build configuration: one source, four targets (chrome, edge, firefox,
- * safari). Identifiers come from project.toml through src/generated/project.ts.
+ * safari). Identifiers come from project.toml through src/generated/project.ts;
+ * the manifest fields live in build/manifest.ts (tested).
  */
 
 import { defineConfig } from "wxt";
-import { DEV_KEY, FIREFOX_ID } from "./src/generated/project";
+import { channelFromEnv, manifestFor } from "./build/manifest";
+
+const channel = channelFromEnv(process.env.WEBSIGN_CHANNEL);
 
 export default defineConfig({
   srcDir: "src",
   imports: false,
   manifestVersion: 3,
-  manifest: ({ browser, mode }) => ({
-    name: "__MSG_extension_name__",
-    description: "__MSG_extension_description__",
-    default_locale: "en",
-    permissions: ["nativeMessaging"],
-    minimum_chrome_version: "121",
-    // Pins the unpacked development build's ID so the native host can allow it.
-    ...(browser !== "firefox" && browser !== "safari" && mode === "development"
-      ? { key: DEV_KEY }
-      : {}),
-    ...(browser === "firefox"
-      ? {
-          browser_specific_settings: {
-            gecko: {
-              id: FIREFOX_ID,
-              strict_min_version: "121.0",
-              data_collection_permissions: { required: ["none"] },
-            },
-          },
-        }
-      : {}),
-  }),
+  manifest: ({ browser, mode }) => manifestFor({ browser, mode, channel }),
+  hooks: {
+    // Folder maps (SUMMARY.md) document the repository, not the shipped extension.
+    "build:publicAssets": (_wxt, files) => {
+      const shipped = files.filter((file) => !file.relativeDest.endsWith("SUMMARY.md"));
+      files.splice(0, files.length, ...shipped);
+    },
+  },
 });

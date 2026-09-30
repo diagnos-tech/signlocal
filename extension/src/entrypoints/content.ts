@@ -5,12 +5,16 @@
  */
 
 import { defineContentScript } from "wxt/utils/define-content-script";
+import { announce } from "../content/announce";
+import { startRelay } from "../content/relay";
 
 export default defineContentScript({
   matches: ["https://*/*", "http://localhost/*", "http://127.0.0.1/*", "http://[::1]/*"],
   runAt: "document_start",
   allFrames: true,
   main() {
-    throw new Error("unimplemented: SPEC.md §3 (content)");
+    startRelay();
+    announce();
+    window.addEventListener("load", announce);
   },
 });

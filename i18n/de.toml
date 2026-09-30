@@ -11,6 +11,7 @@ language_name = "Deutsch"
 cancel = "Abbrechen"
 close = "Schließen"
 copy = "Kopieren"
+copy_details = "Details kopieren"
 copied = "Kopiert"
 retry = "Erneut versuchen"
 wait = "Bitte warten…"
@@ -304,6 +305,12 @@ driver_auto = "Automatisch gefunden"
 driver_user = "Von Ihnen hinzugefügt"
 driver_add = "Treiber hinzufügen…"
 driver_add_help = "Nutzen Sie dies nur, wenn der Hersteller Ihres Tokens es vorgibt."
+# Title of the OS file picker opened by "Add driver…".
+driver_pick_title = "Wählen Sie den Token-Treiber"
+# Name of the file type in the picker's filter (.dll, .so, .dylib).
+driver_file_type = "Token-Treiber"
+# Label of the path field shown when this computer has no file picker.
+driver_path = "Pfad zur Treiberdatei"
 driver_remove = "Entfernen"
 pcscd = "Chipkartendienst (pcscd)"
 pcscd_ok = "Läuft"
@@ -329,10 +336,15 @@ import = ".pfx-Datei importieren…"
 import_help_windows = "Windows importiert die Datei und speichert das Zertifikat sicher. Sie benötigen das Passwort der Datei."
 import_help_macos = "Schlüsselbundverwaltung importiert die Datei und speichert das Zertifikat sicher. Sie benötigen das Passwort der Datei."
 import_linux = "Verwenden Sie unter Linux ein Zertifikat auf einem Token oder einer Chipkarte."
+# Title of the OS file picker opened by "Import .pfx file…" (macOS).
+import_pick_title = "Wählen Sie die zu importierende .pfx-Datei"
+# Name of the file type in the picker's filter (.pfx, .p12).
+pfx_file_type = "Zertifikatsdatei"
 empty = "Keine Zertifikate auf diesem Computer. Stecken Sie Ihren Token an, legen Sie Ihre Chipkarte ein oder importieren Sie eine .pfx-Datei."
 
 [help]
 faq_title = "Häufige Fragen"
+subtitle = "Schnelle Antworten und wie Sie ein Problem melden."
 q_missing = "Mein Zertifikat erscheint nicht"
 a_missing = "Prüfen Sie: Ist der Token angesteckt? Ist der Treiber des Herstellers installiert (siehe Geräte)? Ist das Zertifikat abgelaufen (siehe Zertifikate)? Handelt es sich um eine .pfx-Datei, wurde sie importiert?"
 q_pin = "Ich habe die PIN falsch eingegeben / der Token ist gesperrt"

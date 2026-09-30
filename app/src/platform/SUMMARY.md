@@ -6,8 +6,10 @@
 - `appearance.rs` — Light or dark as the OS is set, for where winit does not know (`docs/ux.md` §4.1).
 - `caller.rs` — Identifying the program that started `websign connect`/`sign`/`choose`.
 - `channel.rs` — Direct or store build and the install format, decided at run time (`docs/plan.md` D10).
+- `file_picker.rs` — The OS "open file" dialog: `IFileOpenDialog`, `NSOpenPanel`, `kdialog`/`zenity` (`docs/ux.md` §8.4).
 - `focus.rs` — Bringing the confirmation window to the front without stealing focus (`docs/ux.md` §4.1).
 - `mod.rs` — OS facts and actions the app needs outside key stores and registration.
 - `motion.rs` — "Reduce motion" (`docs/ux.md` §11.4): `SPI_GETCLIENTAREAANIMATION`, `accessibilityDisplayShouldReduceMotion`, GNOME `enable-animations`.
+- `os_version.rs` — The Windows release for the report ("Windows 11 (build 22631)"), from `RtlGetVersion`.
 - `url_events.rs` — `websign:` URLs delivered as OS events (macOS Apple Events) instead of arguments.
 - `system_ui.rs` — OS windows the app hands work to: the certificate viewer and the .pfx import (`docs/ux.md` §5.12, §8.5), and opening https URLs.

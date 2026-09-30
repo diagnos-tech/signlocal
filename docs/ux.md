@@ -807,7 +807,7 @@ with `list-checks` and "Getting started":
 
 `[✓] App installed · [!] Browser extension · [✓] Certificate found · [ ] Test signature [Test a signature]`
 
-"Test a signature" opens `https://<site>/teste` in the default browser: the page generates 32 random bytes, calls
+"Test a signature" opens `{HOMEPAGE}test/` (the project site) in the default browser: the page generates 32 random bytes, calls
 `sign()`, shows the **same verification code**, and the result ("It worked. Signed with Ana Beatriz Souza,
 ICP-Brasil A3."). **Why:** it teaches the habit of checking the code before the first real report.
 "Hide" (`onboarding.dismiss`) hides the strip forever.
@@ -853,6 +853,9 @@ Subtitle: "Tokens, cards and drivers WebeSign can see right now." The list updat
    "Failed to load: file not found"), origin ("Found automatically" / "Added by you"
    [Remove]). Below: [plus Add driver…] with "Only use this if your token vendor tells you to." It opens a file
    picker (`.dll`/`.dylib`/`.so`), loads it right away, and shows the result on the row itself.
+   **Decision:** the picker is the OS's own: `IFileOpenDialog` (Windows), `NSOpenPanel` (macOS), `kdialog` on KDE
+   and `zenity` elsewhere on Linux (`.so` also matches versioned names such as `libx.so.1`). Only when neither
+   Linux helper exists (e.g. a Flatpak sandbox) the button reveals an inline path field ("Path to the driver file").
 
 Empty: "No token or reader connected. Plug your token into a USB port; this list updates by itself."
 
@@ -863,7 +866,8 @@ Subtitle: "Every certificate this computer offers, including the ones that can't
 - Action bar: [file-plus Import .pfx file…] + text "Windows imports the file and stores the
   certificate securely. You'll need the file's password."
   - Windows: `CryptUIWizImport` with our window as the parent (the Windows wizard does everything).
-  - Mac: `NSOpenPanel` → opens the file in Keychain Access, which asks for the password and imports into the login keychain.
+  - Mac: `NSOpenPanel` (titled "Choose the .pfx file to import", `.pfx`/`.p12`) → opens the file in Keychain Access,
+    which asks for the password and imports into the login keychain.
   - Linux: button hidden; text "On Linux, use a certificate on a token or card." `TODO(gustavo)`: path for A1 on Linux.
   - When focus returns to the window, the list is re-read.
 - Groups by origin: "In Windows" / "In the Mac Keychain" / "Through the token driver". Rows identical to those in the
@@ -873,6 +877,8 @@ Subtitle: "Every certificate this computer offers, including the ones that can't
 - Empty: "No certificates on this computer. Plug in your token, insert your card or import a .pfx file."
 
 ### 8.6 Help tab
+
+Subtitle: "Quick answers and how to report a problem." (`help.subtitle`), as in the mockups.
 
 1. **Common questions** (accordion; the first one open):
    - "My certificate doesn't show up" → checklist: token plugged in? driver installed (link to Devices)?
@@ -925,6 +931,10 @@ A card is shown by its matched device (`card safenet-etoken-5110`). For a card `
 shows the ATR up to its last interface byte (TS, T0, TA/TB/TC/TD) and `..` for every historical byte and for TCK
 (as in the example above): the historical bytes of some cards carry a chip serial number, which is personal data.
 If the ATR cannot be parsed, only its length is shown (`atr 19 bytes`). The same rule applies to any ATR on screen.
+
+**Decision:** on Windows the `os:` line reads `Windows 11 (build 22631)` / `Windows 10 (build 19045)`, from
+`RtlGetVersion` (Windows 11 is build ≥ 22000); the marketing version ("23H2") lives only in the registry and the
+build number already identifies it.
 
 ### 8.8 Keyboard in Diagnostics
 

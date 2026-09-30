@@ -21,6 +21,7 @@ language_name = "English"
 cancel = "Cancel"
 close = "Close"
 copy = "Copy"
+copy_details = "Copy details"
 copied = "Copied"
 retry = "Try again"
 wait = "Please wait…"
@@ -314,6 +315,12 @@ driver_auto = "Found automatically"
 driver_user = "Added by you"
 driver_add = "Add driver…"
 driver_add_help = "Only use this if your token vendor tells you to."
+# Title of the OS file picker opened by "Add driver…".
+driver_pick_title = "Choose the token driver"
+# Name of the file type in the picker's filter (.dll, .so, .dylib).
+driver_file_type = "Token driver"
+# Label of the path field shown when this computer has no file picker.
+driver_path = "Path to the driver file"
 driver_remove = "Remove"
 pcscd = "Card service (pcscd)"
 pcscd_ok = "Running"
@@ -339,10 +346,15 @@ import = "Import .pfx file…"
 import_help_windows = "Windows imports the file and stores the certificate securely. You'll need the file's password."
 import_help_macos = "Keychain Access imports the file and stores the certificate securely. You'll need the file's password."
 import_linux = "On Linux, use a certificate on a token or card."
+# Title of the OS file picker opened by "Import .pfx file…" (macOS).
+import_pick_title = "Choose the .pfx file to import"
+# Name of the file type in the picker's filter (.pfx, .p12).
+pfx_file_type = "Certificate file"
 empty = "No certificates on this computer. Plug in your token, insert your card or import a .pfx file."
 
 [help]
 faq_title = "Common questions"
+subtitle = "Quick answers and how to report a problem."
 q_missing = "My certificate doesn't show up"
 a_missing = "Check: is the token plugged in? Is the vendor's driver installed (see Devices)? Has the certificate expired (see Certificates)? If it's a .pfx file, was it imported?"
 q_pin = "I got the PIN wrong / the token locked"

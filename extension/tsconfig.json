@@ -9,5 +9,5 @@
     "noUnusedParameters": true,
     "verbatimModuleSyntax": true
   },
-  "include": [".wxt/wxt.d.ts", "src", "test", "wxt.config.ts"]
+  "include": [".wxt/wxt.d.ts", "src", "test", "build", "scripts", "wxt.config.ts"]
 }

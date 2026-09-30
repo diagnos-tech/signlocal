@@ -1,10 +1,10 @@
 # app/src/ui
 
-- `confirm/` — the confirmation window
-- `diagnostics/` — the diagnostics window
+- `confirm/` — the confirmation window: every state of `docs/ux.md` §4.8, arming, PIN, snapshots
+- `diagnostics/` — the diagnostics window: scan, traffic lights, four tabs, "Copy diagnostics" (also `websign doctor`'s report)
 - `theme/` — design tokens and their egui mapping
 - `widgets/` — custom widgets egui lacks, one per file
-- `bridge.rs` — The [`websign_host::ports::ConfirmUi`] implementation: forwards `UiCommand`s to the UI thread and wakes egui; the window posts `UiEvent`s back into the engine's channel.
+- `bridge.rs` — The engine's `ConfirmUi`: forwards `UiCommand`s to the UI thread and wakes egui; the one window of a process registers its context and native handle here.
 - `fonts.rs` — Embedded fonts: Inter 400/500/600 and a JetBrains Mono ASCII subset (OFL-1.1, files in `app/assets/fonts/`), registered as named families because egui does not synthesize weights (`docs/ux.md` §11.2).
 - `i18n.rs` — The catalog the windows read their text from: the system locale, unless `WEBSIGN_LOCALE` overrides it.
 - `icons.rs` — Phosphor icons (`egui-phosphor`, only the glyphs used are embedded), regular by default, fill for status (`docs/ux.md` §12).

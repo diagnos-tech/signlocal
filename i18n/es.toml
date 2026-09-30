@@ -11,6 +11,7 @@ language_name = "Español"
 cancel = "Cancelar"
 close = "Cerrar"
 copy = "Copiar"
+copy_details = "Copiar detalles"
 copied = "Copiado"
 retry = "Intentar de nuevo"
 wait = "Espere…"
@@ -304,6 +305,12 @@ driver_auto = "Encontrado automáticamente"
 driver_user = "Añadido por usted"
 driver_add = "Añadir controlador…"
 driver_add_help = "Úselo solo si el fabricante del token se lo indica."
+# Title of the OS file picker opened by "Add driver…".
+driver_pick_title = "Elija el controlador del token"
+# Name of the file type in the picker's filter (.dll, .so, .dylib).
+driver_file_type = "Controlador de token"
+# Label of the path field shown when this computer has no file picker.
+driver_path = "Ruta del archivo del controlador"
 driver_remove = "Quitar"
 pcscd = "Servicio de tarjetas (pcscd)"
 pcscd_ok = "En ejecución"
@@ -329,10 +336,15 @@ import = "Importar archivo .pfx…"
 import_help_windows = "Windows importa el archivo y guarda el certificado de forma segura. Necesitará la contraseña del archivo."
 import_help_macos = "Acceso a Llaveros importa el archivo y guarda el certificado de forma segura. Necesitará la contraseña del archivo."
 import_linux = "En Linux, use un certificado en un token o tarjeta."
+# Title of the OS file picker opened by "Import .pfx file…" (macOS).
+import_pick_title = "Elija el archivo .pfx que desea importar"
+# Name of the file type in the picker's filter (.pfx, .p12).
+pfx_file_type = "Archivo de certificado"
 empty = "No hay certificados en este equipo. Conecte el token, inserte la tarjeta o importe un archivo .pfx."
 
 [help]
 faq_title = "Preguntas frecuentes"
+subtitle = "Respuestas rápidas y cómo informar de un problema."
 q_missing = "Mi certificado no aparece"
 a_missing = "Compruebe: ¿el token está conectado? ¿Está instalado el controlador del fabricante (vea Dispositivos)? ¿Caducó el certificado (vea Certificados)? Si es un archivo .pfx, ¿se importó?"
 q_pin = "Me equivoqué con el PIN / el token se bloqueó"

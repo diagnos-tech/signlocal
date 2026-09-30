@@ -8,6 +8,7 @@ pub mod caller;
 pub mod channel;
 mod command;
 mod desktop_entry;
+pub mod file_picker;
 pub mod focus;
 mod private_file;
 pub mod settings;

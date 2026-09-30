@@ -7,6 +7,7 @@ mod bundle;
 pub mod caller;
 pub mod channel;
 mod code_signature;
+pub mod file_picker;
 pub mod focus;
 mod objc;
 mod peer;

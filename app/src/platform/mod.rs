@@ -4,8 +4,10 @@
 pub mod appearance;
 pub mod caller;
 pub mod channel;
+pub mod file_picker;
 pub mod focus;
 pub mod motion;
+pub mod os_version;
 pub mod system_ui;
 pub mod url_events;
 

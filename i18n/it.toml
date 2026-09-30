@@ -11,6 +11,7 @@ language_name = "Italiano"
 cancel = "Annulla"
 close = "Chiudi"
 copy = "Copia"
+copy_details = "Copia dettagli"
 copied = "Copiato"
 retry = "Riprova"
 wait = "Attendere…"
@@ -304,6 +305,12 @@ driver_auto = "Trovato automaticamente"
 driver_user = "Aggiunto da te"
 driver_add = "Aggiungi driver…"
 driver_add_help = "Usalo solo se il produttore del token te lo indica."
+# Title of the OS file picker opened by "Add driver…".
+driver_pick_title = "Scegli il driver del token"
+# Name of the file type in the picker's filter (.dll, .so, .dylib).
+driver_file_type = "Driver del token"
+# Label of the path field shown when this computer has no file picker.
+driver_path = "Percorso del file del driver"
 driver_remove = "Rimuovi"
 pcscd = "Servizio smart card (pcscd)"
 pcscd_ok = "In esecuzione"
@@ -329,10 +336,15 @@ import = "Importa file .pfx…"
 import_help_windows = "Windows importa il file e conserva il certificato in modo sicuro. Serve la password del file."
 import_help_macos = "Accesso Portachiavi importa il file e conserva il certificato in modo sicuro. Serve la password del file."
 import_linux = "Su Linux, usa un certificato su token o smart card."
+# Title of the OS file picker opened by "Import .pfx file…" (macOS).
+import_pick_title = "Scegli il file .pfx da importare"
+# Name of the file type in the picker's filter (.pfx, .p12).
+pfx_file_type = "File del certificato"
 empty = "Nessun certificato su questo computer. Collega il token, inserisci la smart card o importa un file .pfx."
 
 [help]
 faq_title = "Domande frequenti"
+subtitle = "Risposte rapide e come segnalare un problema."
 q_missing = "Il mio certificato non compare"
 a_missing = "Controlla: il token è collegato? Il driver del produttore è installato (vedi Dispositivi)? Il certificato è scaduto (vedi Certificati)? Se è un file .pfx, è stato importato?"
 q_pin = "Ho sbagliato il PIN / il token si è bloccato"

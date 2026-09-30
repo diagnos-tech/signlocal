@@ -6,16 +6,15 @@ use std::process::{Command, Stdio};
 
 use core_foundation::array::CFArray;
 use core_foundation::base::TCFType;
-use core_foundation::string::{CFString, CFStringRef};
 use security_framework::certificate::SecCertificate;
 
-use super::objc::{AutoreleasePool, Id, ObjcBool, class, on_main_thread, send0, send1, send2};
+use super::file_picker::open_panel;
+use super::objc::{AutoreleasePool, Id, ObjcBool, class, on_main_thread, send0, send2};
+use crate::platform::file_picker::{FileRequest, Picked};
 
 #[link(name = "SecurityInterface", kind = "framework")]
 unsafe extern "C" {}
 
-/// `NSModalResponseOK`.
-const MODAL_OK: isize = 1;
 const KEYCHAIN_ACCESS: &str = "com.apple.keychainaccess";
 
 /// `SFCertificatePanel`, modal; needs the main thread.
@@ -73,41 +72,16 @@ fn run_open(options: &[&str], target: &std::ffi::OsStr) -> bool {
         .is_ok_and(|status| status.success())
 }
 
-/// `NSOpenPanel` for `.pfx`/`.p12` files; needs the main thread.
+/// `NSOpenPanel` for `.pfx`/`.p12` files, when the caller did not choose
+/// one with a localized panel ([`crate::platform::file_picker`]).
 fn choose_pfx() -> Option<PathBuf> {
-    if !on_main_thread() {
-        return None;
-    }
-    let panel_class = class(c"NSOpenPanel")?;
-    let types = CFArray::from_CFTypes(&[CFString::new("pfx"), CFString::new("p12")]);
-    let _pool = AutoreleasePool::new();
-    // SAFETY: on the main thread; each method exists with the signature
-    // used; `setAllowedFileTypes:` takes an `NSArray` of `NSString`
-    // (toll-free bridged from `CFArray` of `CFString`); the returned
-    // `NSString` path is bridged back as a `CFString` under the get rule.
-    unsafe {
-        let panel: Id = send0(panel_class, c"openPanel");
-        if panel.is_null() {
-            return None;
-        }
-        send1::<Id, ()>(
-            panel,
-            c"setAllowedFileTypes:",
-            types.as_concrete_TypeRef() as Id,
-        );
-        if send0::<isize>(panel, c"runModal") != MODAL_OK {
-            return None;
-        }
-        let url: Id = send0(panel, c"URL");
-        if url.is_null() {
-            return None;
-        }
-        let path: Id = send0(url, c"path");
-        if path.is_null() {
-            return None;
-        }
-        Some(PathBuf::from(
-            CFString::wrap_under_get_rule(path as CFStringRef).to_string(),
-        ))
+    let request = FileRequest {
+        title: String::new(),
+        type_name: String::new(),
+        extensions: vec!["pfx", "p12"],
+    };
+    match open_panel(&request) {
+        Picked::Chosen(path) => Some(path),
+        Picked::Cancelled | Picked::Unavailable => None,
     }
 }

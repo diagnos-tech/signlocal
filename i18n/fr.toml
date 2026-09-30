@@ -11,6 +11,7 @@ language_name = "Français"
 cancel = "Annuler"
 close = "Fermer"
 copy = "Copier"
+copy_details = "Copier les détails"
 copied = "Copié"
 retry = "Réessayer"
 wait = "Veuillez patienter…"
@@ -304,6 +305,12 @@ driver_auto = "Trouvé automatiquement"
 driver_user = "Ajouté par vous"
 driver_add = "Ajouter un pilote…"
 driver_add_help = "À n’utiliser que si le fabricant de votre jeton vous le demande."
+# Title of the OS file picker opened by "Add driver…".
+driver_pick_title = "Choisissez le pilote du jeton"
+# Name of the file type in the picker's filter (.dll, .so, .dylib).
+driver_file_type = "Pilote de jeton"
+# Label of the path field shown when this computer has no file picker.
+driver_path = "Chemin du fichier du pilote"
 driver_remove = "Supprimer"
 pcscd = "Service de cartes à puce (pcscd)"
 pcscd_ok = "En cours d’exécution"
@@ -329,10 +336,15 @@ import = "Importer un fichier .pfx…"
 import_help_windows = "Windows importe le fichier et stocke le certificat en toute sécurité. Le mot de passe du fichier vous sera demandé."
 import_help_macos = "Accès au trousseau importe le fichier et stocke le certificat en toute sécurité. Le mot de passe du fichier vous sera demandé."
 import_linux = "Sous Linux, utilisez un certificat sur un jeton ou une carte à puce."
+# Title of the OS file picker opened by "Import .pfx file…" (macOS).
+import_pick_title = "Choisissez le fichier .pfx à importer"
+# Name of the file type in the picker's filter (.pfx, .p12).
+pfx_file_type = "Fichier de certificat"
 empty = "Aucun certificat sur cet ordinateur. Branchez votre jeton, insérez votre carte à puce ou importez un fichier .pfx."
 
 [help]
 faq_title = "Questions fréquentes"
+subtitle = "Réponses rapides et comment signaler un problème."
 q_missing = "Mon certificat n’apparaît pas"
 a_missing = "Vérifiez : le jeton est-il branché ? Le pilote du fabricant est-il installé (voir Appareils) ? Le certificat a-t-il expiré (voir Certificats) ? S’il s’agit d’un fichier .pfx, a-t-il été importé ?"
 q_pin = "Je me suis trompé de PIN / le jeton est bloqué"

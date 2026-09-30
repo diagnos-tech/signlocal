@@ -5,6 +5,7 @@
 - `command.rs` — Running desktop helpers (`gsettings`, `gdbus`, `xdg-open`) with a deadline, or detached.
 - `desktop_entry.rs` — Finding the `.desktop` application entry whose `Exec` starts a given executable.
 - `desktop_entry_tests.rs` — Tests of the `.desktop` parsing, `Exec` unquoting and path resolution.
+- `file_picker.rs` — `kdialog` (KDE) or `zenity` on a worker thread; none means a path field instead.
 - `focus.rs` — No-op: the window manager or compositor decides focus.
 - `mod.rs` — Linux implementations of the [`crate::platform`] functions.
 - `private_file.rs` — Short-lived `0600` files in a private `$XDG_RUNTIME_DIR` folder, swept when old.

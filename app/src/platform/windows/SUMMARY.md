@@ -4,7 +4,9 @@
 - `catalog.rs` — Catalog lookup (`CryptCATAdmin*`) for Windows' own programs, named "Microsoft Windows".
 - `caller.rs` — The parent process (Toolhelp, checked against PID reuse) and its image path.
 - `channel.rs` — MSIX or not, from the process's package identity.
+- `file_picker.rs` — `IFileOpenDialog` over the owner window, inside a COM apartment guard.
 - `focus.rs` — `SetForegroundWindow`, else topmost and a taskbar flash.
+- `os_version.rs` — `RtlGetVersion` major, minor and build, unaffected by the compatibility manifest.
 - `mod.rs` — Windows implementations of the [`crate::platform`] functions.
 - `settings.rs` — Reduce motion (`SPI_GETCLIENTAREAANIMATION`) and dark mode (`AppsUseLightTheme`).
 - `system_ui.rs` — `CryptUIDlgViewContext`, the `CryptUIWizImport` wizard, and `ShellExecuteW` for URLs.

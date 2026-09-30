@@ -8,12 +8,15 @@
   "scripts": {
     "postinstall": "wxt prepare",
     "dev": "wxt",
-    "build": "wxt build -b chrome && wxt build -b firefox --mv3 && wxt build -b edge && wxt build -b safari",
-    "zip": "wxt zip -b chrome && wxt zip -b firefox --mv3",
+    "build": "wxt build -b chrome && wxt build -b edge && wxt build -b firefox --mv3 && wxt build -b safari",
+    "zip": "wxt zip -b chrome && wxt zip -b edge && wxt zip -b firefox --mv3 && wxt zip -b safari",
     "typecheck": "tsc --noEmit -p .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "zip:store": "WEBSIGN_CHANNEL=store wxt zip -b chrome && WEBSIGN_CHANNEL=store wxt zip -b edge && WEBSIGN_CHANNEL=store wxt zip -b firefox --mv3",
+    "size": "bun scripts/size.ts"
   },
   "devDependencies": {
+    "happy-dom": "20.14.5",
     "typescript": "7.0.2",
     "vitest": "5.0.2",
     "wxt": "0.21.4"

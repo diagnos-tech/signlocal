@@ -54,6 +54,10 @@ windows = { workspace = true, features = [
   "Win32_Security_Cryptography_UI",
   "Win32_UI_WindowsAndMessaging",
   "Win32_UI_Shell",
+  "Win32_UI_Shell_Common",
+  "Win32_System_Com",
+  "Win32_System_SystemInformation",
+  "Wdk_System_SystemServices",
   "Win32_Storage_FileSystem",
 ] }
 
