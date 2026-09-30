@@ -8,22 +8,22 @@
 language_name = "Português (Portugal)"
 
 [common]
-cancel = "Cancel"
-close = "Close"
-copy = "Copy"
-copied = "Copied"
-retry = "Try again"
-wait = "Please wait…"
-details = "Details"
-technical_details = "Technical details"
-open_diagnostics = "Open diagnostics"
+cancel = "Cancelar"
+close = "Fechar"
+copy = "Copiar"
+copied = "Copiado"
+retry = "Tentar novamente"
+wait = "Aguarde…"
+details = "Detalhes"
+technical_details = "Detalhes técnicos"
+open_diagnostics = "Abrir diagnóstico"
 # Re-reads tokens, cards and certificates.
-refresh = "Scan again"
+refresh = "Procurar novamente"
 # {os} is os.windows, os.macos or os.linux.
-download_for = "Download for {os}"
-learn_more = "Learn more"
+download_for = "Transferir para {os}"
+learn_more = "Saber mais"
 # Appended to links that open the default browser.
-new_window_hint = "(opens in your browser)"
+new_window_hint = "(abre no navegador)"
 
 [os]
 windows = "Windows"
@@ -31,478 +31,478 @@ macos = "macOS"
 linux = "Linux"
 
 [time]
-just_now = "just now"
-minutes_ago = "{count} min ago"
+just_now = "agora mesmo"
+minutes_ago = "há {count} min"
 # {time} is a local clock time, e.g. 14:02.
-today_at = "today, {time}"
-yesterday_at = "yesterday, {time}"
+today_at = "hoje, {time}"
+yesterday_at = "ontem, {time}"
 
 [confirm]
 # Window title in the task bar. {site} is the host (app.example.com) or, for a
 # desktop program, its name.
-window_title = "Sign for {site} — WebeSign"
-window_title_select = "Choose certificate for {site} — WebeSign"
+window_title = "Assinar para {site} — WebeSign"
+window_title_select = "Escolher certificado para {site} — WebeSign"
 # Suffix added to the window title when several requests wait: " (1 of 3)".
-window_title_queue = "{title} ({current} of {total})"
-eyebrow = "Signature request"
-eyebrow_select = "Certificate request"
-eyebrow_queue = "Signature request {current} of {total}"
+window_title_queue = "{title} ({current} de {total})"
+eyebrow = "Pedido de assinatura"
+eyebrow_select = "Pedido de certificado"
+eyebrow_queue = "Pedido de assinatura {current} de {total}"
 # Next to the eyebrow. {browser} is a short browser name (Chrome, Edge…).
-via_browser = "via {browser}"
+via_browser = "através do {browser}"
 # Next to the eyebrow when a desktop program asks instead of a website.
-via_app = "from a program on this computer"
-asks_sign = "wants you to sign a document."
-asks_select = "wants to know which certificate you will sign with."
-site_remembered = "Allowed site"
-site_new = "New site"
+via_app = "de um programa neste computador"
+asks_sign = "pede-lhe que assine um documento."
+asks_select = "quer saber com que certificado vai assinar."
+site_remembered = "Site autorizado"
+site_new = "Site novo"
 # Accessible name of the "New site" chip.
-site_new_a11y = "First time this site asks for anything on this computer"
-app_remembered = "Allowed program"
-app_new = "New program"
-app_new_a11y = "First time this program asks for anything on this computer"
+site_new_a11y = "Primeira vez que este site pede algo neste computador"
+app_remembered = "Programa autorizado"
+app_new = "Programa novo"
+app_new_a11y = "Primeira vez que este programa pede algo neste computador"
 # {top_site} is the host of the page that embeds the requesting frame.
-inside_frame = "Inside a page from {top_site}"
+inside_frame = "Dentro de uma página de {top_site}"
 
 [origin]
-warn_idn = "Address with special characters. Check it letter by letter."
+warn_idn = "Endereço com carateres especiais. Verifique letra a letra."
 # {unicode} is the address as it looks with special characters.
-shown_as = "Displays as {unicode}"
-warn_ip = "Numeric address with no site name"
-warn_ip_local = "Local network numeric address"
-warn_localhost = "Local development site"
-blocked_http = "This site doesn't use a secure connection (https). For your safety, WebeSign won't sign for it."
+shown_as = "Aparece como {unicode}"
+warn_ip = "Endereço numérico, sem nome de site"
+warn_ip_local = "Endereço numérico da rede local"
+warn_localhost = "Site local de desenvolvimento"
+blocked_http = "Este site não usa ligação segura (https). Por segurança, o WebeSign não assina para ele."
 
 [caller]
 # Under a desktop program's name. {signer} is the company that signed it.
-signed_by = "Signed by {signer}"
+signed_by = "Assinado por {signer}"
 # Under a desktop program's name when its signature could not be verified.
-unverified = "Unverified program. Only continue if you started it yourself."
+unverified = "Programa não verificado. Só continue se o tiver iniciado você."
 
 [code]
-label = "Verification code"
-help = "Check that the site shows the same code."
-preparing = "Preparing the document…"
+label = "Código de verificação"
+help = "Confirme que o site mostra o mesmo código."
+preparing = "A preparar o documento…"
 # {spelled} is the code spelled out character by character.
-a11y = "Verification code: {spelled}"
+a11y = "Código de verificação: {spelled}"
 # Shown instead of the code before a new site or program may see which
 # certificate was chosen (it learns it only after Continue).
-continue_hint = "Choose the certificate and click Continue to see the verification code."
+continue_hint = "Escolha o certificado e clique em Continuar para ver o código de verificação."
 
 [certs]
-label_sign = "Sign with"
-label_select = "Choose a certificate"
-loading = "Looking for certificates…"
+label_sign = "Assinar com"
+label_select = "Escolha o certificado"
+loading = "A procurar certificados…"
 # {device} is a device name, e.g. "SafeNet eToken 5110".
-loading_slow = "Still reading {device}. Token drivers can take a few seconds."
-empty_title = "No certificates found"
-empty_body = "Plug in your token or insert your card. The list updates by itself."
-filter_placeholder = "Filter by name, ID number or issuer"
-filter_empty = "No certificate matches “{query}”"
-unusable_group = "Can't sign ({count})"
-found_a11y = "Certificate found: {name}"
+loading_slow = "Ainda a ler {device}. Os controladores de token podem demorar alguns segundos."
+empty_title = "Nenhum certificado encontrado"
+empty_body = "Ligue o token ou introduza o cartão no leitor. A lista atualiza-se sozinha."
+filter_placeholder = "Filtrar por nome, n.º de identificação ou emissor"
+filter_empty = "Nenhum certificado com “{query}”"
+unusable_group = "Não podem assinar ({count})"
+found_a11y = "Certificado encontrado: {name}"
 
 [cert]
 # CPF is the Brazilian personal tax number; keep the acronym.
 doc_cpf = "CPF {masked}"
-doc_cpf_a11y = "CPF partially hidden, {visible}"
+doc_cpf_a11y = "CPF parcialmente oculto, {visible}"
 # CNPJ is the Brazilian company tax number; keep the acronym.
 doc_cnpj = "CNPJ {cnpj}"
-doc_generic = "ID {masked}"
-via_driver = "via driver"
-valid_until = "Valid until {date}"
-expires_tomorrow = "Expires tomorrow"
-expires_today = "Expires today"
-expired_on = "Expired on {date}"
-valid_from = "Valid from {date}"
+doc_generic = "Documento {masked}"
+via_driver = "pelo controlador"
+valid_until = "Válido até {date}"
+expires_tomorrow = "Expira amanhã"
+expires_today = "Expira hoje"
+expired_on = "Expirou em {date}"
+valid_from = "Válido a partir de {date}"
 
 [cert.expires_in]
-one = "Expires in {count} day"
-other = "Expires in {count} days"
+one = "Expira dentro de {count} dia"
+other = "Expira dentro de {count} dias"
 
 [cert.kind]
 # {class} is an ICP-Brasil class such as A3; keep "ICP-Brasil".
 icp = "ICP-Brasil {class}"
 icp_plain = "ICP-Brasil"
-eidas_qscd = "Qualified eIDAS"
+eidas_qscd = "eIDAS qualificado"
 eidas = "eIDAS"
 # Portuguese national ID card; a proper name, do not translate.
 pt_cc = "Cartão de Cidadão"
 # Spanish national ID card; a proper name, do not translate.
 es_dnie = "DNIe"
-generic = "Certificate"
+generic = "Certificado"
 
 [cert.where]
-computer = "On this computer"
+computer = "Neste computador"
 token_named = "Token {device}"
-card_in_reader = "Card in reader"
-unknown_hw = "Token or card"
+card_in_reader = "Cartão no leitor"
+unknown_hw = "Token ou cartão"
 
 [cert.reason]
-incompatible = "Not compatible with this request"
-pin_locked = "PIN locked"
-removed = "Removed. Plug the token back in."
-no_key = "No private key on this computer"
-login_only = "Made for login, not for signing"
+incompatible = "Não compatível com este pedido"
+pin_locked = "PIN bloqueado"
+removed = "Removido. Volte a ligar o token."
+no_key = "Sem chave privada neste computador"
+login_only = "Feito para autenticação, não para assinatura"
 
 [cert.details]
-subject = "Holder"
-issuer = "Issuer"
-validity = "Validity"
-validity_range = "{from} to {to}"
-usage = "Usage"
-usage_sign = "Digital signature"
-usage_nonrep = "Non-repudiation"
-key = "Key"
-fingerprint = "Fingerprint (SHA-256)"
-access = "Access"
-access_windows = "Windows (certificate store)"
-access_macos = "macOS Keychain"
+subject = "Titular"
+issuer = "Emissor"
+validity = "Validade"
+validity_range = "{from} a {to}"
+usage = "Utilização"
+usage_sign = "Assinatura digital"
+usage_nonrep = "Não repúdio"
+key = "Chave"
+fingerprint = "Impressão digital (SHA-256)"
+access = "Acesso"
+access_windows = "Windows (repositório de certificados)"
+access_macos = "Keychain do macOS"
 # {path} is the driver file, e.g. C:\Windows\System32\eTPKCS11.dll.
-access_driver = "Token driver: {path}"
-also_via_driver = "Also available through the token driver"
-view_in_system = "View in system"
+access_driver = "Controlador do token: {path}"
+also_via_driver = "Também disponível através do controlador do token"
+view_in_system = "Ver no sistema"
 
 [pin]
-label_token = "Token PIN"
-label_card = "Card PIN"
-length_hint = "{min} to {max} characters"
-show = "Show PIN"
-hide = "Hide PIN"
-privacy = "Your PIN stays on this computer and never goes through the browser."
+label_token = "PIN do token"
+label_card = "PIN do cartão"
+length_hint = "{min} a {max} carateres"
+show = "Mostrar PIN"
+hide = "Ocultar PIN"
+privacy = "O PIN fica neste computador e nunca passa pelo navegador."
 # {os} is os.windows or os.macos.
-os_prompt = "{os} will ask for your PIN in its own window."
-os_prompt_now = "Enter your PIN in the {os} window."
-pinpad_before = "After you click Sign, enter your PIN on the reader's keypad."
-pinpad_now = "Enter your PIN on the reader's keypad."
-unlocked_session = "Token unlocked for this session"
-incorrect = "Incorrect PIN."
-incorrect_low = "Incorrect PIN. Only a few attempts left before the token locks."
-incorrect_final = "Incorrect PIN. Last attempt: one more mistake locks the token."
-locked_title = "PIN locked"
+os_prompt = "O {os} vai pedir o PIN numa janela própria."
+os_prompt_now = "Introduza o PIN na janela do {os}."
+pinpad_before = "Depois de clicar em Assinar, introduza o PIN no teclado do leitor."
+pinpad_now = "Introduza o PIN no teclado do leitor."
+unlocked_session = "Token desbloqueado nesta sessão"
+incorrect = "PIN incorreto."
+incorrect_low = "PIN incorreto. Restam poucas tentativas antes de o token bloquear."
+incorrect_final = "PIN incorreto. Última tentativa: se errar novamente, o token bloqueia."
+locked_title = "PIN bloqueado"
 # {tool} is the vendor's program; {issuer} the certificate authority.
-locked_body = "The token locked after too many wrong attempts. Unlock it with the PUK in {tool} or contact {issuer}."
-locked_body_generic = "The token locked after too many wrong attempts. Unlock it with the PUK in the vendor's software or contact your certificate authority."
+locked_body = "O token bloqueou após demasiadas tentativas erradas. Desbloqueie-o com o PUK em {tool} ou contacte {issuer}."
+locked_body_generic = "O token bloqueou após demasiadas tentativas erradas. Desbloqueie-o com o PUK no software do fabricante ou contacte a sua entidade certificadora."
 
 [consent]
-remember = "Remember this site on this computer"
-remember_app = "Remember this program on this computer"
-remember_help = "It will be able to see which certificate you use without asking. Every signature still asks for your confirmation."
-remember_disabled = "Numeric or special-character addresses can't be remembered."
-select_shares = "The site will receive the name, type, issuer and validity of the chosen certificate. Nothing is signed now."
+remember = "Memorizar este site neste computador"
+remember_app = "Memorizar este programa neste computador"
+remember_help = "Poderá saber que certificado utiliza sem perguntar. Cada assinatura continua a pedir a sua confirmação."
+remember_disabled = "Endereços numéricos ou com carateres especiais não podem ser memorizados."
+select_shares = "O site vai receber o nome, o tipo, o emissor e a validade do certificado escolhido. Nada é assinado agora."
 
 [action]
-sign = "Sign"
-signing = "Signing…"
-use_cert = "Use this certificate"
+sign = "Assinar"
+signing = "A assinar…"
+use_cert = "Utilizar este certificado"
 # Releases the chosen certificate to a new site so it can prepare the document.
-continue = "Continue"
+continue = "Continuar"
 # Offered when signing through the OS failed but the token driver can try.
-try_driver = "Try through the token driver"
+try_driver = "Tentar pelo controlador do token"
 
 [footer]
-expires_in = "This request expires in {seconds} s"
+expires_in = "Este pedido expira em {seconds} s"
 
 [state]
-success_title = "Signed"
-success_body = "The signature was sent to {site}."
-select_success = "Certificate sent to {site}"
-site_cancelled = "{site} cancelled the request."
+success_title = "Assinado"
+success_body = "A assinatura foi enviada para {site}."
+select_success = "Certificado enviado para {site}"
+site_cancelled = "{site} cancelou o pedido."
 
 [possible]
-title = "{device} connected"
-body_driver_token = "No certificate showed up on this token. To use it, install {driver}."
-body_driver_card = "No certificate showed up on this card. To use it, install {driver}."
-body_unknown_card = "There's a card in {reader}, but we don't recognize it. If it holds a certificate, install the card vendor's software."
-no_link = "Look for the software on the website of the authority that issued your certificate."
-rescan = "I installed it, scan again"
-inline = "{device} connected with no certificates"
-inline_action = "How to fix"
+title = "{device} ligado"
+body_driver_token = "Nenhum certificado apareceu neste token. Para o utilizar, instale {driver}."
+body_driver_card = "Nenhum certificado apareceu neste cartão. Para o utilizar, instale {driver}."
+body_unknown_card = "Há um cartão em {reader}, mas não o reconhecemos. Se tiver um certificado, instale o software do fabricante do cartão."
+no_link = "Procure o software no site da entidade que emitiu o seu certificado."
+rescan = "Já instalei, procurar novamente"
+inline = "{device} ligado sem certificados"
+inline_action = "Como resolver"
 step = "{n}. {text}"
-step_install_driver = "Install {driver}"
-step_install_complement = "Install the WebeSign Add-on"
+step_install_driver = "Instale {driver}"
+step_install_complement = "Instale o Complemento WebeSign"
 
 [complement]
-name = "WebeSign Add-on"
-title_needed = "This token needs the Mac Add-on"
-body_needed = "App Store apps can't use some token drivers. The free WebeSign Add-on, from the same project, bridges that gap. It only runs when WebeSign asks for it."
-download = "Download Add-on"
-ok = "Add-on active · version {version}"
-outdated = "Update the Add-on ({installed} installed, {required} required)"
-update = "Update Add-on"
-not_responding = "The Add-on is installed but didn't respond."
-open = "Open Add-on"
+name = "Complemento WebeSign"
+title_needed = "Este token precisa do Complemento para Mac"
+body_needed = "As aplicações da App Store não podem utilizar alguns controladores de token. O Complemento WebeSign, gratuito e do mesmo projeto, faz essa ponte. Só funciona quando o WebeSign o pede."
+download = "Transferir Complemento"
+ok = "Complemento ativo · versão {version}"
+outdated = "Atualize o Complemento ({installed} instalada, {required} necessária)"
+update = "Atualizar Complemento"
+not_responding = "O Complemento está instalado, mas não respondeu."
+open = "Abrir Complemento"
 
 [diag]
-window_title = "Diagnostics — WebeSign"
-copy = "Copy diagnostics"
-copied = "Diagnostics copied. No names, ID numbers or sites included."
+window_title = "Diagnóstico — WebeSign"
+copy = "Copiar diagnóstico"
+copied = "Diagnóstico copiado. Não inclui nomes, n.os de identificação nem sites."
 
 [diag.status]
-ok = "Ready to sign"
-attention = "Needs attention"
-blocked = "Can't sign yet"
-na = "Not applicable"
+ok = "Pronto para assinar"
+attention = "Requer atenção"
+blocked = "Ainda não é possível assinar"
+na = "Não aplicável"
 
 [diag.tab]
-browsers = "Browsers"
-devices = "Devices"
-certs = "Certificates"
-help = "Help"
+browsers = "Navegadores"
+devices = "Dispositivos"
+certs = "Certificados"
+help = "Ajuda"
 
 [onboarding]
-title = "Getting started"
-step_app = "App installed"
-step_extension = "Browser extension"
-step_cert = "Certificate found"
-step_test = "Test signature"
-test_button = "Test a signature"
-dismiss = "Hide"
+title = "Primeiros passos"
+step_app = "Aplicação instalada"
+step_extension = "Extensão no navegador"
+step_cert = "Certificado encontrado"
+step_test = "Assinatura de teste"
+test_button = "Testar assinatura"
+dismiss = "Ocultar"
 
 [browsers]
-subtitle = "Where the extension is installed and connected to the app."
-section = "Browsers on this computer"
+subtitle = "Onde a extensão está instalada e ligada à aplicação."
+section = "Navegadores neste computador"
 # {when} is a relative time such as "3 min ago".
-connected = "Extension {version} connected · {when}"
-not_detected = "Extension not detected"
-install = "Install extension"
-external_prompt_hint = "If {browser} shows “New extension added”, click Enable."
-ext_outdated = "Extension {version} · needs {required} or newer"
-ext_outdated_hint = "Restart {browser} to update."
-host_missing = "{browser} can't find the WebeSign app"
-repair = "Repair"
-repaired = "Repaired. Restart {browser}."
-safari_disabled = "Extension turned off in Safari"
-safari_open_settings = "Open Safari settings"
-snap_hint = "Firefox is installed as a Snap: on your first signature, allow access when the system asks."
-none = "No supported browser found. WebeSign works with Chrome, Edge, Firefox, Brave and Safari."
+connected = "Extensão {version} ligada · {when}"
+not_detected = "Extensão não detetada"
+install = "Instalar extensão"
+external_prompt_hint = "Se o {browser} mostrar “Nova extensão adicionada”, clique em Ativar."
+ext_outdated = "Extensão {version} · requer a {required} ou posterior"
+ext_outdated_hint = "Reinicie o {browser} para atualizar."
+host_missing = "O {browser} não encontra a aplicação WebeSign"
+repair = "Reparar"
+repaired = "Reparado. Reinicie o {browser}."
+safari_disabled = "Extensão desativada no Safari"
+safari_open_settings = "Abrir definições do Safari"
+snap_hint = "Firefox instalado como Snap: na primeira assinatura, permita o acesso quando o sistema perguntar."
+none = "Nenhum navegador compatível encontrado. O WebeSign funciona com Chrome, Edge, Firefox, Brave e Safari."
 
 [sites]
-section = "Allowed sites"
-apps_section = "Allowed programs"
-row = "Remembered on {date} · last used {when}"
-revoke = "Revoke"
-revoke_confirm = "Confirm revoke"
-revoked = "{site} is no longer allowed."
-empty = "No remembered sites. When you tick “Remember this site” while signing, it shows up here."
-apps_empty = "No remembered programs."
+section = "Sites autorizados"
+apps_section = "Programas autorizados"
+row = "Memorizado em {date} · última utilização {when}"
+revoke = "Revogar"
+revoke_confirm = "Confirmar revogação"
+revoked = "A autorização de {site} foi revogada."
+empty = "Nenhum site memorizado. Quando assinalar “Memorizar este site” numa assinatura, ele aparece aqui."
+apps_empty = "Nenhum programa memorizado."
 
 [devices]
-subtitle = "Tokens, cards and drivers WebeSign can see right now."
-section_tokens = "Tokens and cards"
-section_readers = "Card readers"
-section_drivers = "Token drivers"
-no_certs = "No certificates · install {driver}"
-unknown_certs = "We can't tell if it has certificates"
-generic_ccid = "Smart card device"
-reader_empty = "No card"
-reader_card = "Card: {card}"
-reader_card_unknown = "Unrecognized card"
-driver_no_token = "Loaded · no token connected"
+subtitle = "Tokens, cartões e controladores que o WebeSign vê neste momento."
+section_tokens = "Tokens e cartões"
+section_readers = "Leitores de cartões"
+section_drivers = "Controladores de token"
+no_certs = "Sem certificados · instale {driver}"
+unknown_certs = "Não sabemos se tem certificados"
+generic_ccid = "Dispositivo de cartão inteligente"
+reader_empty = "Sem cartão"
+reader_card = "Cartão: {card}"
+reader_card_unknown = "Cartão não reconhecido"
+driver_no_token = "Carregado · nenhum token ligado"
 # {reason} is a short technical reason such as "file not found".
-driver_failed = "Failed to load: {reason}"
-driver_auto = "Found automatically"
-driver_user = "Added by you"
-driver_add = "Add driver…"
-driver_add_help = "Only use this if your token vendor tells you to."
-driver_remove = "Remove"
-pcscd = "Card service (pcscd)"
-pcscd_ok = "Running"
+driver_failed = "Não foi possível carregar: {reason}"
+driver_auto = "Encontrado automaticamente"
+driver_user = "Adicionado por si"
+driver_add = "Adicionar controlador…"
+driver_add_help = "Utilize apenas se o fabricante do token o indicar."
+driver_remove = "Remover"
+pcscd = "Serviço de cartões (pcscd)"
+pcscd_ok = "Em execução"
 # {command} is a shell command; do not translate it.
-pcscd_stopped = "Stopped. Run: {command}"
-empty = "No token or reader connected. Plug your token into a USB port; this list updates by itself."
+pcscd_stopped = "Parado. Execute: {command}"
+empty = "Nenhum token ou leitor ligado. Ligue o token a uma porta USB; esta lista atualiza-se sozinha."
 
 [devices.certs_found]
-one = "{count} certificate"
-other = "{count} certificates"
+one = "{count} certificado"
+other = "{count} certificados"
 
 [devices.driver_loaded]
-one = "Loaded · {count} token"
-other = "Loaded · {count} tokens"
+one = "Carregado · {count} token"
+other = "Carregado · {count} tokens"
 
 [certs_tab]
-subtitle = "Every certificate this computer offers, including the ones that can't sign."
-group_windows = "In Windows"
-group_macos = "In the Mac Keychain"
-group_driver = "Through the token driver"
-hidden_group = "Can't sign ({count})"
-import = "Import .pfx file…"
-import_help_windows = "Windows imports the file and stores the certificate securely. You'll need the file's password."
-import_help_macos = "Keychain Access imports the file and stores the certificate securely. You'll need the file's password."
-import_linux = "On Linux, use a certificate on a token or card."
-empty = "No certificates on this computer. Plug in your token, insert your card or import a .pfx file."
+subtitle = "Todos os certificados que este computador oferece, incluindo os que não servem para assinar."
+group_windows = "No Windows"
+group_macos = "No Keychain do Mac"
+group_driver = "Através do controlador do token"
+hidden_group = "Não servem para assinar ({count})"
+import = "Importar ficheiro .pfx…"
+import_help_windows = "O Windows importa o ficheiro e guarda o certificado em segurança. Vai precisar da palavra-passe do ficheiro."
+import_help_macos = "O Acesso às Chaves importa o ficheiro e guarda o certificado em segurança. Vai precisar da palavra-passe do ficheiro."
+import_linux = "No Linux, utilize um certificado num token ou cartão."
+empty = "Nenhum certificado neste computador. Ligue o token, introduza o cartão ou importe um ficheiro .pfx."
 
 [help]
-faq_title = "Common questions"
-q_missing = "My certificate doesn't show up"
-a_missing = "Check: is the token plugged in? Is the vendor's driver installed (see Devices)? Has the certificate expired (see Certificates)? If it's a .pfx file, was it imported?"
-q_pin = "I got the PIN wrong / the token locked"
-a_pin = "After a few wrong attempts the token locks to protect you. To unlock it, use the PUK (the unlock code that came with the token) in the vendor's software. Without the PUK, contact your certificate authority."
-q_privacy = "What does WebeSign send to sites?"
-a_privacy = "Only the certificate you chose and the signature of the verification code. Never your PIN, never the document."
-q_shortcuts = "Keyboard shortcuts"
-report_title = "Report a problem"
-report_preview = "This is exactly what will be copied. It includes no names, ID numbers, sites or serial numbers."
-open_support = "Open support page"
-about_title = "About"
-about_line = "WebeSign {version} · protocol {protocol} · GPL-3.0-or-later"
-source = "Source code"
-privacy = "Privacy"
+faq_title = "Perguntas frequentes"
+q_missing = "O meu certificado não aparece"
+a_missing = "Verifique: o token está ligado? O controlador do fabricante está instalado (veja Dispositivos)? O certificado expirou (veja Certificados)? Se é um ficheiro .pfx, foi importado?"
+q_pin = "Enganei-me no PIN / o token bloqueou"
+a_pin = "Após algumas tentativas erradas, o token bloqueia para o proteger. Para o desbloquear, utilize o PUK (o código de desbloqueio que veio com o token) no software do fabricante. Sem o PUK, contacte a sua entidade certificadora."
+q_privacy = "O que envia o WebeSign aos sites?"
+a_privacy = "Apenas o certificado que escolheu e a assinatura do código de verificação. Nunca o PIN, nunca o documento."
+q_shortcuts = "Atalhos de teclado"
+report_title = "Comunicar um problema"
+report_preview = "Isto é exatamente o que será copiado. Não inclui nomes, n.os de identificação, sites nem números de série."
+open_support = "Abrir página de suporte"
+about_title = "Acerca de"
+about_line = "WebeSign {version} · protocolo {protocol} · GPL-3.0-or-later"
+source = "Código-fonte"
+privacy = "Privacidade"
 
 [shortcuts]
 # Each line pairs a key with what it does; {key} is a key name such as Esc.
 line = "{key} — {action}"
-cancel = "Cancel the request"
-move_selection = "Move between certificates"
-focus_next = "Next control"
-copy_code = "Copy the verification code"
-switch_tab = "Switch diagnostics tab"
-scan_again = "Scan again"
-copy_diagnostics = "Copy diagnostics"
-close_window = "Close the window"
+cancel = "Cancelar o pedido"
+move_selection = "Mover entre certificados"
+focus_next = "Controlo seguinte"
+copy_code = "Copiar o código de verificação"
+switch_tab = "Mudar de separador do diagnóstico"
+scan_again = "Procurar novamente"
+copy_diagnostics = "Copiar diagnóstico"
+close_window = "Fechar a janela"
 
 [popup]
-checking = "Checking…"
-ready_title = "Ready to sign"
-ready_body = "The WebeSign app {version} is connected to this browser."
-open_diagnostics = "Open diagnostics"
-missing_title = "The WebeSign app isn't installed"
-missing_body = "The extension needs the app on your computer to sign."
-download = "Download for {os}"
-activate = "Already installed? Activate the app"
-outdated_title = "Update the WebeSign app"
-outdated_body = "You have version {installed}. This browser needs {required} or newer."
+checking = "A verificar…"
+ready_title = "Tudo pronto para assinar"
+ready_body = "A aplicação WebeSign {version} está ligada a este navegador."
+open_diagnostics = "Abrir diagnóstico"
+missing_title = "Falta instalar a aplicação WebeSign"
+missing_body = "A extensão precisa da aplicação no computador para assinar."
+download = "Transferir para {os}"
+activate = "Já instalou? Ativar a aplicação"
+outdated_title = "Atualize a aplicação WebeSign"
+outdated_body = "Tem a versão {installed}. Este navegador requer a {required} ou posterior."
 # {store} is store.microsoft, store.apple or store.linux.
-update_in = "Update in {store}"
-error_title = "The app didn't respond"
-error_body = "Try again. If it keeps happening, restart your computer."
-retry = "Try again"
-redownload = "Download again"
-unsupported_title = "WebeSign doesn't work on this system yet"
-unsupported_body = "Use a computer running Windows, macOS or Linux."
-footer_versions = "Extension {ext} · App {app}"
-privacy = "Privacy"
+update_in = "Atualizar na {store}"
+error_title = "A aplicação não respondeu"
+error_body = "Tente novamente. Se continuar, reinicie o computador."
+retry = "Tentar novamente"
+redownload = "Transferir novamente"
+unsupported_title = "O WebeSign ainda não funciona neste sistema"
+unsupported_body = "Utilize um computador com Windows, macOS ou Linux."
+footer_versions = "Extensão {ext} · Aplicação {app}"
+privacy = "Privacidade"
 
 [store]
 microsoft = "Microsoft Store"
 apple = "Mac App Store"
-linux = "download page"
+linux = "página de transferência"
 # Direct (unsigned) builds are updated from the GitHub Releases page.
-github = "the download page"
+github = "a página de transferência"
 
 [extension]
 # Extension name in browser stores; keep the product name.
 name = "WebeSign"
 # One-line description in browser stores (at most 132 characters).
-description = "Sign on any website with your digital certificate: USB token, smart card or a certificate installed on your computer."
+description = "Assine em qualquer site com o seu certificado digital: token USB, cartão inteligente ou certificado instalado no computador."
 
 # Window texts for errors (docs/ux.md §15). `title` is bold, `body` below it.
 [errors.insecure_origin]
-title = "Insecure site"
-body = "This site doesn't use https. For your safety, WebeSign won't sign for it."
+title = "Site sem ligação segura"
+body = "Este site não usa https. Por segurança, o WebeSign não assina para ele."
 
 [errors.timeout]
-title = "The request expired"
-body = "Nobody answered for 5 minutes. Go back to the site and try again."
+title = "O pedido expirou"
+body = "Ninguém respondeu em 5 minutos. Volte ao site e tente novamente."
 
 [errors.no_certificates]
-title = "No certificates found"
-body = "Plug in your token or insert your card and try again."
+title = "Nenhum certificado encontrado"
+body = "Ligue o token ou introduza o cartão e tente novamente."
 
 [errors.certificate_unavailable]
-title = "Certificate unavailable"
-body = "The chosen certificate is no longer available. Plug the token back in or choose another one."
+title = "Certificado indisponível"
+body = "O certificado escolhido já não está acessível. Volte a ligar o token ou escolha outro."
 
 [errors.certificate_not_valid]
-title = "Certificate out of validity"
-body = "This certificate has expired or isn't valid yet. Choose another one or renew it with your certificate authority."
+title = "Certificado fora do prazo de validade"
+body = "Este certificado expirou ou ainda não é válido. Escolha outro ou renove-o junto da sua entidade certificadora."
 
 [errors.unsupported_algorithm]
-title = "This certificate can't sign that way"
+title = "Este certificado não assina dessa forma"
 # {algorithm} is a technical name such as RSASSA-PSS; do not translate it.
-body = "The site asked for {algorithm}, which this certificate or driver doesn't support. Choose another certificate."
+body = "O site pediu {algorithm}, que este certificado ou controlador não suporta. Escolha outro certificado."
 
 [errors.pin_locked]
-title = "PIN locked"
-body = "Your token PIN is locked. Unlock it with the PUK and try again."
+title = "PIN bloqueado"
+body = "O PIN do seu token está bloqueado. Desbloqueie-o com o PUK e tente novamente."
 
 [errors.token_removed]
-title = "The token was removed"
-body = "Plug the token back in and click Try again."
+title = "O token foi removido"
+body = "Volte a ligar o token e clique em Tentar novamente."
 
 [errors.driver_failure]
-title = "The token driver failed"
+title = "O controlador do token falhou"
 # {driver} is the driver or key store name.
-body = "{driver} didn't respond as expected. Try again; if it keeps happening, reconnect the token."
+body = "{driver} não respondeu como esperado. Tente novamente; se continuar, volte a ligar o token."
 
 [errors.internal]
-title = "Something went wrong in WebeSign"
-body = "Copy the details and open diagnostics to report it."
+title = "Algo correu mal no WebeSign"
+body = "Copie os detalhes e abra o diagnóstico para comunicar o problema."
 
 # Texts a website may show for SDK errors (exported by @websign/sdk/messages).
 [site.errors.extension_missing]
-title = "Install the WebeSign extension"
-body = "To sign in this browser, install the free extension."
+title = "Instale a extensão WebeSign"
+body = "Para assinar neste navegador, instale a extensão gratuita."
 
 [site.errors.app_missing]
-title = "Install the WebeSign app"
-body = "The extension needs the app on your computer to sign."
+title = "Instale a aplicação WebeSign"
+body = "A extensão precisa da aplicação no computador para assinar."
 
 [site.errors.app_outdated]
-title = "Update the WebeSign app"
-body = "You have version {installed}; {required} or newer is required."
+title = "Atualize a aplicação WebeSign"
+body = "Tem a versão {installed}; é necessária a {required} ou posterior."
 
 [site.errors.extension_outdated]
-title = "Update the WebeSign extension"
-body = "Restart your browser so it updates."
+title = "Atualize a extensão WebeSign"
+body = "Reinicie o navegador para que ela se atualize."
 
 [site.errors.insecure_origin]
-title = "Insecure site"
-body = "This site doesn't use https. For your safety, WebeSign won't sign for it."
+title = "Site sem ligação segura"
+body = "Este site não usa https. Por segurança, o WebeSign não assina para ele."
 
 [site.errors.aborted]
-title = "Signature stopped"
-body = "The signature was stopped before it finished."
+title = "Assinatura interrompida"
+body = "A assinatura foi interrompida antes de terminar."
 
 [site.errors.user_cancelled]
-title = "Signature cancelled"
-body = "You cancelled the signature."
+title = "Assinatura cancelada"
+body = "Cancelou a assinatura."
 
 [site.errors.timeout]
-title = "The request expired"
-body = "Nobody answered for 5 minutes. Try again."
+title = "O pedido expirou"
+body = "Ninguém respondeu em 5 minutos. Tente novamente."
 
 [site.errors.no_certificates]
-title = "No certificates found"
-body = "Plug in your token or insert your card and try again."
+title = "Nenhum certificado encontrado"
+body = "Ligue o token ou introduza o cartão e tente novamente."
 
 [site.errors.certificate_unavailable]
-title = "Certificate unavailable"
-body = "The chosen certificate is no longer available. Plug the token back in or choose another one."
+title = "Certificado indisponível"
+body = "O certificado escolhido já não está acessível. Volte a ligar o token ou escolha outro."
 
 [site.errors.certificate_not_valid]
-title = "Certificate out of validity"
-body = "This certificate has expired or isn't valid yet. Choose another one or renew it with your certificate authority."
+title = "Certificado fora do prazo de validade"
+body = "Este certificado expirou ou ainda não é válido. Escolha outro ou renove-o junto da sua entidade certificadora."
 
 [site.errors.unsupported_algorithm]
-title = "This certificate can't sign that way"
-body = "Choose another certificate."
+title = "Este certificado não assina dessa forma"
+body = "Escolha outro certificado."
 
 [site.errors.pin_locked]
-title = "PIN locked"
-body = "Your token PIN is locked. Unlock it with the PUK and try again."
+title = "PIN bloqueado"
+body = "O PIN do seu token está bloqueado. Desbloqueie-o com o PUK e tente novamente."
 
 [site.errors.token_removed]
-title = "The token was removed"
-body = "Plug the token back in and try again."
+title = "O token foi removido"
+body = "Volte a ligar o token e tente novamente."
 
 [site.errors.driver_failure]
-title = "The token driver failed"
-body = "Try again; if it keeps happening, reconnect the token."
+title = "O controlador do token falhou"
+body = "Tente novamente; se continuar, volte a ligar o token."
 
 [site.errors.busy]
-title = "Requests are waiting for confirmation"
-body = "Finish the open requests in the WebeSign window."
+title = "Há pedidos a aguardar confirmação"
+body = "Conclua os pedidos abertos na janela do WebeSign."
 
 [site.errors.internal]
-title = "Something went wrong in WebeSign"
-body = "Open WebeSign diagnostics to report the problem."
+title = "Algo correu mal no WebeSign"
+body = "Abra o diagnóstico do WebeSign para comunicar o problema."
