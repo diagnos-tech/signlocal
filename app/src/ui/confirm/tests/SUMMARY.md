@@ -2,8 +2,8 @@
 
 - `mod.rs` — Kittest checks of the confirmation window.
 - `support.rs` — The harness: the real window at 480 × 600, a manual clock, the engine's end of the channel, the visible body, per-OS snapshots.
-- `fixtures.rs` — The mockups' people, certificates, callers and code; long token and Windows-store lists.
-- `scenes.rs` — Every state of §4.8 as a named script of host commands and waits.
+- `fixtures.rs` — The mockups' people, certificates, callers and code; long token and Windows-store lists; long names and DNs.
+- `scenes.rs` — Every state of §4.8 as a named script of host commands and waits, plus list edge cases (one, twenty, long names).
 - `snapshots.rs` — One snapshot per scene in light and dark.
 - `arming.rs` — 600 ms of focus before Sign or Continue act; early clicks and keystrokes dropped (§4.7).
 - `keyboard.rs` — Esc cancels, Enter never continues or chooses, Space does, arrows select, Enter on a row moves focus (§4.9).

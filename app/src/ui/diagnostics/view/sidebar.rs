@@ -84,9 +84,17 @@ fn tabs(ui: &mut Ui, screen: &Screen<'_>, actions: &mut Vec<Action>) {
         ui.unique_id()
     });
     let name = tr(screen.catalog, k::DIAG_WINDOW_TITLE);
+    let rect = list.response.rect;
     ui.ctx().accesskit_node_builder(list.inner, |node| {
         node.set_role(Role::TabList);
         node.set_label(name);
+        // Where the list is, so a screen reader can show it.
+        node.set_bounds(egui::accesskit::Rect {
+            x0: rect.min.x.into(),
+            y0: rect.min.y.into(),
+            x1: rect.max.x.into(),
+            y1: rect.max.y.into(),
+        });
     });
 }
 

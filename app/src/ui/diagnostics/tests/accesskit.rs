@@ -44,9 +44,11 @@ fn the_window_opens_on_the_first_red_tab() {
         .harness
         .get_by_role_and_label(Role::Tab, "Devices, Can't sign yet");
     assert_eq!(devices.accesskit_node().is_selected(), Some(true));
-    window
+    // On its row and in "Getting started".
+    let shown = window
         .harness
-        .get_by_label_contains("sudo systemctl enable --now pcscd.socket");
+        .get_all_by_label_contains("sudo systemctl enable --now pcscd.socket");
+    assert_eq!(shown.count(), 2);
 }
 
 #[test]

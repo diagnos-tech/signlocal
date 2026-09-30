@@ -47,7 +47,7 @@ pub fn todo(catalog: &Catalog, facts: &Facts, step: Step, state: StepState) -> T
             tr(catalog, k::ONBOARDING_TODO_APP_BODY),
             repair(catalog, facts),
         ),
-        Step::Extension => extension(catalog, facts),
+        Step::Extension => extension(catalog, facts, state),
         Step::CardService => (
             icons::ON_THIS_COMPUTER,
             tr(catalog, k::ONBOARDING_TODO_CARD_SERVICE),
@@ -72,7 +72,7 @@ pub fn todo(catalog: &Catalog, facts: &Facts, step: Step, state: StepState) -> T
         ),
         Step::TestSignature => (
             icons::SIGNATURE_REQUEST,
-            tr(catalog, k::ONBOARDING_STEP_TEST),
+            tr(catalog, k::ONBOARDING_TODO_TEST),
             tr(catalog, k::ONBOARDING_TODO_TEST_BODY),
             Some((
                 tr(catalog, k::ONBOARDING_TEST_BUTTON),
@@ -110,8 +110,9 @@ fn repair(catalog: &Catalog, facts: &Facts) -> Option<(String, Option<Icon>, Act
     ))
 }
 
-/// The browsers the extension has not connected from, by name.
-fn extension(catalog: &Catalog, facts: &Facts) -> Parts {
+/// The browsers the extension has not connected from, by name; [Repair]
+/// when a browser cannot start the app, else the install page.
+fn extension(catalog: &Catalog, facts: &Facts, state: StepState) -> Parts {
     let waiting: Vec<&str> = facts
         .browsers
         .iter()
@@ -126,16 +127,22 @@ fn extension(catalog: &Catalog, facts: &Facts) -> Parts {
             .arg("browsers", waiting.join(", "))
             .to_string()
     };
-    let install = (
-        tr(catalog, k::BROWSERS_INSTALL),
-        Some(icons::EXTERNAL_LINK),
-        Action::OpenUrl(install_page()),
-    );
+    let install = || {
+        (
+            tr(catalog, k::BROWSERS_INSTALL),
+            Some(icons::EXTERNAL_LINK),
+            Action::OpenUrl(install_page()),
+        )
+    };
+    let fix = match state {
+        StepState::Attention => repair(catalog, facts),
+        StepState::Pending | StepState::Done => Some(install()),
+    };
     (
         icons::BROWSER,
         tr(catalog, k::ONBOARDING_TODO_EXTENSION),
         body,
-        Some(install),
+        fix,
     )
 }
 
@@ -158,16 +165,17 @@ fn driver(catalog: &Catalog, facts: &Facts) -> Parts {
         || tr(catalog, k::DEVICES_GENERIC_CCID),
         |hint| hint.name.clone(),
     );
-    let title = catalog
-        .tr(k::ONBOARDING_TODO_DRIVER)
-        .arg("device", device)
-        .to_string();
+    let title = tr(catalog, k::ONBOARDING_TODO_DRIVER);
     let body = match hint.and_then(|hint| hint.driver.as_deref()) {
         Some(driver) => catalog
             .tr(k::ONBOARDING_TODO_DRIVER_BODY)
+            .arg("device", device)
             .arg("driver", driver)
             .to_string(),
-        None => tr(catalog, k::ONBOARDING_TODO_DRIVER_BODY_GENERIC),
+        None => catalog
+            .tr(k::ONBOARDING_TODO_DRIVER_BODY_GENERIC)
+            .arg("device", device)
+            .to_string(),
     };
     (icon, title, body, download(catalog, hint))
 }

@@ -86,10 +86,10 @@ fn checklist(
                 title: vec![Span::strong(&step.title)],
                 status: Some(step.status.clone()),
                 extra: None,
-                trailing: step.fix.as_ref().map(|(label, icon, _)| Trailing::Button {
-                    label,
-                    icon: *icon,
-                }),
+                trailing: step
+                    .fix
+                    .as_ref()
+                    .map(|(label, icon, _)| Trailing::Button { label, icon: *icon }),
                 position: Position::of(index, to_do.len()),
             };
             if row.show(ui).clicked
@@ -114,8 +114,8 @@ fn heading(ui: &mut Ui, screen: &Screen<'_>, progress: &str, actions: &mut Vec<A
         ui.spacing_mut().item_spacing.x = 6.0;
         text::icon(ui, icons::GETTING_STARTED, metrics::ICON_SM, c.accent_fg);
         let title = tr(catalog, k::ONBOARDING_TITLE);
-        let title = ui.label(typography::BODY_STRONG.rich(title).color(c.fg));
-        as_heading(ui, &title);
+        let label = ui.label(typography::BODY_STRONG.rich(&title).color(c.fg));
+        as_heading(ui, &label, &title);
         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
             ui.spacing_mut().item_spacing.x = metrics::SPACE_2;
             let hide = tr(catalog, k::ONBOARDING_DISMISS);
@@ -128,8 +128,11 @@ fn heading(ui: &mut Ui, screen: &Screen<'_>, progress: &str, actions: &mut Vec<A
 }
 
 /// Screen readers jump between headings: the checklist is one stop.
-fn as_heading(ui: &Ui, label: &egui::Response) {
+fn as_heading(ui: &Ui, label: &egui::Response, text: &str) {
     ui.ctx().accesskit_node_builder(label.id, |node| {
+        // egui files a label's text as its value; a heading is named.
+        node.clear_value();
+        node.set_label(text.to_owned());
         node.set_role(egui::accesskit::Role::Heading);
         node.set_level(3);
     });
@@ -196,11 +199,9 @@ fn ready(ui: &mut Ui, screen: &Screen<'_>, actions: &mut Vec<Action>) {
                 ui.vertical(|ui| {
                     let title = tr(catalog, k::ONBOARDING_READY_TITLE);
                     let body = tr(catalog, k::ONBOARDING_READY_BODY);
-                    let title = ui.label(typography::BODY_STRONG.rich(title).color(c.fg));
-                    as_heading(ui, &title);
-                    ui.add(
-                        egui::Label::new(typography::SMALL.rich(body).color(c.fg_muted)).wrap(),
-                    );
+                    let label = ui.label(typography::BODY_STRONG.rich(&title).color(c.fg));
+                    as_heading(ui, &label, &title);
+                    ui.add(egui::Label::new(typography::SMALL.rich(body).color(c.fg_muted)).wrap());
                     ui.add_space(metrics::SPACE_3 - 2.0);
                     ui.horizontal(|ui| {
                         ui.spacing_mut().item_spacing.x = metrics::SPACE_2;

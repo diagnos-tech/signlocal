@@ -84,6 +84,32 @@ fn pairs(c: &Colors) -> Vec<(String, Color32, Color32, f64)> {
             c.accent,
             COMPONENT,
         ),
+        // The checked radio sits on the selected row.
+        (
+            "accent (checked radio) on accent-soft",
+            c.accent,
+            c.accent_soft,
+            COMPONENT,
+        ),
+        // Status icons straight on the canvas: "Getting started" check
+        // marks and the outcome states' 32 px icons.
+        (
+            "success icon on bg-canvas",
+            c.success,
+            c.bg_canvas,
+            COMPONENT,
+        ),
+        (
+            "warning icon on bg-canvas",
+            c.warning,
+            c.bg_canvas,
+            COMPONENT,
+        ),
+        // The primary button's edge against the surfaces it sits on, so its
+        // shape reads without its label (a Sign button that is only color
+        // would vanish in a glance).
+        ("accent on bg-surface", c.accent, c.bg_surface, COMPONENT),
+        ("accent on bg-canvas", c.accent, c.bg_canvas, COMPONENT),
     ];
     let mut pairs: Vec<_> = fixed
         .into_iter()

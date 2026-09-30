@@ -381,12 +381,14 @@ The full list specification is in [§5](#5-certificate-list). In the confirmatio
   the privacy note or the PIN error) and the "Remember" block (§4.10: checkbox and help text, whenever it is shown)
   stay whole in the visible body, above the footer. The rows and the collapsed "Can't sign (n)" row share one scroll
   box (3 rows and that row at most, 2 with our PIN field); when space is short the box shrinks, down to the selected
-  row and then half a row, and the list scrolls inside itself while the body stays still. A partial last row shows
-  at least 16 px, or the box ends on a whole row. Only when not even that fits (an error notice and the code card
-  above the list) does the body scroll to these blocks, again each time one of them changes; when they are taller
-  than the body, the PIN block and "Remember" win over the top of the notice. **Why:** the person must see what the
-  primary button does, what the window waits for and what "Remember" grants before pressing Continue, Sign or "Use
-  this certificate".
+  row and then its name line, and the list scrolls inside itself while the body stays still. A partial last row
+  shows at least 16 px (a peek of the next name) and, past its name line, ends between two of its lines, never
+  through one; otherwise the box ends on a whole row. Under an error notice the code card drops its help line
+  (already read) and the notice's actions and "Technical details" share one line, so at 480 × 600 the notice, the
+  code and the PIN block all fit. Only when not even that fits does the body scroll to these blocks, again each
+  time one of them changes; when they are taller than the body, the PIN block and "Remember" win over the top of
+  the notice. **Why:** the person must see what the primary button does, what went wrong, what the window waits for
+  and what "Remember" grants before pressing Continue, Sign or "Use this certificate".
 
 ### 4.6 PIN
 
@@ -871,15 +873,36 @@ Overall = worst among the tabs.
 
 ### 8.2 Getting started
 
-Until they are all green (and until the first test signature), a strip appears above the content of any tab,
-with `list-checks` and "Getting started":
+Diagnostics is the only welcome screen ([§10](#10-first-run-per-operating-system)), so the top of every tab says
+exactly what is still missing before the first signature, until the person is ready **and** has signed the test
+page, or hides it ("Hide", `onboarding.dismiss`, forever).
 
-`[✓] App installed · [!] Browser extension · [✓] Certificate found · [ ] Test signature [Test a signature]`
+Heading: `list-checks` "Getting started" (a screen-reader heading) with "2 of 6 done" and [Hide] on the right. Under
+it, the steps already done as check marks ("✓ App installed ✓ Card service running"); then one list row per step still
+to do, in this order, each with a title that says what to do, the reason, and **one click that fixes it**:
 
-"Test a signature" opens `{HOMEPAGE}test/` (the project site) in the default browser: the page generates 32 random bytes, calls
-`sign()`, shows the **same verification code**, and the result ("It worked. Signed with Ana Beatriz Souza,
-ICP-Brasil A3."). **Why:** it teaches the habit of checking the code before the first real report.
-"Hide" (`onboarding.dismiss`) hides the strip forever.
+| Step | Shown when | Row (title · status) | Fix |
+|------|-----------|----------------------|-----|
+| App | every browser's registration is missing and no extension connected | "Connect the app to your browsers" · "Your browsers can't find the WebeSign app yet." | [Repair] |
+| Extension | no browser connected | "Add the browser extension" · "Not connected yet in Google Chrome, Firefox." (per browser) | [Install extension ↗]; [Repair] when a registration is missing |
+| Card service (Linux) | `pcscd` stopped | "Start the card service" · "Tokens and cards need it. Run in a terminal: `sudo systemctl enable --now pcscd.socket`" | [Copy command] |
+| Driver | a connected token or card waits for its driver | "Install the token driver" · "SafeNet eToken 5110 needs SafeNet Authentication Client to show its certificates." | [Download for {os} ↗] (`devices.json`) |
+| Certificate | no usable certificate | "Connect your certificate" · "Plug in your token or insert your card. The list updates by itself." | [Import .pfx file…] (Windows, Mac) |
+| Test | not signed yet | "Try a test signature" · "Sign a sample message to see how signing works." | [Test your setup ↗] |
+
+While the extension is not connected, a link under the list, "Already installed? Finish setting up", opens the site's
+`/activate/` page ([§9](#9-extension-popup)), which starts the app from the browser and waits for the extension.
+
+**Ready.** Once the app, the extension and a certificate are there (and the card service runs), the checklist becomes
+one card: `check-circle` "You're ready to sign" · "Try it once: the test page signs a sample message and shows the same
+verification code as this app." [Test your setup ↗] (primary) [Hide]. A missing driver for another device does not
+hold this back: the Devices light still shows it.
+
+"Test your setup" (the same words as the popup and the site) opens `{HOMEPAGE}test/` in the default browser: the page
+generates 32 random bytes, calls `sign()`, shows the **same verification code**, and the result ("It worked. Signed
+with Ana Beatriz Souza, ICP-Brasil A3."). **Why:** it teaches the habit of checking the code before the first real
+report. `TODO(gustavo)`: the host marks the test done (`settings.test_signature_done`) when a signature for the
+project's own site succeeds; until then the ready card stays until hidden.
 
 ### 8.3 Browsers tab
 
@@ -1084,9 +1107,9 @@ Behavior:
 
 | OS | What happens at installation | First open | Steps the user sees |
 |----|------------------------------|-------------------|-------------------------|
-| **Windows** (Microsoft Store, MSIX) | Registers the execution alias and the `websign:` scheme; nothing runs | The Store shows "Open". The app writes HKCU (host in every `NativeMessagingHosts` key + extension pre-registration) and opens Diagnostics with "Getting started" | 1. Extension: Chrome/Edge show "New extension added" → "click Enable"; Firefox → [Install extension ↗]. 2. Certificate found. 3. [Test a signature]. |
-| **macOS** (Mac App Store) | Registers the `websign:` scheme; nothing runs | The app writes the manifests (Chrome, Edge, Brave, Firefox) and opens Diagnostics | 1. Safari: [Open Safari settings] to turn the extension on; when using it on the site, choose "Always Allow on This Website". Chrome/Edge/Firefox: [Install extension ↗]. 2. Certificate (and Add-on, if needed, §7). 3. [Test a signature]. |
-| **Linux** (.deb/.rpm) | `postinst` writes system manifests (`/etc/opt/chrome/native-messaging-hosts`, `/usr/lib/mozilla/native-messaging-hosts`, …) and enables `pcscd.socket` | From the app menu, opens Diagnostics | 1. [Install extension ↗]; Firefox Snap: portal notice. 2. Is `pcscd` running? 3. Certificate. 4. [Test a signature]. |
+| **Windows** (Microsoft Store, MSIX) | Registers the execution alias and the `websign:` scheme; nothing runs | The Store shows "Open". The app writes HKCU (host in every `NativeMessagingHosts` key + extension pre-registration) and opens Diagnostics with "Getting started" | 1. Extension: Chrome/Edge show "New extension added" → "click Enable"; Firefox → [Install extension ↗]. 2. Certificate found. 3. [Test your setup ↗]. |
+| **macOS** (Mac App Store) | Registers the `websign:` scheme; nothing runs | The app writes the manifests (Chrome, Edge, Brave, Firefox) and opens Diagnostics | 1. Safari: [Open Safari settings] to turn the extension on; when using it on the site, choose "Always Allow on This Website". Chrome/Edge/Firefox: [Install extension ↗]. 2. Certificate (and Add-on, if needed, §7). 3. [Test your setup ↗]. |
+| **Linux** (.deb/.rpm) | `postinst` writes system manifests (`/etc/opt/chrome/native-messaging-hosts`, `/usr/lib/mozilla/native-messaging-hosts`, …) and enables `pcscd.socket` | From the app menu, opens Diagnostics | 1. [Install extension ↗]; Firefox Snap: portal notice. 2. Is `pcscd` running? 3. Certificate. 4. [Test your setup ↗]. |
 
 Common rule: the app **never** opens by itself at login and does not stay resident (decision 4 of the project brief). Diagnostics
 is the only "welcome screen".
@@ -1543,12 +1566,20 @@ the translations for es, fr, it, de, and pt-PT follow the same keys.
 | `diag.copy` | Copiar diagnóstico | Copy diagnostics |
 | `diag.copied` | Diagnóstico copiado. Não inclui nomes, CPF nem sites. | Diagnostics copied. No names, ID numbers or sites included. |
 | `onboarding.title` | Primeiros passos | Getting started |
+| `onboarding.progress` | {done} de {total} concluídos | {done} of {total} done |
 | `onboarding.step_app` | App instalado | App installed |
 | `onboarding.step_extension` | Extensão no navegador | Browser extension |
+| `onboarding.step_card_service` | Serviço de cartões ativo | Card service running |
 | `onboarding.step_cert` | Certificado encontrado | Certificate found |
 | `onboarding.step_test` | Teste de assinatura | Test signature |
-| `onboarding.test_button` | Testar assinatura | Test a signature |
+| `onboarding.test_button` | Teste sua configuração | Test your setup |
 | `onboarding.dismiss` | Ocultar | Hide |
+| `onboarding.ready_title` | Tudo pronto para assinar | You're ready to sign |
+| `onboarding.todo_extension` | Adicione a extensão ao navegador | Add the browser extension |
+| `onboarding.todo_extension_body` | Ainda não conectada em: {browsers}. | Not connected yet in {browsers}. |
+| `onboarding.activate` | Já instalou? Conclua a configuração | Already installed? Finish setting up |
+| `onboarding.todo_driver` | Instale o driver do token | Install the token driver |
+| `onboarding.todo_cert` | Conecte seu certificado | Connect your certificate |
 | `browsers.subtitle` | Onde a extensão está instalada e conectada ao app. | Where the extension is installed and connected to the app. |
 | `browsers.section` | Navegadores neste computador | Browsers on this computer |
 | `browsers.connected` | Extensão {version} conectada · {when} | Extension {version} connected · {when} |
@@ -1673,6 +1704,7 @@ The error texts are in [§15](#15-errors).
 | Larger text | Windows "Make text bigger" multiplies font sizes; the windows' body scrolls, so nothing is cut off. |
 | Motion | §11.4. |
 | Popup | Semantic HTML: `<main>`, status card with `role="status"` and `aria-live="polite"`, real `<button>`, initial focus on the primary button, `:focus-visible` with the `focus` token. |
+| Automated checks | For every state of both windows the tests walk the whole AccessKit tree: every node a screen reader reaches has a name in words (no icon glyphs: decorative icons are painted, not labels) and bounds; disclosures ("Details", "Technical details", "Can't sign (n)", the Help questions) expose expanded/collapsed; "Getting started" and "You're ready to sign" are headings. Keyboard walkthroughs cover Tab order, arrows, Space, Enter and Esc (§4.9, §8.8). |
 | Verification | NVDA + Windows, VoiceOver + macOS, Orca + GNOME. `TODO(gustavo)`: confirm that egui's AccessKit exposes AT-SPI correctly to Orca before promising accessible Linux. |
 
 ---

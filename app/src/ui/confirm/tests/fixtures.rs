@@ -264,6 +264,56 @@ pub fn marta() -> Vec<CertCandidate> {
     ]
 }
 
+/// Edge cases of the list: a very long holder and issuer (ICP-Brasil A3,
+/// expires tomorrow), a foreign certificate whose long DN has no ICP
+/// fields (expires today), and one not valid yet.
+pub fn long_names() -> Vec<CertCandidate> {
+    let mut long = info(
+        8,
+        "MARIA DA CONCEICAO DOS SANTOS ALBUQUERQUE CAVALCANTI:12345678909",
+        "AC CERTISIGN MULTIPLA G7 AUTORIDADE CERTIFICADORA DA RECEITA FEDERAL DO BRASIL",
+        1,
+    );
+    long.icp_brasil = icp(
+        "MARIA DA CONCEICAO DOS SANTOS ALBUQUERQUE CAVALCANTI",
+        IcpLevel::A3,
+        Some("12345678909"),
+        None,
+    );
+    let token = DeviceLabel::Token {
+        name: "Gemalto IDPrime MD 3810 with a very long reader name (USB)".to_owned(),
+    };
+    let mut foreign = info(
+        9,
+        "Dr. Johannes-Maximilian von Hohenzollern-Sigmaringen, Radiologie",
+        "Bundesdruckerei D-TRUST Qualified Signature CA 2-2 2023 Zertifizierungsdiensteanbieter",
+        0,
+    );
+    foreign.qualified = Some(Qualified {
+        compliance: true,
+        sscd: true,
+        types: Vec::new(),
+    });
+    let mut later = info(
+        10,
+        "Ana Beatriz Souza (renewal)",
+        "AC SOLUTI Multipla v5",
+        400,
+    );
+    later.not_before = NOW + 3 * DAY;
+    vec![
+        candidate(long, KeySource::Windows, Some(token), PinMode::System, true),
+        candidate(
+            foreign,
+            KeySource::Windows,
+            Some(DeviceLabel::Unknown),
+            PinMode::System,
+            true,
+        ),
+        candidate(later, KeySource::Windows, None, PinMode::System, false),
+    ]
+}
+
 pub fn token_without_driver() -> PossibleCard {
     PossibleCard {
         name: Some("SafeNet eToken 5110".to_owned()),

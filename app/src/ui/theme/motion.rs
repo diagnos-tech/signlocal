@@ -7,6 +7,7 @@
 
 use std::time::Duration;
 
+use egui::style::ScrollAnimation;
 use egui::{Context, Id};
 
 /// Hover, press, focus ring (seconds, as egui animates in `f32` seconds).
@@ -38,10 +39,20 @@ fn flag_id() -> Id {
 }
 
 /// Records the OS "reduce motion" preference on `ctx` and applies it to
-/// egui's own animations (collapsing headers, scroll, tooltips).
+/// egui's own animations (collapsing headers, scrolling into view,
+/// tooltips).
 pub fn set_reduced(ctx: &Context, reduce: bool) {
     ctx.data_mut(|data| data.insert_temp(flag_id(), reduce));
-    ctx.all_styles_mut(|style| style.animation_time = duration_of(reduce, MOTION_FAST));
+    ctx.all_styles_mut(|style| {
+        style.animation_time = duration_of(reduce, MOTION_FAST);
+        // Keeping a focused row or the PIN field in view scrolls; with
+        // reduced motion it jumps.
+        style.scroll_animation = if reduce {
+            ScrollAnimation::none()
+        } else {
+            ScrollAnimation::default()
+        };
+    });
 }
 
 /// Whether animations are off on `ctx`.
@@ -77,6 +88,7 @@ mod tests {
         assert!(reduced(&ctx));
         assert_eq!(duration(&ctx, MOTION_BASE), 0.0);
         assert_eq!(ctx.global_style().animation_time, 0.0);
+        assert_eq!(ctx.global_style().scroll_animation, ScrollAnimation::none());
         assert_eq!(DELAY_ARMING, Duration::from_millis(600));
     }
 

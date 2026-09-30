@@ -175,9 +175,17 @@ mod tests {
     fn a_partial_row_ends_between_two_of_its_lines() {
         let row = metrics::ROW_CERT;
         assert_eq!(between_lines(50.0), 46.0, "not through the third line");
-        assert_eq!(between_lines(row + 10.0), row, "not a sliver of the next row");
+        assert_eq!(
+            between_lines(row + 10.0),
+            row,
+            "not a sliver of the next row"
+        );
         assert_eq!(between_lines(row + 40.0), row + 30.0);
-        assert_eq!(between_lines(row + 23.0), row + 23.0, "a peek of the next name");
+        assert_eq!(
+            between_lines(row + 23.0),
+            row + 23.0,
+            "a peek of the next name"
+        );
         assert_eq!(between_lines(2.0 * row), 2.0 * row);
         assert_eq!(between_lines(row + 65.0), row + 62.0);
     }

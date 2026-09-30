@@ -37,8 +37,13 @@ pub fn problems<'t>(nodes: impl Iterator<Item = Node<'t>>) -> Vec<String> {
         let role = node.role();
         let label = node.label().unwrap_or_default();
         let value = node.value().unwrap_or_default();
-        if [&label, &value].iter().any(|text| text.chars().any(icon_glyph)) {
-            found.push(format!("{role:?} {label:?} {value:?}: an icon glyph in its name"));
+        if [&label, &value]
+            .iter()
+            .any(|text| text.chars().any(icon_glyph))
+        {
+            found.push(format!(
+                "{role:?} {label:?} {value:?}: an icon glyph in its name"
+            ));
         }
         if !REACHED.contains(&role) {
             continue;

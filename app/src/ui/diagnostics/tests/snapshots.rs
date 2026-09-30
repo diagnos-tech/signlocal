@@ -70,6 +70,22 @@ fn help() {
     tab_snapshot(DiagnosticsTab::Help, "help", hide_strip);
 }
 
+/// A first run: what is missing, with the fixes; and the ready state is
+/// on the Browsers baselines (the mockups' scenario can sign).
+#[test]
+fn getting_started() {
+    for (dark, theme) in THEMES {
+        let mut window = open(Setup {
+            dark,
+            facts: Some(super::fixture::first_run()),
+            tab: Some(DiagnosticsTab::Browsers),
+            ..Setup::default()
+        });
+        window.harness.run();
+        snapshot(&mut window.harness, &format!("getting-started-{theme}"));
+    }
+}
+
 #[test]
 fn first_scan_running() {
     for (dark, theme) in THEMES {

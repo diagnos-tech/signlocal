@@ -15,7 +15,7 @@ use super::support::Rig;
 pub type Scene = fn(&mut Rig);
 
 /// `(name, script)` of every state the window can show.
-pub const SCENES: [(&str, Scene); 19] = [
+pub const SCENES: [(&str, Scene); 22] = [
     ("loading", loading),
     ("loading-slow", loading_slow),
     ("empty", empty),
@@ -35,6 +35,9 @@ pub const SCENES: [(&str, Scene); 19] = [
     ("choose", choose),
     ("desktop-unverified", desktop_unverified),
     ("queue-idn-expiring", queue_idn_expiring),
+    ("one-certificate", one_certificate),
+    ("many-certificates", many_certificates),
+    ("long-names", long_names_scene),
 ];
 
 fn open_site(rig: &mut Rig, mode: Mode, remembered: bool) {
@@ -180,4 +183,29 @@ fn queue_idn_expiring(rig: &mut Rig) {
     main_list(rig);
     rig.wait(700);
     rig.wait(300 * 1000 - 28 * 1000 - 1400);
+}
+
+/// One certificate: no radio, nothing to choose.
+fn one_certificate(rig: &mut Rig) {
+    open_site(rig, SIGN, true);
+    rig.list(vec![ana_a1()], Vec::new());
+    rig.digest(2);
+    rig.wait(700);
+}
+
+/// Twenty certificates, two expired: the filter above the list.
+fn many_certificates(rig: &mut Rig) {
+    open_site(rig, Mode::Choose, false);
+    rig.list(store_keys(18, 2), Vec::new());
+    rig.wait(700);
+}
+
+/// Names and issuers longer than a row, a foreign DN, today's and
+/// tomorrow's expiry, a certificate not valid yet.
+fn long_names_scene(rig: &mut Rig) {
+    open_site(rig, SIGN, true);
+    rig.list(long_names(), Vec::new());
+    // The one expiring today comes first.
+    rig.digest(9);
+    rig.wait(700);
 }

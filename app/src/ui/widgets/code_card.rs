@@ -71,8 +71,7 @@ impl CodeCard<'_> {
                 // the text block's known height.
                 ui.horizontal_top(|ui| {
                     ui.spacing_mut().item_spacing = Vec2::new(metrics::SPACE_4, 0.0);
-                    let compact =
-                        self.compact && matches!(self.state, CodeState::Ready { .. });
+                    let compact = self.compact && matches!(self.state, CodeState::Ready { .. });
                     let text_height = if compact {
                         COMPACT_TEXT_HEIGHT
                     } else {
