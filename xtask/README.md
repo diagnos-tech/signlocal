@@ -7,8 +7,8 @@ every option.
 | Command | Does |
 |---|---|
 | `gen [--only ts\|locales\|messages\|project]` | TypeScript types from `websign-protocol` (sdk, extension, clients/node; imports use `.js` specifiers), extension `_locales` and SDK `messages.gen.ts` (typed by `ErrorCode`) from `i18n/`, `project.ts` from `project.toml` (the SDK's `src/project.ts` carries only store IDs and homepage) |
-| `check [summaries\|i18n\|generated\|release] [--binary <websign>]` | repository invariants: `SUMMARY.md` coverage and component READMEs, locale keys, fresh generated files, lockstep versions, licenses, no e2e marker in the release binary |
-| `package --target <triple>` | release artifacts for one target (implemented by the packaging track; fails with that message until then) |
+| `check [summaries\|i18n\|generated\|release] [--binary <websign>]` | repository invariants: `SUMMARY.md` coverage and component READMEs, locale keys, fresh generated files, lockstep versions, licenses, install-script identifiers equal to `project.toml`, no e2e marker in the release binary |
+| `package --target <triple> [--format deb\|rpm\|tar.gz\|zip\|app\|extension] [--no-build] [--sums]` | release artifacts for one target into `dist/` with the release names; `--sums-only` writes `SHA256SUMS` (needs nfpm for deb/rpm, lipo and codesign on macOS, `zip`/`tar`) |
 | `screenshots --from <dir> --os <name>` | copies e2e PNGs into `docs/screenshots/<os>/` and rewrites its `index.md` and `SUMMARY.md` |
 
 Design: each generator only builds a plan (files and their content);

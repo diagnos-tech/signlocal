@@ -110,7 +110,7 @@ the app and the link. By hand: `websign uninstall` (add `--purge` to also delete
 
 ## Linux (amd64, arm64)
 
-**Installer script** (any distribution; per user, no root):
+**Installer script** (any distribution; per user by default, no root):
 
 ```sh
 # Private repository (now)
@@ -123,8 +123,12 @@ curl -fsSLO https://github.com/diagnos-tech/web-esign/releases/download/v<v>/SHA
 sha256sum --ignore-missing -c SHA256SUMS && sh install.sh --version <v>
 ```
 
-It installs `~/.local/bin/websign` from the tarball and registers the app for your user; it offers
-`sudo websign install --system` only if you want other users registered too.
+By default it installs `~/.local/bin/websign` from the tarball and registers the app for your user, without root.
+On Debian, Ubuntu, Fedora and RHEL-family systems it asks whether to install the system package instead (through
+`sudo`; the answer defaults to **No**, and `--yes` or a non-interactive run keeps that default). `--system` installs
+the verified deb or rpm without asking. After a per-user install it prints the
+`sudo ~/.local/bin/websign install --system` command in case you want other users registered too. Other options:
+`--prefix DIR` (default `~/.local`), `--no-register`, `--dry-run`, `--uninstall`.
 
 **Packages** (system-wide; registration for all users runs automatically). Download the file for your
 architecture and `SHA256SUMS`, verify, then install:
@@ -151,10 +155,9 @@ depend on `libpcsclite1` / `pcsc-lite-libs` and enable the socket when `pcscd` i
 
 **Uninstall (packages).** As each user who used the app, run `websign uninstall` (add `--purge` to also delete
 settings and remembered sites; this also removes the per-user Firefox registrations). Then remove the
-system registrations and the package:
+package; its pre-remove script removes the system registrations (`websign uninstall --system`):
 
 ```sh
-sudo websign uninstall --system
 sudo apt remove websign     # Debian, Ubuntu
 sudo dnf remove websign     # Fedora, Rocky
 ```

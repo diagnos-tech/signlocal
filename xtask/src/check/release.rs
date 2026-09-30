@@ -1,11 +1,12 @@
-//! Release inputs: lockstep versions, license and notice files, and a release
-//! binary without the e2e marker.
+//! Release inputs: lockstep versions, license and notice files, install
+//! scripts in sync with project.toml, and a release binary without the e2e
+//! marker.
 
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
-use super::versions;
+use super::{installers, versions};
 
 /// Present in any binary built with `--features e2e`; it must never ship.
 const E2E_MARKER: &[u8] = b"WEBSIGN_E2E_BUILD";
@@ -38,6 +39,7 @@ pub fn check(root: &Path, binary: Option<&Path>) -> Result<Vec<String>, String> 
             "README.md: unsigned-build notice does not mention {word}"
         ));
     }
+    problems.extend(installers::check(root)?);
     if let Some(binary) = binary {
         problems.extend(binary_problem(binary)?);
     }

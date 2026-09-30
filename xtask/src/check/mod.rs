@@ -5,8 +5,9 @@
 //! * `i18n` — every locale has exactly the reference keys and placeholders
 //!   (`websign_i18n::check`);
 //! * `generated` — `cargo xtask gen` would change nothing;
-//! * `release` — versions agree, notices exist, and the release binary does
-//!   not contain the e2e marker.
+//! * `release` — versions agree, notices exist, the install scripts carry the
+//!   project.toml identifiers, and the release binary does not contain the
+//!   e2e marker.
 //!
 //! Every check reports all its problems at once: a CI log that stops at the
 //! first one costs a round trip per problem.
@@ -14,6 +15,7 @@
 mod generated;
 mod glob;
 mod i18n;
+mod installers;
 mod listing;
 mod release;
 mod summaries;

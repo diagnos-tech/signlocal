@@ -380,28 +380,25 @@ jobs:
         os: [ubuntu-24.04, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
-    # Each step runs only once its script exists, so this job stays green
-    # until scripts/install/test/ lands.
     steps:
       - uses: actions/checkout@v5
-      - name: Shellcheck install.sh (POSIX sh)
-        if: runner.os == 'Linux' && hashFiles('scripts/install/install.sh') != ''
-        run: shellcheck -s sh scripts/install/install.sh
+      - name: Shellcheck the installer and its tests (POSIX sh)
+        if: runner.os != 'Windows'
+        run: |
+          command -v shellcheck >/dev/null || brew install shellcheck
+          shellcheck -s sh scripts/install/install.sh scripts/install/tests/install_sh_test.sh \
+            packaging/linux/postinst.sh packaging/linux/prerm.sh
       - name: install.sh tests
-        if: runner.os != 'Windows' && hashFiles('scripts/install/test/run.sh') != ''
+        if: runner.os != 'Windows'
         timeout-minutes: 15
-        run: sh scripts/install/test/run.sh
-      - name: install.ps1 tests (PowerShell 7)
-        if: runner.os == 'Windows' && hashFiles('scripts/install/test/run.ps1') != ''
+        run: sh scripts/install/tests/install_sh_test.sh
+      - name: install.ps1 self-test (PowerShell 7)
+        if: runner.os == 'Windows'
         timeout-minutes: 15
         shell: pwsh
-        run: ./scripts/install/test/run.ps1
-      - name: install.ps1 tests (Windows PowerShell 5.1)
-        if: runner.os == 'Windows' && hashFiles('scripts/install/test/run.ps1') != ''
+        run: ./scripts/install/tests/install_ps1_selftest.ps1
+      - name: install.ps1 self-test (Windows PowerShell 5.1)
+        if: runner.os == 'Windows'
         timeout-minutes: 15
         shell: powershell
-        run: ./scripts/install/test/run.ps1
-      - name: Report pending installer tests
-        if: hashFiles('scripts/install/test/run.sh', 'scripts/install/test/run.ps1') == ''
-        shell: bash
-        run: echo "::notice::scripts/install/test/ not present yet; installer tests skipped"
+        run: ./scripts/install/tests/install_ps1_selftest.ps1
