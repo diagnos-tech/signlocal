@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Test your setup - WebeSign</title>
+<meta name="description" content="Check that the WebeSign extension, the app and your certificate work together. Nothing is sent anywhere.">
+<link rel="icon" href="../assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/test.css">
+<script src="../assets/i18n.js" defer></script>
+<script type="module" src="../assets/test-page.js"></script>
+</head>
+<body>
+<a class="skip" href="#main" data-i18n="nav.skip">Skip to content</a>
+<header class="bar">
+<a class="brand" href="../index.html"><img src="../assets/icon.svg" alt="" width="24" height="24">WebeSign</a>
+<nav aria-label="Main"><a href="../index.html" data-i18n="nav.home">Home</a><a href="../download.html" data-i18n="nav.download">Download</a><a href="../privacy.html" data-i18n="nav.privacy">Privacy</a><a href="../developers.html" data-i18n="nav.developers">Developers</a></nav>
+<label class="lang"><span class="sr" data-i18n="nav.language">Language</span><select id="lang"><option value="en">English</option><option value="es">Español</option><option value="pt-PT">Português (Portugal)</option><option value="pt-BR">Português (Brasil)</option><option value="fr">Français</option><option value="it">Italiano</option><option value="de">Deutsch</option></select></label>
+</header>
+<main id="main">
+<h1 data-i18n="test.title">Test your setup</h1>
+<p class="lead" data-i18n="test.lead">Check that the extension, the app and your certificate work together. It takes one minute and signs only a harmless sample text.</p>
+<p class="notice" role="note"><strong data-i18n="test.local_h">Nothing is sent anywhere</strong> <span data-i18n="test.local">The sample text, your certificate and the signature stay in this browser and on your computer. This page has no server side and keeps no record.</span></p>
+
+<section aria-labelledby="h-setup">
+<h2 id="h-setup" data-i18n="test.setup_h">1. Your setup</h2>
+<div class="state" id="setup" role="status" aria-live="polite">
+<div data-state="checking"><p><span data-i18n="test.checking">Looking for the extension and the app…</span></p></div>
+<div data-state="extension-missing" hidden class="warn"><h3 data-i18n="test.ext_missing_h">The browser extension is not installed</h3><p data-i18n="test.ext_missing">Install the WebeSign extension for this browser, then check again.</p><p><a class="btn" id="install-ext" href="../download.html" data-i18n="test.install_ext">Install the extension</a></p></div>
+<div data-state="app-missing" hidden class="warn"><h3 data-i18n="test.app_missing_h">The app is not installed</h3><p data-i18n="test.app_missing">The extension is there, but the WebeSign app was not found on this computer. Install it and open it once, then check again.</p><p><a class="btn" href="../download.html" data-i18n="test.install_app">Install the app</a></p></div>
+<div data-state="outdated" hidden class="warn"><h3 data-i18n="test.outdated_h">The app needs an update</h3><p data-i18n="test.outdated">The WebeSign app is older than the extension needs. Install the latest version, then check again.</p><p><a class="btn" href="../download.html" data-i18n="test.update_app">Update the app</a></p></div>
+<div data-state="ready" hidden class="ok"><h3><span aria-hidden="true">&#10003; </span><span data-i18n="test.ready_h">Everything is installed</span></h3><p data-i18n="test.ready">The extension and the app are installed and compatible. Continue with the test below.</p><p class="muted"><span data-i18n="test.ext_version">Extension</span>: <span id="v-ext">-</span> · <span data-i18n="test.app_version">App</span>: <span id="v-app">-</span></p></div>
+</div>
+<p><button type="button" class="btn ghost" id="recheck" data-i18n="test.recheck">Check again</button> <a href="../download.html" data-i18n="test.download">Go to the download page</a></p>
+</section>
+
+<section aria-labelledby="h-sign">
+<h2 id="h-sign" data-i18n="test.sign_h">2. Sign a test message</h2>
+<p data-i18n="test.sign_p">This signs a fixed sample text with your certificate. The app opens its own window: choose a certificate there, confirm and, if asked, type your PIN there. Never in this page.</p>
+<p><span class="label" data-i18n="test.message_label">Sample text</span><br><code id="sample"></code></p>
+<p><label class="label" for="hash" data-i18n="test.hash">Hash</label><br><select id="hash"><option value="SHA-256" selected>SHA-256</option><option value="SHA-384">SHA-384</option><option value="SHA-512">SHA-512</option></select></p>
+<p><button type="button" class="btn" id="sign" disabled data-i18n="test.sign_btn">Sign a test message</button></p>
+<p class="muted" id="waiting" hidden role="status" data-i18n="test.waiting">Waiting for you in the app window…</p>
+</section>
+
+<section aria-labelledby="h-result" id="result" hidden>
+<h2 id="h-result" data-i18n="test.result_h">3. Result</h2>
+<div role="status" aria-live="polite">
+<div class="ok" id="result-ok" hidden>
+<h3><span id="ok-title"><span aria-hidden="true">&#10003; </span><span data-i18n="test.ok_h">The signature worked</span></span><span id="bad-title" hidden><span aria-hidden="true">! </span><span data-i18n="test.bad_h">The signature is not valid</span></span></h3>
+<dl class="facts">
+<dt data-i18n="test.cert">Certificate</dt><dd id="r-name"></dd>
+<dt data-i18n="test.code">Verification code</dt><dd><span class="code"><span class="identicon" id="r-icon" aria-hidden="true"></span><code id="r-code"></code></span><br><span class="muted" data-i18n="test.code_hint">Compare it with the code the app showed in its window. If they differ, do not trust this signature.</span></dd>
+<dt data-i18n="test.algorithm">Algorithm</dt><dd id="r-alg"></dd>
+<dt data-i18n="test.key">Key</dt><dd id="r-key"></dd>
+<dt data-i18n="test.browser_check">Browser check</dt><dd><span id="v-verified" hidden data-i18n="test.v_verified">Verified in this browser with the certificate's public key.</span><span id="v-invalid" hidden data-i18n="test.v_invalid">The signature does NOT match the sample text. Something is wrong: copy the result for support.</span><span id="v-unsupported" hidden data-i18n="test.v_unsupported">Signature received, not verified in the browser.</span></dd>
+</dl>
+</div>
+<div class="warn" id="result-error" hidden>
+<h3 id="e-title"></h3><p id="e-body"></p><p class="muted"><span data-i18n="test.error_code">Error code</span>: <code id="e-code"></code></p>
+</div>
+</div>
+<h3 data-i18n="test.support_h">For support</h3>
+<p class="muted" data-i18n="test.support_p">This summary has no name, CPF or certificate data: only algorithm, key type, result and error code.</p>
+<pre><code id="summary"></code></pre>
+<p><button type="button" class="btn ghost" id="copy" data-i18n="test.copy">Copy result</button> <span id="copied" role="status" class="muted"></span></p>
+<p hidden id="generic-error" data-i18n="test.err_generic">Something went wrong.</p>
+<p hidden id="copied-text" data-i18n="test.copied">Copied</p>
+<p hidden id="copy-failed-text" data-i18n="test.copy_failed">Could not copy. Select the summary above and copy it yourself.</p>
+</section>
+<p hidden id="nocrypto" class="warn" data-i18n="test.nocrypto">This browser cannot run the check (WebCrypto is unavailable). Open the page over https in a current browser.</p>
+</main>
+<footer class="foot"><span data-i18n="foot.license">Free software (GPL-3.0-or-later; SDK and clients Apache-2.0)</span> · <a href="https://github.com/diagnos-tech/web-esign" data-i18n="foot.source">Source code</a></footer>
+</body>
+</html>

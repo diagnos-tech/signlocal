@@ -1,9 +1,12 @@
 // Picks the language (?lang, then the saved choice, then the browser), loads
 // locales/<lang>.json and fills every [data-i18n] element. English text is in
-// the HTML, so the page reads correctly without JavaScript.
+// the HTML, so the page reads correctly without JavaScript. Pages that build
+// text in script listen for the "websign:i18n" event on document.
 (function () {
   var LANGS = ["en", "es", "pt-PT", "pt-BR", "fr", "it", "de"];
   var select = document.getElementById("lang");
+  // Pages in subfolders (test/) load the same locales next to assets/.
+  var base = document.currentScript ? document.currentScript.src.replace(/assets\/i18n\.js.*$/, "") : "";
 
   function saved() {
     try { return localStorage.getItem("lang"); } catch (e) { return null; }
@@ -29,7 +32,7 @@
     return "en";
   }
   function apply(lang) {
-    fetch("locales/" + lang + ".json")
+    fetch(base + "locales/" + lang + ".json")
       .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
       .then(function (dict) {
         document.documentElement.lang = lang;
@@ -38,6 +41,7 @@
           if (text) el.textContent = text;
         });
         if (select) select.value = lang;
+        document.dispatchEvent(new CustomEvent("websign:i18n", { detail: { lang: lang } }));
       })
       .catch(function () { /* keep the English text */ });
   }
