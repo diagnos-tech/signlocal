@@ -2,13 +2,14 @@
 //! the code card and a long list, the rows give up height so the field sits
 //! inside the visible body, above the footer, without scrolling the body;
 //! after a failure the whole PIN block (with the line under the field)
-//! stays visible too.
+//! stays visible too. Where this OS asks for the card's PIN in its own
+//! window, that card shows no field of ours at all.
 
 use egui::Rect;
 use egui::accesskit::Role;
 use egui_kittest::kittest::Queryable as _;
 use websign_protocol::types::BrowserName;
-use websign_ui_model::certs::CertCandidate;
+use websign_ui_model::certs::{CertCandidate, PinMode};
 
 use super::fixtures::*;
 use super::scenes::SCENES;
@@ -77,22 +78,33 @@ fn pin_block(rig: &Rig, line: &str) -> Rect {
 
 #[test]
 fn the_whole_pin_block_stays_visible_after_a_failure() {
+    // The main scenes sign with Ana's card, which only Linux (no system key
+    // store) unlocks with our field; the PIN error scene uses a token.
+    let card_asks_here = matches!(ana_card().pin, PinMode::App { .. });
     let cases = [
-        ("ready", PIN_PRIVACY),
-        ("error-driver", PIN_PRIVACY),
+        ("ready", PIN_PRIVACY, card_asks_here),
+        ("error-driver", PIN_PRIVACY, card_asks_here),
         (
             "pin-error",
             "Incorrect PIN. Last attempt: one more mistake locks the token.",
+            true,
         ),
     ];
     for (dark, theme) in THEMES {
-        for (name, line) in cases {
+        for (name, line, ours) in cases {
             let (_, scene) = SCENES
                 .into_iter()
                 .find(|(scene, _)| *scene == name)
                 .expect("a known scene");
             let mut rig = Rig::new(dark);
             scene(&mut rig);
+            if !ours {
+                assert!(
+                    rig.harness.query_by_role(Role::PasswordInput).is_none(),
+                    "{name}, {theme}: the system asks for this PIN, not our field"
+                );
+                continue;
+            }
             let (body, block) = (rig.visible_body(), pin_block(&rig, line));
             assert!(
                 body.contains_rect(block),
