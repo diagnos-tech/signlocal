@@ -16,7 +16,8 @@
 //!   errors, without personal data;
 //! * [`engine`] ties them together as a deterministic event loop over
 //!   [`ports`] — the UI, the key store worker, the clock, the launcher;
-//! * [`runtime`] wires real threads, stdio and the key store worker.
+//! * [`runtime`] wires real threads, stdio and the key store worker;
+//! * `testing` (feature `testing`) holds fakes of every port.
 //!
 //! `SPEC.md` is the contract; `docs/architecture/protocol.md` the wire.
 
@@ -34,6 +35,8 @@ pub mod queue;
 pub mod runtime;
 pub mod session;
 pub mod store;
+#[cfg(any(test, feature = "testing"))]
+pub mod testing;
 
 pub use caller::Caller;
 pub use engine::{Control, Engine, EngineConfig, EngineEvent};

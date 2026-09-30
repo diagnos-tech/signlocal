@@ -5,18 +5,27 @@
 //! engine sends [`KeyCommand`]s and receives [`KeyReply`]s as engine events;
 //! it never blocks on a key store.
 
+use std::collections::HashMap;
 use std::sync::Arc;
 
 use secrecy::SecretString;
-use websign_core::{HashAlgorithm, SignatureAlgorithm};
+use websign_core::{Fingerprint, HashAlgorithm, SignatureAlgorithm};
 use websign_keystores::{KeyRef, KeystoreError};
 use websign_ui_model::certs::CertCandidate;
+use websign_ui_model::possible::PossibleCard;
 
 /// A listing, shared read-only between the engine and the UI.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct KeySnapshot {
     /// One per de-duplicated certificate, OS path first.
     pub candidates: Vec<CertCandidate>,
+    /// The DER of every candidate. `CertCandidate` carries only the parsed
+    /// summary, but the caller receives the certificate itself and the host
+    /// verifies signatures against it, so the bytes travel with the listing.
+    pub certificates: HashMap<Fingerprint, Vec<u8>>,
+    /// Plugged-in tokens and cards that brought no certificate and that the
+    /// window may suggest (`docs/ux.md` §6).
+    pub possible: Vec<PossibleCard>,
     /// `"<source>: <error>"` for sources that failed (diagnostics only).
     pub failures: Vec<String>,
 }

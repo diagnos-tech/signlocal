@@ -161,3 +161,53 @@ fn usb_comes_first_sorted_by_id_then_readers_sorted_by_name() {
         .collect();
     assert_eq!(order, ["0529:0620", "1050:0407", "A 00 00", "Z 00 00"]);
 }
+
+#[test]
+fn a_token_whose_reader_name_carries_its_usb_product_is_left_out() {
+    let snap = snapshot(vec![usb(0x0529, 0x0620, &[0x0B], "eToken 5110")], vec![]);
+    let linked = LinkedDevices {
+        readers: vec!["SafeNet eToken 5110 [eToken 5110] 00 00".to_owned()],
+        ..LinkedDevices::default()
+    };
+    assert!(run(&snap, &linked).is_empty());
+}
+
+#[test]
+fn a_token_model_matches_the_usb_product_or_part_of_the_hint_name() {
+    let snap = snapshot(vec![usb(0x0529, 0x0620, &[0x0B], "Token JC")], vec![]);
+    for model in ["token jc", "eToken 5110"] {
+        let linked = LinkedDevices {
+            token_models: vec![model.to_owned()],
+            ..LinkedDevices::default()
+        };
+        assert!(run(&snap, &linked).is_empty(), "{model}");
+    }
+    let unrelated = LinkedDevices {
+        token_models: vec!["PKCS#15 emulated".to_owned()],
+        ..LinkedDevices::default()
+    };
+    assert_eq!(run(&snap, &unrelated).len(), 1);
+}
+
+#[test]
+fn an_unknown_device_link_makes_every_hint_unconfident() {
+    let snap = snapshot(
+        vec![usb(0x0529, 0x0620, &[0x0B], "eToken")],
+        vec![reader(
+            "R2 00 00",
+            CardState::Present,
+            Some("3B7D95000080318065B08311AABB83009000"),
+        )],
+    );
+    let linked = LinkedDevices {
+        unknown_links: true,
+        ..LinkedDevices::default()
+    };
+    let found = run(&snap, &linked);
+    assert_eq!(found.len(), 2);
+    assert!(
+        found
+            .iter()
+            .all(|device| device.hint.is_some() && !device.confident)
+    );
+}

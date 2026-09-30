@@ -21,3 +21,12 @@ impl Clock for SystemClock {
         SystemTime::now()
     }
 }
+
+/// Whole seconds since the Unix epoch, for records and validity checks;
+/// instants before 1970 or beyond `i64` clamp to 0.
+pub fn unix_seconds(time: SystemTime) -> i64 {
+    time.duration_since(SystemTime::UNIX_EPOCH)
+        .ok()
+        .and_then(|elapsed| i64::try_from(elapsed.as_secs()).ok())
+        .unwrap_or(0)
+}

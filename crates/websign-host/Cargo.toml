@@ -23,6 +23,10 @@ secrecy.workspace = true
 jiff.workspace = true
 dirs.workspace = true
 
+[features]
+# Fakes of every port (`websign_host::testing`) for other crates' tests.
+testing = []
+
 [dev-dependencies]
 tempfile.workspace = true
 

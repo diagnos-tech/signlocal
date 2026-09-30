@@ -30,19 +30,26 @@ pub enum PossibleSource {
     Card { reader: String, atr: Option<String> },
 }
 
-/// What is known about the listed keys' devices (reader names, token models)
-/// to take devices that already brought certificates out.
+/// What is known about the listed keys' devices, to take devices that
+/// already brought certificates out.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct LinkedDevices {
+    /// Reader (or PKCS#11 slot) names of listed keys. A CCID token shows up
+    /// as a reader named after its USB product, so this also matches tokens.
     pub readers: Vec<String>,
+    /// `CK_TOKEN_INFO.model` of listed PKCS#11 keys (`"eToken"`).
     pub token_models: Vec<String>,
+    /// Some listed hardware key has no known device: any device might be
+    /// the one it lives on, so no hint is confident.
+    pub unknown_links: bool,
 }
 
 /// Devices from `snapshot` that are known to `db` or are CCID class, minus
 /// those linked to a listed certificate.
 ///
 /// USB devices come first (by VID:PID), then readers holding a card (by
-/// name). A bare reader is never "confident": it may hold no card at all.
+/// name). A bare reader is never "confident": it may hold no card at all;
+/// nothing is when `linked.unknown_links`.
 pub fn possible_devices(
     snapshot: &Snapshot,
     db: &DeviceDatabase,
@@ -87,12 +94,7 @@ fn usb_candidate(
     if !device.smart_card && hint.is_none() {
         return None;
     }
-    if let Some(hint) = hint
-        && linked
-            .token_models
-            .iter()
-            .any(|model| model.trim().eq_ignore_ascii_case(&hint.name))
-    {
+    if usb_is_linked(device, hint, linked) {
         return None;
     }
     Some(PossibleDevice {
@@ -100,9 +102,37 @@ fn usb_candidate(
             vid_pid,
             product: device.product.clone(),
         },
-        confident: hint.is_some_and(|hint| hint.kind != DeviceKind::Reader),
+        confident: !linked.unknown_links
+            && hint.is_some_and(|hint| hint.kind != DeviceKind::Reader),
         hint: hint.cloned(),
     })
+}
+
+/// Whether a listed key lives on this USB device. PKCS#11 models rarely
+/// equal the commercial name (`"eToken"` vs `"SafeNet eToken 5110"`), so the
+/// reader name the token shares with its USB product string is the stronger
+/// signal; the model is compared with the product and the hint's name.
+fn usb_is_linked(device: &UsbDevice, hint: Option<&DeviceHint>, linked: &LinkedDevices) -> bool {
+    let product = device.product.as_deref().map(str::trim).unwrap_or_default();
+    let in_reader_name = !product.is_empty()
+        && linked
+            .readers
+            .iter()
+            .any(|reader| contains_ignoring_case(reader, product));
+    let same_model = linked
+        .token_models
+        .iter()
+        .map(|model| model.trim())
+        .any(|model| {
+            !model.is_empty()
+                && (model.eq_ignore_ascii_case(product)
+                    || hint.is_some_and(|hint| contains_ignoring_case(&hint.name, model)))
+        });
+    in_reader_name || same_model
+}
+
+fn contains_ignoring_case(haystack: &str, needle: &str) -> bool {
+    haystack.to_lowercase().contains(&needle.to_lowercase())
 }
 
 fn card_candidate(
@@ -126,7 +156,7 @@ fn card_candidate(
             reader: reader.name.clone(),
             atr: reader.atr.clone(),
         },
-        confident: hint.is_some(),
+        confident: !linked.unknown_links && hint.is_some(),
         hint: hint.cloned(),
     })
 }

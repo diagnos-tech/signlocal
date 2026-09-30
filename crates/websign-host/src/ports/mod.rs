@@ -10,7 +10,7 @@ mod keys;
 mod outbound;
 mod ui;
 
-pub use clock::{Clock, SystemClock};
+pub use clock::{Clock, SystemClock, unix_seconds};
 pub use keys::{KeyCommand, KeyReply, KeyService, KeySnapshot};
 pub use outbound::{Outbound, OutboundError};
 pub use ui::{ConfirmUi, Launcher};

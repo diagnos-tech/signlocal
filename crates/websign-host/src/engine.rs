@@ -5,13 +5,29 @@
 //! thread, the key store worker, the device monitor and a timer; tests feed
 //! them by hand. `SPEC.md` §8 lists the scenarios it must pass.
 
+mod effects;
+mod frames;
+mod lifecycle;
+mod persist;
+mod present;
+mod queueing;
+mod request;
+#[cfg(test)]
+mod tests;
+
+use std::collections::BTreeMap;
+use std::time::Instant;
+
 use websign_devices::monitor::DeviceEvent;
 use websign_protocol::types::AppInfo;
 use websign_ui_model::confirm::UiEvent;
+use websign_ui_model::confirm::port::RequestKey;
 
 use crate::ports::{Clock, ConfirmUi, KeyReply, KeyService, Launcher, Outbound};
-use crate::session::Transport;
+use crate::queue::RequestQueue;
+use crate::session::{Session, Transport};
 use crate::store::Stores;
+use request::Request;
 
 /// Static facts of this process.
 #[derive(Debug, Clone)]
@@ -67,17 +83,63 @@ impl std::fmt::Debug for Ports {
 pub struct Engine {
     config: EngineConfig,
     ports: Ports,
+    session: Session,
+    queue: RequestQueue,
+    /// Open requests, in key order so that anything done to all of them is
+    /// deterministic.
+    requests: BTreeMap<RequestKey, Request>,
+    next_key: u64,
+    started: Instant,
+    /// The last frame or request end, for the desktop idle exit.
+    last_activity: Instant,
+    /// Whether the launch arguments were checked (once, at the first frame).
+    launch_checked: bool,
+    /// The `v` of errors sent before negotiation: the version of the frame
+    /// being refused, which its sender can read (protocol `SPEC.md` §5.1).
+    refusal_version: u32,
 }
 
 impl Engine {
     /// An engine waiting for `hello`.
     pub fn new(config: EngineConfig, ports: Ports) -> Engine {
-        Engine { config, ports }
+        let now = ports.clock.now();
+        let session = Session::new(config.transport.clone(), config.app.clone());
+        Engine {
+            config,
+            ports,
+            session,
+            queue: RequestQueue::default(),
+            requests: BTreeMap::new(),
+            next_key: 1,
+            started: now,
+            last_activity: now,
+            launch_checked: false,
+            refusal_version: websign_protocol::PROTOCOL_VERSION,
+        }
     }
 
     /// Handles one event.
     pub fn handle(&mut self, event: EngineEvent) -> Control {
-        let _ = (event, &self.config, &mut self.ports);
-        todo!("SPEC.md §8")
+        match event {
+            EngineEvent::Frame(frame) => self.on_frame(&frame),
+            EngineEvent::Closed => self.disconnect(0),
+            EngineEvent::Broken(reason) => {
+                log::warn!("connection broken: {reason}");
+                self.disconnect(1)
+            }
+            EngineEvent::Ui(event) => {
+                self.on_ui(event);
+                Control::Continue
+            }
+            EngineEvent::Keys(reply) => {
+                self.on_keys(reply);
+                Control::Continue
+            }
+            EngineEvent::Device(event) => {
+                self.on_device(&event);
+                Control::Continue
+            }
+            EngineEvent::Tick => self.on_tick(),
+        }
     }
 }

@@ -9,16 +9,22 @@
 
 mod connections;
 mod consent;
+mod disk;
+mod documents;
 mod errors;
 mod file;
+mod memory;
 mod paths;
+mod private_file;
 mod settings;
 mod usage;
 
 pub use connections::{ConnectionRecord, ConnectionStore};
 pub use consent::{ConsentRecord, ConsentStore};
+pub use disk::DiskStores;
 pub use errors::{ErrorRecord, ErrorStore, MAX_RECENT_ERRORS};
 pub use file::{JsonFile, StoreError};
+pub use memory::MemoryStores;
 pub use paths::data_dir;
 pub use settings::{Settings, SettingsStore};
 pub use usage::UsageStore;

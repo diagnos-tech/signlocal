@@ -1,13 +1,16 @@
 //! One connection's protocol state: the `hello` handshake, the negotiated
 //! version, the per-transport rules, and which request ids are open.
 
+mod steps;
+#[cfg(test)]
+mod tests;
 mod transport;
 mod validate;
 
 use std::collections::HashMap;
 
 use websign_protocol::types::{AppInfo, BrowserInfo};
-use websign_protocol::{ClientEnvelope, RequestId, WireError};
+use websign_protocol::{ClientEnvelope, ClientMessage, RequestId, WireError, parse_client_message};
 use websign_ui_model::confirm::port::RequestKey;
 
 pub use transport::Transport;
@@ -72,8 +75,16 @@ impl Session {
     /// open-request bookkeeping for continuations, the per-connection
     /// in-flight limit.
     pub fn accept(&mut self, frame: &[u8]) -> Result<Accepted, Box<Rejection>> {
-        let _ = (frame, &self.app, &self.browser);
-        todo!("SPEC.md §2")
+        let envelope =
+            parse_client_message(frame, self.negotiated).map_err(|e| self.parse_failure(e))?;
+        match &envelope.message {
+            ClientMessage::Hello(hello) => {
+                let hello = hello.clone();
+                self.accept_hello(envelope, &hello)
+            }
+            message if message.is_continuation() => self.accept_continuation(envelope),
+            _ => self.accept_request(envelope),
+        }
     }
 
     /// Records that request `id` is open under `key`.

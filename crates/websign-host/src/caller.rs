@@ -24,11 +24,10 @@ impl Caller {
     /// (defense in depth: the extension refuses them first).
     pub fn web(context: &WebContext, browser: &BrowserInfo) -> Result<Caller, OriginError> {
         let origin = format_origin(&context.origin)?;
-        let top = if context.top_origin == context.origin {
-            None
-        } else {
-            Some(format_origin(&context.top_origin)?)
-        };
+        // Compared canonically: `https://A.example:443` is the same site as
+        // `https://a.example`, and must not show a misleading "inside" line.
+        let top = format_origin(&context.top_origin)?;
+        let top = (top.canonical != origin.canonical).then_some(top);
         Ok(Caller::Web {
             origin,
             top,

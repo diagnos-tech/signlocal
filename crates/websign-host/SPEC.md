@@ -17,8 +17,8 @@ in `src/launch/tests.rs`.
 Additional rule for the product: the engine refuses a native-messaging launch
 whose extension ID is not in `websign_project::chromium_extension_ids()` (or
 equal to `FIREFOX_ID` for Firefox) — it answers the first frame with
-`InvalidRequest` and exits. Defense in depth: the browser already enforced
-the manifest.
+`InvalidRequest` and exits with status 1. Defense in depth: the browser
+already enforced the manifest.
 
 ## 2. `session::Session::accept`
 
@@ -27,7 +27,8 @@ the manifest.
    the session has not negotiated yet.
 2. `hello`:
    - second `hello` → `InvalidRequest`, `close = false`;
-   - `validate` (§2.2);
+   - `validate` (§2.2); a refusal closes (`close = true`): nothing about a
+     peer whose first frame breaks the transport rules is trusted;
    - `negotiate(app.protocols, hello.protocols)`; failure → Rejection with
      that code, `close = true`;
    - success: store `negotiated` and `browser`; `Accepted { caller: None }`.
@@ -38,7 +39,17 @@ the manifest.
    at most `MAX_IN_FLIGHT_PER_CONNECTION` open (`Busy`); `validate`; the
    caller: native messaging → `Caller::web(web, browser)` (an
    `OriginError::Insecure` → `InsecureOrigin`, `Malformed` →
-   `InvalidRequest`); desktop → the transport's caller.
+   `InvalidRequest`); desktop → the transport's caller. The in-flight limit
+   (16) is above what the engine can reach (1 active + 10 queued, windowless
+   requests end at once), so it is tested on `Session` directly.
+
+### 2.1 Replies before `hello`
+
+Every error sent before negotiation (a refused `hello`, a first frame that
+is not `hello`, an unknown extension) carries `v =
+websign_protocol::refusal_version(frame)` of the frame it refuses (protocol
+`SPEC.md` §5.1), so a client whose range does not overlap the app's can
+still read `AppOutdated`/`ClientOutdated`.
 
 ### 2.2 `validate(transport, message)`
 
@@ -53,12 +64,22 @@ Refusals are `InvalidRequest` naming the field.
 
 ## 3. `caller`
 
-`Caller::web` formats both origins with `format_origin`; `top = None` when
-equal. `consent_key` and `can_remember` as documented in the code.
+`Caller::web` formats both origins with `format_origin` (both must be secure:
+a frame inside an insecure page is not a secure context); `top = None` when
+their canonical forms are equal. `consent_key` and `can_remember` as
+documented in the code.
 
 ## 4. Sign flow (`flow::sign`)
 
-States and transitions: `protocol.md` §5. Effects per transition:
+States and transitions: `protocol.md` §5. The flow never sees the caller or
+the queue: the engine passes a `Presentation` (caller view, `can_remember`,
+queue position) to `activate(now, &presentation)` and a fresh
+`ListContext` to every `on_listed(snapshot, context)`. The engine builds the
+context from the request (`algorithms`, `certificate`) and the stores (the
+certificate this caller used last, recent use anywhere), so the preselected
+certificate is the list rules' own: `sign.begin.certificate` when usable,
+else the one last used by this caller, else the first usable row. Effects per
+transition:
 
 | Event | State → | Effects (in order) |
 |---|---|---|
@@ -67,7 +88,9 @@ States and transitions: `protocol.md` §5. Effects per transition:
 | `on_listed` again | same state | `Ui(Certificates{…})` only |
 | `Ui(Selected fp)` | Selecting/AwaitingDigest/Ready → | remembered: AwaitingDigest(seq+1), `Send(NeedDigest)`, `Ui(DigestPending)`; new: Selecting{fp} |
 | `Ui(Continue fp)` | Selecting → AwaitingDigest(seq+1) | `Send(NeedDigest)`, `Ui(DigestPending)` |
-| `on_digest(seq, d)` stale seq | unchanged | none |
+| (any release above) | | then `Keys(Chain)` once per certificate |
+| `on_digest(seq, d)` stale seq (issued, not current, or not awaiting) | unchanged | none |
+| `on_digest` seq never issued | → Done | `Send(Error InvalidRequest)`, `Ui(Failed Internal)` |
 | `on_digest` wrong length | → Done | `Send(Error InvalidRequest)`, `Ui(Failed Internal)` |
 | `on_digest` ok | AwaitingDigest → Ready | `Ui(DigestReady{code})` |
 | `Ui(Sign{fp, via, pin, remember})` in Ready with the same fp | → Signing(tag) | `Keys(Sign{…})`, `Ui(Signing)` |
@@ -79,10 +102,26 @@ States and transitions: `protocol.md` §5. Effects per transition:
 | `Keys(Signed Unsupported)` | → Selecting | `Ui(Failed UnsupportedAlgorithm)` |
 | `Keys(Signed Native/Other)` | → Ready | `Ui(Failed DriverFailure{alternate})`, `RecordError` |
 | `Ui(Cancel code)` | → Done | `Send(Error code)`, `Ui(Finished …)` |
-| `end(code)` (abort, timeout, disconnect) | → Done | `Send(Error code)` unless disconnected; `Ui(Finished Aborted/Timeout/SiteCancelled)` |
+| `end(code)` (abort, timeout) | → Done | `Send(Error code)`; `Ui(Finished Timeout)` for a timeout, else `Ui(Finished Aborted)` (only when on screen) |
+| `disconnected()` | → Done | `Ui(Finished SiteCancelled)` when on screen; nothing is sent |
+
+Window events for a fingerprint that is not listed, or whose row is
+disabled, are ignored without a reply, as are events in any other state
+than the table's. `KeyCommand::Sign.parent_window` is `None` from the flow;
+the engine fills it with `ConfirmUi::parent_window()`.
 
 Digest timeout: 60 s after each `NeedDigest` without the matching digest →
-`end(Timeout)`. Decision timeout: the deadline → `end(Timeout)`.
+`end(Timeout)`. Decision timeout: the deadline → `end(Timeout)`. The
+deadline does not apply while `Signing` (an OS PIN dialog or a slow token;
+the caller can still `cancel`); a signing that fails after it ends at the
+next tick.
+
+Chain: asked (`Keys(Chain)`) when a certificate is first released, without
+delaying `sign.need_digest`, whose certificate carries the chain only when
+it is already known. `sign.result` carries the chain when the answer arrived
+before the signature (the key store serves commands in order, so the real
+worker always answers first), else an empty one. The chain is unsigned CMS
+data, so a caller can add it after the digest.
 
 ### 4.1 Self-check
 
@@ -99,20 +138,28 @@ in the candidate's `algorithms`. None → the certificate is disabled
 
 ## 5. Choose flow (`flow::choose`)
 
+Same `activate(now, &presentation)` / `on_listed(snapshot, context)` as §4.
+
 - Remembered with at least one still-present usable certificate:
   `answers_without_window() == true`; `activate` → `Keys(List)`;
-  `on_listed` → `Send(ChooseResult{remembered present ones, most recent
-  first})`, Done. None present → behaves like a new caller.
+  `on_listed` → `Keys(Chain)` for each remembered present one; when the last
+  chain arrives (`on_keys`) → `Send(ChooseResult{those, most recent first,
+  each with its chain})`, Done. None present → the flow returns to `Queued`
+  without remembered certificates and the engine queues it for the window
+  like a new caller.
 - Otherwise: queue, `Ui(Open{mode: Choose})`, `Ui(Certificates)`; `Ui(Choose
-  {fp, remember})` → `RecordConsent`, `Send(ChooseResult{[that one]})`,
-  `Ui(Finished Chosen)`.
+  {fp, remember})` for a usable row → `Keys(Chain)`; its answer →
+  `RecordConsent`, `Send(ChooseResult{[that one]})`, `Ui(Finished Chosen)`.
+  Further `Choose` events while the chain is read are ignored.
 
 ## 6. Queue
 
 `push`: first → active (`Ok(true)`); then up to 10 waiting (`Ok(false)`);
 11th waiting → `Err(Busy)`. `remove(active)` promotes the oldest waiting.
 `position()` = `(1, 1 + waiting.len())` while active, `(0, 0)` idle.
-Windowless requests never enter the queue.
+Windowless requests never enter the queue. Whenever the line grows or
+shrinks under the active request, the engine sends `Ui(Queue{active,
+position})`; a request reaching the screen gets its position in `Open`.
 
 ## 7. Stores
 
@@ -123,19 +170,27 @@ Files in `data_dir()`: `consent.json`, `usage.json`, `connections.json`,
   `<name>.corrupt` (replacing an older one), log, default.
 - `JsonFile::update`: `File::lock` on `<name>.lock` (exclusive, blocking up
   to 2 s, then `Io`), read, change, write `<name>.tmp`, `fsync`, rename.
+  On Unix the folder is created `0700` and every file `0600` (they say which
+  sites get certificates without asking); on Windows the profile ACL applies.
 - Consent: `remember` inserts or refreshes; `record_use` only touches
   existing records; certificates list most-recent-first, at most 20.
 - Usage: most-recent-first, at most 100 fingerprints.
 - Errors: newest last, at most 20.
-- Store failures never fail a request: the engine logs and continues without
-  persistence.
+- `RecordConsent{remember, fp}`: `remember` (when the caller `can_remember`)
+  or `record_use`; always `usage.record(fp)` — usage is anonymous. A failed
+  self-check records nothing.
+- A native `hello` records a `ConnectionRecord` (browser, versions); a
+  desktop `hello` none.
+- Store failures never fail a request: the engine logs the failure kind (never
+  the path) and continues without persistence.
 
 ## 8. Engine scenarios (with fake ports)
 
 Each is a test: events in, assert frames out, UI commands, key commands.
 
-1. `hello` negotiation ok; version mismatch both ways; `status` before
-   `hello` → error + close; second `hello` rejected.
+1. `hello` negotiation ok; version mismatch both ways (error at the hello's
+   `v`); `status` before `hello` → error + close; second `hello` rejected,
+   connection kept. Every close before negotiation is `Control::Exit(1)`.
 2. Native messaging without `web` on `sign.begin` → `InvalidRequest`; desktop
    with `web` → `InvalidRequest`; `http://evil.example` → `InsecureOrigin`.
 3. Remembered site: `sign.begin` → Open + List → Certificates → NeedDigest(1)
@@ -148,16 +203,24 @@ Each is a test: events in, assert frames out, UI commands, key commands.
 7. Wrong PIN then right PIN: one `sign.result`, no error frame.
 8. Key store returns garbage → not verified → DriverFailure in UI, nothing sent.
 9. `cancel` from the client → `Aborted`; client disconnect → UI
-   `Finished SiteCancelled`, no frames.
+   `Finished SiteCancelled`, no frames, `Control::Exit(0)` (`Broken` →
+   `Exit(1)`).
 10. Decision timeout (manual clock +300 s) → `Timeout`; digest timeout
-    (+60 s) → `Timeout`.
+    (+60 s) → `Timeout`; none while `Signing`.
 11. Queue: 1 active + 10 waiting accepted, 12th → `Busy`; finishing the first
     opens the second (`Open` with position (1, 10)).
-12. Remembered `choose` answers without UI; revoked → window.
-13. Device event while Selecting → `Keys(Invalidate)`, `Keys(List{refresh:
-    true})`, `Ui(Certificates)`; selection kept.
-14. `diagnostics.open` → launcher called, `done`.
-15. Desktop idle 300 s without requests → `Control::Exit(0)`.
+12. Remembered `choose` answers without UI (after the chains); revoked in
+    another process between two `choose` → the second opens the window.
+13. Device event while a request is on screen → `Keys(Invalidate)`,
+    `Keys(List{refresh: true})`, then `Ui(Certificates)`; selection kept. A
+    reader or card removal first sends `Keys(EndSessions)` (D5: a PIN is
+    cached until its token leaves, and which token left is unknown). Nothing
+    on screen → ignored.
+14. `diagnostics.open` → launcher called, `done`; a failing launcher →
+    `Internal`.
+15. Desktop idle 300 s without requests → `Control::Exit(0)`; a native
+    connection never idles out (the extension closes the port).
+16. No `hello` within `HELLO_TIMEOUT` (5 s) → `Control::Exit(0)`.
 
 ## 9. Runtime
 
@@ -170,5 +233,17 @@ Each is a test: events in, assert frames out, UI commands, key commands.
   `Internal` error for the same id (as the kit did); `write_frame`.
 - Key worker: owns `KeystoreHub::new(options)`; `List` maps the inventory to
   `CertCandidate`s (device labels via `websign_devices::hints`, PIN mode via
-  `pin_state`, algorithms from the key type and the store's capabilities);
-  replies in command order.
+  `pin_state`, algorithms from the key type and the store's capabilities)
+  plus `possible`: a fresh `websign_devices::Snapshot::scan()` through
+  `possible_devices` with the listed keys' `LinkedDevices` (reader names,
+  token models, `unknown_links` when a hardware key has no `DeviceLink` or
+  only a CryptoTokenKit one), keeping the confident entries as
+  `PossibleCard`s; replies in command order.
+- Neither the device monitor nor the hints database is wrapped in
+  `catch_unwind`: `monitor::start` cannot fail (it retries on its own
+  thread) and a bad embedded database is an error value; a panic in a
+  helper thread ends that thread only, and the list then refreshes only on
+  "Scan again".
+- `serve(input, outbound, config, make_ui, launcher, stores, options)` is
+  `serve_stdio` over any streams and stores (the SoftHSM2 test uses pipes).
+- The `testing` feature exposes fakes of every port for other crates' tests.
