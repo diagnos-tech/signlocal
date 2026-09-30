@@ -8,6 +8,9 @@ import type { SignatureAlgorithmName } from "./SignatureAlgorithmName.js";
 /**
  * A certificate the person chose (never the machine's list, `docs/plan.md` D2).
  *
+ * `Debug` is written by hand and prints only non-personal facts: the holder's
+ * name, the issuer, the DER and the chain would put personal data in logs.
+ *
  * Everything a signature format needs to be assembled by the caller, plus a
  * profile so the caller can enforce its own "qualified" policy. The app never
  * claims legal qualification; it reports what the certificate says.

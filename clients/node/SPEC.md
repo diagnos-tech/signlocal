@@ -21,7 +21,10 @@ regular file with the execute bit; on Windows any non-directory, because the
 - `connect()`: spawn `[exe, "connect"]` with `stdio: ["pipe","pipe","ignore"]`;
   spawn error or immediate exit → `AppMissing`. Send `hello` with
   `client {name:"@websign/desktop", version}` and `protocols {min:1,max:1}`;
-  wait ≤ 10 s for the `hello` reply; `error` → reject with its code.
+  wait ≤ 10 s for the `hello` reply. An `error` answering `hello` must carry the
+  `v` that `hello` carried and rejects with its code (`ClientOutdated`,
+  `AppOutdated`, `InvalidRequest`); an `error` at any other `v`, or any other
+  non-`hello` answer, is `Internal` and the child is killed.
 - Frames: `u32` little-endian + UTF-8 JSON; `FrameDecoder` handles frames
   split across chunks and several frames per chunk; > 1 MiB → connection
   error.

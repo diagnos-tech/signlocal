@@ -92,6 +92,30 @@ describe("WebSign.connect", () => {
     expect(error.details).toEqual({ installed: "0", required: "2" });
   });
 
+  it.each(["ClientOutdated", "AppOutdated", "InvalidRequest"])(
+    "rejects with %s when the app refuses hello at the version we sent",
+    async (code) => {
+      const app = fake({
+        rules: [{ on: "hello", do: [send({ v: 1, type: "error", code, message: "refused" })] }],
+      });
+      const error = await rejection(WebSign.connect({ executable: app.executable }));
+      expect(error.code).toBe(code);
+      expect(error.message).toBe("refused");
+    },
+  );
+
+  it("treats an error to hello at another version as a connection failure", async () => {
+    const app = fake({
+      rules: [
+        { on: "hello", do: [send({ v: 2, type: "error", code: "ClientOutdated", message: "x" })] },
+      ],
+    });
+    expect((await rejection(WebSign.connect({ executable: app.executable }))).code).toBe(
+      "Internal",
+    );
+    await eventually(() => isAlive(app.pid()) === false);
+  });
+
   it("rejects with ClientOutdated when the app picks a protocol we do not speak", async () => {
     const app = fake({ rules: [helloRule(2)] });
     expect((await rejection(WebSign.connect({ executable: app.executable }))).code).toBe(

@@ -202,6 +202,13 @@ export class Session {
       open.onEvent(envelope as unknown as AppEnvelope);
       return true;
     }
+    if (!this.ready && envelope.type === "error" && envelope.v !== this.version) {
+      this.end(
+        new WebSignError("Internal", "the app refused hello at another protocol version"),
+        true,
+      );
+      return true;
+    }
     this.pending.delete(envelope.id);
     this.holdWhileBusy();
     if (envelope.type === "error") open.reject(fromWire(envelope));

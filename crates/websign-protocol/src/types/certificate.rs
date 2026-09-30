@@ -6,10 +6,20 @@ use super::{Base64Bytes, CurveName, SignatureAlgorithmName};
 
 /// SHA-256 of a certificate's DER, as 64 lowercase hex digits: the identity of
 /// a certificate everywhere in the project.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+///
+/// `Debug` prints only the first 8 digits: the full value identifies one
+/// person's certificate and must not reach logs.
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(try_from = "String", into = "String")]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export, type = "string"))]
 pub struct FingerprintHex(String);
+
+impl std::fmt::Debug for FingerprintHex {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let prefix = self.0.get(..8).unwrap_or(&self.0);
+        write!(f, "FingerprintHex({prefix}…)")
+    }
+}
 
 /// Not 64 lowercase hex digits.
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
@@ -51,10 +61,13 @@ impl From<FingerprintHex> for String {
 
 /// A certificate the person chose (never the machine's list, `docs/plan.md` D2).
 ///
+/// `Debug` is written by hand and prints only non-personal facts: the holder's
+/// name, the issuer, the DER and the chain would put personal data in logs.
+///
 /// Everything a signature format needs to be assembled by the caller, plus a
 /// profile so the caller can enforce its own "qualified" policy. The app never
 /// claims legal qualification; it reports what the certificate says.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(remote = "Self", rename_all = "camelCase", deny_unknown_fields)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
 pub struct Certificate {
@@ -79,6 +92,21 @@ pub struct Certificate {
     /// Algorithms this key can produce through the key store that holds it.
     pub algorithms: Vec<SignatureAlgorithmName>,
     pub profile: CertificateProfile,
+}
+
+impl std::fmt::Debug for Certificate {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let fingerprint = self.fingerprint.as_str();
+        f.debug_struct("Certificate")
+            .field("fingerprint", &format_args!("{}...", &fingerprint[..8]))
+            .field("key", &self.key)
+            .field("not_before", &self.not_before)
+            .field("not_after", &self.not_after)
+            .field("algorithms", &self.algorithms)
+            .field("profile", &self.profile)
+            .field("chain_len", &self.chain.len())
+            .finish_non_exhaustive()
+    }
 }
 
 /// The public key, as far as a caller building a signature format cares.
@@ -179,6 +207,32 @@ crate::strict::object_serde!(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn debug_never_prints_identity_fields() {
+        let certificate = Certificate {
+            der: Base64Bytes::new(b"CPF 123.456.789-09".to_vec()),
+            chain: vec![Base64Bytes::new(vec![1])],
+            fingerprint: FingerprintHex::new("ab".repeat(32)).unwrap(),
+            display_name: "Ana Beatriz Souza 123.456.789-09".into(),
+            issuer_name: "AC Example".into(),
+            not_before: 1,
+            not_after: 2,
+            key: KeyDescription::Rsa { bits: 2048 },
+            algorithms: vec![],
+            profile: CertificateProfile {
+                icp_brasil: None,
+                eidas: None,
+                key_storage: KeyStorage::Hardware,
+            },
+        };
+        let text = format!("{certificate:?} {certificate:#?}");
+        for secret in ["Ana", "Souza", "123.456", "AC Example", &"ab".repeat(32)] {
+            assert!(!text.contains(secret), "{secret} leaked: {text}");
+        }
+        assert!(text.contains("abababab..."));
+        assert!(text.contains("chain_len: 1"));
+    }
 
     #[test]
     fn accepts_64_lowercase_hex_digits() {

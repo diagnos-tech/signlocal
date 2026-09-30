@@ -3,5 +3,8 @@
 /**
  * SHA-256 of a certificate's DER, as 64 lowercase hex digits: the identity of
  * a certificate everywhere in the project.
+ *
+ * `Debug` prints only the first 8 digits: the full value identifies one
+ * person's certificate and must not reach logs.
  */
 export type FingerprintHex = string;
