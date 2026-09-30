@@ -7,7 +7,7 @@ use super::*;
 use crate::browsers::Browser;
 use crate::destination::{self, Action, Context};
 use crate::linux;
-use crate::status::candidates;
+use crate::status::file_candidates;
 
 const HOST: &str = "/usr/bin/websign";
 
@@ -24,11 +24,11 @@ fn register(home: &Path, browsers: &[Browser], host: &str) {
     }
 }
 
+/// The Linux per-user manifests, on every OS: the fixtures lay out a Linux
+/// home (`.config`, `.var/app`), and `register` writes that layout, so the
+/// platform's own candidates (`~/Library` on macOS) would never see them.
 fn user_candidates(browser: Browser, home: &Path) -> Vec<Candidate> {
-    candidates(browser, home)
-        .into_iter()
-        .filter(|candidate| candidate.manifest.starts_with(home))
-        .collect()
+    file_candidates(linux::targets(&[browser], home))
 }
 
 #[test]

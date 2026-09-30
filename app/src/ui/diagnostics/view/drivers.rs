@@ -1,6 +1,6 @@
 //! Devices tab, second half (`docs/ux.md` §8.4 "Token drivers"): each
-//! PKCS#11 module, how loading it went and where it came from, [Remove] on
-//! the ones the person added, and [Add driver…].
+//! PKCS#11 module, how loading it went and where it came from, "Remove" on
+//! the ones the person added, and "Add driver…".
 //!
 //! "Add driver…" opens the OS file picker; where there is none (a Linux
 //! desktop without `zenity` or `kdialog`) it shows a path field instead.

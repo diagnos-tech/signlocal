@@ -1,8 +1,8 @@
 //! PKCS#11 modules: p11-kit registrations, known vendor paths and modules
 //! given on the command line. One keystore per loaded module.
 //!
-//! Discovery finds candidate files ([`discovery`]); each is loaded once
-//! ([`module`]) and becomes a [`Pkcs11Keystore`]. A module that fails to load
+//! Discovery finds candidate files (`discovery`); each is loaded once
+//! (`module`) and becomes a `Pkcs11Keystore`. A module that fails to load
 //! is reported as a [`SourceFailure`] and never stops the others.
 
 mod always_authenticate;

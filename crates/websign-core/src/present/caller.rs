@@ -33,7 +33,7 @@ pub enum CodeSigner {
 pub struct CallerLabel {
     /// Emphasized: product name, else the executable's file name.
     pub name: String,
-    /// Dimmed: "by <signer>" material, else the executable path.
+    /// Dimmed: `"by <signer>"` material, else the executable path.
     pub detail: String,
     /// False when no signer was verified: the window warns
     /// "Unverified program".

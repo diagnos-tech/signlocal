@@ -1,6 +1,6 @@
 //! What the diagnostics window knows about this computer: browsers, devices,
 //! token drivers and certificates, gathered in one pass off the UI thread
-//! ([`collect`]) and then only read.
+//! ([`collect()`]) and then only read.
 //!
 //! Facts are plain data so the window, the traffic lights and the report can
 //! be tested with hand-built values. Anything that could identify a person

@@ -61,26 +61,12 @@ struct Candidate {
 
 /// Per-user locations first, then (Linux) the system ones.
 fn candidates(browser: Browser, home: &Path) -> Vec<Candidate> {
-    let mut all = Vec::new();
     let user = if cfg!(target_os = "macos") {
         crate::macos::targets(&[browser], home)
     } else {
         crate::linux::targets(&[browser], home)
     };
-    for target in user {
-        if let crate::destination::Location::File {
-            manifest,
-            host_copy,
-            ..
-        } = target.location
-        {
-            all.push(Candidate {
-                family: target.family,
-                manifest,
-                host_copy,
-            });
-        }
-    }
+    let mut all = file_candidates(user);
     if cfg!(target_os = "linux") {
         let libs = [Path::new("/usr/lib"), Path::new("/usr/lib64")];
         for (family, manifest) in crate::system::manifests(browser, &libs) {
@@ -92,6 +78,25 @@ fn candidates(browser: Browser, home: &Path) -> Vec<Candidate> {
         }
     }
     all
+}
+
+/// The manifest files among `targets` (registry targets are skipped).
+fn file_candidates(targets: Vec<crate::destination::Target>) -> Vec<Candidate> {
+    targets
+        .into_iter()
+        .filter_map(|target| match target.location {
+            crate::destination::Location::File {
+                manifest,
+                host_copy,
+                ..
+            } => Some(Candidate {
+                family: target.family,
+                manifest,
+                host_copy,
+            }),
+            _ => None,
+        })
+        .collect()
 }
 
 /// Registered anywhere wins; else the first problem; else missing.

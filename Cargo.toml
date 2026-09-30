@@ -15,15 +15,15 @@ publish = false
 
 [workspace.dependencies]
 # Internal crates.
-websign-core = { path = "crates/websign-core" }
-websign-devices = { path = "crates/websign-devices" }
-websign-host = { path = "crates/websign-host" }
-websign-i18n = { path = "crates/websign-i18n" }
-websign-keystores = { path = "crates/websign-keystores" }
-websign-project = { path = "crates/websign-project" }
-websign-protocol = { path = "crates/websign-protocol" }
-websign-registration = { path = "crates/websign-registration" }
-websign-ui-model = { path = "crates/websign-ui-model" }
+websign-core = { path = "crates/websign-core", version = "0.1.0" }
+websign-devices = { path = "crates/websign-devices", version = "0.1.0" }
+websign-host = { path = "crates/websign-host", version = "0.1.0" }
+websign-i18n = { path = "crates/websign-i18n", version = "0.1.0" }
+websign-keystores = { path = "crates/websign-keystores", version = "0.1.0" }
+websign-project = { path = "crates/websign-project", version = "0.1.0" }
+websign-protocol = { path = "crates/websign-protocol", version = "0.1.0" }
+websign-registration = { path = "crates/websign-registration", version = "0.1.0" }
+websign-ui-model = { path = "crates/websign-ui-model", version = "0.1.0" }
 
 # Errors, data, CLI.
 thiserror = "2"

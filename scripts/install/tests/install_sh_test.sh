@@ -160,7 +160,9 @@ echo "apt-get $*" >>"$FAKE_LOG"
 FAKE
 write_fake_binary "$FAKEBIN/websign"
 chmod 0755 "$FAKEBIN/sudo" "$FAKEBIN/apt-get"
-# shellcheck disable=SC2329  # invoked through check
+# Only ever called through `check`, which shellcheck cannot follow: 0.9 reports
+# the body as unreachable (SC2317), 0.10+ the function as unused (SC2329).
+# shellcheck disable=SC2317,SC2329
 run_ubuntu() {
     PATH="$FAKEBIN:$PATH" WEBSIGN_RELEASE_DIR=$REL WEBSIGN_UNAME_S=Linux WEBSIGN_UNAME_M=x86_64 \
         WEBSIGN_OS_RELEASE=$ROOT/os-release.ubuntu HOME=$ROOT/home FAKE_LOG=$ROOT/log \

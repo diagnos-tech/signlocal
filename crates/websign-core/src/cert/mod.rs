@@ -86,7 +86,7 @@ impl CertInfo {
                 .is_none_or(|usage| usage.digital_signature || usage.non_repudiation)
     }
 
-    /// The name a person recognizes: [`CertInfo::name_candidate`], or a
+    /// The name a person recognizes (`CertInfo::name_candidate`), or a
     /// fingerprint prefix as the last resort, so the confirmation window never
     /// shows an empty name.
     pub fn display_name(&self) -> String {

@@ -306,6 +306,10 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Biome
         run: bunx biome check .
+      # e2e imports the Node client's built `dist/`, which is not committed.
+      - name: Build the Node client
+        working-directory: clients/node
+        run: bun run build
       - name: Typecheck
         run: |
           for package in sdk extension clients/node e2e; do

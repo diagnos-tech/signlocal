@@ -1,5 +1,5 @@
 //! "Allowed sites" and "Allowed programs" (`docs/ux.md` §8.3): what the
-//! person asked WebeSign to remember, with [Revoke]. Revoking asks for an
+//! person asked WebeSign to remember, with "Revoke". Revoking asks for an
 //! inline confirmation: the button turns into "Confirm revoke" for 4 s.
 
 use egui::Ui;

@@ -10,7 +10,13 @@ exclude-dev = false
 [advisories]
 version = 2
 yanked = "deny"
-ignore = []
+ignore = [
+  # Marvin: timing side channel in RSA *decryption and signing* with a private
+  # key, no fixed release yet. `rsa` is used only by websign-core's verifier
+  # (src/verify/rsa_verify.rs) with public keys from certificates; signing
+  # happens inside the token or OS key store, never with this crate.
+  { id = "RUSTSEC-2023-0071", reason = "rsa is used for public-key signature verification only; no private-key operations" },
+]
 
 [licenses]
 version = 2
@@ -33,6 +39,12 @@ allow = [
   "OFL-1.1",
   "GPL-3.0-or-later",
   "CDLA-Permissive-2.0",
+]
+# egui's bundled default fonts include Ubuntu-Light, whose font licence
+# allows redistributing the font with software; it is font data, not code,
+# and only this crate carries it.
+exceptions = [
+  { crate = "epaint_default_fonts", allow = ["Ubuntu-font-1.0"] },
 ]
 
 [bans]

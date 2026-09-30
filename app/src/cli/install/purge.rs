@@ -75,6 +75,16 @@ fn is_our_folder(dir: &Path) -> bool {
 mod tests {
     use super::*;
 
+    /// `path` made absolute on this OS: a Unix path is already, Windows
+    /// needs a drive (`/home/ana` there is relative to the current drive).
+    fn absolute(path: &str) -> std::path::PathBuf {
+        if cfg!(windows) {
+            format!("C:{path}").into()
+        } else {
+            path.into()
+        }
+    }
+
     #[test]
     fn only_folders_named_after_the_app_are_deleted() {
         for ours in [
@@ -82,20 +92,21 @@ mod tests {
             "/home/ana/.local/state/websign",
             "/Users/ana/Library/Logs/websign",
         ] {
-            assert!(is_our_folder(Path::new(ours)), "{ours}");
+            assert!(is_our_folder(&absolute(ours)), "{ours}");
         }
         for other in [
-            "",
             "/",
             "/websign",
             "/home/websign",
-            "relative/dir/websign",
             "/home/ana/.config",
             "/home/ana/../websign/websign",
             "/home/ana/.config/websign/other",
             "/home/ana/.config/logs",
         ] {
-            assert!(!is_our_folder(Path::new(other)), "{other}");
+            assert!(!is_our_folder(&absolute(other)), "{other}");
+        }
+        for relative in ["", "relative/dir/websign"] {
+            assert!(!is_our_folder(Path::new(relative)), "{relative}");
         }
     }
 
@@ -109,6 +120,9 @@ mod tests {
             r"C:\Users\ana\AppData\Local\websign\logs"
         )));
         assert!(!is_our_folder(Path::new(r"C:\websign")));
+        assert!(!is_our_folder(Path::new(
+            r"\Users\ana\AppData\Roaming\websign"
+        )));
     }
 
     #[test]

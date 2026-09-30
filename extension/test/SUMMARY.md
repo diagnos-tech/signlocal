@@ -1,9 +1,5 @@
 # extension/test
 
-- `fakes/browser.ts` — Fake `browser` namespace (a singleton across `vi.resetModules`): runtime, tabs, i18n, action, native ports.
-- `fakes/connection.ts` — Scriptable fake `Connection` for router tests.
-- `fakes/protocol.ts` — Builders for app info and hello messages.
-- `fakes/window.ts` — Minimal page `window` for content-script tests.
 - `announce.test.ts` — Announcement posted to the page origin, synchronously.
 - `browser-name.test.ts` — Browser names from UA-CH brands and user agents.
 - `connection.test.ts` — Native port: hello, reasons, 3 s timeout, host missing, sharing, idle close with open requests, reconnect.
@@ -20,3 +16,4 @@
 - `router.test.ts` — Router forwarding, native ids, tab isolation on the shared port, replies and `status`.
 - `validate.test.ts` — `validatePageRequest`: accepted shapes, rejections, unknown fields refused.
 - `version.test.ts` — `isOlder` vectors and malformed input.
+- `fakes/` — In-memory stand-ins for the WebExtension APIs, the native connection, protocol messages and the page `window`.

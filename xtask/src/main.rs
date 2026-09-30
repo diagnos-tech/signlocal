@@ -40,7 +40,7 @@ enum Command {
     Check(check::CheckArgs),
     /// Build release artifacts for one target.
     Package(package::PackageArgs),
-    /// Collect e2e screenshots into docs/screenshots/<os>/.
+    /// Collect e2e screenshots into `docs/screenshots/<os>/`.
     Screenshots(screenshots::ScreenshotsArgs),
 }
 

@@ -75,7 +75,7 @@ libc.workspace = true
 egui_kittest.workspace = true
 tempfile.workspace = true
 # The SoftHSM2 test drives `websign connect` through the real client.
-websign-client = { path = "../clients/rust" }
+websign-client = { path = "../clients/rust", version = "0.1.0" }
 
 [lints]
 workspace = true
