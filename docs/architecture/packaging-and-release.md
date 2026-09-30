@@ -88,16 +88,35 @@ Direct builds are not code-signed yet (costs and accounts pending, brief
 
 ## Release workflow
 
+`.github/workflows/release.yml`:
+
 1. Versions move in lockstep: workspace `Cargo.toml`, `sdk/`, `clients/node/`,
-   `extension/` (`cargo xtask check` verifies they match the tag).
-2. Push tag `vX.Y.Z` → the release workflow builds every artifact on native
-   runners, runs the e2e smoke suite against the packaged binaries, verifies
-   the release binary has no `e2e` marker, writes `SHA256SUMS`.
-3. Creates a GitHub **prerelease** (while unsigned) with the artifacts, the
-   install commands, the unsigned-build notice and the changelog section.
+   `extension/`. The **gate** job runs `cargo xtask check release`, which
+   fails unless they equal the tag without its `v`.
+2. Push tag `vX.Y.Z` (or run the workflow by hand with an existing tag to
+   rebuild and replace a release). `cargo xtask package` builds every
+   artifact without caches: Linux in a `rockylinux:9` container on
+   `ubuntu-24.04` and `ubuntu-24.04-arm` (its glibc 2.34 is the oldest of the
+   supported distributions; deb and rpm with the pinned, hash-checked nfpm;
+   tar.gz), Windows x64 and arm64 on
+   `windows-latest` (arm64 cross-compiled by MSVC), the universal `.app` on
+   `macos-latest` (lipo, ad-hoc signature). Every release binary is checked
+   for the `e2e` marker. The extension zips are the `direct` channel
+   (`WEBSIGN_CHANNEL=direct bun run zip`, development key). The e2e suite
+   runs in `e2e.yml`, not against the packaged files.
+3. The **publish** job, the only one allowed to write, checks that every file
+   of §Artifacts is present, runs `cargo xtask package --sums-only` (adds
+   `install.sh`, `install.ps1` and `SHA256SUMS`) and creates a GitHub
+   **prerelease** (draft until every file is uploaded, `--verify-tag`). Its
+   page is `packaging/release-notes/template.md` rendered by `render.sh`:
+   the install commands of [`docs/install.md`](../install.md) for the tag, the
+   unsigned-build notice, a file table with SHA-256, then GitHub's generated
+   changes.
 4. npm packages (`@websign/sdk`, `@websign/desktop`) and the `websign-client`
    crate are published by hand by the maintainer until the names are final
-   (D6).
+   (D6). The workflow attaches `npm pack` tarballs, the Safari and Edge zips
+   and the Firefox sources zip to the run (`maintainer-npm` artifact), never
+   to the release.
 
 ## Later: signing and stores
 

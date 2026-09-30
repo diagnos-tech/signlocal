@@ -9,8 +9,8 @@ use super::target::Target;
 use super::tool::run;
 use super::{Context, build, linux, names};
 
-/// The nfpm release CI installs (`go install
-/// github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.43.0`, or the release tarball).
+/// The nfpm release CI installs from the pinned release tarball (a
+/// `go install` build reports its version as "dev" and would only warn).
 /// A different version only warns: the config uses stable keys, but the
 /// packages were verified with this one.
 pub const NFPM_VERSION: &str = "2.43.0";
