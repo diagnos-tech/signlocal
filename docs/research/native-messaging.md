@@ -1,351 +1,351 @@
-# Native messaging: onde cada navegador procura o host
+# Native messaging: where each browser looks for the host
 
-Pesquisa para as provas da Fase 0 e para o `register` do app. Cobre caminhos e chaves de registro por
-sistema × navegador, argumentos de lançamento, limites, o caso do Firefox Snap e do Flatpak, o Safari (que
-não usa manifesto) e o pré-registro da extensão.
+Research for the risk proofs and for the app's `register`. It covers paths and registry keys by
+operating system × browser, launch arguments, limits, the Firefox Snap and Flatpak case, Safari (which
+uses no manifest), and extension pre-registration.
 
-**Como ler a coluna "Base":**
+**How to read the "Basis" column:**
 
-| Sigla | Significa |
+| Code | Meaning |
 |---|---|
-| **D** | documentação oficial do fornecedor (links no fim) |
-| **C** | código-fonte do Chromium, lido em `raw.githubusercontent.com/chromium/chromium` |
-| **B** | Bitwarden, `native-messaging.main.ts` (só para comparar caminhos) |
-| **K** | KeePassXC, `NativeMessageInstaller.cpp` (idem) |
-| **W** | web-eid-app (`CMakeLists.txt`, `web-eid.wxs`, modelos de manifesto) |
-| **?** | não confirmei em fonte primária: tratar como hipótese até a prova |
+| **D** | official vendor documentation (links at the end) |
+| **C** | Chromium source code, read at `raw.githubusercontent.com/chromium/chromium` |
+| **B** | Bitwarden, `native-messaging.main.ts` (only to compare paths) |
+| **K** | KeePassXC, `NativeMessageInstaller.cpp` (same) |
+| **W** | web-eid-app (`CMakeLists.txt`, `web-eid.wxs`, manifest templates) |
+| **?** | not confirmed in a primary source: treat as a hypothesis until proven |
 
-Nada aqui foi copiado: as três bases de código foram lidas só para conferir caminhos.
-
----
-
-## 1. Resumo do que decide o projeto
-
-1. **O manifesto é por navegador, e o formato difere por família.** Chromium: `allowed_origins`
-   (`chrome-extension://<id>/`, sem curinga). Firefox: `allowed_extensions` (ID Gecko). São dois arquivos.
-2. **Windows não tem pasta: tem chave de registro.** `HKCU` basta (o Chrome consulta `HKCU` antes de `HKLM`) e
-   o manifesto pode estar em qualquer pasta. **Edge, Brave, Vivaldi e Opera caem na chave do Chrome** quando
-   não têm a própria, então uma chave do Chrome já cobre vários (§3.1).
-3. **macOS e Linux usam `<pasta de dados do navegador>/NativeMessagingHosts/<host>.json`.** É por isso que o
-   `--user-data-dir` do Chromium permite testar sem tocar no perfil real (§3.2, §3.3).
-4. **No MV3 o host nunca recebe `--parent-window`**: o Chrome passa `0` quando quem conecta é um service
-   worker (§2). Diálogos de PIN do sistema não podem depender desse handle: a janela do app precisa achar a
-   janela do navegador por conta própria ou se pôr em primeiro plano.
-5. **Firefox Snap não lê o manifesto: pede ao portal** (`org.freedesktop.portal.WebExtensions`, hoje;
-   `org.freedesktop.NativeMessagingProxy`, em seguida). O host roda **fora** do Snap, iniciado pelo portal,
-   com o ambiente do portal, não o do Firefox (§3.4).
-6. **Safari não tem manifesto, registro nem `allowed_origins`.** A extensão vive dentro do app e fala com uma
-   app extension (appex) por `runtime.sendNativeMessage` (§3.5).
-7. **Pré-registro de extensão:** Chromium tem canal por arquivo/registro (Linux sem confirmação; Windows e
-   macOS pedem que o usuário habilite). Firefox só por política do sistema (§4).
+Nothing here was copied: the three codebases were read only to check paths.
 
 ---
 
-## 2. Como o navegador lança o host
+## 1. Summary of what decides the project
 
-### Argumentos
+1. **The manifest is per browser, and the format differs by family.** Chromium: `allowed_origins`
+   (`chrome-extension://<id>/`, no wildcard). Firefox: `allowed_extensions` (Gecko ID). That is two files.
+2. **Windows has no folder: it has a registry key.** `HKCU` is enough (Chrome consults `HKCU` before `HKLM`) and
+   the manifest can be in any folder. **Edge, Brave, Vivaldi, and Opera fall back to Chrome's key** when they
+   have none of their own, so one Chrome key already covers several (§3.1).
+3. **macOS and Linux use `<browser data folder>/NativeMessagingHosts/<host>.json`.** That is why
+   Chromium's `--user-data-dir` allows testing without touching the real profile (§3.2, §3.3).
+4. **In MV3 the host never receives `--parent-window`**: Chrome passes `0` when the caller is a service
+   worker (§2). System PIN dialogs cannot depend on that handle: the app's window must find the
+   browser window on its own or bring itself to the foreground.
+5. **Firefox Snap does not read the manifest: it asks the portal** (`org.freedesktop.portal.WebExtensions`, today;
+   `org.freedesktop.NativeMessagingProxy`, next). The host runs **outside** the Snap, started by the portal,
+   with the portal's environment, not Firefox's (§3.4).
+6. **Safari has no manifest, registry, or `allowed_origins`.** The extension lives inside the app and talks to an
+   app extension (appex) through `runtime.sendNativeMessage` (§3.5).
+7. **Extension pre-registration:** Chromium has a file/registry channel (Linux without confirmation; Windows and
+   macOS ask the user to enable it). Firefox only through system policy (§4).
 
-| Navegador | Argumentos, na ordem | Base |
+---
+
+## 2. How the browser launches the host
+
+### Arguments
+
+| Browser | Arguments, in order | Basis |
 |---|---|---|
 | Chrome, Edge, Brave, Vivaldi, Opera (Linux, macOS) | `chrome-extension://<id>/` | D, C |
-| Chrome, Edge, Brave, Vivaldi, Opera (Windows) | `chrome-extension://<id>/` `--parent-window=<HWND decimal>` | D |
-| Firefox (todos os SOs) | caminho completo do manifesto, ID Gecko da extensão (desde o Firefox 55) | D |
-| Safari | nenhum: não há processo filho, ver §3.5 | D |
+| Chrome, Edge, Brave, Vivaldi, Opera (Windows) | `chrome-extension://<id>/` `--parent-window=<decimal HWND>` | D |
+| Firefox (all OSes) | full path of the manifest, the extension's Gecko ID (since Firefox 55) | D |
+| Safari | none: there is no child process, see §3.5 | D |
 
-- O primeiro argumento do Chromium é a **origem que o próprio navegador validou** contra `allowed_origins`.
-  É a única identidade da extensão em que o host pode confiar; o `origin` que a extensão de teste manda no
-  JSON é informativo.
-- **`--parent-window` vale `0` quando o contexto chamador é um service worker** (Chrome e Edge, D). Toda
-  extensão MV3 é service worker, então o handle não chega. O `probe` trata `0` como ausente
+- Chromium's first argument is the **origin that the browser itself validated** against `allowed_origins`.
+  It is the only extension identity the host can trust; the `origin` that the test extension sends in the
+  JSON is informational.
+- **`--parent-window` is `0` when the calling context is a service worker** (Chrome and Edge, D). Every
+  MV3 extension is a service worker, so the handle does not arrive. The `probe` treats `0` as absent
   (`nm/launch.rs`).
-- O diretório de trabalho do host é a pasta do executável (C, `LaunchContext`).
-- O ambiente é o do navegador (confirmado no e2e: `WEBSIGN_PROBE_PIN` e `SOFTHSM2_CONF` exportados antes do
-  Chromium chegam ao host). Exceção: hosts iniciados pelo portal do Firefox Snap (§3.4).
+- The host's working directory is the executable's folder (C, `LaunchContext`).
+- The environment is the browser's (confirmed in the e2e: `WEBSIGN_PROBE_PIN` and `SOFTHSM2_CONF` exported before
+  Chromium reach the host). Exception: hosts started by the Firefox Snap portal (§3.4).
 
-### Protocolo (igual nos dois sentidos)
+### Protocol (the same in both directions)
 
-`u32` com o tamanho em **ordem de bytes nativa** + JSON UTF-8. Nas plataformas que nos interessam (x86-64,
-ARM64) é little-endian, mas o código usa `from_ne_bytes`/`to_ne_bytes` como a documentação manda.
+A `u32` with the length in **native byte order** + UTF-8 JSON. On the platforms we care about (x86-64,
+ARM64) that is little-endian, but the code uses `from_ne_bytes`/`to_ne_bytes` as the documentation says.
 
-| Direção | Limite | Base |
+| Direction | Limit | Basis |
 |---|---|---|
-| host → navegador | **1 MB** (o navegador derruba a conexão se passar) | D (Chrome, Edge, Firefox) |
-| navegador → host | 64 MiB (Chrome, doc atual); 4 GB (Edge, Firefox) | D |
+| host → browser | **1 MB** (the browser drops the connection if exceeded) | D (Chrome, Edge, Firefox) |
+| browser → host | 64 MiB (Chrome, current doc); 4 GB (Edge, Firefox) | D |
 
-O `probe` recusa reply acima de 1 MiB e aceita no máximo 1 MiB de entrada (as mensagens são pequenas).
+The `probe` rejects replies above 1 MiB and accepts at most 1 MiB of input (the messages are small).
 
-### Ciclo de vida
+### Lifecycle
 
-- `runtime.connectNative()` mantém o processo até a porta fechar; `sendNativeMessage()` inicia **um processo
-  por mensagem** e só a primeira resposta vale (D).
-- **Chrome 105+: uma porta `connectNative` mantém o service worker vivo.** Se o host morre, a porta fecha e o
-  worker termina depois dos timers; a doc recomenda chamar `connectNative()` de novo no `onDisconnect`
-  (D, ciclo de vida do service worker). A extensão de teste fecha a porta por ociosidade (60 s) e reconecta
-  no próximo pedido.
-- O `stderr` do host: o Firefox o redireciona ao Browser Console (D). O Chrome não o mostra em interface
-  alguma (nos sistemas POSIX o host herda o `stderr` do processo do navegador, visível só se ele foi aberto
-  num terminal; C, `launch_context_posix.cc`). Por isso o `probe` escreve `<temp>/websign-probe-host.log`.
+- `runtime.connectNative()` keeps the process until the port closes; `sendNativeMessage()` starts **one process
+  per message** and only the first reply counts (D).
+- **Chrome 105+: a `connectNative` port keeps the service worker alive.** If the host dies, the port closes and the
+  worker ends after the timers; the doc recommends calling `connectNative()` again in `onDisconnect`
+  (D, service worker lifecycle). The test extension closes the port when idle (60 s) and reconnects
+  on the next request.
+- The host's `stderr`: Firefox redirects it to the Browser Console (D). Chrome does not show it in any
+  interface (on POSIX systems the host inherits the browser process's `stderr`, visible only if it was opened
+  from a terminal; C, `launch_context_posix.cc`). That is why the `probe` writes `<temp>/websign-probe-host.log`.
 
-### Mensagens de erro típicas (para o diagnóstico)
+### Typical error messages (for diagnostics)
 
-| Navegador | Texto | Causa provável |
+| Browser | Text | Probable cause |
 |---|---|---|
-| Chrome/Edge | `Specified native messaging host not found.` | manifesto ou chave ausente; nome diferente |
-| Chrome/Edge | `Access to the specified native messaging host is forbidden.` | origem fora de `allowed_origins` |
-| Chrome/Edge | `Native host has exited.` | o processo terminou (visto quando o host caía por `todo!()`) |
-| Firefox | `No such native application <nome>` | manifesto/chave não encontrados |
-| Firefox | `This extension does not have permission to use native application <nome>` | ID fora de `allowed_extensions` |
-| Firefox | `File at path <path> does not exist, or is not executable` | manifesto achado, `path` errado |
+| Chrome/Edge | `Specified native messaging host not found.` | manifest or key missing; different name |
+| Chrome/Edge | `Access to the specified native messaging host is forbidden.` | origin not in `allowed_origins` |
+| Chrome/Edge | `Native host has exited.` | the process ended (seen when the host crashed on `todo!()`) |
+| Firefox | `No such native application <name>` | manifest/key not found |
+| Firefox | `This extension does not have permission to use native application <name>` | ID not in `allowed_extensions` |
+| Firefox | `File at path <path> does not exist, or is not executable` | manifest found, wrong `path` |
 
 ---
 
-## 3. Matriz de registro
+## 3. Registration matrix
 
-`<host>` = `dev.websign.host` (`project.toml`, `[ids].native_host`; o Chrome só aceita `[a-z0-9_.]`).
+`<host>` = `dev.websign.host` (`project.toml`, `[ids].native_host`; Chrome only accepts `[a-z0-9_.]`).
 
 ### 3.1 Windows
 
-O manifesto pode ficar **em qualquer pasta**; o valor padrão da chave é o caminho dele. O `path` do manifesto
-pode ser relativo à pasta do manifesto (D).
+The manifest can live in **any folder**; the key's default value is its path. The manifest's `path`
+can be relative to the manifest's folder (D).
 
-| Navegador | Chave `HKCU` (valor padrão = caminho do manifesto) | Base |
+| Browser | `HKCU` key (default value = manifest path) | Basis |
 |---|---|---|
-| Chrome (e Beta/Dev/Canary) | `Software\Google\Chrome\NativeMessagingHosts\<host>` | D, C |
-| Chromium | `Software\Chromium\NativeMessagingHosts\<host>` (lida primeiro; depois a do Chrome) | C |
-| Edge | `Software\Microsoft\Edge\NativeMessagingHosts\<host>`; fallback: Chromium, depois Chrome | D |
-| Brave | `Software\BraveSoftware\Brave-Browser\NativeMessagingHosts\<host>`; KeePassXC usa a do Chrome | B, K |
-| Vivaldi | `Software\Vivaldi\NativeMessagingHosts\<host>`; KeePassXC usa a do Chrome | B, K |
-| Opera | a do Chrome (fórum da Opera; sem chave própria conhecida) | ? |
+| Chrome (and Beta/Dev/Canary) | `Software\Google\Chrome\NativeMessagingHosts\<host>` | D, C |
+| Chromium | `Software\Chromium\NativeMessagingHosts\<host>` (read first; then Chrome's) | C |
+| Edge | `Software\Microsoft\Edge\NativeMessagingHosts\<host>`; fallback: Chromium, then Chrome | D |
+| Brave | `Software\BraveSoftware\Brave-Browser\NativeMessagingHosts\<host>`; KeePassXC uses Chrome's | B, K |
+| Vivaldi | `Software\Vivaldi\NativeMessagingHosts\<host>`; KeePassXC uses Chrome's | B, K |
+| Opera | Chrome's (Opera forum; no known key of its own) | ? |
 | Firefox | `Software\Mozilla\NativeMessagingHosts\<host>` | D |
 
-Detalhes do Chromium (C, `launch_context_win.cc`):
+Chromium details (C, `launch_context_win.cc`):
 
-- Ordem de busca: `HKCU` (se a política `NativeMessagingUserLevelHosts` não proíbe) e depois `HKLM`; em cada
-  raiz, visão de 32 bits antes da de 64. A **primeira chave achada vale**: o Edge documenta que, se a extensão
-  está na Edge Add-ons e na Chrome Web Store, os **dois IDs** precisam estar no mesmo `allowed_origins`.
-- Só builds com `CHROMIUM_BRANDING` leem `Software\Chromium` antes; todos os outros leem só
-  `Software\Google\Chrome`. Por isso o `probe` grava as chaves próprias **e** a do Chrome, e Opera/Chrome
-  compartilham uma.
-- O host é iniciado por `cmd.exe /d /s /c "<comando>" < pipe > pipe`, a menos que a política
-  `NativeHostsExecutablesLaunchDirectly` (ou o feature `LaunchWindowsNativeHostsDirectly`) esteja ligada.
-  Nos dois modos `start_hidden = true`, **exceto** quando o executável é do subsistema GUI e o lançamento é
-  direto. **Risco a provar:** um host de console iniciado com `SW_HIDE` pode ter a primeira janela criada
-  oculta. A janela de confirmação deve chamar `ShowWindow(SW_SHOW)` explicitamente ou o binário deve ser do
-  subsistema Windows.
-- **MSIX:** a doc da Microsoft diz que, no Windows 10 1903+, arquivos **novos** criados em
-  `AppData\Local`, `Local\Microsoft`, `Roaming` e `Roaming\Microsoft` vão para um local privado do pacote, e
-  toda escrita em `HKCU` é copy-on-write privada. Sem `desktop6:FileSystemWriteVirtualization` e
-  `desktop6:RegistryWriteVirtualization` desligados (com `rescap:unvirtualizedResources`), nem o manifesto nem
-  a chave chegam ao navegador. O `register` tem `--manifest-dir` para apontar outra pasta. Ver
+- Search order: `HKCU` (if the `NativeMessagingUserLevelHosts` policy does not forbid it) and then `HKLM`; in each
+  root, the 32-bit view before the 64-bit one. The **first key found wins**: Edge documents that, if the extension
+  is on both Edge Add-ons and the Chrome Web Store, **both IDs** must be in the same `allowed_origins`.
+- Only builds with `CHROMIUM_BRANDING` read `Software\Chromium` first; all others read only
+  `Software\Google\Chrome`. That is why the `probe` writes its own keys **and** Chrome's, and Opera/Chrome
+  share one.
+- The host is started by `cmd.exe /d /s /c "<command>" < pipe > pipe`, unless the
+  `NativeHostsExecutablesLaunchDirectly` policy (or the `LaunchWindowsNativeHostsDirectly` feature) is on.
+  In both modes `start_hidden = true`, **except** when the executable is of the GUI subsystem and the launch is
+  direct. **Risk to prove:** a console host started with `SW_HIDE` may have its first window created
+  hidden. The confirmation window must call `ShowWindow(SW_SHOW)` explicitly or the binary must be of the Windows
+  subsystem.
+- **MSIX:** Microsoft's doc says that, on Windows 10 1903+, **new** files created in
+  `AppData\Local`, `Local\Microsoft`, `Roaming`, and `Roaming\Microsoft` go to a private package location, and
+  every write to `HKCU` is private copy-on-write. Without `desktop6:FileSystemWriteVirtualization` and
+  `desktop6:RegistryWriteVirtualization` turned off (with `rescap:unvirtualizedResources`), neither the manifest nor
+  the key reaches the browser. `register` has `--manifest-dir` to point at another folder. See
   `docs/prototypes/1-windows.md`.
-- `register` no MSIX grava o **alias de execução** como `path` (`platform::windows::msix_alias_path`), porque
-  arquivos em `WindowsApps` não são executáveis por outros processos.
+- `register` in MSIX writes the **execution alias** as `path` (`platform::windows::msix_alias_path`), because
+  files in `WindowsApps` are not executable by other processes.
 
 ### 3.2 macOS
 
-Usuário: `~/Library/Application Support/<pasta>/NativeMessagingHosts/<host>.json`.
+User: `~/Library/Application Support/<folder>/NativeMessagingHosts/<host>.json`.
 
-| Navegador | `<pasta>` | Base |
+| Browser | `<folder>` | Basis |
 |---|---|---|
 | Chrome | `Google/Chrome` (Beta: `Google/Chrome Beta`; Dev: `Google/Chrome Dev`; Canary: `Google/Chrome Canary`) | D, B |
-| Chrome for Testing (146+) | `Google/ChromeForTesting` (antes do 146 usava a pasta do Chrome) | D |
+| Chrome for Testing (146+) | `Google/ChromeForTesting` (before 146 it used Chrome's folder) | D |
 | Chromium | `Chromium` | D, K |
 | Edge | `Microsoft Edge` (+ ` Beta`, ` Dev`, ` Canary`) | D, B |
-| Brave | `BraveSoftware/Brave-Browser` (+ `-Beta`, `-Nightly`) | K; Beta/Nightly por analogia (?) |
+| Brave | `BraveSoftware/Brave-Browser` (+ `-Beta`, `-Nightly`) | K; Beta/Nightly by analogy (?) |
 | Vivaldi | `Vivaldi` | B, K |
 | Opera | `com.operasoftware.Opera` | ? |
-| Firefox | `Mozilla/NativeMessagingHosts` (nota: `Mozilla`, sem subpasta de perfil) | D |
+| Firefox | `Mozilla/NativeMessagingHosts` (note: `Mozilla`, no profile subfolder) | D |
 
-Sistema (todos os usuários): `/Library/Google/Chrome/NativeMessagingHosts/`,
+System (all users): `/Library/Google/Chrome/NativeMessagingHosts/`,
 `/Library/Microsoft/Edge/NativeMessagingHosts/`, `/Library/Application Support/Chromium/NativeMessagingHosts/`,
-`/Library/Application Support/Mozilla/NativeMessagingHosts/` (D). O web-eid instala o de Chrome e o de Firefox
-nesses caminhos (W).
+`/Library/Application Support/Mozilla/NativeMessagingHosts/` (D). web-eid installs the Chrome and Firefox ones
+at those paths (W).
 
-**Sandbox (Mac App Store).** Só as pastas `NativeMessagingHosts/` precisam de escrita, via
-`com.apple.security.temporary-exception.files.home-relative-path.read-write` (o Bitwarden lista exatamente
-essas pastas na build MAS; B, `entitlements.mas.plist`). O caminho é relativo à **home real**, mas um processo
-sandboxed vê `$HOME` dentro do contêiner (`<home>/Library/Containers/<bundle>/Data`); o `register` reconstrói
-a home real cortando em `/Library/Containers/` (o Bitwarden usa `os.userInfo().homedir`, que consulta o banco
-de usuários). O binário chamado pelo navegador roda com `com.apple.security.inherit` no Bitwarden (B,
+**Sandbox (Mac App Store).** Only the `NativeMessagingHosts/` folders need write access, through
+`com.apple.security.temporary-exception.files.home-relative-path.read-write` (Bitwarden lists exactly
+these folders in the MAS build; B, `entitlements.mas.plist`). The path is relative to the **real home**, but a sandboxed
+process sees `$HOME` inside the container (`<home>/Library/Containers/<bundle>/Data`); `register` rebuilds
+the real home by cutting at `/Library/Containers/` (Bitwarden uses `os.userInfo().homedir`, which queries the user
+database). The binary the browser calls runs with `com.apple.security.inherit` in Bitwarden (B,
 `entitlements.desktop_proxy*.plist`).
 
 ### 3.3 Linux
 
-Usuário: `<pasta de configuração>/NativeMessagingHosts/<host>.json` (Firefox: `~/.mozilla/native-messaging-hosts/`).
-No Chromium isso é `DIR_USER_DATA/NativeMessagingHosts`, ou seja, **vale para qualquer `--user-data-dir`**
-(C, `chrome_paths.cc`: `DIR_USER_NATIVE_MESSAGING`; só compilado para Linux, ChromeOS, macOS e Android, não
-para Windows).
+User: `<config folder>/NativeMessagingHosts/<host>.json` (Firefox: `~/.mozilla/native-messaging-hosts/`).
+In Chromium this is `DIR_USER_DATA/NativeMessagingHosts`, that is, it **applies to any `--user-data-dir`**
+(C, `chrome_paths.cc`: `DIR_USER_NATIVE_MESSAGING`; only compiled for Linux, ChromeOS, macOS, and Android, not
+for Windows).
 
-| Navegador | Pasta sob `~/.config/` (usuário) | Sistema | Base |
+| Browser | Folder under `~/.config/` (user) | System | Basis |
 |---|---|---|---|
 | Chrome | `google-chrome`, `google-chrome-beta`, `google-chrome-unstable` | `/etc/opt/chrome/native-messaging-hosts/` | D, B |
 | Chrome for Testing (146+) | `google-chrome-for-testing` | `/etc/opt/chrome_for_testing/native-messaging-hosts/` | D |
 | Chromium | `chromium` | `/etc/chromium/native-messaging-hosts/` | D, C |
 | Edge | `microsoft-edge`, `-beta`, `-dev` | `/etc/opt/edge/native-messaging-hosts/` | D |
-| Brave | `BraveSoftware/Brave-Browser` (+ `-Beta`, `-Nightly`) | `/etc/chromium/native-messaging-hosts/`? | B, K; sistema ? |
-| Vivaldi | `vivaldi`, `vivaldi-snapshot` | `/etc/chromium/native-messaging-hosts/` (fórum) | B, K |
-| Opera | `opera`, `opera-beta`, `opera-developer` | ? | ? (fórum de 2014) |
-| Firefox | `~/.mozilla/native-messaging-hosts/` | `/usr/lib/mozilla/native-messaging-hosts/` e `/usr/lib64/...` | D |
+| Brave | `BraveSoftware/Brave-Browser` (+ `-Beta`, `-Nightly`) | `/etc/chromium/native-messaging-hosts/`? | B, K; system ? |
+| Vivaldi | `vivaldi`, `vivaldi-snapshot` | `/etc/chromium/native-messaging-hosts/` (forum) | B, K |
+| Opera | `opera`, `opera-beta`, `opera-developer` | ? | ? (2014 forum) |
+| Firefox | `~/.mozilla/native-messaging-hosts/` | `/usr/lib/mozilla/native-messaging-hosts/` and `/usr/lib64/...` | D |
 
-O web-eid (pacote de sistema) instala em `/usr/lib/mozilla/native-messaging-hosts/` (Debian; `${LIBDIR}` nas
-demais), `/etc/chromium/native-messaging-hosts/` e `/etc/opt/chrome/native-messaging-hosts/`, com `path`
-absoluto `/usr/bin/web-eid` (W). O `.deb` do nosso app fará o mesmo; o `register` por usuário é a rota do
-"complemento" e dos testes.
+web-eid (system package) installs into `/usr/lib/mozilla/native-messaging-hosts/` (Debian; `${LIBDIR}` on
+the others), `/etc/chromium/native-messaging-hosts/`, and `/etc/opt/chrome/native-messaging-hosts/`, with the
+absolute `path` `/usr/bin/web-eid` (W). Our app's `.deb` will do the same; the per-user `register` is the route for the
+"complement" and for tests.
 
-**Só registrar onde o navegador existe.** O `register` só grava quando a pasta de configuração do navegador
-já existe (mesma regra do Bitwarden, que avisa "not found, skipping"). Criar `~/.config/vivaldi` para quem não
-tem Vivaldi suja a home e engana ferramentas que tratam a pasta como prova de instalação. O preço: um
-navegador instalado e nunca aberto é ignorado até o próximo registro; o app final registra a cada início e
-fecha a lacuna. No Windows não há pasta a testar, então as chaves de `HKCU` são gravadas sempre.
+**Only register where the browser exists.** `register` only writes when the browser's config folder
+already exists (same rule as Bitwarden, which warns "not found, skipping"). Creating `~/.config/vivaldi` for someone who
+does not have Vivaldi clutters the home and misleads tools that treat the folder as proof of installation. The price: a
+browser that is installed and never opened is ignored until the next registration; the final app registers at every start and
+closes the gap. On Windows there is no folder to test, so the `HKCU` keys are always written.
 
-**Snap (Chromium).** O Chromium do Snap lê `~/snap/chromium/common/chromium/NativeMessagingHosts/` (o
-`register` grava aqui) e roda com `/tmp` privado (o log do host fica no `/tmp` do Snap). Se o confinamento
-deixa o host executar, não está provado: **prova 4**.
+**Snap (Chromium).** The Snap's Chromium reads `~/snap/chromium/common/chromium/NativeMessagingHosts/` (`register`
+writes here) and runs with a private `/tmp` (the host log ends up in the Snap's `/tmp`). Whether the confinement
+lets the host execute is not proven: **proof 4**.
 
-**Flatpak.** Cada navegador Flatpak enxerga só o próprio `~/.var/app/<id>/`: manifesto em
-`~/.var/app/<id>/config/<pasta>/NativeMessagingHosts/` (Firefox: `.../.mozilla/native-messaging-hosts/`) e o
-binário **copiado para lá**, já que o `/usr` do sandbox é o do runtime (mesma técnica do Bitwarden, que faz
+**Flatpak.** Each Flatpak browser only sees its own `~/.var/app/<id>/`: manifest in
+`~/.var/app/<id>/config/<folder>/NativeMessagingHosts/` (Firefox: `.../.mozilla/native-messaging-hosts/`) and the
+binary **copied there**, since the sandbox's `/usr` is the runtime's (same technique as Bitwarden, which makes a
 hard link). IDs: `com.google.Chrome`, `org.chromium.Chromium`, `com.microsoft.Edge`, `com.brave.Browser`,
-`com.vivaldi.Vivaldi`, `com.opera.Opera`, `org.mozilla.firefox`. **Limite conhecido:** dentro do sandbox o host
-não vê o `pcscd` nem os módulos PKCS#11 do sistema, então ele responde `ping`, mas não assina. Resolver exige
-o portal (§3.4) ou `flatpak-spawn --host`; fora do escopo do spike.
+`com.vivaldi.Vivaldi`, `com.opera.Opera`, `org.mozilla.firefox`. **Known limit:** inside the sandbox the host
+sees neither `pcscd` nor the system's PKCS#11 modules, so it answers `ping` but does not sign. Solving this requires
+the portal (§3.4) or `flatpak-spawn --host`; out of the spike's scope.
 
-### 3.4 Firefox Snap e Flatpak: o portal
+### 3.4 Firefox Snap and Flatpak: the portal
 
-O Firefox confinado (Snap do Ubuntu; Flatpak) **não consegue** ler manifestos nem executar hosts. Em vez
-disso, delega a um serviço D-Bus que fora do sandbox acha o manifesto, valida o ID da extensão contra
-`allowed_extensions`, **pergunta ao usuário uma vez por par extensão × aplicação** e inicia o processo,
-devolvendo descritores de `stdin`/`stdout`/`stderr`.
+Confined Firefox (Ubuntu Snap; Flatpak) **cannot** read manifests or execute hosts. Instead,
+it delegates to a D-Bus service that, outside the sandbox, finds the manifest, validates the extension ID against
+`allowed_extensions`, **asks the user once per extension × application pair**, and starts the process,
+returning `stdin`/`stdout`/`stderr` descriptors.
 
-| | Portal WebExtensions | Native Messaging Proxy |
+| | WebExtensions portal | Native Messaging Proxy |
 |---|---|---|
-| Nome D-Bus | `org.freedesktop.portal.WebExtensions` | `org.freedesktop.NativeMessagingProxy` |
-| Métodos | `CreateSession`, `GetManifest`, `Start` (+ sinal `Response`), `GetPipes`, `Close` | `GetManifest`, `Start`, `Close` |
-| Preferência do Firefox | `widget.use-xdg-desktop-portal.native-messaging` | `widget.use-xdg-desktop-portal.native-messaging-proxy` |
-| Valores | 0 desligado, 1 ligado, 2 autodetecção | idem |
-| Situação (setembro de 2026) | patch da distribuição no Ubuntu desde o 22.04 (não entrou no `xdg-desktop-portal` upstream); é o que o Firefox Snap **estável** usa hoje | substituto, previsto para o Ubuntu 26.04. Bugzilla 1955255: `RESOLVED FIXED` no Firefox 157 (entrou no mozilla-central em 10/09/2026), preferência padrão 0; em 29/09/2026 a Canonical acabara de habilitá-la só no Snap `nightly` |
-| Usuário é perguntado | sim | não |
+| D-Bus name | `org.freedesktop.portal.WebExtensions` | `org.freedesktop.NativeMessagingProxy` |
+| Methods | `CreateSession`, `GetManifest`, `Start` (+ `Response` signal), `GetPipes`, `Close` | `GetManifest`, `Start`, `Close` |
+| Firefox preference | `widget.use-xdg-desktop-portal.native-messaging` | `widget.use-xdg-desktop-portal.native-messaging-proxy` |
+| Values | 0 off, 1 on, 2 autodetect | same |
+| Status (September 2026) | distribution patch in Ubuntu since 22.04 (did not land in upstream `xdg-desktop-portal`); it is what the **stable** Firefox Snap uses today | replacement, planned for Ubuntu 26.04. Bugzilla 1955255: `RESOLVED FIXED` in Firefox 157 (landed in mozilla-central on 2026-09-10), default preference 0; on 2026-09-29 Canonical had just enabled it only in the `nightly` Snap |
+| User is asked | yes | no |
 
-Fontes: doc de design do Firefox e Bugzilla 1955255 (links no fim). Consequências para o app:
+Sources: Firefox design doc and Bugzilla 1955255 (links at the end). Consequences for the app:
 
-1. **O manifesto tem de estar no disco do host**, em `~/.mozilla/native-messaging-hosts/` ou
-   `/usr/lib/mozilla/native-messaging-hosts/`, e o `path` tem de ser um caminho do host (nunca dentro de
-   `~/snap/`). O `register` já grava esse arquivo; nada específico de Snap é necessário.
-2. **O web-eid não tem tratamento específico de Snap** nos instaladores que li (`CMakeLists.txt`, `web-eid.wxs`):
-   instala o manifesto de sistema com `path` absoluto e deixa o portal fazer o resto. É a mesma aposta que
-   fazemos.
-3. **Quem inicia o host é o portal, não o Firefox**: o ambiente (variáveis, `DISPLAY`/`WAYLAND_DISPLAY`,
-   `XDG_*`) é o do serviço `xdg-desktop-portal` da sessão. `WEBSIGN_PROBE_PIN` não chega por essa rota, e uma
-   janela egui depende de o portal ter o ambiente gráfico. Ambos são pontos da **prova 4**.
-4. Na primeira conexão o usuário vê um diálogo do portal ("permitir que <extensão> inicie <aplicação>"):
-   entra no texto de ajuda do popup.
-5. Módulos PKCS#11 do Firefox Snap **não** entram aqui: o portal só cobre native messaging.
+1. **The manifest must be on the host's disk**, in `~/.mozilla/native-messaging-hosts/` or
+   `/usr/lib/mozilla/native-messaging-hosts/`, and the `path` must be a host path (never inside
+   `~/snap/`). `register` already writes that file; nothing Snap-specific is needed.
+2. **web-eid has no Snap-specific handling** in the installers I read (`CMakeLists.txt`, `web-eid.wxs`):
+   it installs the system manifest with an absolute `path` and lets the portal do the rest. It is the same bet
+   we are making.
+3. **The portal starts the host, not Firefox**: the environment (variables, `DISPLAY`/`WAYLAND_DISPLAY`,
+   `XDG_*`) is that of the session's `xdg-desktop-portal` service. `WEBSIGN_PROBE_PIN` does not arrive by this route, and an
+   egui window depends on the portal having the graphical environment. Both are **proof 4** points.
+4. On the first connection the user sees a portal dialog ("allow <extension> to start <application>"):
+   it goes into the popup's help text.
+5. Firefox Snap PKCS#11 modules do **not** come into play here: the portal only covers native messaging.
 
 ### 3.5 Safari
 
-Não há manifesto, chave de registro, `allowed_origins` nem processo filho. A Apple (D):
+There is no manifest, registry key, `allowed_origins`, or child process. Apple (D):
 
-- A extensão web tem três partes que rodam isoladas: o **app** (macOS/iOS), o **JavaScript** da extensão e uma
-  **app extension (appex)** que faz a mediação. Os sandboxes são separados; o que os une são *app groups*.
-- O background script (ou uma página da extensão) chama `browser.runtime.sendNativeMessage(app, mensagem)`;
-  **o primeiro parâmetro é ignorado** e a mensagem vai sempre para a appex do app que contém a extensão,
-  em `beginRequest(with:)` (`NSExtensionRequestHandling`). **Content scripts não podem** falar com a appex,
-  então a ponte do site passa pelo background, como no Chrome.
-- O caminho contrário (app → JS) usa `SFSafariApplication.dispatchMessage` e uma `runtime.connectNative`
-  cuja porta só conecta ao app que contém a extensão.
-- O web-eid usa a appex só como ponte: ela **abre o app** (`NSWorkspace.launchApplication`), guarda a
-  mensagem em um `UserDefaults` compartilhado por app group e avisa por `NSDistributedNotificationCenter`; a
-  resposta volta pelo mesmo caminho (W, `src/mac/`). É o desenho da prova 2 (a appex assina direto ou abre o
+- The web extension has three parts that run isolated: the **app** (macOS/iOS), the extension's **JavaScript**, and an
+  **app extension (appex)** that mediates. The sandboxes are separate; what ties them together are *app groups*.
+- The background script (or an extension page) calls `browser.runtime.sendNativeMessage(app, message)`;
+  **the first parameter is ignored** and the message always goes to the appex of the app that contains the extension,
+  in `beginRequest(with:)` (`NSExtensionRequestHandling`). **Content scripts cannot** talk to the appex,
+  so the site's bridge goes through the background, as in Chrome.
+- The reverse path (app → JS) uses `SFSafariApplication.dispatchMessage` and a `runtime.connectNative`
+  whose port only connects to the app that contains the extension.
+- web-eid uses the appex only as a bridge: it **opens the app** (`NSWorkspace.launchApplication`), stores the
+  message in a `UserDefaults` shared through an app group, and notifies through `NSDistributedNotificationCenter`; the
+  reply comes back the same way (W, `src/mac/`). This is the design of proof 2 (the appex signs directly or opens the
   app).
-- Estado da extensão: `SFSafariExtensionManager.getStateOfSafariExtension(withIdentifier:)`, do app.
+- Extension state: `SFSafariExtensionManager.getStateOfSafariExtension(withIdentifier:)`, from the app.
 
 ---
 
-## 4. Pré-registro de extensão
+## 4. Extension pre-registration
 
-"Pré-registrar" faz o navegador oferecer/instalar a extensão sem o usuário ir à loja. Vale só para a
-extensão de produção; a de teste é carregada com `--load-extension`.
+"Pre-registering" makes the browser offer/install the extension without the user going to the store. It only applies to the
+production extension; the test one is loaded with `--load-extension`.
 
-| Navegador | SO | Onde | Como o usuário vê | Base |
+| Browser | OS | Where | How the user sees it | Basis |
 |---|---|---|---|---|
-| Chrome | Windows | `HKLM\Software\Wow6432Node\Google\Chrome\Extensions\<id>` (32 bits: sem `Wow6432Node`), valor `update_url` = `https://clients2.google.com/service/update2/crx`. O código lê **também** `HKCU\Software\Google\Chrome\Extensions` (usa `HKCU` só quando a chave em `HKLM` não abre) | precisa habilitar num diálogo | D, C |
-| Chrome | macOS | `~/Library/Application Support/Google/Chrome/External Extensions/<id>.json` (usuário) ou `/Library/Application Support/Google/Chrome/External Extensions/` (todos: só lido se os donos e permissões da árvore forem root/admin) | diálogo | D, W |
-| Chrome | Linux | `/opt/google/chrome/extensions/<id>.json` ou `/usr/share/google-chrome/extensions/<id>.json` | **instala sozinho** | D |
-| Chromium | Linux | `/usr/share/chromium/extensions/<id>.json` | idem | W |
-| Edge | Windows | `HKLM\Software\Microsoft\Edge\Extensions\<id>` (`update_url` = `https://edge.microsoft.com/extensionwebstorebase/v1/crx`) | diálogo | D, W |
-| Edge | macOS | `~/Library/Application Support/Microsoft Edge/External Extensions/` ou `/Library/Application Support/Microsoft/Edge/External Extensions/` | diálogo | D |
-| Edge | Linux | `~/.config/microsoft-edge/External Extensions/` ou `/usr/share/microsoft-edge/extensions/` | automático | D |
-| Firefox | todos | **não há arquivo por usuário.** Política `ExtensionSettings` (`installation_mode: force_installed` + `install_url`) em `policies.json` (`distribution/`, `/etc/firefox/policies/`) ou no registro `HKLM\Software\Policies\Mozilla\Firefox`. A doc só cita `HKLM` | instala sem perguntar | D |
-| Firefox | Linux (pacote) | `/usr/share/mozilla/extensions/{ec8030f7-c20a-464f-9b0e-13a3a9e97384}/<id>.xpi` (o web-eid empacota assim; o GUID é o ID do aplicativo Firefox) | o Firefox oferece a instalação | W |
-| Safari | macOS | a extensão vem **dentro do app**; o usuário liga em Safari > Configurações > Extensões | ligar manualmente | D |
+| Chrome | Windows | `HKLM\Software\Wow6432Node\Google\Chrome\Extensions\<id>` (32-bit: without `Wow6432Node`), `update_url` value = `https://clients2.google.com/service/update2/crx`. The code **also** reads `HKCU\Software\Google\Chrome\Extensions` (uses `HKCU` only when the `HKLM` key does not open) | must be enabled in a dialog | D, C |
+| Chrome | macOS | `~/Library/Application Support/Google/Chrome/External Extensions/<id>.json` (user) or `/Library/Application Support/Google/Chrome/External Extensions/` (all users: only read if the tree's owners and permissions are root/admin) | dialog | D, W |
+| Chrome | Linux | `/opt/google/chrome/extensions/<id>.json` or `/usr/share/google-chrome/extensions/<id>.json` | **installs by itself** | D |
+| Chromium | Linux | `/usr/share/chromium/extensions/<id>.json` | same | W |
+| Edge | Windows | `HKLM\Software\Microsoft\Edge\Extensions\<id>` (`update_url` = `https://edge.microsoft.com/extensionwebstorebase/v1/crx`) | dialog | D, W |
+| Edge | macOS | `~/Library/Application Support/Microsoft Edge/External Extensions/` or `/Library/Application Support/Microsoft/Edge/External Extensions/` | dialog | D |
+| Edge | Linux | `~/.config/microsoft-edge/External Extensions/` or `/usr/share/microsoft-edge/extensions/` | automatic | D |
+| Firefox | all | **there is no per-user file.** `ExtensionSettings` policy (`installation_mode: force_installed` + `install_url`) in `policies.json` (`distribution/`, `/etc/firefox/policies/`) or in the registry `HKLM\Software\Policies\Mozilla\Firefox`. The doc only mentions `HKLM` | installs without asking | D |
+| Firefox | Linux (package) | `/usr/share/mozilla/extensions/{ec8030f7-c20a-464f-9b0e-13a3a9e97384}/<id>.xpi` (web-eid packages it this way; the GUID is the Firefox application ID) | Firefox offers the installation | W |
+| Safari | macOS | the extension comes **inside the app**; the user turns it on in Safari > Settings > Extensions | turn on manually | D |
 
-Arquivo externo do Chromium: `{"external_update_url": "https://clients2.google.com/service/update2/crx"}`.
-No Windows e no macOS o Chrome só aceita instalação externa vinda da Chrome Web Store (desde o Chrome 33 e
-44, respectivamente).
+Chromium external file: `{"external_update_url": "https://clients2.google.com/service/update2/crx"}`.
+On Windows and macOS, Chrome only accepts external installation coming from the Chrome Web Store (since Chrome 33 and
+44, respectively).
 
-**Consequência para o MSIX (HKCU-only):** o pré-registro do Chrome por `HKCU` é plausível pelo código, mas a
-documentação só fala em `HKLM`; o do Firefox exige política de sistema, impossível sem elevação. A **prova 1**
-tem de dizer se `HKCU\Software\Google\Chrome\Extensions\<id>` funciona de fato e, se não, o popup da extensão
-"Baixar" e a página da loja são o único caminho para Firefox.
+**Consequence for MSIX (HKCU-only):** Chrome pre-registration through `HKCU` is plausible per the code, but the
+documentation only talks about `HKLM`; Firefox's requires a system policy, impossible without elevation. **Proof 1**
+must say whether `HKCU\Software\Google\Chrome\Extensions\<id>` really works and, if not, the extension popup's
+"Download" and the store page are the only path for Firefox.
 
-Política que pode bloquear tudo isso e que o diagnóstico deve saber explicar (Chrome/Edge, D):
-`NativeMessagingAllowlist`, `NativeMessagingBlocklist` e `NativeMessagingUserLevelHosts` (quando `false`, o
-Chrome ignora `HKCU` e as pastas de usuário, e só lê o local do sistema).
+Policies that can block all of this and that diagnostics must be able to explain (Chrome/Edge, D):
+`NativeMessagingAllowlist`, `NativeMessagingBlocklist`, and `NativeMessagingUserLevelHosts` (when `false`,
+Chrome ignores `HKCU` and the user folders, and only reads the system location).
 
 ---
 
-## 5. O que o kit implementa
+## 5. What the kit implements
 
 - `websign-probe register [--browser <all|chrome|chromium|edge|brave|vivaldi|opera|firefox>]... [--uninstall]
-  [--user-data-dir DIR] [--dry-run] [--extension-id ID]... [--manifest-dir DIR]` grava os manifestos das
-  tabelas acima (`probe/src/nm/register/`). `allowed_origins` = ID de desenvolvimento + IDs de loja não
-  vazios + `--extension-id`. Firefox: `allowed_extensions` = `firefox_id`.
-- `--user-data-dir DIR` grava só `DIR/NativeMessagingHosts/<host>.json`, que o Chromium lê com
-  `--user-data-dir=DIR` no Linux e no macOS; é o que o `nm-e2e` usa.
-- O host (`probe/src/nm/`) reconhece o lançamento pelos argumentos da §2, fala o protocolo `"v": 1` e registra
-  em `<temp>/websign-probe-host.log` só: horário, pid, família, ID da extensão, tipo e tamanho das mensagens,
-  resultado. Nunca PIN, digest, assinatura, nome, certificado, impressão digital ou site.
-- Variáveis só de teste: `WEBSIGN_PROBE_PIN` (PIN PKCS#11) e `WEBSIGN_PROBE_MODULES` (módulos extras, lista
-  no formato do `PATH`), porque o navegador não passa argumentos.
+  [--user-data-dir DIR] [--dry-run] [--extension-id ID]... [--manifest-dir DIR]` writes the manifests from the
+  tables above (`probe/src/nm/register/`). `allowed_origins` = development ID + non-empty store IDs +
+  `--extension-id`. Firefox: `allowed_extensions` = `firefox_id`.
+- `--user-data-dir DIR` writes only `DIR/NativeMessagingHosts/<host>.json`, which Chromium reads with
+  `--user-data-dir=DIR` on Linux and macOS; this is what `nm-e2e` uses.
+- The host (`probe/src/nm/`) recognizes the launch by the arguments in §2, speaks the `"v": 1` protocol, and logs
+  to `<temp>/websign-probe-host.log` only: time, pid, family, extension ID, message type and size,
+  result. Never a PIN, digest, signature, name, certificate, thumbprint, or site.
+- Test-only variables: `WEBSIGN_PROBE_PIN` (PKCS#11 PIN) and `WEBSIGN_PROBE_MODULES` (extra modules, a list
+  in `PATH` format), because the browser does not pass arguments.
 
-### O que continua sem prova
+### What remains unproven
 
-| Item | Por quê | Prova |
+| Item | Why | Proof |
 |---|---|---|
-| Firefox (todos os SOs) e Safari | não há Firefox nem Mac neste ambiente; o `web-ext lint` aprovou o manifesto (só o aviso esperado de `service_worker`) | 2, 4 |
-| Edge, Brave, Vivaldi, Opera no Windows/Linux/macOS | os caminhos vêm de documentação e de terceiros (B, K); só o Chromium foi executado | 1, 2 |
-| Opera (todos), Brave Beta/Nightly | sem fonte primária | 1, 2 |
-| Chromium Snap, Flatpak, Firefox Snap | sem esses ambientes aqui | 4 |
-| `--parent-window` real no Windows e janela oculta por `SW_HIDE` | só existe no Windows | 1 |
-| Pré-registro por `HKCU` (Chrome/Edge) | a doc só cita `HKLM` | 1 |
+| Firefox (all OSes) and Safari | there is no Firefox or Mac in this environment; `web-ext lint` approved the manifest (only the expected `service_worker` warning) | 2, 4 |
+| Edge, Brave, Vivaldi, Opera on Windows/Linux/macOS | paths come from documentation and third parties (B, K); only Chromium was executed | 1, 2 |
+| Opera (all), Brave Beta/Nightly | no primary source | 1, 2 |
+| Chromium Snap, Flatpak, Firefox Snap | no such environments here | 4 |
+| Real `--parent-window` on Windows and a window hidden by `SW_HIDE` | only exists on Windows | 1 |
+| Pre-registration through `HKCU` (Chrome/Edge) | the doc only mentions `HKLM` | 1 |
 
 ---
 
-## 6. Fontes
+## 6. Sources
 
-**Documentação**
+**Documentation**
 
 - Chrome, Native messaging: <https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging>
-- Chrome, ciclo de vida do service worker (`connectNative` mantém vivo): <https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/lifecycle>
-- Chrome, instalar extensões por arquivo/registro: <https://developer.chrome.com/docs/extensions/how-to/distribute/install-extensions>
-- Edge, Native messaging: <https://learn.microsoft.com/en-us/microsoft-edge/extensions/developer-guide/native-messaging> (fonte: <https://raw.githubusercontent.com/MicrosoftDocs/edge-developer/main/microsoft-edge/extensions/developer-guide/native-messaging.md>)
-- Edge, distribuição alternativa: <https://raw.githubusercontent.com/MicrosoftDocs/edge-developer/main/microsoft-edge/extensions/developer-guide/alternate-distribution-options.md>
+- Chrome, service worker lifecycle (`connectNative` keeps it alive): <https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/lifecycle>
+- Chrome, installing extensions through file/registry: <https://developer.chrome.com/docs/extensions/how-to/distribute/install-extensions>
+- Edge, Native messaging: <https://learn.microsoft.com/en-us/microsoft-edge/extensions/developer-guide/native-messaging> (source: <https://raw.githubusercontent.com/MicrosoftDocs/edge-developer/main/microsoft-edge/extensions/developer-guide/native-messaging.md>)
+- Edge, alternate distribution: <https://raw.githubusercontent.com/MicrosoftDocs/edge-developer/main/microsoft-edge/extensions/developer-guide/alternate-distribution-options.md>
 - MDN, Native messaging: <https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Native_messaging>
 - MDN, Native manifests: <https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Native_manifests>
-- Firefox, native messaging em navegador confinado: <https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/native-messaging-portal-design.html>
-- Bugzilla 1955255 (native messaging proxy, Snap/Flatpak; estado lido pela API REST em 29/09/2026): <https://bugzilla.mozilla.org/show_bug.cgi?id=1955255>
-- Ubuntu, chamada de testes do native messaging no Snap do Firefox: <https://discourse.ubuntu.com/t/call-for-testing-native-messaging-support-in-the-firefox-snap/29759>
-- Firefox, política `ExtensionSettings`: <https://mozilla.github.io/policy-templates/>
-- Apple, mensagens entre o app e o JavaScript de uma extensão do Safari: <https://developer.apple.com/documentation/safariservices/messaging-between-the-app-and-javascript-in-a-safari-web-extension>
-- Microsoft, como apps desktop empacotados (MSIX) rodam, com virtualização de arquivos e registro: <https://learn.microsoft.com/en-us/windows/msix/desktop/desktop-to-uwp-behind-the-scenes>
+- Firefox, native messaging in a confined browser: <https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/native-messaging-portal-design.html>
+- Bugzilla 1955255 (native messaging proxy, Snap/Flatpak; status read through the REST API on 2026-09-29): <https://bugzilla.mozilla.org/show_bug.cgi?id=1955255>
+- Ubuntu, call for testing native messaging in the Firefox Snap: <https://discourse.ubuntu.com/t/call-for-testing-native-messaging-support-in-the-firefox-snap/29759>
+- Firefox, `ExtensionSettings` policy: <https://mozilla.github.io/policy-templates/>
+- Apple, messaging between the app and the JavaScript of a Safari web extension: <https://developer.apple.com/documentation/safariservices/messaging-between-the-app-and-javascript-in-a-safari-web-extension>
+- Microsoft, how packaged desktop apps (MSIX) run, with file and registry virtualization: <https://learn.microsoft.com/en-us/windows/msix/desktop/desktop-to-uwp-behind-the-scenes>
 
-**Código lido (não copiado)**
+**Code read (not copied)**
 
-- Chromium, busca de manifestos no Windows e lançamento: <https://raw.githubusercontent.com/chromium/chromium/main/chrome/browser/extensions/api/messaging/launch_context_win.cc>
-- Chromium, busca no POSIX: <https://raw.githubusercontent.com/chromium/chromium/main/chrome/browser/extensions/api/messaging/launch_context_posix.cc>
+- Chromium, manifest lookup on Windows and launch: <https://raw.githubusercontent.com/chromium/chromium/main/chrome/browser/extensions/api/messaging/launch_context_win.cc>
+- Chromium, POSIX lookup: <https://raw.githubusercontent.com/chromium/chromium/main/chrome/browser/extensions/api/messaging/launch_context_posix.cc>
 - Chromium, `DIR_USER_NATIVE_MESSAGING`: <https://raw.githubusercontent.com/chromium/chromium/main/chrome/common/chrome_paths.cc>
-- Chromium, pré-registro por registro: <https://raw.githubusercontent.com/chromium/chromium/main/chrome/browser/extensions/external_registry_loader_win.cc>
-- Bitwarden, caminhos por SO: <https://raw.githubusercontent.com/bitwarden/clients/main/apps/desktop/src/main/native-messaging.main.ts>
-- web-eid-app, instalação: <https://raw.githubusercontent.com/web-eid/web-eid-app/main/src/app/CMakeLists.txt> e <https://raw.githubusercontent.com/web-eid/web-eid-app/main/install/web-eid.wxs>
-- web-eid-app, ponte do Safari: `src/mac/` (mesmo repositório)
-- KeePassXC, instalador de manifestos: `src/browser/NativeMessageInstaller.cpp`
+- Chromium, pre-registration through the registry: <https://raw.githubusercontent.com/chromium/chromium/main/chrome/browser/extensions/external_registry_loader_win.cc>
+- Bitwarden, paths per OS: <https://raw.githubusercontent.com/bitwarden/clients/main/apps/desktop/src/main/native-messaging.main.ts>
+- web-eid-app, installation: <https://raw.githubusercontent.com/web-eid/web-eid-app/main/src/app/CMakeLists.txt> and <https://raw.githubusercontent.com/web-eid/web-eid-app/main/install/web-eid.wxs>
+- web-eid-app, Safari bridge: `src/mac/` (same repository)
+- KeePassXC, manifest installer: `src/browser/NativeMessageInstaller.cpp`

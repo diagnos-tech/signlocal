@@ -1,64 +1,65 @@
-# Como contribuir
+# Contributing
 
-> **English summary.** Every commit must be signed off (`git commit -s`, DCO 1.1).
-> By signing off you also accept that your contribution is distributed under the
-> license of the part you change — including the GPL section 7 additional
-> permission for app stores in [`LICENSE`](LICENSE). Commit messages follow
-> `<type>(<scope>): description`. New behavior starts with a spec and tests.
+> Every commit must be signed off (`git commit -s`, DCO 1.1). By signing off you also
+> accept that your contribution is distributed under the license of the part you
+> change, including the GPL section 7 additional permission for app stores in
+> [`LICENSE`](LICENSE). New behavior starts with a spec and tests.
 
-## Licença e DCO (obrigatório)
+## License and DCO (required)
 
-Cada commit precisa da linha `Signed-off-by: Nome <email>` (use `git commit -s`).
-Com ela você declara que concorda com o [Developer Certificate of Origin 1.1](https://developercertificate.org/)
-e que sua contribuição é licenciada sob a licença da parte que você alterou:
+Every commit needs a `Signed-off-by: Name <email>` line (use `git commit -s`).
+With it you state that you agree to the [Developer Certificate of Origin 1.1](https://developercertificate.org/)
+and that your contribution is licensed under the license of the part you changed:
 
-| Parte | Licença |
+| Part | License |
 |---|---|
-| `app/`, `extension/`, `safari/`, `packaging/`, `site/`, `docs/` | GPL-3.0-or-later **com a permissão adicional de lojas de apps** (seção 7, em [`LICENSE`](LICENSE)) |
+| `app/`, `extension/`, `safari/`, `packaging/`, `site/`, `docs/` | GPL-3.0-or-later **with the app-store additional permission** (section 7, in [`LICENSE`](LICENSE)) |
 | `sdk/` | Apache-2.0 |
 | `devices.json` | CC0-1.0 |
 
-A permissão adicional existe para que o app possa ser distribuído pela Mac App Store
-e pela Microsoft Store. Contribuição que não aceite essa permissão não pode ser integrada.
+The additional permission exists so the app can be distributed through the Mac App Store
+and the Microsoft Store. A contribution that does not accept this permission cannot be merged.
 
-Dependências novas precisam ser compatíveis com GPL-3.0 (MIT, Apache-2.0, BSD, ISC, Zlib, MPL-2.0).
-No `sdk/` a regra é mais dura: **zero dependências de runtime**.
+New dependencies must be compatible with GPL-3.0 (MIT, Apache-2.0, BSD, ISC, Zlib, MPL-2.0).
+In `sdk/` the rule is stricter: **zero runtime dependencies**.
 
 ## Commits
 
 ```
-<tipo>(<escopo>): descrição no imperativo, em pt-BR
+<type>(<scope>): <imperative description in English>
 ```
 
-- Cabeçalho com no máximo 100 caracteres.
-- Tipos: `feat`, `fix`, `docs`, `test`, `refactor`, `perf`, `build`, `ci`, `chore`.
-- Escopos: `app`, `extension`, `sdk`, `safari`, `devices`, `packaging`, `site`, `docs`, `kit`.
-- Um commit, um assunto. `git add` só dos arquivos do seu trabalho.
+- Header of at most 100 characters.
+- Every commit carries a DCO sign-off (`git commit -s`).
+- Types: `feat`, `fix`, `docs`, `test`, `refactor`, `perf`, `build`, `ci`, `chore`.
+- Scopes: `app`, `extension`, `sdk`, `safari`, `devices`, `packaging`, `site`, `docs`, `kit`.
+- One commit, one subject. `git add` only the files that belong to your work.
 
-Exemplo: `feat(app): listar certificados do repositório do Windows via CNG`
+Example: `feat(app): list Windows certificate store entries through CNG`
 
-## Fluxo de desenvolvimento (TDD em três papéis)
+## Development workflow (TDD in three roles)
 
-Todo comportamento novo passa por três papéis, que podem ser pessoas ou agentes:
+All new behavior goes through three roles, which can be people or agents:
 
-1. **Especificação** — a interface pública (tipos e assinaturas) e o comportamento
-   esperado, incluindo erros, num `SPEC.md` ao lado do código ou na descrição do PR.
-2. **Testes e implementação às cegas, em paralelo** — quem escreve os testes não vê a
-   implementação e vice-versa; os dois partem só da especificação. Divergências
-   revelam ambiguidades da especificação, não só bugs.
-3. **Revisão crítica** — alguém experiente roda tudo, decide quem está certo em cada
-   divergência (à luz da especificação e das normas), corrige e documenta a decisão.
+1. **Specification**: the public interface (types and signatures) and the expected
+   behavior, including errors, in a `SPEC.md` next to the code or in the PR description.
+2. **Blind tests and implementation, in parallel**: whoever writes the tests does not see
+   the implementation and vice versa; both start from the specification only.
+   Divergences reveal ambiguities in the specification, not just bugs.
+3. **Critical review**: an experienced person runs everything, decides who is right in
+   each divergence (in light of the specification and the standards), fixes it, and
+   documents the decision.
 
-## Estilo
+## Style
 
-- Arquivos pequenos (idealmente < 200 linhas), um conceito por arquivo, subpastas por assunto.
-- Nomes que dispensam comentário; comentários explicam o **porquê**, nunca o óbvio.
-- Código e comentários em inglês; documentação em `docs/` em pt-BR.
-- Pendências como `TODO(nome)`; nada de referências a planos ou fases no código.
-- Rust: `cargo fmt` e `cargo clippy -- -D warnings` limpos.
+- Small files (ideally < 200 lines), one concept per file, subfolders by topic.
+- Names that need no comment; comments explain the **why**, never the obvious.
+- Code, comments, and documentation are written in English.
+- Pending decisions as `TODO(name)`; no references to plans or phases in code.
+- Rust: `cargo fmt` and `cargo clippy -- -D warnings` must be clean.
 
-## Segurança
+## Security
 
-Nunca registre PIN, certificado completo, nome, CPF/CNPJ ou digest em logs.
-Vulnerabilidades: não abra issue pública — escreva para o mantenedor.
-<!-- TODO(gustavo): criar SECURITY.md com o e-mail de contato para vulnerabilidades. -->
+Never log a PIN, a full certificate, a name, a CPF/CNPJ, or a digest.
+Vulnerabilities: do not open a public issue; write to the maintainer.
+<!-- TODO(gustavo): create SECURITY.md with the contact email for vulnerabilities. -->

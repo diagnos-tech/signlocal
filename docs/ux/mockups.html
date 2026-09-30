@@ -1,10 +1,10 @@
-<title>Telas do WebeSign</title>
+<title>WebeSign UI Mockups</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: palco neutro; janelas desktop em tamanho real (px lógicos), reduzidas só quando a tela é menor.
-   Os tokens --ws-* são exatamente os de docs/ux.md §11. Os tokens --page-* existem só nesta página. */
+/* Layout: neutral stage; desktop windows at real size (logical px), scaled down only when the screen is smaller.
+   The --ws-* tokens are exactly those of docs/ux.md §11. The --page-* tokens exist only on this page. */
 :root{
   --ws-bg-canvas:#F5F6F9; --ws-bg-surface:#FFFFFF; --ws-bg-sunken:#EDEFF4; --ws-bg-hover:#F1F3F8; --ws-accent-soft:#EEF0FD;
   --ws-border:#DCE0E8; --ws-border-strong:#848D9F;
@@ -65,7 +65,7 @@ button{font:inherit;color:inherit}
 .ic-32{width:32px;height:32px}
 .mono{font-family:var(--ws-font-mono)}
 
-/* ---------- página ---------- */
+/* ---------- page ---------- */
 .page{max-width:1112px;margin:0 auto}
 .page-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 24px;padding-block:32px 16px}
 .ph-brand{display:flex;gap:14px;align-items:center;min-width:0}
@@ -95,12 +95,12 @@ button{font:inherit;color:inherit}
 .page-btn:hover{background:var(--ws-bg-hover)}
 .note{font-size:13px;line-height:18px;color:var(--ws-fg-muted)}
 
-/* ---------- moldura neutra de janela desktop ---------- */
+/* ---------- neutral desktop window frame ---------- */
 .win{position:relative;background:var(--ws-bg-canvas);border:1px solid var(--page-frame-border);border-radius:8px;overflow:hidden;box-shadow:var(--page-window-shadow);display:flex;flex-direction:column;transform-origin:top left;color:var(--ws-fg);font:400 14px/20px var(--ws-font-ui);text-align:left}
 .titlebar{height:32px;flex:none;display:flex;align-items:center;justify-content:center;background:var(--page-frame);color:var(--page-frame-fg);font-size:12px;line-height:16px;border-bottom:1px solid var(--page-frame-border);position:relative;padding:0 40px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .titlebar .tb-x{position:absolute;right:10px;top:8px;width:16px;height:16px;fill:currentColor;opacity:.8}
 
-/* ---------- componentes do app (egui) ---------- */
+/* ---------- app components (egui) ---------- */
 .chip{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 9px 0 7px;border-radius:11px;font:500 12px/16px var(--ws-font-ui);border:1px solid;white-space:nowrap;flex:none}
 .chip .ic{width:14px;height:14px}
 .chip-success{background:var(--ws-success-soft);color:var(--ws-success);border-color:var(--ws-success-border)}
@@ -145,7 +145,7 @@ button{font:inherit;color:inherit}
 .mark.sm{width:20px;height:20px;border-radius:5px}
 .mark.sm .ic{width:14px;height:14px}
 
-/* Confirmação */
+/* Confirmation */
 .confirm{width:480px;height:632px}
 .c-head{flex:none;background:var(--ws-bg-surface);border-bottom:1px solid var(--ws-border);padding:20px 24px 16px;display:flex;flex-direction:column}
 .c-eyebrow{display:flex;align-items:center;gap:8px;min-height:22px;font:500 12px/16px var(--ws-font-ui);color:var(--ws-fg-muted)}
@@ -231,7 +231,7 @@ button{font:inherit;color:inherit}
 .consent b{font-weight:500;display:block}
 .consent span{display:block;font-size:12px;line-height:16px;color:var(--ws-fg-subtle)}
 
-/* Variações de origem e estados de rodapé (componentes fluidos) */
+/* Origin variations and footer states (fluid components) */
 .minis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px}
 .minis.wide{grid-template-columns:repeat(auto-fit,minmax(min(100%,480px),1fr))}
 .mini{background:var(--ws-bg-surface);border:1px solid var(--page-frame-border);border-radius:8px;overflow:hidden;min-width:0}
@@ -243,7 +243,7 @@ button{font:inherit;color:inherit}
 .mini-success b{font-size:16px;line-height:22px;font-weight:600}
 .mini-success span{color:var(--ws-fg-muted);font-size:13px}
 
-/* Diagnóstico */
+/* Diagnostics */
 .diag{width:760px;height:572px}
 .d-wrap{flex:1;min-height:0;display:flex}
 .d-side{width:200px;flex:none;background:var(--ws-bg-surface);border-right:1px solid var(--ws-border);padding:16px 12px;display:flex;flex-direction:column;gap:14px}
@@ -294,7 +294,7 @@ button{font:inherit;color:inherit}
 .onb span{display:inline-flex;align-items:center;gap:4px;color:var(--ws-fg-muted)}
 .onb .btn{margin-left:auto}
 
-/* Popup da extensão */
+/* Extension popup */
 .popups{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),320px));gap:32px 32px;align-items:start;max-width:704px}
 .popups .shot{width:320px;max-width:100%}
 .popup{width:320px;max-width:100%;background:var(--ws-bg-surface);border:1px solid var(--ws-border);border-radius:var(--ws-radius-lg);box-shadow:var(--ws-shadow-popover),var(--page-window-shadow);padding:16px;display:flex;flex-direction:column;gap:16px;font:400 14px/20px var(--ws-font-popup);color:var(--ws-fg)}
@@ -384,44 +384,44 @@ button{font:inherit;color:inherit}
     <div class="ph-brand">
       <span class="mark lg" aria-hidden="true"><svg class="ic"><use href="#f-seal-check"/></svg></span>
       <div>
-        <h1>Telas do WebeSign</h1>
-        <p>Mockups da especificação <span class="mono">docs/ux.md</span> para aprovação. Dados fictícios.</p>
+        <h1>WebeSign UI Mockups</h1>
+        <p>Mockups for the <span class="mono">docs/ux.md</span> specification, for approval. Fictitious data. The UI ships in 7 languages (en, es, pt-PT, pt-BR, fr, it, de); these mockups show the Brazilian Portuguese (pt-BR) copy of the app UI, while the page text around it is English.</p>
       </div>
     </div>
-    <div class="seg" role="group" aria-label="Tema" id="theme-seg">
-      <button type="button" data-theme-set="system" aria-pressed="true"><svg class="ic"><use href="#r-monitor"/></svg>Sistema</button>
-      <button type="button" data-theme-set="light" aria-pressed="false"><svg class="ic"><use href="#r-sun"/></svg>Claro</button>
-      <button type="button" data-theme-set="dark" aria-pressed="false"><svg class="ic"><use href="#r-moon"/></svg>Escuro</button>
+    <div class="seg" role="group" aria-label="Theme" id="theme-seg">
+      <button type="button" data-theme-set="system" aria-pressed="true"><svg class="ic"><use href="#r-monitor"/></svg>System</button>
+      <button type="button" data-theme-set="light" aria-pressed="false"><svg class="ic"><use href="#r-sun"/></svg>Light</button>
+      <button type="button" data-theme-set="dark" aria-pressed="false"><svg class="ic"><use href="#r-moon"/></svg>Dark</button>
     </div>
   </header>
-  <nav class="page-nav" aria-label="Seções">
-    <a href="#confirmacao">Janela de Confirmação</a>
-    <a href="#diagnostico">Janela de Diagnóstico</a>
-    <a href="#popup">Popup da extensão</a>
+  <nav class="page-nav" aria-label="Sections">
+    <a href="#confirmacao">Confirmation window</a>
+    <a href="#diagnostico">Diagnostics window</a>
+    <a href="#popup">Extension popup</a>
     <a href="#tokens">Tokens</a>
   </nav>
 
-  <!-- ===================== CONFIRMAÇÃO ===================== -->
+  <!-- ===================== CONFIRMATION ===================== -->
   <section class="sec" id="confirmacao" data-os="windows">
     <div class="sec-head">
       <div>
-        <h2>Janela de Confirmação</h2>
-        <p>480 × 600 px lógicos, fixa, no topo, centralizada no monitor do ponteiro. Aparece a cada assinatura. O site vem do navegador; o código de conferência vem do digest; nenhum texto do site entra aqui.</p>
+        <h2>Confirmation window</h2>
+        <p>480 × 600 logical px, fixed, on top, centered on the pointer's monitor. It appears on every signature. The site comes from the browser; the verification code comes from the digest; no text from the site gets in here.</p>
       </div>
       <div class="sec-tools">
-        <div class="seg" role="group" aria-label="Ordem dos botões" id="os-seg">
+        <div class="seg" role="group" aria-label="Button order" id="os-seg">
           <button type="button" data-os-set="windows" aria-pressed="true">Windows</button>
-          <button type="button" data-os-set="mac" aria-pressed="false">macOS e Linux</button>
+          <button type="button" data-os-set="mac" aria-pressed="false">macOS and Linux</button>
         </div>
       </div>
     </div>
 
     <div class="shots">
-      <!-- A: principal -->
+      <!-- A: main -->
       <figure class="shot">
         <figcaption class="shot-cap">
-          <b>Estado principal · site lembrado</b>
-          <span>Dra. Ana Beatriz Souza assinando um laudo. O último certificado usado no site vem selecionado. Clique noutra linha: o código muda (novo digest) e o botão re-arma.</span>
+          <b>Main state · remembered site</b>
+          <span>Dr. Ana Beatriz Souza signing a report. The last certificate used on the site comes preselected. Click another row: the code changes (new digest) and the button re-arms.</span>
         </figcaption>
         <div class="stage" data-w="480" data-h="632">
           <div class="win confirm" id="mock-main">
@@ -480,14 +480,14 @@ button{font:inherit;color:inherit}
             </div>
           </div>
         </div>
-        <p class="note" style="margin:12px 0 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><button type="button" class="page-btn" id="replay"><svg class="ic"><use href="#r-arrow-clockwise"/></svg>Reproduzir abertura</button>O botão Assinar só arma 600 ms depois de a janela estar visível e focada.</p>
+        <p class="note" style="margin:12px 0 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><button type="button" class="page-btn" id="replay"><svg class="ic"><use href="#r-arrow-clockwise"/></svg>Replay opening</button>The Sign button only arms 600 ms after the window is visible and focused.</p>
       </figure>
 
-      <!-- B: PIN PKCS#11 -->
+      <!-- B: PKCS#11 PIN -->
       <figure class="shot">
         <figcaption class="shot-cap">
-          <b>PIN pelo driver do token · última tentativa</b>
-          <span>Chave acessada pelo driver (PKCS#11): o PIN é digitado aqui, não numa janela do sistema. O padrão não informa quantas tentativas restam, só “poucas” e “última”.</span>
+          <b>PIN through the token driver · last attempt</b>
+          <span>Key accessed through the driver (PKCS#11): the PIN is typed here, not in a system window. The standard does not report how many attempts remain, only “a few” and “last”.</span>
         </figcaption>
         <div class="stage" data-w="480" data-h="632">
           <div class="win confirm">
@@ -544,11 +544,11 @@ button{font:inherit;color:inherit}
         </div>
       </figure>
 
-      <!-- C: nenhum certificado + possível -->
+      <!-- C: no certificate + possible certificate -->
       <figure class="shot">
         <figcaption class="shot-cap">
-          <b>Nenhum certificado · possível certificado</b>
-          <span>O token foi detectado pelo USB (VID:PID 0529:0620 no devices.json), mas o driver não está instalado. A dica diz o que instalar e oferece o link do sistema atual.</span>
+          <b>No certificate · possible certificate</b>
+          <span>The token was detected over USB (VID:PID 0529:0620 in devices.json), but the driver is not installed. The hint says what to install and offers the link for the current system.</span>
         </figcaption>
         <div class="stage" data-w="480" data-h="632">
           <div class="win confirm">
@@ -592,11 +592,11 @@ button{font:inherit;color:inherit}
         </div>
       </figure>
 
-      <!-- D: site novo, modo Escolher, Cartão de Cidadão -->
+      <!-- D: new site, Choose mode, Cartão de Cidadão -->
       <figure class="shot">
         <figcaption class="shot-cap">
-          <b>Site novo · modo Escolher · Cartão de Cidadão</b>
-          <span>O site chamou <span class="mono">certificates()</span> pela primeira vez neste computador. Só o certificado escolhido vai para o site; “Lembrar este site” começa desmarcado.</span>
+          <b>New site · Choose mode · Cartão de Cidadão</b>
+          <span>The site called <span class="mono">certificates()</span> for the first time on this computer. Only the chosen certificate goes to the site; “Remember this site” starts unchecked.</span>
         </figcaption>
         <div class="stage" data-w="480" data-h="632">
           <div class="win confirm">
@@ -646,11 +646,11 @@ button{font:inherit;color:inherit}
       </figure>
     </div>
 
-    <h3 class="sub">Variações da origem</h3>
-    <p>O domínio registrável fica em destaque; o resto fica apagado. Alertas não bloqueiam (exceto http), mas impedem “Lembrar este site” para IP e punycode.</p>
+    <h3 class="sub">Origin variations</h3>
+    <p>The registrable domain is highlighted; the rest is dimmed. Warnings do not block (except http), but they prevent “Remember this site” for IP and punycode.</p>
     <div class="minis">
       <div class="mini">
-        <span class="mini-tag">Subdomínio enganoso · host longo usa 16 px</span>
+        <span class="mini-tag">Deceptive subdomain · long host uses 16 px</span>
         <div class="c-head">
           <div class="c-eyebrow"><span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Pedido de assinatura · pelo Chrome</span><span class="chip chip-neutral"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#f-info"/></svg>Site novo</span></div>
           <div class="c-origin long"><span class="o-dim">https://diagnos.health.</span>cadastro-medico.com</div>
@@ -658,7 +658,7 @@ button{font:inherit;color:inherit}
         </div>
       </div>
       <div class="mini">
-        <span class="mini-tag">Punycode (letra cirílica no lugar do “a”)</span>
+        <span class="mini-tag">Punycode (Cyrillic letter in place of the “a”)</span>
         <div class="c-head">
           <div class="c-eyebrow"><span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Pedido de assinatura · pelo Chrome</span><span class="chip chip-neutral"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#f-info"/></svg>Site novo</span></div>
           <div class="c-origin"><span class="o-dim">https://</span>xn--dignos-4nf.health</div>
@@ -667,7 +667,7 @@ button{font:inherit;color:inherit}
         </div>
       </div>
       <div class="mini">
-        <span class="mini-tag">IP da rede local · porta visível</span>
+        <span class="mini-tag">Local network IP · port visible</span>
         <div class="c-head">
           <div class="c-eyebrow"><span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Pedido de assinatura · pelo Edge</span><span class="chip chip-neutral"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#f-info"/></svg>Site novo</span></div>
           <div class="c-origin"><span class="o-dim">https://</span>192.168.0.20<span class="o-dim">:8443</span></div>
@@ -676,7 +676,7 @@ button{font:inherit;color:inherit}
         </div>
       </div>
       <div class="mini">
-        <span class="mini-tag">Site local de desenvolvimento</span>
+        <span class="mini-tag">Local development site</span>
         <div class="c-head">
           <div class="c-eyebrow"><span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Pedido de assinatura · pelo Chrome</span><span class="chip chip-success"><svg class="ic"><use href="#f-check-circle"/></svg>Site com permissão</span></div>
           <div class="c-origin"><span class="o-dim">http://</span>localhost<span class="o-dim">:5173</span></div>
@@ -685,7 +685,7 @@ button{font:inherit;color:inherit}
         </div>
       </div>
       <div class="mini">
-        <span class="mini-tag">http não local · bloqueado (nunca deveria chegar à janela)</span>
+        <span class="mini-tag">Non-local http · blocked (should never reach the window)</span>
         <div class="c-head">
           <div class="c-eyebrow"><span class="lead"><svg class="ic"><use href="#r-signature"/></svg>Pedido de assinatura · pelo Chrome</span></div>
           <div class="c-origin"><span class="o-dim">http://laudos.</span>exemplo.com</div>
@@ -694,25 +694,25 @@ button{font:inherit;color:inherit}
       </div>
     </div>
 
-    <h3 class="sub">Rodapé ao longo da assinatura</h3>
-    <p>Do armamento ao sucesso. No sucesso a janela fecha sozinha após 900 ms; o resultado já foi enviado ao site antes da animação.</p>
+    <h3 class="sub">Footer throughout the signature</h3>
+    <p>From arming to success. On success the window closes by itself after 900 ms; the result was already sent to the site before the animation.</p>
     <div class="minis wide">
       <div class="mini">
-        <span class="mini-tag">0–600 ms · armando (cliques e teclas ignorados, exceto Esc)</span>
+        <span class="mini-tag">0–600 ms · arming (clicks and keys ignored, except Esc)</span>
         <div class="c-foot">
           <span class="hint">O <span class="os-name">Windows</span> vai pedir o PIN numa janela própria.</span>
           <div class="btns"><button type="button" class="btn">Cancelar</button><button type="button" class="btn primary is-disabled" aria-disabled="true">Assinar</button></div>
         </div>
       </div>
       <div class="mini">
-        <span class="mini-tag">Assinando pela chave do sistema</span>
+        <span class="mini-tag">Signing with the system key</span>
         <div class="c-foot">
           <span class="hint"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#r-password"/></svg>Digite o PIN na janela do <span class="os-name">Windows</span>.</span>
           <div class="btns"><button type="button" class="btn is-disabled" aria-disabled="true">Aguarde…</button><button type="button" class="btn primary"><span class="spin"></span>Assinando…</button></div>
         </div>
       </div>
       <div class="mini">
-        <span class="mini-tag">Sucesso · fecha sozinha</span>
+        <span class="mini-tag">Success · closes by itself</span>
         <div class="mini-success">
           <svg class="ic"><use href="#f-check-circle"/></svg>
           <b>Assinado</b>
@@ -720,7 +720,7 @@ button{font:inherit;color:inherit}
         </div>
       </div>
       <div class="mini">
-        <span class="mini-tag">Teclado do leitor (PIN pad)</span>
+        <span class="mini-tag">Reader keypad (PIN pad)</span>
         <div class="c-foot">
           <span class="hint"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#r-dots-nine"/></svg>Digite o PIN no teclado do leitor.</span>
           <div class="btns"><button type="button" class="btn is-disabled" aria-disabled="true">Aguarde…</button><button type="button" class="btn primary"><span class="spin"></span>Assinando…</button></div>
@@ -729,12 +729,12 @@ button{font:inherit;color:inherit}
     </div>
   </section>
 
-  <!-- ===================== DIAGNÓSTICO ===================== -->
+  <!-- ===================== DIAGNOSTICS ===================== -->
   <section class="sec" id="diagnostico">
     <div class="sec-head">
       <div>
-        <h2>Janela de Diagnóstico</h2>
-        <p>760 × 540 px lógicos. Abre pelo ícone do app, pelo popup e pelos erros. As abas trocam de verdade; cada uma tem semáforo com cor, forma e texto. Cenário: Windows, token novo sem driver, certificados vencendo.</p>
+        <h2>Diagnostics window</h2>
+        <p>760 × 540 logical px. Opens from the app icon, from the popup, and from errors. The tabs really switch; each one has a traffic light with color, shape, and text. Scenario: Windows, new token without a driver, certificates about to expire.</p>
       </div>
     </div>
     <figure class="shot" style="max-width:760px">
@@ -755,7 +755,7 @@ button{font:inherit;color:inherit}
               <button type="button" class="btn md block"><svg class="ic"><use href="#r-copy"/></svg>Copiar diagnóstico</button>
             </aside>
             <div class="d-main">
-              <!-- Navegadores -->
+              <!-- Browsers -->
               <div role="tabpanel" id="tab-nav" aria-labelledby="t-nav">
                 <div class="d-head"><div><h3>Navegadores</h3><p>Onde a extensão está instalada e conectada ao app.</p></div><button type="button" class="btn md"><svg class="ic"><use href="#r-arrow-clockwise"/></svg>Procurar de novo</button></div>
                 <div class="d-sec">Navegadores neste computador</div>
@@ -770,7 +770,7 @@ button{font:inherit;color:inherit}
                   <div class="d-row"><div class="main"><div class="t"><span><span class="o-dim">https://laudos.</span>clinicasaolucas.med.br</span></div><div class="s">Lembrado em 03/07/2026 · último uso 28/08/2026</div></div><button type="button" class="btn sm">Revogar</button></div>
                 </div>
               </div>
-              <!-- Dispositivos -->
+              <!-- Devices -->
               <div role="tabpanel" id="tab-dev" aria-labelledby="t-dev" hidden>
                 <div class="d-head"><div><h3>Dispositivos</h3><p>Tokens, cartões e drivers que o WebeSign enxerga agora.</p></div><button type="button" class="btn md"><svg class="ic"><use href="#r-arrow-clockwise"/></svg>Procurar de novo</button></div>
                 <div class="d-sec">Tokens e cartões</div>
@@ -788,7 +788,7 @@ button{font:inherit;color:inherit}
                 </div>
                 <div class="d-actions"><button type="button" class="btn md"><svg class="ic"><use href="#r-plus"/></svg>Adicionar driver…</button><span class="note">Use só se o fabricante do token pedir.</span></div>
               </div>
-              <!-- Certificados -->
+              <!-- Certificates -->
               <div role="tabpanel" id="tab-cert" aria-labelledby="t-cert" hidden>
                 <div class="d-head"><div><h3>Certificados</h3><p>Todos os certificados que este computador oferece, inclusive os que não servem para assinar.</p></div></div>
                 <div class="d-actions" style="margin-top:14px"><button type="button" class="btn md"><svg class="ic"><use href="#r-file-plus"/></svg>Importar arquivo .pfx…</button><span class="note" style="flex:1;min-width:200px">O Windows importa o arquivo e guarda o certificado com segurança. Você vai precisar da senha do arquivo.</span></div>
@@ -804,7 +804,7 @@ button{font:inherit;color:inherit}
                   <div class="d-row dis"><svg class="ic"><use href="#r-desktop"/></svg><div class="main"><div class="t">Ana B. Souza — VPN Clínica <span class="badge">Certificado</span></div><div class="s"><svg class="ic t-subtle"><use href="#r-circle-dashed"/></svg>Feito para login, não para assinatura · AC Interna Clinica Souza</div></div></div>
                 </div>
               </div>
-              <!-- Ajuda -->
+              <!-- Help -->
               <div role="tabpanel" id="tab-help" aria-labelledby="t-help" hidden>
                 <div class="d-head"><div><h3>Ajuda</h3><p>Respostas rápidas e como relatar um problema.</p></div></div>
                 <div class="d-sec">Perguntas comuns</div>
@@ -847,8 +847,8 @@ recent errors (last 20):
       </div>
     </figure>
 
-    <h3 class="sub">Primeiros passos (faixa no topo do conteúdo, só na primeira execução)</h3>
-    <p>Some quando tudo fica verde e o primeiro teste de assinatura passa, ou quando o usuário oculta.</p>
+    <h3 class="sub">Getting started (strip at the top of the content, first run only)</h3>
+    <p>It goes away when everything turns green and the first test signature passes, or when the user hides it.</p>
     <div class="onb" style="max-width:712px">
       <b><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#r-list-checks"/></svg>Primeiros passos</b>
       <span><svg class="ic t-success"><use href="#f-check-circle"/></svg>App instalado</span>
@@ -858,23 +858,23 @@ recent errors (last 20):
       <button type="button" class="btn sm primary" style="min-width:0">Testar assinatura</button>
     </div>
 
-    <h3 class="sub">Complemento no Mac (aba Dispositivos, só no build da App Store)</h3>
-    <p>Linguagem leiga: explica a causa, diz que é do mesmo projeto e que só roda quando o WebeSign pede.</p>
+    <h3 class="sub">Add-on on Mac (Devices tab, App Store build only)</h3>
+    <p>Plain language: it explains the cause, says it is from the same project, and that it only runs when WebeSign asks for it.</p>
     <div class="minis">
       <div class="mini">
-        <span class="mini-tag">Necessário e ausente</span>
+        <span class="mini-tag">Needed and absent</span>
         <div style="padding:14px 16px;background:var(--ws-bg-canvas)">
           <div class="callout callout-warning"><svg class="ic"><use href="#r-puzzle-piece"/></svg><div><b>Este token precisa do Complemento para Mac</b>Apps da App Store não podem usar alguns drivers de token. O Complemento WebeSign, gratuito e do mesmo projeto, faz essa ponte. Ele só funciona quando o WebeSign pede.<div style="margin-top:10px"><button type="button" class="btn md"><svg class="ic"><use href="#r-download-simple"/></svg>Baixar Complemento</button></div></div></div>
         </div>
       </div>
       <div class="mini">
-        <span class="mini-tag">Desatualizado</span>
+        <span class="mini-tag">Outdated</span>
         <div style="padding:14px 16px;background:var(--ws-bg-canvas)">
           <div class="callout callout-warning"><svg class="ic"><use href="#f-warning"/></svg><div><b>Atualize o Complemento</b>1.1.0 instalado, precisa da 1.2.0.<div style="margin-top:10px"><button type="button" class="btn md">Atualizar Complemento</button></div></div></div>
         </div>
       </div>
       <div class="mini">
-        <span class="mini-tag">Instalado e atual</span>
+        <span class="mini-tag">Installed and current</span>
         <div class="d-list" style="border:0;border-radius:0">
           <div class="d-row"><svg class="ic"><use href="#r-puzzle-piece"/></svg><div class="main"><div class="t">Complemento WebeSign</div><div class="s"><svg class="ic t-success"><use href="#f-check-circle"/></svg>Complemento ativo · versão 1.2.0</div></div></div>
         </div>
@@ -886,13 +886,13 @@ recent errors (last 20):
   <section class="sec" id="popup">
     <div class="sec-head">
       <div>
-        <h2>Popup da extensão</h2>
-        <p>320 px de largura, TS puro + CSS, abaixo de 15 KB. Fonte do sistema para parecer parte do navegador. “App instalado mas nunca aberto” cai em “Falta instalar” e se resolve com “Já instalei? Ativar o app”, que abre a página /ativar e chama o esquema <span class="mono">websign:</span>.</p>
+        <h2>Extension popup</h2>
+        <p>320 px wide, plain TS + CSS, under 15 KB. System font so it looks like part of the browser. “App installed but never opened” falls into “Not installed” and is resolved with “Already installed? Activate the app”, which opens the /ativar page and calls the <span class="mono">websign:</span> scheme.</p>
       </div>
     </div>
     <div class="popups">
       <figure class="shot">
-        <figcaption class="shot-cap"><b>Tudo certo</b><span>Host respondeu com versão aceita.</span></figcaption>
+        <figcaption class="shot-cap"><b>All good</b><span>Host answered with an accepted version.</span></figcaption>
         <div class="popup">
           <div class="pp-head"><span class="mark sm"><svg class="ic"><use href="#f-seal-check"/></svg></span>WebeSign</div>
           <div class="pp-state" role="status"><svg class="ic t-success"><use href="#f-check-circle"/></svg><div><b>Tudo pronto para assinar</b><p>O app WebeSign 1.4.0 está conectado a este navegador.</p></div></div>
@@ -901,7 +901,7 @@ recent errors (last 20):
         </div>
       </figure>
       <figure class="shot">
-        <figcaption class="shot-cap"><b>Falta o app (ou nunca foi aberto)</b><span>O link de download segue o SO detectado.</span></figcaption>
+        <figcaption class="shot-cap"><b>App missing (or never opened)</b><span>The download link follows the detected OS.</span></figcaption>
         <div class="popup">
           <div class="pp-head"><span class="mark sm"><svg class="ic"><use href="#f-seal-check"/></svg></span>WebeSign</div>
           <div class="pp-state" role="status"><svg class="ic" style="color:var(--ws-accent-fg)"><use href="#r-download-simple"/></svg><div><b>Falta instalar o app WebeSign</b><p>A extensão precisa do app no computador para assinar.</p></div></div>
@@ -910,7 +910,7 @@ recent errors (last 20):
         </div>
       </figure>
       <figure class="shot">
-        <figcaption class="shot-cap"><b>App desatualizado</b><span>Versão abaixo do MIN_APP_VERSION da extensão.</span></figcaption>
+        <figcaption class="shot-cap"><b>App outdated</b><span>Version below the extension's MIN_APP_VERSION.</span></figcaption>
         <div class="popup">
           <div class="pp-head"><span class="mark sm"><svg class="ic"><use href="#f-seal-check"/></svg></span>WebeSign</div>
           <div class="pp-state" role="status"><svg class="ic t-warn"><use href="#f-warning"/></svg><div><b>Atualize o app WebeSign</b><p>Você tem a versão 1.1.0. Este navegador precisa da 1.3.0 ou mais nova.</p></div></div>
@@ -919,7 +919,7 @@ recent errors (last 20):
         </div>
       </figure>
       <figure class="shot">
-        <figcaption class="shot-cap"><b>App não respondeu</b><span>Host iniciou, mas não respondeu em 3 s.</span></figcaption>
+        <figcaption class="shot-cap"><b>App did not respond</b><span>Host started, but did not answer within 3 s.</span></figcaption>
         <div class="popup">
           <div class="pp-head"><span class="mark sm"><svg class="ic"><use href="#f-seal-check"/></svg></span>WebeSign</div>
           <div class="pp-state" role="status"><svg class="ic t-danger"><use href="#f-x-circle"/></svg><div><b>O app não respondeu</b><p>Tente de novo. Se continuar, reinicie o computador.</p><code>native host exited (code 1)</code></div></div>
@@ -935,11 +935,11 @@ recent errors (last 20):
     <div class="sec-head">
       <div>
         <h2>Tokens</h2>
-        <p>Os mesmos valores de <span class="mono">docs/ux.md §11</span>, que viram o <span class="mono">theme.rs</span> e o <span class="mono">design/tokens.css</span>. Um único acento “azul-tinta”; verde, âmbar e vermelho só para estado.</p>
+        <p>The same values as <span class="mono">docs/ux.md §11</span>, which become <span class="mono">theme.rs</span> and <span class="mono">design/tokens.css</span>. A single “ink blue” accent; green, amber, and red only for state.</p>
       </div>
     </div>
     <div class="tok-grid">
-      <div class="tok-table" id="tok-colors" aria-label="Cores"></div>
+      <div class="tok-table" id="tok-colors" aria-label="Colors"></div>
       <div style="display:flex;flex-direction:column;gap:24px;min-width:0">
         <div class="tok-table">
           <div class="type-row"><span style="font:600 20px/26px var(--ws-font-ui)">diagnos.health</span><code>text-headline 20/26 600</code></div>
@@ -970,9 +970,9 @@ recent errors (last 20):
             <div><i style="border-radius:10px"></i>radius-lg 10</div>
             <div><i style="border-radius:20px;height:40px"></i>radius-full</div>
           </div>
-          <div class="type-row"><span class="t-muted" style="font-size:12px">Paleta do identicon (igual nos dois temas)</span><code>id-0 … id-7</code></div>
+          <div class="type-row"><span class="t-muted" style="font-size:12px">Identicon palette (same in both themes)</span><code>id-0 … id-7</code></div>
           <div class="idc-pal" id="idc-pal"></div>
-          <div class="type-row"><span class="t-muted" style="font-size:12px">motion-fast 120 · motion-base 180 · motion-slow 260 ms · cubic-out · armamento 600 ms · sucesso 900 ms</span></div>
+          <div class="type-row"><span class="t-muted" style="font-size:12px">motion-fast 120 · motion-base 180 · motion-slow 260 ms · cubic-out · arming 600 ms · success 900 ms</span></div>
         </div>
       </div>
     </div>
@@ -984,7 +984,7 @@ recent errors (last 20):
   "use strict";
   var root = document.documentElement;
 
-  // Tema: Sistema / Claro / Escuro (preferência só deste navegador).
+  // Theme: System / Light / Dark (preference kept only in this browser).
   function applyTheme(mode){
     if (mode === "light" || mode === "dark") root.setAttribute("data-theme", mode);
     else root.removeAttribute("data-theme");
@@ -1003,7 +1003,7 @@ recent errors (last 20):
     });
   });
 
-  // Ordem dos botões por plataforma.
+  // Button order per platform.
   var confirmSec = document.getElementById("confirmacao");
   document.querySelectorAll("#os-seg button").forEach(function(b){
     b.addEventListener("click", function(){
@@ -1014,7 +1014,7 @@ recent errors (last 20):
     });
   });
 
-  // Identicon: mesmo algoritmo de docs/ux.md §4.4.
+  // Identicon: same algorithm as docs/ux.md §4.4.
   function identiconSvg(hex){
     var b = [];
     for (var i = 0; i < 8; i++) b.push(parseInt(hex.substr(i * 2, 2), 16));
@@ -1034,11 +1034,11 @@ recent errors (last 20):
   function paintIdc(el, hex){ el.innerHTML = identiconSvg(hex); }
   document.querySelectorAll(".idc[data-code]").forEach(function(el){ paintIdc(el, el.getAttribute("data-code")); });
 
-  // Paleta do identicon.
+  // Identicon palette.
   var pal = document.getElementById("idc-pal");
   if (pal) for (var k = 0; k < 8; k++) { var i2 = document.createElement("i"); i2.style.background = "var(--ws-id-" + k + ")"; i2.title = "id-" + k; pal.appendChild(i2); }
 
-  // Armamento do botão Assinar (600 ms) e troca de certificado no mockup principal.
+  // Arming of the Sign button (600 ms) and certificate switching in the main mockup.
   var sign = document.getElementById("main-sign");
   var armTimer = null;
   function arm(){
@@ -1081,7 +1081,7 @@ recent errors (last 20):
     });
   }
 
-  // Abas do Diagnóstico.
+  // Diagnostics tabs.
   var tabs = document.querySelectorAll("#mock-diag .d-tab");
   tabs.forEach(function(t, idx){
     t.addEventListener("click", function(){ showTab(t); });
@@ -1105,7 +1105,7 @@ recent errors (last 20):
   }
   tabs.forEach(function(x){ x.setAttribute("tabindex", x.getAttribute("aria-selected") === "true" ? "0" : "-1"); });
 
-  // Tabela de cores.
+  // Color table.
   var colors = [
     ["bg-canvas","#F5F6F9","#0E1016"],["bg-surface","#FFFFFF","#161922"],["bg-sunken","#EDEFF4","#0B0D12"],["bg-hover","#F1F3F8","#1E222D"],
     ["accent-soft","#EEF0FD","#1C2242"],["border","#DCE0E8","#2A2F3C"],["border-strong","#848D9F","#6B7488"],
@@ -1119,14 +1119,14 @@ recent errors (last 20):
   ];
   var tbl = document.getElementById("tok-colors");
   if (tbl) {
-    var html = '<div class="tok-row head"><span>Token</span><span>Claro</span><span>Escuro</span></div>';
+    var html = '<div class="tok-row head"><span>Token</span><span>Light</span><span>Dark</span></div>';
     colors.forEach(function(c){
       html += '<div class="tok-row"><code>' + c[0] + '</code><span class="sw"><i style="background:' + c[1] + '"></i>' + c[1] + '</span><span class="sw"><i style="background:' + c[2] + '"></i>' + c[2] + "</span></div>";
     });
     tbl.innerHTML = html;
   }
 
-  // Janelas em tamanho real; reduz proporcionalmente só quando a coluna é menor.
+  // Windows at real size; scaled down proportionally only when the column is smaller.
   function fit(stage){
     var w = +stage.getAttribute("data-w"), h = +stage.getAttribute("data-h");
     var win = stage.firstElementChild;

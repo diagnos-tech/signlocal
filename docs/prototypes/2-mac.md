@@ -1,238 +1,238 @@
-# Prova 2 — Mac: sandbox da Mac App Store, native messaging, CryptoTokenKit e Safari
+# Proof 2: Mac: Mac App Store sandbox, native messaging, CryptoTokenKit, and Safari
 
-**Status:** provado em CI com chaves de software; falta Mac real com Chrome, Safari e token · **Resultado parcial:** SIM para sandbox + manifestos + host + Keychain; Safari só desenhado ·
-**Decisão proposta:** ver [§8](#8-decisão-proposta)
+**Status:** proven in CI with software keys; a real Mac with Chrome, Safari, and a token is still missing · **Partial result:** YES for sandbox + manifests + host + Keychain; Safari only designed ·
+**Proposed decision:** see [§8](#8-proposed-decision)
 
-## Objetivo
+## Goal
 
-Responder com evidência, antes de construir o app:
+Answer with evidence, before building the app:
 
-1. O app **dentro da sandbox** da Mac App Store grava os manifestos de native messaging nas pastas
-   dos navegadores (Chrome, Edge, Brave, Firefox…)?
-2. O Chrome inicia esse binário sandboxed como host, e ele assina via Keychain/CryptoTokenKit?
-3. A extensão do Safari assina (direto na appex ou abrindo o app)?
-4. `SFSafariExtensionManager` informa o estado da extensão?
+1. Does the app **inside the Mac App Store sandbox** write the native messaging manifests into the browsers'
+   folders (Chrome, Edge, Brave, Firefox…)?
+2. Does Chrome start that sandboxed binary as the host, and does it sign through Keychain/CryptoTokenKit?
+3. Does the Safari extension sign (directly in the appex or by opening the app)?
+4. Does `SFSafariExtensionManager` report the extension's state?
 
-Se a sandbox barrar o PKCS#11, a resposta vem da [prova 3](3-tokens-mac.md) (complemento `.dmg`).
+If the sandbox blocks PKCS#11, the answer comes from [proof 3](3-tokens-mac.md) (`.dmg` complement).
 
-## Resposta curta (até agora)
+## Short answer (so far)
 
-| # | Pergunta | Resposta | Evidência | Falta |
+| # | Question | Answer | Evidence | Missing |
 |---|---|---|---|---|
-| 1 | Sandbox grava os manifestos? | **SIM (CI)**, com `temporary-exception.files.home-relative-path.read-write` só nas pastas `NativeMessagingHosts` e o home real via `getpwuid_r` | §4: Chrome, Edge, Brave e Firefox gravados de dentro da sandbox | App Review aceitar as exceções (precedente: Bitwarden) |
-| 2a | Navegador inicia o host sandboxed? | **SIM (simulado no CI)**: iniciado com a origem e o stdio do Chrome, o host sandboxed respondeu `ping` e `list` | §4; precedente `desktop_proxy` do Bitwarden | Chrome real (roteiro §7) |
-| 2b | Assina via Keychain/CTK dentro da sandbox? | Keychain: **SIM (CI)**, PKCS#1 v1.5, PSS e ECDSA. Token CTK: **provável SIM**, a consulta roda na sandbox sem entitlement extra | §4 | Token real (roteiro §7, prova 3) |
-| 3 | Safari assina? | **Arquitetura proposta** (§5): appex só repassa; o app mostra a confirmação e assina | web-eid-app (`src/mac/`), Bitwarden (socket no app group) | Tudo: exige projeto Xcode e Mac real |
-| 4 | `SFSafariExtensionManager`? | API disponível ao app que contém a extensão; em Rust via `objc2-safari-services` (0.3.2) | web-eid-app `main.mm` usa `getStateOfSafariExtension` e `showPreferencesForExtension` | Prova no Mac real |
+| 1 | Does the sandbox write the manifests? | **YES (CI)**, with `temporary-exception.files.home-relative-path.read-write` only on the `NativeMessagingHosts` folders and the real home via `getpwuid_r` | §4: Chrome, Edge, Brave, and Firefox written from inside the sandbox | App Review accepting the exceptions (precedent: Bitwarden) |
+| 2a | Does the browser start the sandboxed host? | **YES (simulated in CI)**: started with Chrome's origin and stdio, the sandboxed host answered `ping` and `list` | §4; Bitwarden's `desktop_proxy` precedent | Real Chrome (script §7) |
+| 2b | Does it sign through Keychain/CTK inside the sandbox? | Keychain: **YES (CI)**, PKCS#1 v1.5, PSS, and ECDSA. CTK token: **probably YES**, the query runs in the sandbox without an extra entitlement | §4 | Real token (script §7, proof 3) |
+| 3 | Does Safari sign? | **Proposed architecture** (§5): the appex only relays; the app shows the confirmation and signs | web-eid-app (`src/mac/`), Bitwarden (socket in the app group) | Everything: needs an Xcode project and a real Mac |
+| 4 | `SFSafariExtensionManager`? | API available to the app that contains the extension; from Rust through `objc2-safari-services` (0.3.2) | web-eid-app `main.mm` uses `getStateOfSafariExtension` and `showPreferencesForExtension` | Proof on a real Mac |
 
-## 1. Como o kit prova
+## 1. How the kit proves it
 
-### Keystore do macOS (`probe/src/keystores/macos/`)
+### macOS keystore (`probe/src/keystores/macos/`)
 
-| Arquivo | Papel |
+| File | Role |
 |---|---|
-| `mod.rs` | Duas origens: `macos:keychain` (chaves em arquivos de keychain: A1 importado) e `macos:ctk` (chaves em tokens CryptoTokenKit: A3). Cada uma relata as próprias falhas. `locator` = SHA-256 do certificado |
-| `identities.rs` | `SecItemCopyMatching(kSecClassIdentity, kSecMatchLimitAll, kSecReturnRef)`; a consulta de tokens acrescenta `kSecAttrAccessGroup = kSecAttrAccessGroupToken`. Item ilegível não derruba a lista |
-| `token.rs` | `kSecAttrTokenID` da chave privada (`SecKeyCopyAttributes`). `provider` = só a parte do driver (`com.apple.pivtoken`, `…OpenSCToken`), sem a instância, que costuma ser o número de série do cartão |
-| `sign.rs` | Confere o tamanho do digest → `SecKeyIsAlgorithmSupported` → `SecKeyCreateSignature` → ECDSA DER → `r‖s` (`probe_core::ecdsa::der_to_raw`, curva lida do certificado) |
-| `algorithm.rs` | Só os algoritmos "Digest": `RSASignatureDigestPKCS1v15SHA*`, `RSASignatureDigestPSSSHA*`, `ECDSASignatureDigestX962SHA*` |
-| `errors.rs` | `errSecUserCanceled` e `TKErrorCodeCanceledByUser` → `Cancelled`; `errSecAuthFailed` e `TKErrorCodeAuthenticationFailed` → `WrongPin`; resto → `Native { api, code, message }` com `SecCopyErrorMessageString` (ou domínio + descrição do `CFError`) |
+| `mod.rs` | Two origins: `macos:keychain` (keys in keychain files: imported A1) and `macos:ctk` (keys in CryptoTokenKit tokens: A3). Each reports its own failures. `locator` = SHA-256 of the certificate |
+| `identities.rs` | `SecItemCopyMatching(kSecClassIdentity, kSecMatchLimitAll, kSecReturnRef)`; the token query adds `kSecAttrAccessGroup = kSecAttrAccessGroupToken`. An unreadable item does not bring the list down |
+| `token.rs` | `kSecAttrTokenID` of the private key (`SecKeyCopyAttributes`). `provider` = only the driver part (`com.apple.pivtoken`, `…OpenSCToken`), without the instance, which is usually the card's serial number |
+| `sign.rs` | Checks the digest size → `SecKeyIsAlgorithmSupported` → `SecKeyCreateSignature` → ECDSA DER → `r‖s` (`probe_core::ecdsa::der_to_raw`, curve read from the certificate) |
+| `algorithm.rs` | Only the "Digest" algorithms: `RSASignatureDigestPKCS1v15SHA*`, `RSASignatureDigestPSSSHA*`, `ECDSASignatureDigestX962SHA*` |
+| `errors.rs` | `errSecUserCanceled` and `TKErrorCodeCanceledByUser` → `Cancelled`; `errSecAuthFailed` and `TKErrorCodeAuthenticationFailed` → `WrongPin`; everything else → `Native { api, code, message }` with `SecCopyErrorMessageString` (or the `CFError` domain + description) |
 
-Decisões e porquês:
+Decisions and reasons:
 
-- **Duas consultas, não uma.** O Chromium atual faz uma só consulta de identidades
-  (`net/ssl/client_cert_store_mac.cc`, com `kSecAttrCanSign`). Se ela inclui os tokens depende do
-  roteamento interno do Security.framework (keychain de arquivo × keychain "iOS"); a documentação da
-  Apple manda consultar tokens pelo grupo de acesso: *"Use this access group identifier as the value
+- **Two queries, not one.** Current Chromium makes a single identity query
+  (`net/ssl/client_cert_store_mac.cc`, with `kSecAttrCanSign`). Whether it includes tokens depends on
+  Security.framework's internal routing (file keychain × "iOS" keychain); Apple's
+  documentation says to query tokens through the access group: *"Use this access group identifier as the value
   for the `kSecAttrAccessGroup` attribute in a keychain query to access external tokens such as smart
   cards. Access to this group is granted by default and does not require an explicit entry in your
-  app's `keychain-access-groups`."* Identidades de token que aparecerem na consulta simples são
-  descartadas ali e contadas só em `macos:ctk` — nada aparece duas vezes.
-- **`list` não pede PIN.** Só referências e atributos; o diálogo de PIN (do driver do token) ou de
-  senha/permissão (do keychain) aparece dentro de `SecKeyCreateSignature`. Chaves de keychain de
-  arquivo são `hardware: Some(false)`; de token, `Some(true)`.
-- **Erros do token chegam no domínio `CryptoTokenKit`**, não como `OSStatus`: o `SecCTKKey.m` da Apple
-  repassa o `NSError` do TK sem converter. Por isso o mapeamento olha o domínio.
-  `TODO(gustavo)`: PIN bloqueado chega como `AuthenticationFailed` com zero tentativas no
-  `userInfo`; mapear para `PinLocked` quando visto num token real.
-- **Chamadas não serializadas.** O Chromium põe toda chamada ao Security.framework atrás de um lock
-  (o código legado de keychain não é thread-safe); o app deve fazer o mesmo se usar várias threads.
+  app's `keychain-access-groups`."* Token identities that show up in the plain query
+  are discarded there and counted only in `macos:ctk`, so nothing appears twice.
+- **`list` does not ask for a PIN.** Only references and attributes; the PIN dialog (from the token driver) or the
+  password/permission dialog (from the keychain) appears inside `SecKeyCreateSignature`. File-keychain keys
+  are `hardware: Some(false)`; token keys, `Some(true)`.
+- **Token errors arrive in the `CryptoTokenKit` domain**, not as `OSStatus`: Apple's `SecCTKKey.m`
+  passes the TK `NSError` through without converting it. That is why the mapping looks at the domain.
+  `TODO(gustavo)`: a locked PIN arrives as `AuthenticationFailed` with zero attempts in
+  `userInfo`; map it to `PinLocked` once seen on a real token.
+- **Calls are not serialized.** Chromium puts every Security.framework call behind a lock
+  (the legacy keychain code is not thread-safe); the app must do the same if it uses several threads.
 
-### RSASSA-PSS: o salt da Apple é o tamanho do digest
+### RSASSA-PSS: Apple's salt is the digest length
 
-Evidência, em três camadas:
+Evidence, in three layers:
 
-1. `SecKey.h` (open source da Apple, `keychain/headers/SecKey.h`):
+1. `SecKey.h` (Apple open source, `keychain/headers/SecKey.h`):
    *"`kSecKeyAlgorithmRSASignatureDigestPSSSHA256` — RSA signature with RSASSA-PSS padding according
    to PKCS#1 v2.1, input data must be SHA-256 generated digest. PSS padding is calculated using MGF1
-   with SHA256 and saltLength parameter is set to 32 (SHA-256 output size)."* Idem 48 e 64.
-2. Implementação (`OSX/sec/Security/SecKeyAdaptors.m`): os IDs são
-   `algid:sign:RSA:digest-PSS:SHA256:SHA256:32` (hash, hash do MGF1, salt) e o encoder chama
-   `ccrsa_emsa_pss_encode(di, di, di->output_size, salt, …)` — MGF1 com o mesmo hash, salt =
-   `output_size` do digest.
-3. Execução: o teste `algorithm.rs` confere, no Mac do CI, o ID de cada algoritmo em runtime; e o
-   `ci-macos.sh` assina PSS e o `probe_core::verify` confere com salt = tamanho do digest.
+   with SHA256 and saltLength parameter is set to 32 (SHA-256 output size)."* Same for 48 and 64.
+2. Implementation (`OSX/sec/Security/SecKeyAdaptors.m`): the IDs are
+   `algid:sign:RSA:digest-PSS:SHA256:SHA256:32` (hash, MGF1 hash, salt) and the encoder calls
+   `ccrsa_emsa_pss_encode(di, di, di->output_size, salt, …)`: MGF1 with the same hash, salt =
+   the digest's `output_size`.
+3. Execution: the `algorithm.rs` test checks, on the CI Mac, each algorithm's ID at runtime; and
+   `ci-macos.sh` signs PSS and `probe_core::verify` checks it with salt = digest length.
 
 ### Scripts (`kit/macos/`)
 
-| Arquivo | O que faz |
+| File | What it does |
 |---|---|
-| `ci-macos.sh` | Gera com OpenSSL identidades RSA-2048, P-256 e P-384 (`.p12` com algoritmos legados, que o `security import` aceita), cria um keychain temporário em `~/Library/Keychains`, importa com `-A` e `set-key-partition-list` (Apple, `unsigned:` e o `cdhash` do probe, para nenhum diálogo travar o runner), põe na lista de busca, roda `list` e `sign --hash all --pss` e confere cada caso; gera o relatório; restaura a lista de busca e apaga o keychain |
-| `sandbox/entitlements.mas.plist` | Entitlements do app da loja (tabela abaixo) |
-| `sandbox/Info.plist` | Bundle mínimo; o `CFBundleIdentifier` (= `project.toml`) define o contêiner |
-| `sandbox/sandbox-test.sh` | O experimento (§3). Imprime `RESULT <id> SIM/NÃO/N/A` e uma tabela no resumo do job |
-| `sandbox/run-sandboxed.sh` | Roda **qualquer** comando do probe dentro da sandbox e mostra as negações do log; para o Mac real |
-| `lib/common.sh`, `lib/bundle.sh` | Funções comuns (bash 3.2 do macOS: roda em qualquer Mac) |
+| `ci-macos.sh` | Uses OpenSSL to generate RSA-2048, P-256, and P-384 identities (`.p12` with legacy algorithms, which `security import` accepts), creates a temporary keychain in `~/Library/Keychains`, imports with `-A` and `set-key-partition-list` (Apple, `unsigned:` and the probe's `cdhash`, so no dialog hangs the runner), adds it to the search list, runs `list` and `sign --hash all --pss` and checks each case; generates the report; restores the search list and deletes the keychain |
+| `sandbox/entitlements.mas.plist` | Store app entitlements (table below) |
+| `sandbox/Info.plist` | Minimal bundle; the `CFBundleIdentifier` (= `project.toml`) defines the container |
+| `sandbox/sandbox-test.sh` | The experiment (§3). Prints `RESULT <id> YES/NO/N/A` and a table in the job summary |
+| `sandbox/run-sandboxed.sh` | Runs **any** probe command inside the sandbox and shows the denials from the log; for the real Mac |
+| `lib/common.sh`, `lib/bundle.sh` | Shared functions (macOS bash 3.2: runs on any Mac) |
 
-`sign --all` não é usado no CI de propósito: o keychain System de todo Mac tem identidades
-(`com.apple.systemdefault`, `com.apple.kerberos.kdc`) cujas chaves só serviços do sistema usam;
-assinar com elas abre um diálogo de senha que ninguém responde no runner. O CI seleciona os
-certificados de teste com `--cert`.
+`sign --all` is deliberately not used in CI: every Mac's System keychain has identities
+(`com.apple.systemdefault`, `com.apple.kerberos.kdc`) whose keys only system services use;
+signing with them opens a password dialog that nobody answers on the runner. CI selects the
+test certificates with `--cert`.
 
-## 2. Entitlements do app da Mac App Store
+## 2. Mac App Store app entitlements
 
-| Entitlement | Por quê | Precedente |
+| Entitlement | Why | Precedent |
 |---|---|---|
-| `com.apple.security.app-sandbox` | Obrigatório na loja. **Próprio, sem `com.apple.security.inherit`**: o host é iniciado pelo navegador, não por um pai sandboxed | Bitwarden `entitlements.desktop_proxy.plist` (app-sandbox + app group, sem inherit) |
-| `com.apple.security.smartcard` | `TKSmartCardSlotManager` e PC/SC (leitores e ATR no diagnóstico) e módulos PKCS#11 que falam com o cartão de dentro do nosso processo. Itens de token no keychain **não** precisam dele | web-eid-app `web-eid-safari.entitlements`; doc da Apple: *"requires this entitlement for sandboxed applications that access smart cards using legacy PCSC framework APIs"*; SafeSign (prova 3) exige do app hospedeiro |
-| `com.apple.security.device.usb` | Lista USB (VID:PID) no diagnóstico (`nusb`) | Bitwarden MAS |
-| `com.apple.security.application-groups` = `TEAMID.dev.websign` | Socket da ponte do Safari (§5) e do complemento, se existir | Bitwarden (socket IPC no contêiner do grupo); web-eid (grupo compartilhado app↔appex) |
-| `…temporary-exception.files.home-relative-path.read-write` | Só as pastas `NativeMessagingHosts` de Chrome (+Beta/Dev/Canary), Chromium, Edge (+Beta/Dev/Canary), Brave (+Beta/Nightly), Vivaldi, Opera (+Developer) e `Mozilla/` | Bitwarden MAS (mesma técnica; ele não lista Brave nem Opera); Brave e Vivaldi conferidos no KeePassXC; Opera pela regra do Chromium (`<user data dir>/NativeMessagingHosts`), **a confirmar** |
-| `com.apple.application-identifier`, `com.apple.developer.team-identifier` | Exigidos pela loja; `TEAMID` é `TODO(gustavo)` | Bitwarden MAS |
+| `com.apple.security.app-sandbox` | Mandatory in the store. **Its own, without `com.apple.security.inherit`**: the host is started by the browser, not by a sandboxed parent | Bitwarden `entitlements.desktop_proxy.plist` (app-sandbox + app group, no inherit) |
+| `com.apple.security.smartcard` | `TKSmartCardSlotManager` and PC/SC (readers and ATR in diagnostics) and PKCS#11 modules that talk to the card from inside our process. Token items in the keychain do **not** need it | web-eid-app `web-eid-safari.entitlements`; Apple docs: *"requires this entitlement for sandboxed applications that access smart cards using legacy PCSC framework APIs"*; SafeSign (proof 3) requires it of the host app |
+| `com.apple.security.device.usb` | USB listing (VID:PID) in diagnostics (`nusb`) | Bitwarden MAS |
+| `com.apple.security.application-groups` = `TEAMID.dev.websign` | Socket of the Safari bridge (§5) and of the complement, if one exists | Bitwarden (IPC socket in the group container); web-eid (shared app↔appex group) |
+| `…temporary-exception.files.home-relative-path.read-write` | Only the `NativeMessagingHosts` folders of Chrome (+Beta/Dev/Canary), Chromium, Edge (+Beta/Dev/Canary), Brave (+Beta/Nightly), Vivaldi, Opera (+Developer), and `Mozilla/` | Bitwarden MAS (same technique; it does not list Brave or Opera); Brave and Vivaldi checked in KeePassXC; Opera by Chromium's rule (`<user data dir>/NativeMessagingHosts`), **to be confirmed** |
+| `com.apple.application-identifier`, `com.apple.developer.team-identifier` | Required by the store; `TEAMID` is `TODO(gustavo)` | Bitwarden MAS |
 
-Sem `network.client` (o app não usa rede), sem `cs.allow-jit` (não é Electron), sem
-`files.user-selected` (o `.pfx` é importado pelo próprio macOS). **Arc** fica de fora até
-confirmar a pasta num Mac real (`~/Library/Application Support/Arc/User Data/NativeMessagingHosts/`,
-não verificado).
+No `network.client` (the app does not use the network), no `cs.allow-jit` (it is not Electron), no
+`files.user-selected` (the `.pfx` is imported by macOS itself). **Arc** is left out until the folder is
+confirmed on a real Mac (`~/Library/Application Support/Arc/User Data/NativeMessagingHosts/`,
+not verified).
 
-**Achado que muda o código do `register`:** dentro da sandbox, `$HOME` aponta para
-`~/Library/Containers/<bundle id>/Data`. O Bitwarden resolve isso no Electron com
-`os.userInfo().homedir` e documenta no Rust (`desktop_native/core/src/ipc/mod.rs`): *"While running
-sandboxed, it's different: /Users/<user>/Library/Containers/com.bitwarden.desktop/Data"*. O
-`std::env::home_dir()` lê `$HOME` → gravaria **dentro do contêiner**, onde nenhum navegador procura.
-Por isso o `nm/register` do kit, no macOS, pega o home do banco de usuários
-(`getpwuid_r(getuid())`, em `probe/src/nm/register/home.rs`), que a sandbox não redireciona. O
-`sandbox-test.sh` detecta e aponta explicitamente o caso de o manifesto cair dentro do contêiner.
+**Finding that changes the `register` code:** inside the sandbox, `$HOME` points to
+`~/Library/Containers/<bundle id>/Data`. Bitwarden solves this in Electron with
+`os.userInfo().homedir` and documents it in Rust (`desktop_native/core/src/ipc/mod.rs`): *"While running
+sandboxed, it's different: /Users/<user>/Library/Containers/com.bitwarden.desktop/Data"*.
+`std::env::home_dir()` reads `$HOME` → it would write **inside the container**, where no browser looks.
+That is why the kit's `nm/register`, on macOS, takes the home from the user database
+(`getpwuid_r(getuid())`, in `probe/src/nm/register/home.rs`), which the sandbox does not redirect. The
+`sandbox-test.sh` script detects this and explicitly flags the case where the manifest lands inside the container.
 
-## 3. O experimento da sandbox (`sandbox-test.sh`)
+## 3. The sandbox experiment (`sandbox-test.sh`)
 
-Monta `WebeSign.app` com o `websign-probe` dentro, assina **ad hoc** com os entitlements acima
-(menos os que exigem perfil de provisionamento) e, de dentro da sandbox:
+It builds `WebeSign.app` with `websign-probe` inside, signs it **ad hoc** with the entitlements above
+(except those that require a provisioning profile) and, from inside the sandbox:
 
-| ID | Experimento | SIM significa |
+| ID | Experiment | YES means |
 |---|---|---|
-| `sandbox` | Roda `--version` | O macOS criou `~/Library/Containers/dev.websign.app`: a sandbox foi aplicada |
-| `register:<navegador>` | `register --browser chrome --browser edge --browser brave --browser firefox` (pastas dos navegadores criadas antes, para simular instalação) | O manifesto apareceu na pasta **real** e aponta para o binário sandboxed |
-| `host-stdio` | Inicia o binário como o Chrome inicia (`chrome-extension://<dev_id>/` + mensagens com prefixo de 4 bytes) e manda `ping` e `list` | O host sandboxed respondeu as duas |
-| `keychain-list`, `keychain-sign` | Keychain de teste em `~/Library/Keychains`, na lista de busca; `list` e `sign` (PKCS#1, PSS, ECDSA) | A sandbox enxerga keychains da lista de busca e usa as chaves (o resultado também mostra o mesmo teste fora da sandbox, para separar causa) |
-| `ctk-query` | A consulta com `kSecAttrAccessGroupToken` | Rodou sem erro (o runner não tem token) |
-| `pkcs11-*` | Ver [prova 3](3-tokens-mac.md#3-pkcs11-dentro-da-sandbox) | — |
+| `sandbox` | Runs `--version` | macOS created `~/Library/Containers/dev.websign.app`: the sandbox was applied |
+| `register:<browser>` | `register --browser chrome --browser edge --browser brave --browser firefox` (browser folders created beforehand, to simulate an installation) | The manifest appeared in the **real** folder and points to the sandboxed binary |
+| `host-stdio` | Starts the binary the way Chrome does (`chrome-extension://<dev_id>/` + messages with a 4-byte prefix) and sends `ping` and `list` | The sandboxed host answered both |
+| `keychain-list`, `keychain-sign` | Test keychain in `~/Library/Keychains`, in the search list; `list` and `sign` (PKCS#1, PSS, ECDSA) | The sandbox sees keychains in the search list and uses the keys (the result also shows the same test outside the sandbox, to isolate the cause) |
+| `ctk-query` | The query with `kSecAttrAccessGroupToken` | Ran without error (the runner has no token) |
+| `pkcs11-*` | See [proof 3](3-tokens-mac.md#3-pkcs11-inside-the-sandbox) | n/a |
 
-No fim, o script imprime as negações que a sandbox registrou no log (`sender == "Sandbox"`) e
-desfaz tudo: manifestos (restaurando os que existiam), pastas criadas, keychain e lista de busca, e o
-contêiner se foi ele que o criou.
+At the end, the script prints the denials the sandbox logged (`sender == "Sandbox"`) and
+undoes everything: manifests (restoring the ones that existed), created folders, keychain and search list, and the
+container if it created it.
 
-### O que um binário ad hoc prova — e o que não prova
+### What an ad hoc binary proves, and what it does not
 
-| Prova | Não prova (só assinatura da Apple / TestFlight / loja) |
+| Proves | Does not prove (only Apple signing / TestFlight / the store) |
 |---|---|
-| As regras do perfil de sandbox para **estes** entitlements: arquivos fora do contêiner, keychain, `dlopen`, PC/SC | Que a **App Review aceita** as `temporary-exception` (precisam de justificativa por escrito) e o carregamento de módulos PKCS#11 externos (diretriz 2.5.2) |
-| O contêiner e o `$HOME` redirecionado | O **app group** com Team ID (removido no teste: exige perfil) e o aviso do macOS 15 para grupos não autorizados por perfil |
-| Que um binário sandboxed iniciado por processo não sandboxed funciona como host de stdio | O comportamento de um app instalado pela loja/TestFlight (quarentena, Gatekeeper, caminho em `/Applications`) |
-| Partições do keychain para código ad hoc (`cdhash:`) | O diálogo de acesso ao keychain para o app com Team ID (`teamid:`), que é o que o usuário verá |
-| — | Qualquer coisa do Safari: a extensão só roda assinada (ou com "Allow Unsigned Extensions" no Safari) |
+| The sandbox profile rules for **these** entitlements: files outside the container, keychain, `dlopen`, PC/SC | That **App Review accepts** the `temporary-exception` entries (they need a written justification) and the loading of external PKCS#11 modules (guideline 2.5.2) |
+| The container and the redirected `$HOME` | The **app group** with a Team ID (removed in the test: it requires a profile) and the macOS 15 warning for groups not authorized by a profile |
+| That a sandboxed binary started by a non-sandboxed process works as a stdio host | The behavior of an app installed from the store/TestFlight (quarantine, Gatekeeper, path in `/Applications`) |
+| Keychain partitions for ad hoc code (`cdhash:`) | The keychain access dialog for the app with a Team ID (`teamid:`), which is what the user will see |
+| n/a | Anything about Safari: the extension only runs signed (or with "Allow Unsigned Extensions" in Safari) |
 
-## 4. O que foi provado em CI
+## 4. What was proven in CI
 
 Run [36629289998](https://github.com/diagnos-tech/web-esign/actions/runs/36629289998), job `macos`,
-em 29/09/2026: **macOS 26.6.2 (25G83), arm64**, binário assinado ad hoc.
+on 2026-09-29: **macOS 26.6.2 (25G83), arm64**, ad hoc signed binary.
 
-**Keychain** (`ci-macos.sh`, keychain descartável com 3 identidades de teste; todas as assinaturas
-conferidas com `probe-core::verify`):
+**Keychain** (`ci-macos.sh`, disposable keychain with 3 test identities; all signatures
+verified with `probe-core::verify`):
 
 ```
-RSA-2048   SHA-256/384/512 × RSASSA-PKCS1-v1_5 e RSASSA-PSS   6 × OK via SecKeyCreateSignature (9–14 ms)
-EC P-256   SHA-256/384/512 × ECDSA (DER → r‖s)                 3 × OK (5–7 ms)
-EC P-384   SHA-256/384/512 × ECDSA (DER → r‖s)                 3 × OK (8–14 ms)
+RSA-2048   SHA-256/384/512 × RSASSA-PKCS1-v1_5 and RSASSA-PSS   6 × OK via SecKeyCreateSignature (9–14 ms)
+EC P-256   SHA-256/384/512 × ECDSA (DER → r‖s)                   3 × OK (5–7 ms)
+EC P-384   SHA-256/384/512 × ECDSA (DER → r‖s)                   3 × OK (8–14 ms)
 All required checks passed.
 ```
 
-**Sandbox** (`sandbox/sandbox-test.sh`: `.app` com os entitlements da loja, assinado ad hoc):
+**Sandbox** (`sandbox/sandbox-test.sh`: `.app` with the store entitlements, signed ad hoc):
 
-| Experimento | Resultado | Detalhe |
+| Experiment | Result | Detail |
 |---|---|---|
-| sandbox aplicada | **SIM** | o macOS criou o contêiner `~/Library/Containers/dev.websign.app/Data` |
-| `register` grava no home real (Chrome, Edge, Brave, Firefox) | **SIM** | os quatro manifestos em `~/Library/Application Support/<navegador>/NativeMessagingHosts/` apontam para o binário sandboxed; navegadores sem pasta são ignorados |
-| host sandboxed iniciado como o Chrome inicia (origem + stdio) | **SIM** | respondeu `pong` e `certificates`; log do host dentro do contêiner |
-| keychain listado dentro da sandbox | **SIM** | as duas identidades de teste |
-| assinatura dentro da sandbox (PKCS#1 v1.5, PSS, ECDSA) | **SIM** | três OK, conferidas |
-| consulta CryptoTokenKit (`kSecAttrAccessGroupToken`) dentro da sandbox | **SIM** (sem token no runner) | a consulta roda sem entitlement extra |
-| PKCS#11 (`dlopen` do SoftHSM2 em `/opt/homebrew`) | **NÃO** | `file system sandbox blocked open()`; o kernel registra `deny(1) file-read-data /opt/homebrew/Cellar/softhsm/…` |
-| idem com *hardened runtime* | **NÃO** | mesma negação (a sandbox barra antes da validação de biblioteca) |
+| sandbox applied | **YES** | macOS created the container `~/Library/Containers/dev.websign.app/Data` |
+| `register` writes to the real home (Chrome, Edge, Brave, Firefox) | **YES** | the four manifests in `~/Library/Application Support/<browser>/NativeMessagingHosts/` point to the sandboxed binary; browsers without a folder are skipped |
+| sandboxed host started the way Chrome starts it (origin + stdio) | **YES** | answered `pong` and `certificates`; host log inside the container |
+| keychain listed inside the sandbox | **YES** | both test identities |
+| signing inside the sandbox (PKCS#1 v1.5, PSS, ECDSA) | **YES** | three OK, verified |
+| CryptoTokenKit query (`kSecAttrAccessGroupToken`) inside the sandbox | **YES** (no token on the runner) | the query runs without an extra entitlement |
+| PKCS#11 (`dlopen` of SoftHSM2 in `/opt/homebrew`) | **NO** | `file system sandbox blocked open()`; the kernel logs `deny(1) file-read-data /opt/homebrew/Cellar/softhsm/…` |
+| same with *hardened runtime* | **NO** | same denial (the sandbox blocks before library validation) |
 
-| Item | Resultado | Versão do macOS / runner |
+| Item | Result | macOS version / runner |
 |---|---|---|
 | Keychain: RSA-2048 PKCS#1 v1.5 + PSS × SHA-256/384/512 | ✅ | 26.6.2 arm64 |
-| Keychain: P-256 e P-384 ECDSA × SHA-256/384/512 (DER → `r‖s`) | ✅ | 26.6.2 arm64 |
-| Sandbox aplicada | ✅ | 26.6.2 arm64 |
-| Manifestos gravados pela sandbox (Chrome, Edge, Brave, Firefox) | ✅ | 26.6.2 arm64 |
-| Host sandboxed responde por stdio | ✅ | 26.6.2 arm64 |
-| Keychain lido e usado dentro da sandbox | ✅ | 26.6.2 arm64 |
-| Módulo PKCS#11 fora do pacote carregado dentro da sandbox | ❌ | 26.6.2 arm64 |
+| Keychain: P-256 and P-384 ECDSA × SHA-256/384/512 (DER → `r‖s`) | ✅ | 26.6.2 arm64 |
+| Sandbox applied | ✅ | 26.6.2 arm64 |
+| Manifests written by the sandbox (Chrome, Edge, Brave, Firefox) | ✅ | 26.6.2 arm64 |
+| Sandboxed host answers over stdio | ✅ | 26.6.2 arm64 |
+| Keychain read and used inside the sandbox | ✅ | 26.6.2 arm64 |
+| PKCS#11 module outside the bundle loaded inside the sandbox | ❌ | 26.6.2 arm64 |
 
-## 5. Safari: arquitetura da ponte
+## 5. Safari: bridge architecture
 
-A Apple exige que a extensão do Safari venha dentro de um app, com uma *app extension*
-(`.appex`, ponto de extensão `com.apple.Safari.web-extension`) cuja classe
-`SafariWebExtensionHandler` recebe cada `browser.runtime.sendNativeMessage()`. A appex é um
-processo à parte, sandboxed, **sem interface**, que o Safari inicia e encerra quando quer.
+Apple requires the Safari extension to ship inside an app, with an *app extension*
+(`.appex`, extension point `com.apple.Safari.web-extension`) whose class
+`SafariWebExtensionHandler` receives every `browser.runtime.sendNativeMessage()`. The appex is a
+separate, sandboxed process with **no interface**, which Safari starts and stops whenever it wants.
 
 ```
-página ──SDK──▶ content script ──▶ service worker da extensão (Safari)
-                                     │ browser.runtime.sendNativeMessage({...,"origin": sender.origin})
-                                     ▼
-                     SafariWebExtensionHandler (.appex, sandboxed, sem UI)
-                                     │ socket Unix em ~/Library/Group Containers/TEAMID.dev.websign/
-                                     │ (mesmo enquadramento do native messaging: 4 bytes + JSON)
-                                     ▼
-                     WebeSign.app (Rust) — mesmo tratador do host do Chrome
-                       janela de confirmação (egui) → SecKeyCreateSignature → PIN do sistema
+page ──SDK──▶ content script ──▶ extension service worker (Safari)
+                                   │ browser.runtime.sendNativeMessage({...,"origin": sender.origin})
+                                   ▼
+                   SafariWebExtensionHandler (.appex, sandboxed, no UI)
+                                   │ Unix socket in ~/Library/Group Containers/TEAMID.dev.websign/
+                                   │ (same framing as native messaging: 4 bytes + JSON)
+                                   ▼
+                   WebeSign.app (Rust) — same handler as the Chrome host
+                     confirmation window (egui) → SecKeyCreateSignature → system PIN
 ```
 
-**Assinar direto na appex?** Não. A appex conseguiria chamar `SecKeyCreateSignature` (o diálogo de
-PIN é do sistema), mas a decisão 5 exige a janela de confirmação do app — site, certificado,
-impressão digital, botão Assinar — e a appex não mostra janela. Além disso, duplicaria em Swift o
-que o app faz em Rust. A appex fica burra: repassa bytes e não conhece o protocolo, então não muda
-quando o protocolo mudar.
+**Sign directly in the appex?** No. The appex could call `SecKeyCreateSignature` (the PIN dialog
+belongs to the system), but decision 5 requires the app's confirmation window (site, certificate,
+thumbprint, Sign button) and the appex cannot show a window. It would also duplicate in Swift what
+the app does in Rust. The appex stays dumb: it relays bytes and does not know the protocol, so it does not change
+when the protocol changes.
 
-**Como a janela aparece?** A appex inicia o app (`NSWorkspace.openApplication`, `activates = false`)
-se ele não estiver escutando; o app, já com o pedido, traz a janela de confirmação para a frente
-(`NSApp.activate`), como faz quando o pedido vem do Chrome. O app fica aberto com fechamento por
-ociosidade (decisão 6), então a partir do segundo pedido não há partida a frio.
+**How does the window appear?** The appex starts the app (`NSWorkspace.openApplication`, `activates = false`)
+if it is not listening; the app, already holding the request, brings the confirmation window to the front
+(`NSApp.activate`), as it does when the request comes from Chrome. The app stays open with an idle
+shutdown (decision 6), so from the second request on there is no cold start.
 
-**Por que socket no app group, e não o que o web-eid faz?** O web-eid-app usa
-`NSDistributedNotificationCenter` (difusão para qualquer processo do usuário) + `UserDefaults` do
-grupo, com espera ativa (`sleepForTimeInterval` em laço) e encerra o app a cada pedido. Funciona,
-mas é lento, e o nome da notificação é público. XPC com *Mach service* exigiria registrar o serviço
-no launchd (login item/`SMAppService`) e bindings de XPC/Objective-C no Rust. O socket Unix no
-contêiner do grupo é o que o Bitwarden publica na loja (`~/Library/Group Containers/<grupo>/s.<nome>`),
-é trivial dos dois lados e reaproveita o enquadramento do native messaging — o tratador do app é o
-mesmo para Chrome, Firefox e Safari.
+**Why a socket in the app group, and not what web-eid does?** web-eid-app uses
+`NSDistributedNotificationCenter` (broadcast to any process of the user) + the group's `UserDefaults`, with busy waiting
+(`sleepForTimeInterval` in a loop) and quits the app at every request. It works,
+but it is slow, and the notification name is public. XPC with a *Mach service* would require registering the service
+with launchd (login item/`SMAppService`) and XPC/Objective-C bindings in Rust. The Unix socket in the
+group container is what Bitwarden ships in the store (`~/Library/Group Containers/<group>/s.<name>`),
+is trivial on both sides, and reuses the native messaging framing, so the app's handler is the
+same for Chrome, Firefox, and Safari.
 
-**Segurança da ponte.** Qualquer processo do usuário fora da sandbox pode tentar conectar no socket.
-O app deve conferir o par: `getsockopt(LOCAL_PEERTOKEN)` → *audit token* →
-`SecCodeCopyGuestWithAttributes` → `SecCodeCheckValidity` com o requisito
+**Bridge security.** Any non-sandboxed process of the user can try to connect to the socket.
+The app must check the peer: `getsockopt(LOCAL_PEERTOKEN)` → *audit token* →
+`SecCodeCopyGuestWithAttributes` → `SecCodeCheckValidity` with the requirement
 `anchor apple generic and certificate leaf[subject.OU] = "TEAMID" and identifier "dev.websign.app.extension"`.
-A origem do site vem do Safari (`sender.origin`/`sender.url` no service worker), nunca do payload da
-página — mesma regra do Chrome.
+The site's origin comes from Safari (`sender.origin`/`sender.url` in the service worker), never from the
+page's payload, the same rule as Chrome.
 
-**Estado da extensão.** `SFSafariExtensionManager.getStateOfSafariExtension(withIdentifier:)` e
-`SFSafariApplication.showPreferencesForExtension(withIdentifier:)` só funcionam no app que contém a
-extensão. No app Rust, via `objc2-safari-services`; alimentam a aba Navegadores do diagnóstico e o
-botão "ativar no Safari". Extensão desativada não envia ping, então essa consulta é a única fonte
-para "instalada mas desligada".
+**Extension state.** `SFSafariExtensionManager.getStateOfSafariExtension(withIdentifier:)` and
+`SFSafariApplication.showPreferencesForExtension(withIdentifier:)` only work in the app that contains the
+extension. In the Rust app, through `objc2-safari-services`; they feed the Browsers tab of diagnostics and the
+"enable in Safari" button. A disabled extension does not send a ping, so this query is the only source
+for "installed but turned off".
 
-### Proposta de código da appex (~110 linhas sem comentários)
+### Proposed appex code (~110 lines without comments)
 
 ```swift
 // SafariWebExtensionHandler.swift — relay between the Safari web extension and the app.
@@ -372,86 +372,86 @@ enum Relay {
 }
 ```
 
-Lado do app (Rust), fora do escopo desta prova: `UnixListener` em
-`~/Library/Group Containers/TEAMID.dev.websign/s.host` (o `$HOME` da sandbox não serve; mesmo cálculo
-do Bitwarden), verificação do par descrita acima e o **mesmo** laço de mensagens do host de stdio.
+App side (Rust), outside the scope of this proof: a `UnixListener` at
+`~/Library/Group Containers/TEAMID.dev.websign/s.host` (the sandbox's `$HOME` does not work; same computation as
+Bitwarden), the peer verification described above, and the **same** message loop as the stdio host.
 
-Riscos a medir no Mac real: o Safari pode encerrar a appex se o pedido demorar (usuário digitando
-PIN por um minuto?) — medir com espera longa na janela de confirmação; e a primeira abertura do app
-pela appex com `activates = false` precisa trazer a janela para frente mesmo assim.
+Risks to measure on the real Mac: Safari may terminate the appex if the request takes long (user typing
+a PIN for a minute?); measure with a long wait in the confirmation window. Also, the app's first launch
+by the appex with `activates = false` must still bring the window to the front.
 
-## 6. O que falta
+## 6. What is missing
 
-- [ ] Log do CI (§4) — keychain e sandbox ad hoc.
-- [x] `register` usa o home real no macOS (`getpwuid_r`, achado do §2). Falta reexecutar o CI.
-- [ ] Chrome real iniciando o host sandboxed e assinando com A1 do keychain e com token CTK.
-- [ ] Firefox real (lê `~/Library/Application Support/Mozilla/NativeMessagingHosts/`).
-- [ ] Safari: projeto Xcode com a appex acima, extensão carregada, assinatura ponta a ponta,
-      `getStateOfSafariExtension` com a extensão ligada e desligada.
-- [ ] TestFlight: o mesmo app assinado pela Apple (Team ID, app group, partição `teamid:` do keychain).
-- [ ] App Review: enviar build com as exceções e ver se passa (é a única prova da aceitação).
+- [ ] CI log (§4): keychain and ad hoc sandbox.
+- [x] `register` uses the real home on macOS (`getpwuid_r`, finding from §2). CI still needs to be rerun.
+- [ ] Real Chrome starting the sandboxed host and signing with a keychain A1 and with a CTK token.
+- [ ] Real Firefox (reads `~/Library/Application Support/Mozilla/NativeMessagingHosts/`).
+- [ ] Safari: Xcode project with the appex above, extension loaded, end-to-end signing,
+      `getStateOfSafariExtension` with the extension on and off.
+- [ ] TestFlight: the same app signed by Apple (Team ID, app group, the keychain's `teamid:` partition).
+- [ ] App Review: submit a build with the exceptions and see whether it passes (the only proof of acceptance).
 
-## 7. Roteiro para o Gustavo (Mac real)
+## 7. Script for Gustavo (real Mac)
 
-Pré-requisitos: macOS 14 ou 15 (anotar a versão exata e o chip), Xcode Command Line Tools, Rust,
-Homebrew, Chrome e Firefox instalados **e abertos uma vez** (para criarem as pastas).
+Prerequisites: macOS 14 or 15 (note the exact version and the chip), Xcode Command Line Tools, Rust,
+Homebrew, Chrome and Firefox installed **and opened once** (so they create their folders).
 
-1. **Compilar:** `cd docs/prototypes/kit && cargo build --release -p websign-probe && export PROBE_EXE=$PWD/target/release/websign-probe`.
-2. **Keychain com chaves de teste:** `bash macos/ci-macos.sh` → deve terminar em "All required
-   checks passed." (usa um keychain temporário; não mexe no login).
-3. **Sandbox:** `bash macos/sandbox/sandbox-test.sh` → copiar a tabela `RESULT` e as negações.
-4. **A1 real (opcional):** importar um `.pfx` pelo Acesso às Chaves; `"$PROBE_EXE" list` → a linha deve
-   dizer `macos:keychain (keychain, software; PIN by OS)`. `"$PROBE_EXE" sign --cert <16 hex> --hash all --pss`
-   → o macOS pergunta se permite usar a chave: testar **Negar** (deve sair "cancelled by the user"),
-   depois **Permitir**.
-5. **Mesmo teste dentro da sandbox:** `bash macos/sandbox/run-sandboxed.sh list` e
+1. **Build:** `cd docs/prototypes/kit && cargo build --release -p websign-probe && export PROBE_EXE=$PWD/target/release/websign-probe`.
+2. **Keychain with test keys:** `bash macos/ci-macos.sh` → it must end in "All required
+   checks passed." (it uses a temporary keychain; it does not touch the login keychain).
+3. **Sandbox:** `bash macos/sandbox/sandbox-test.sh` → copy the `RESULT` table and the denials.
+4. **Real A1 (optional):** import a `.pfx` with Keychain Access; `"$PROBE_EXE" list` → the line must
+   say `macos:keychain (keychain, software; PIN by OS)`. `"$PROBE_EXE" sign --cert <16 hex> --hash all --pss`
+   → macOS asks whether to allow use of the key: test **Deny** (it must print "cancelled by the user"),
+   then **Allow**.
+5. **Same test inside the sandbox:** `bash macos/sandbox/run-sandboxed.sh list` and
    `bash macos/sandbox/run-sandboxed.sh sign --cert <16 hex> --hash sha256`.
-   Anotar se o diálogo de permissão aparece e o que ele diz.
-6. **Chrome iniciando o host sandboxed:**
-   `bash macos/sandbox/run-sandboxed.sh register --browser chrome` (o bundle fica em
-   `~/Library/Caches/dev.websign.sandbox-test/WebeSign.app`); conferir
+   Note whether the permission dialog appears and what it says.
+6. **Chrome starting the sandboxed host:**
+   `bash macos/sandbox/run-sandboxed.sh register --browser chrome` (the bundle lives in
+   `~/Library/Caches/dev.websign.sandbox-test/WebeSign.app`); check
    `cat ~/Library/Application\ Support/Google/Chrome/NativeMessagingHosts/dev.websign.host.json`.
-   Carregar a extensão de desenvolvimento (`kit/extension/`, ID fixo `nhnkdpljdgjflbflkhnkmfmcmodboeii`)
-   em `chrome://extensions` (modo desenvolvedor → "Carregar sem compactação") e disparar `ping` e
-   `list`. Evidência: resposta na extensão, o log do host (na sandbox o `TMPDIR` também vai para o
-   contêiner: `find ~/Library/Containers/dev.websign.app -name '*-probe-host.log'`) e
+   Load the development extension (`kit/extension/`, fixed ID `nhnkdpljdgjflbflkhnkmfmcmodboeii`)
+   in `chrome://extensions` (developer mode → "Load unpacked") and trigger `ping` and
+   `list`. Evidence: response in the extension, the host log (in the sandbox `TMPDIR` also goes to the
+   container: `find ~/Library/Containers/dev.websign.app -name '*-probe-host.log'`) and
    `log show --last 5m --predicate 'sender == "Sandbox"' --style compact | grep websign`.
-7. **Token via CryptoTokenKit:** ver o roteiro da [prova 3](3-tokens-mac.md#4-roteiro-de-teste-para-o-gustavo)
-   — rodar `list`/`sign` fora e dentro da sandbox (`run-sandboxed.sh`), e pelo Chrome (passo 6).
-8. **Safari:** quando existir `safari/` (projeto Xcode com a appex do §5): Safari → Ajustes →
-   Avançado → "Mostrar recursos para desenvolvedores"; Desenvolvedor → "Permitir extensões não
-   assinadas"; ativar a extensão; assinar pela página de teste; desligar a extensão e conferir o
-   estado no diagnóstico.
-9. **Relatório:** `"$PROBE_EXE" report --run-signatures --cert <fp> --hash all --pss --out mac-real.md`
-   e anexar aqui (não contém nomes, CPF nem números de série).
+7. **Token via CryptoTokenKit:** see the script in [proof 3](3-tokens-mac.md#4-test-script-for-gustavo)
+   and run `list`/`sign` outside and inside the sandbox (`run-sandboxed.sh`), and through Chrome (step 6).
+8. **Safari:** once `safari/` exists (Xcode project with the appex from §5): Safari → Settings →
+   Advanced → "Show features for web developers"; Develop → "Allow Unsigned Extensions"; enable
+   the extension; sign from the test page; turn the extension off and check the
+   state in diagnostics.
+9. **Report:** `"$PROBE_EXE" report --run-signatures --cert <fp> --hash all --pss --out mac-real.md`
+   and attach it here (it contains no names, CPF, or serial numbers).
 
-## 8. Decisão proposta
+## 8. Proposed decision
 
-- **Um único binário na Mac App Store** = host de native messaging (Chrome, Edge, Brave, Vivaldi,
-  Opera, Firefox) + janelas + assinador, com os entitlements de `entitlements.mas.plist`. O `register`
-  calcula o home real (`getpwuid_r`), grava só em pastas de navegadores existentes e roda a cada
-  abertura do app (e pelo esquema `websign://`, já que a loja não roda instalador).
-- **Keychain + CryptoTokenKit primeiro**, pelas duas consultas deste kit. PKCS#11 dentro do app da
-  loja só se a [prova 3](3-tokens-mac.md) mostrar que funciona **e** a App Review aceitar; senão,
-  complemento `.dmg` (Developer ID, notarizado, Sparkle), chamado pelo mesmo socket do app group.
-- **Safari:** appex de ~100 linhas que só repassa, socket Unix no app group, confirmação e assinatura
-  no app; estado da extensão por `SFSafariExtensionManager` a partir do app.
+- **A single binary in the Mac App Store** = native messaging host (Chrome, Edge, Brave, Vivaldi,
+  Opera, Firefox) + windows + signer, with the entitlements from `entitlements.mas.plist`. `register`
+  computes the real home (`getpwuid_r`), writes only into existing browser folders, and runs on every
+  app launch (and through the `websign://` scheme, since the store does not run an installer).
+- **Keychain + CryptoTokenKit first**, through this kit's two queries. PKCS#11 inside the store app
+  only if [proof 3](3-tokens-mac.md) shows it works **and** App Review accepts it; otherwise, a
+  `.dmg` complement (Developer ID, notarized, Sparkle), called through the same app-group socket.
+- **Safari:** ~100-line appex that only relays, Unix socket in the app group, confirmation and signing
+  in the app; extension state through `SFSafariExtensionManager` from the app.
 
-Reverter se: a sandbox negar a escrita nas pastas mesmo com as exceções (→ o app não consegue se
-registrar sozinho; alternativa seria o complemento registrar), o Chrome não conseguir iniciar o binário
-sandboxed, ou o Safari encerrar a appex antes do usuário confirmar (→ appex responde "pendente" e a
-extensão consulta o app de novo).
+Revert if: the sandbox denies writing to the folders even with the exceptions (→ the app cannot register
+itself; the alternative would be for the complement to register), Chrome cannot start the sandboxed
+binary, or Safari terminates the appex before the user confirms (→ the appex answers "pending" and the
+extension asks the app again).
 
-## Referências
+## References
 
 - Bitwarden (GPL-3.0): `apps/desktop/resources/entitlements.mas.plist`,
-  `entitlements.desktop_proxy.plist`, `src/main/native-messaging.main.ts` (`userInfo().homedir` no
-  macOS), `desktop_native/core/src/ipc/mod.rs` (socket no app group).
+  `entitlements.desktop_proxy.plist`, `src/main/native-messaging.main.ts` (`userInfo().homedir` on
+  macOS), `desktop_native/core/src/ipc/mod.rs` (socket in the app group).
 - web-eid-app (MIT): `src/mac/safari-extension.mm`, `main.mm`, `shared.hpp`,
   `web-eid-safari*.entitlements`.
 - Chromium: `net/ssl/client_cert_store_mac.cc`.
-- Apple: documentação de `kSecAttrAccessGroupToken`, `com.apple.security.smartcard` e "Using
-  cryptographic assets stored on a smart card"; open source `Security`: `keychain/headers/SecKey.h`,
+- Apple: documentation of `kSecAttrAccessGroupToken`, `com.apple.security.smartcard`, and "Using
+  cryptographic assets stored on a smart card"; `Security` open source: `keychain/headers/SecKey.h`,
   `OSX/sec/Security/SecKeyAdaptors.m`, `OSX/sec/Security/SecCTKKey.m`; `TKError.h`
   (`TKErrorCodeCanceledByUser = -4`, `TKErrorCodeAuthenticationFailed = -5`).
-- KeePassXC: `src/browser/NativeMessageInstaller.cpp` (pastas de Brave, Vivaldi, Edge no macOS).
+- KeePassXC: `src/browser/NativeMessageInstaller.cpp` (Brave, Vivaldi, Edge folders on macOS).

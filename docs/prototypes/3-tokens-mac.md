@@ -1,162 +1,162 @@
-# Prova 3 — Tokens no Mac: CryptoTokenKit ou PKCS#11?
+# Proof 3: Tokens on Mac: CryptoTokenKit or PKCS#11?
 
-**Status:** falta token real · **Resultado parcial:** PKCS#11 **não** carrega dentro da sandbox (CI) → token só-PKCS#11 exige o complemento ·
-**Decisão:** _depende da matriz abaixo_ — o critério está em [§1](#1-critério-o-complemento-dmg-existe)
+**Status:** real token missing · **Partial result:** PKCS#11 does **not** load inside the sandbox (CI) → a PKCS#11-only token requires the complement ·
+**Decision:** _depends on the matrix below_; the criterion is in [§1](#1-criterion-does-the-dmg-complement-exist)
 
-## Objetivo
+## Goal
 
-1. Quais middlewares expõem o token ao **CryptoTokenKit** (CTK), isto é, fazem as chaves aparecerem
-   no keychain para qualquer app — inclusive o da Mac App Store — sem PKCS#11?
-2. Um módulo **PKCS#11** carrega e assina **dentro da sandbox** da Mac App Store?
-3. Com isso: o **complemento `.dmg`** (Developer ID + notarização + Sparkle, fora da sandbox,
-   chamado pelo app da loja) precisa existir?
+1. Which middlewares expose the token to **CryptoTokenKit** (CTK), that is, make the keys appear
+   in the keychain for any app, including the Mac App Store one, without PKCS#11?
+2. Does a **PKCS#11** module load and sign **inside the Mac App Store sandbox**?
+3. With that: does the **`.dmg` complement** (Developer ID + notarization + Sparkle, outside the sandbox,
+   called by the store app) need to exist?
 
-Pelo lado do app, os dois caminhos já estão no kit: `macos:ctk` (consulta com
-`kSecAttrAccessGroupToken`, ver [prova 2](2-mac.md#1-como-o-kit-prova)) e `pkcs11:<módulo>` (lista
-de caminhos conhecidos, p11-kit e `--module`). O mesmo certificado visto pelos dois caminhos é
-deduplicado pela impressão digital, preferindo o do sistema.
+On the app side, both paths are already in the kit: `macos:ctk` (query with
+`kSecAttrAccessGroupToken`, see [proof 2](2-mac.md#1-how-the-kit-proves-it)) and `pkcs11:<module>` (list
+of known paths, p11-kit, and `--module`). The same certificate seen through both paths is
+deduplicated by thumbprint, preferring the system one.
 
-## 1. Critério: o complemento `.dmg` existe?
+## 1. Criterion: does the `.dmg` complement exist?
 
-O complemento existe **se e somente se** houver ao menos um middleware **relevante** para o qual:
+The complement exists **if and only if** there is at least one **relevant** middleware for which:
 
-1. o token **não** aparece em `macos:ctk` (token inserido, middleware atual instalado, macOS
-   suportado pelo fabricante); **e**
-2. o PKCS#11 **não** resolve dentro do app da loja — porque falha na sandbox (`dlopen`,
-   `C_Initialize`, `C_Login` ou `C_Sign`; ver §3) **ou** porque a App Review recusa o carregamento de
-   módulo externo (diretriz 2.5.2: o app não pode executar código que não veio no pacote).
+1. the token does **not** appear in `macos:ctk` (token inserted, current middleware installed, macOS
+   supported by the vendor); **and**
+2. PKCS#11 does **not** work inside the store app, because it fails in the sandbox (`dlopen`,
+   `C_Initialize`, `C_Login`, or `C_Sign`; see §3) **or** because App Review rejects loading an
+   external module (guideline 2.5.2: the app may not execute code that did not ship in the bundle).
 
-"Relevante" = usado por clientes do Diagnos (ICP-Brasil A3) ou pelos cartões europeus da lista.
-`TODO(gustavo)`: fechar a lista com a participação de mercado de cada token entre os médicos.
+"Relevant" = used by Diagnos customers (ICP-Brasil A3) or by the European cards on the list.
+`TODO(gustavo)`: close the list using each token's market share among physicians.
 
-Consequências:
+Consequences:
 
-- Todos os relevantes passam por CTK → **sem complemento**; PKCS#11 no Mac fica só para o
-  diagnóstico ("adicionar módulo").
-- Algum só funciona por PKCS#11 **e** o PKCS#11 funciona na sandbox **e** a Review aceita →
-  **sem complemento**; o app da loja carrega o módulo.
-- Caso contrário → **complemento**, e o `devices.json` marca `macos.cryptotokenkit: false` para
-  esse dispositivo (é o que dispara a sugestão na interface, ver `docs/ux.md` §7).
+- All relevant ones go through CTK → **no complement**; PKCS#11 on Mac remains only for
+  diagnostics ("add module").
+- Some only work through PKCS#11 **and** PKCS#11 works in the sandbox **and** Review accepts it →
+  **no complement**; the store app loads the module.
+- Otherwise → **complement**, and `devices.json` marks `macos.cryptotokenkit: false` for
+  that device (this is what triggers the suggestion in the interface, see `docs/ux.md` §7).
 
-Mesmo com CTK funcionando, vale medir se o PIN do CTK é aceitável para o médico (diálogo do sistema
-a cada assinatura ou cache por sessão, conforme o driver).
+Even with CTK working, it is worth measuring whether the CTK PIN experience is acceptable to the physician (system dialog
+on every signature or per-session cache, depending on the driver).
 
-## 2. Matriz de middlewares
+## 2. Middleware matrix
 
-Legenda: **SIM** = documentado pelo fabricante; **provável** = indícios públicos; **?** = sem
-informação; "Prova" = resultado do roteiro §4 num Mac real (a preencher).
+Legend: **YES** = documented by the vendor; **probable** = public indications; **?** = no
+information; "Proof" = result of script §4 on a real Mac (to be filled in).
 
-| Middleware (tokens) | Expõe via CTK? | Módulo PKCS#11 no macOS | Fonte | Prova |
+| Middleware (tokens) | Exposes via CTK? | PKCS#11 module on macOS | Source | Proof |
 |---|---|---|---|---|
-| **SafeSign IC** (A.E.T. Europe) — tokens e cartões JCOP e G+D usados na ICP-Brasil | **SIM** desde a 4.0: *Smart Card Extension* `aetsce.appex` dentro de `tokenadmin.app/Contents/PlugIns` ("used for Apple (native) applications, such as Safari and Mail"; testado com Chrome 111 no macOS 13.2) | `/Applications/tokenadmin.app/Contents/Frameworks/libaetpkss.dylib` (4.0); versões antigas: `/usr/local/lib/libaetpkss.dylib` (a confirmar) | *SafeSign IC Standard Version 4.0 for macOS Release Document* (mar/2023, espelho KPN); notas 3.5/3.6/3.7/4.1/4.2 no UZI-register | |
-| **SafeNet Authentication Client** (Thales) — eToken 5110/5110+/5110 CC, IDPrime | **provável** (relatos de certificados do token aparecendo no keychain no macOS recente; não achei documento da Thales citando CTK) | `/usr/local/lib/libeTPkcs11.dylib` | KB da DigiCert (módulo para o Acrobat); anúncio SAC 10.9 para Mac (jan/2025, macOS 15) | |
-| **OpenSC** — ePass2003 (driver `epass2003`), DNIe, PIV, muitos cartões | **SIM** no pacote oficial: `OpenSCToken.app` (extensão `org.opensc-project.mac.opensctoken.OpenSCTokenApp.OpenSCToken`). A fórmula do Homebrew não traz o token CTK (a confirmar) | `/Library/OpenSC/lib/opensc-pkcs11.so` (e link em `/usr/local/lib/opensc-pkcs11.so`) | `MacOSX/build` e `MacOSX/opensc-uninstall` no repositório do OpenSC | |
-| **Feitian ePass2003** com middleware próprio (distribuído por ACs) | ? | ? (a confirmar no instalador) | — | |
-| **Watchdata** (tokens WD usados por ACs brasileiras) | ? | Variante indiana (ProxKey): `/usr/local/lib/wdProxKeyUsbKeyTool/libwdpkcs_Proxkey.dylib`; variante brasileira: ? | Guias de revendedores indianos (Acrobat no Mac) | |
-| **G+D StarSign** (StarSign Crypto USB Token S) | **SIM via SafeSign** (o token está na lista de suportados do SafeSign IC 4.0 para macOS); middleware próprio da G+D: ? | via SafeSign: `libaetpkss.dylib` | Release Document SafeSign 4.0 (seção 7) | |
-| **Cartão de Cidadão PT** (Autenticação.gov) | **SIM** desde a 3.11.0: módulo `PteidToken` ("implementa a framework CryptoTokenKit") | `/usr/local/lib/libpteidpkcs11.dylib` | Manual de Utilização da Autenticação.gov. O CC emitido desde jun/2024 usa **ECDSA** | |
-| **DNIe ES** (Polícia Nacional, `libpkcs11-dnie` 1.6.8) | **NÃO** no pacote oficial: só PKCS#11 (o `.pkg` não traz `.appex`); alternativa: OpenSC, que tem driver `dnie` e o `OpenSCToken` | `/Library/Libpkcs11-dnie/lib/libpkcs11-dnie.so` | Payload do `libpkcs11-dnie-1.6.8_arm.pkg` inspecionado (install-location `/Library`; traz `DialogSign.app`) | |
-| **Apple PIV** (`com.apple.pivtoken`, embutido) — YubiKey e cartões PIV | **SIM** (nativo) | não precisa | macOS | |
+| **SafeSign IC** (A.E.T. Europe): JCOP and G+D tokens and cards used in ICP-Brasil | **YES** since 4.0: *Smart Card Extension* `aetsce.appex` inside `tokenadmin.app/Contents/PlugIns` ("used for Apple (native) applications, such as Safari and Mail"; tested with Chrome 111 on macOS 13.2) | `/Applications/tokenadmin.app/Contents/Frameworks/libaetpkss.dylib` (4.0); older versions: `/usr/local/lib/libaetpkss.dylib` (to be confirmed) | *SafeSign IC Standard Version 4.0 for macOS Release Document* (Mar 2023, KPN mirror); notes 3.5/3.6/3.7/4.1/4.2 on UZI-register | |
+| **SafeNet Authentication Client** (Thales): eToken 5110/5110+/5110 CC, IDPrime | **probable** (reports of the token's certificates showing up in the keychain on recent macOS; I found no Thales document citing CTK) | `/usr/local/lib/libeTPkcs11.dylib` | DigiCert KB (module for Acrobat); SAC 10.9 for Mac announcement (Jan 2025, macOS 15) | |
+| **OpenSC**: ePass2003 (`epass2003` driver), DNIe, PIV, many cards | **YES** in the official package: `OpenSCToken.app` (extension `org.opensc-project.mac.opensctoken.OpenSCTokenApp.OpenSCToken`). The Homebrew formula does not ship the CTK token (to be confirmed) | `/Library/OpenSC/lib/opensc-pkcs11.so` (and a link at `/usr/local/lib/opensc-pkcs11.so`) | `MacOSX/build` and `MacOSX/opensc-uninstall` in the OpenSC repository | |
+| **Feitian ePass2003** with its own middleware (distributed by CAs) | ? | ? (to be confirmed in the installer) | n/a | |
+| **Watchdata** (WD tokens used by Brazilian CAs) | ? | Indian variant (ProxKey): `/usr/local/lib/wdProxKeyUsbKeyTool/libwdpkcs_Proxkey.dylib`; Brazilian variant: ? | Guides from Indian resellers (Acrobat on Mac) | |
+| **G+D StarSign** (StarSign Crypto USB Token S) | **YES via SafeSign** (the token is on SafeSign IC 4.0 for macOS's supported list); G+D's own middleware: ? | via SafeSign: `libaetpkss.dylib` | SafeSign 4.0 Release Document (section 7) | |
+| **Cartão de Cidadão PT** (Autenticação.gov) | **YES** since 3.11.0: `PteidToken` module ("implements the CryptoTokenKit framework") | `/usr/local/lib/libpteidpkcs11.dylib` | Autenticação.gov User Manual. Cards issued since Jun 2024 use **ECDSA** | |
+| **DNIe ES** (Policía Nacional, `libpkcs11-dnie` 1.6.8) | **NO** in the official package: PKCS#11 only (the `.pkg` ships no `.appex`); alternative: OpenSC, which has a `dnie` driver and the `OpenSCToken` | `/Library/Libpkcs11-dnie/lib/libpkcs11-dnie.so` | Payload of `libpkcs11-dnie-1.6.8_arm.pkg` inspected (install-location `/Library`; ships `DialogSign.app`) | |
+| **Apple PIV** (`com.apple.pivtoken`, built in): YubiKey and PIV cards | **YES** (native) | not needed | macOS | |
 
-Notas que pesam na decisão:
+Notes that weigh on the decision:
 
-- **SafeSign exige o entitlement de CTK do app hospedeiro mesmo pelo PKCS#11.** O documento 4.0
-  diz: *"If an application (based on PKCS #11) does not have CTK entitlement, the SafeSign PKCS #11
-  Library that is loaded by that application does not have this entitlement either"*; há um
-  contorno por PC/SC (`EnableMacOSXPCSCLayerFallback`, ligado por padrão, em
-  `~/Library/Application Support/safesign/registry`). O app da loja declara
-  `com.apple.security.smartcard`, então o caminho CTK da própria biblioteca deve funcionar; o
-  contorno lê um arquivo do `$HOME`, que na sandbox é o contêiner — a confirmar.
-- **DNIe abre um app auxiliar** (`DialogSign.app`) para o PIN/confirmação. Dentro da sandbox, iniciar
-  outro executável herda a sandbox e pode ser negado — risco específico a medir.
-- **Brasil:** as ACs distribuem versões próprias (e às vezes antigas) do SafeSign e do SAC. O que
-  vale é a versão que o médico recebe da AC, não a última do fabricante — anotar a origem do
-  instalador em cada prova.
-- **Teste barato do caminho CTK sem middleware:** uma YubiKey 5 com certificado PIV
-  (`ykman piv keys generate` + `ykman piv certificates generate`) aparece em `macos:ctk` pelo driver
-  nativo da Apple. Prova o código do kit e a sandbox antes de ter os tokens brasileiros na mão.
+- **SafeSign requires the host app's CTK entitlement even through PKCS#11.** The 4.0 document
+  says: *"If an application (based on PKCS #11) does not have CTK entitlement, the SafeSign PKCS #11
+  Library that is loaded by that application does not have this entitlement either"*; there is a
+  PC/SC workaround (`EnableMacOSXPCSCLayerFallback`, on by default, in
+  `~/Library/Application Support/safesign/registry`). The store app declares
+  `com.apple.security.smartcard`, so the library's own CTK path should work; the
+  workaround reads a file in `$HOME`, which in the sandbox is the container (to be confirmed).
+- **DNIe opens a helper app** (`DialogSign.app`) for the PIN/confirmation. Inside the sandbox, starting
+  another executable inherits the sandbox and may be denied: a specific risk to measure.
+- **Brazil:** CAs distribute their own (and sometimes old) versions of SafeSign and SAC. What
+  matters is the version the physician receives from the CA, not the vendor's latest; note the origin of the
+  installer in every proof.
+- **Cheap test of the CTK path without middleware:** a YubiKey 5 with a PIV certificate
+  (`ykman piv keys generate` + `ykman piv certificates generate`) shows up in `macos:ctk` through Apple's
+  native driver. It proves the kit's code and the sandbox before the Brazilian tokens are at hand.
 
-## 3. PKCS#11 dentro da sandbox
+## 3. PKCS#11 inside the sandbox
 
-O `kit/macos/sandbox/sandbox-test.sh` (CI) mede com o SoftHSM2 do Homebrew, com o token **dentro do
-contêiner** (`~/Library/Containers/dev.websign.app/Data/websign-softhsm`, via `SOFTHSM2_CONF`):
+`kit/macos/sandbox/sandbox-test.sh` (CI) measures with Homebrew's SoftHSM2, with the token **inside the
+container** (`~/Library/Containers/dev.websign.app/Data/websign-softhsm`, via `SOFTHSM2_CONF`):
 
-| ID | O que mede | Por quê |
+| ID | What it measures | Why |
 |---|---|---|
-| `pkcs11-setup` | Preparar o token no contêiner a partir de fora | No macOS 14+ o sistema protege contêineres de outros apps; se falhar, o script refaz fora do contêiner (aí só o `dlopen` é conclusivo) |
-| `pkcs11-load:store` | `list --module libsofthsm2.so` na sandbox, assinado como o build da loja (sem *hardened runtime*) | `dlopen` de biblioteca fora do pacote (`/opt/homebrew`) e `C_Initialize` lendo a configuração |
-| `pkcs11-sign:store` | `sign` com `C_Login` + `C_Sign` | O fluxo completo com PIN pelo app |
-| `pkcs11-load:hardened` / `pkcs11-sign:hardened` | O mesmo com `--options runtime` | O complemento Developer ID precisa de *hardened runtime*; sem `com.apple.security.cs.disable-library-validation`, a validação de biblioteca deve recusar módulos de outro Team ID — esperado **NÃO**, confirma que o complemento precisa desse entitlement |
+| `pkcs11-setup` | Preparing the token in the container from the outside | On macOS 14+ the system protects other apps' containers; if it fails, the script redoes it outside the container (then only `dlopen` is conclusive) |
+| `pkcs11-load:store` | `list --module libsofthsm2.so` in the sandbox, signed like the store build (without *hardened runtime*) | `dlopen` of a library outside the bundle (`/opt/homebrew`) and `C_Initialize` reading the configuration |
+| `pkcs11-sign:store` | `sign` with `C_Login` + `C_Sign` | The full flow with the PIN through the app |
+| `pkcs11-load:hardened` / `pkcs11-sign:hardened` | The same with `--options runtime` | The Developer ID complement needs *hardened runtime*; without `com.apple.security.cs.disable-library-validation`, library validation should refuse modules from another Team ID: expected **NO**, confirming the complement needs that entitlement |
 
-O SoftHSM prova as regras da sandbox para arquivos e código, mas não PC/SC: módulo de token real
-ainda fala com o leitor (via `com.apple.security.smartcard`), grava logs e lê configuração em
-lugares próprios. Só o roteiro §4 com o token real fecha a questão.
+SoftHSM proves the sandbox rules for files and code, but not PC/SC: a real token module
+still talks to the reader (through `com.apple.security.smartcard`), writes logs, and reads configuration in
+its own places. Only script §4 with the real token settles the question.
 
-Resultado no CI (run [36629289998](https://github.com/diagnos-tech/web-esign/actions/runs/36629289998),
+Result in CI (run [36629289998](https://github.com/diagnos-tech/web-esign/actions/runs/36629289998),
 macOS 26.6.2 arm64):
 
-| ID | Resultado | Evidência |
+| ID | Result | Evidence |
 |---|---|---|
-| `pkcs11-setup` | SIM | token SoftHSM2 criado dentro do contêiner |
-| `pkcs11-load:store` | **NÃO** | `dlopen(/opt/homebrew/opt/softhsm/lib/softhsm/libsofthsm2.so)`: `file system sandbox blocked open()` |
-| `pkcs11-sign:store` | **NÃO** | consequência do anterior |
-| `pkcs11-load:hardened` / `pkcs11-sign:hardened` | **NÃO** | mesma negação |
+| `pkcs11-setup` | YES | SoftHSM2 token created inside the container |
+| `pkcs11-load:store` | **NO** | `dlopen(/opt/homebrew/opt/softhsm/lib/softhsm/libsofthsm2.so)`: `file system sandbox blocked open()` |
+| `pkcs11-sign:store` | **NO** | consequence of the previous one |
+| `pkcs11-load:hardened` / `pkcs11-sign:hardened` | **NO** | same denial |
 
-Log do kernel: `Sandbox: websign-probe(…) deny(1) file-read-data /opt/homebrew/Cellar/softhsm/2.7.0/lib/softhsm/libsofthsm2.so`.
+Kernel log: `Sandbox: websign-probe(…) deny(1) file-read-data /opt/homebrew/Cellar/softhsm/2.7.0/lib/softhsm/libsofthsm2.so`.
 
-**Leitura:** o app da loja **não consegue sequer abrir** um módulo PKCS#11 instalado fora do próprio
-pacote. A única saída dentro da loja seria uma exceção `temporary-exception.files.absolute-path.read-only`
-para cada pasta de fabricante (`/usr/local/lib`, `/Library/…`), que a App Review tende a recusar pela
-diretriz 2.5.2 (executar código que não veio no pacote). Então **todo token que só funciona por PKCS#11
-no Mac precisa do complemento** (§1). Com o que já se sabe da matriz (§2), isso inclui o **DNIe**.
-A pergunta que falta responder com tokens reais é quais middlewares **não** passam pelo CryptoTokenKit.
+**Reading:** the store app **cannot even open** a PKCS#11 module installed outside its own
+bundle. The only way out inside the store would be a `temporary-exception.files.absolute-path.read-only`
+exception for each vendor folder (`/usr/local/lib`, `/Library/…`), which App Review tends to reject under
+guideline 2.5.2 (executing code that did not ship in the bundle). So **every token that only works through PKCS#11
+on Mac needs the complement** (§1). With what the matrix already shows (§2), that includes the **DNIe**.
+The question still to be answered with real tokens is which middlewares do **not** go through CryptoTokenKit.
 
-## 4. Roteiro de teste para o Gustavo
+## 4. Test script for Gustavo
 
-Um bloco por token. Anotar: modelo do token, ATR, middleware + versão + **de onde veio** (site do
-fabricante ou da AC), versão do macOS e chip.
+One block per token. Note: token model, ATR, middleware + version + **where it came from** (vendor's
+or the CA's site), macOS version and chip.
 
-Preparação (uma vez): `cd docs/prototypes/kit && cargo build --release -p websign-probe &&
+Preparation (once): `cd docs/prototypes/kit && cargo build --release -p websign-probe &&
 export PROBE_EXE=$PWD/target/release/websign-probe`.
 
-1. **Sistema, sem o probe** (token inserido):
+1. **System, without the probe** (token inserted):
    ```sh
-   system_profiler SPSmartCardsDataType      # leitores, tokens, drivers CTK disponíveis
-   pluginkit -mAvvv -p com.apple.ctk-tokens   # extensões CTK instaladas
-   security list-smartcards                   # token IDs presentes (parte antes do ":" = driver)
-   sc_auth identities                         # identidades que o sistema vê no cartão
+   system_profiler SPSmartCardsDataType      # readers, tokens, available CTK drivers
+   pluginkit -mAvvv -p com.apple.ctk-tokens   # installed CTK extensions
+   security list-smartcards                   # token IDs present (part before ":" = driver)
+   sc_auth identities                         # identities the system sees on the card
    ```
-2. **Dispositivo:** `"$PROBE_EXE" devices` (VID:PID, leitor, ATR) → vai para o `devices.json`.
-3. **Todos os caminhos:** `"$PROBE_EXE" list --every-path` (se o módulo não estiver na lista de
-   conhecidos: `--module <caminho da dylib>`). Esperado com CTK: linha `macos:ctk (<driver>,
-   hardware; PIN by OS)`; com PKCS#11: `also via pkcs11:<módulo>`.
-4. **Assinar via CTK:** `"$PROBE_EXE" sign --cert <16 hex> --hash all --pss`. O PIN é pedido pelo
-   sistema/driver. Testar também **Cancelar** (esperado: "cancelled by the user"). **Não** testar PIN
-   errado mais de uma vez: o token bloqueia.
-5. **Assinar via PKCS#11:** `read -rs WEBSIGN_PIN && export WEBSIGN_PIN` e
+2. **Device:** `"$PROBE_EXE" devices` (VID:PID, reader, ATR) → goes into `devices.json`.
+3. **All paths:** `"$PROBE_EXE" list --every-path` (if the module is not in the known
+   list: `--module <path to the dylib>`). Expected with CTK: line `macos:ctk (<driver>,
+   hardware; PIN by OS)`; with PKCS#11: `also via pkcs11:<module>`.
+4. **Sign via CTK:** `"$PROBE_EXE" sign --cert <16 hex> --hash all --pss`. The PIN is asked by the
+   system/driver. Also test **Cancel** (expected: "cancelled by the user"). Do **not** test a wrong
+   PIN more than once: the token locks.
+5. **Sign via PKCS#11:** `read -rs WEBSIGN_PIN && export WEBSIGN_PIN` and
    `"$PROBE_EXE" sign --cert <16 hex> --every-path --pin-env WEBSIGN_PIN --hash sha256`.
-6. **Dentro da sandbox** (o que o app da loja conseguiria):
+6. **Inside the sandbox** (what the store app would manage):
    ```sh
    bash macos/sandbox/run-sandboxed.sh list --every-path
    bash macos/sandbox/run-sandboxed.sh sign --cert <16 hex> --hash sha256
    bash macos/sandbox/run-sandboxed.sh list --module <dylib> --no-known-modules --no-p11-kit
    bash macos/sandbox/run-sandboxed.sh sign --cert <16 hex> --every-path --pin-env WEBSIGN_PIN --module <dylib>
-   HARDENED=1 bash macos/sandbox/run-sandboxed.sh list --module <dylib>   # como o complemento
+   HARDENED=1 bash macos/sandbox/run-sandboxed.sh list --module <dylib>   # like the complement
    ```
-   O script imprime as negações da sandbox no fim; copiar todas.
-7. **Pelo navegador:** passo 6 da [prova 2](2-mac.md#7-roteiro-para-o-gustavo-mac-real) com esse
-   token (Chrome iniciando o host sandboxed).
-8. **Relatório:** `"$PROBE_EXE" report --run-signatures --cert <fp> --every-path --hash all --pss --out token-<modelo>.md`
-   (sem nomes, CPF ou números de série) e preencher a linha da matriz §2.
+   The script prints the sandbox denials at the end; copy all of them.
+7. **Through the browser:** step 6 of [proof 2](2-mac.md#7-script-for-gustavo-real-mac) with this
+   token (Chrome starting the sandboxed host).
+8. **Report:** `"$PROBE_EXE" report --run-signatures --cert <fp> --every-path --hash all --pss --out token-<model>.md`
+   (no names, CPF, or serial numbers) and fill in the row of the §2 matrix.
 
-## 5. Referências
+## 5. References
 
-- SafeSign IC Standard 4.0 for macOS, Release Document (A.E.T. Europe, mar/2023), espelho em
-  `certificaat.kpn.com/files/drivers/SafeSign/`; versões 3.5–4.2 em `uziregister.nl`.
-- Thales: anúncios do SAC 10.8 R2 e 10.9 para Mac em `data-protection-updates.gemalto.com`;
+- SafeSign IC Standard 4.0 for macOS, Release Document (A.E.T. Europe, Mar 2023), mirrored at
+  `certificaat.kpn.com/files/drivers/SafeSign/`; versions 3.5–4.2 at `uziregister.nl`.
+- Thales: SAC 10.8 R2 and 10.9 for Mac announcements at `data-protection-updates.gemalto.com`;
   DigiCert KB "SafeNet hardware token not detected in Adobe Reader on Mac OS".
 - OpenSC: `MacOSX/build`, `MacOSX/opensc-uninstall` (github.com/OpenSC/OpenSC).
-- Autenticação.gov: Manual de Utilização (amagovpt.github.io/docs.autenticacao.gov).
-- DNIe: dnielectronico.es, área de downloads → "Software para Sistemas MacOS" (1.6.8).
-- Apple: `com.apple.security.smartcard` (necessário para `TKSmartCardSlotManager` e para PC/SC na
-  sandbox); `kSecAttrAccessGroupToken` (concedido por padrão a todo app).
+- Autenticação.gov: User Manual (amagovpt.github.io/docs.autenticacao.gov).
+- DNIe: dnielectronico.es, downloads area → "Software para Sistemas MacOS" (1.6.8).
+- Apple: `com.apple.security.smartcard` (required for `TKSmartCardSlotManager` and for PC/SC in the
+  sandbox); `kSecAttrAccessGroupToken` (granted by default to every app).

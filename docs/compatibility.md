@@ -1,25 +1,25 @@
-# Matriz de compatibilidade
+# Compatibility matrix
 
-Resultado de testes **manuais** com dispositivos reais. O CI cobre só chaves de software
-(SoftHSM2, provedores de software do Windows, keychain de teste); tudo que depende de hardware
-entra aqui.
+Results of **manual** tests with real devices. CI covers only software keys
+(SoftHSM2, Windows software providers, a test keychain); everything that depends on hardware
+is recorded here.
 
-Como preencher: rode `websign-probe report --run-signatures --all --hash all --pss --out r.md`
-(binários nos artefatos do CI, `websign-probe-*`). Para cada dispositivo, preencha uma linha por
-caminho e anexe o relatório ao PR. O relatório não tem nome, CPF/CNPJ nem número de série.
+How to fill it in: run `websign-probe report --run-signatures --all --hash all --pss --out r.md`
+(binaries are in the CI artifacts, `websign-probe-*`). For each device, fill in one row per
+path and attach the report to the PR. The report contains no name, CPF/CNPJ, or serial number.
 
-Legenda: ✅ funciona · ❌ não funciona · ⚠️ funciona com ressalva (explique) · — não se aplica · vazio = não testado.
+Legend: ✅ works · ❌ does not work · ⚠️ works with caveats (explain) · — not applicable · empty = not tested.
 
-## Tokens e cartões
+## Tokens and cards
 
-| Dispositivo | Middleware (versão) | SO | Caminho | Lista sem PIN | RSA v1.5 | RSA-PSS | ECDSA | PIN em primeiro plano | PIN errado / bloqueio | Data · quem |
+| Device | Middleware (version) | OS | Path | Lists without PIN | RSA v1.5 | RSA-PSS | ECDSA | Foreground PIN | Wrong PIN / lockout | Date · who |
 |---|---|---|---|---|---|---|---|---|---|---|
 | SafeNet eToken 5110 | SafeNet Authentication Client | Windows 11 | CNG (`allow`) | | | | | | | |
 | SafeNet eToken 5110 | SafeNet Authentication Client | Windows 11 | PKCS#11 (`eTPKCS11.dll`) | | | | | — | | |
 | SafeSign (G&D StarSign) | SafeSign Identity Client | Windows 11 | CNG / CAPI | | | | | | | |
-| Feitian ePass2003 | driver do fabricante / OpenSC | Windows 11 | CNG (minidriver) | | | | | | | |
+| Feitian ePass2003 | vendor driver / OpenSC | Windows 11 | CNG (minidriver) | | | | | | | |
 | Watchdata ProxKey | Watchdata | Windows 11 | CAPI (CSP) | | | | | | | |
-| A1 instalado (.pfx) | — | Windows 11 | CAPI → reabertura AES | | | | — | — | — | |
+| Installed A1 (.pfx) | — | Windows 11 | CAPI → AES reopen | | | | — | — | — | |
 | SafeNet eToken 5110 | SafeNet Authentication Client | macOS 15 | CryptoTokenKit | | | | | — | | |
 | SafeSign | SafeSign 4.x | macOS 15 | CryptoTokenKit | | | | | — | | |
 | ePass2003 | OpenSC (OpenSCToken) | macOS 15 | CryptoTokenKit | | | | | — | | |
@@ -28,22 +28,22 @@ Legenda: ✅ funciona · ❌ não funciona · ⚠️ funciona com ressalva (expl
 | SafeNet eToken 5110 | SafeNet Authentication Client | Ubuntu 24.04 | PKCS#11 via p11-kit | | | | | — | | |
 | ePass2003 | OpenSC | Ubuntu 24.04 | PKCS#11 via p11-kit | | | | | — | | |
 
-## Navegadores (native messaging)
+## Browsers (native messaging)
 
-| SO | Navegador (versão) | Instalação do app | Host iniciado | Assina | Observações | Data · quem |
+| OS | Browser (version) | App installation | Host starts | Signs | Notes | Date · who |
 |---|---|---|---|---|---|---|
 | Windows 11 | Chrome | MSIX (alias) | | | | |
 | Windows 11 | Edge | MSIX (alias) | | | | |
 | Windows 11 | Firefox | MSIX (alias) | | | | |
 | Windows 10 22H2 | Chrome | MSIX (alias) | | | | |
-| macOS 15 | Chrome | app na sandbox | | | | |
-| macOS 15 | Safari | app da loja + appex | | | | |
+| macOS 15 | Chrome | sandboxed app | | | | |
+| macOS 15 | Safari | store app + appex | | | | |
 | Ubuntu 24.04 | Chrome (deb) | .deb | | | | |
 | Ubuntu 24.04 | Firefox (Snap, portal) | .deb | | | | |
 | Fedora | Firefox (rpm) | .rpm | | | | |
 
-## CI (chaves de software)
+## CI (software keys)
 
-O resultado mais recente de cada sistema fica nos artefatos `report-linux`, `report-windows` e
-`report-macos` do workflow `prototypes`, e está resumido em cada documento de
+The latest result for each operating system is in the `report-linux`, `report-windows`, and
+`report-macos` artifacts of the `prototypes` workflow, and is summarized in each document of
 [`docs/prototypes/`](prototypes/).
