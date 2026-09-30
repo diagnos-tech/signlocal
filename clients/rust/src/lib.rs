@@ -1,42 +1,79 @@
 //! Call the WebeSign app from a Rust program.
 //!
-//! The app is started on demand (`websign connect`) and speaks the same
-//! protocol the browser extension uses; this crate hides the framing and the
-//! message exchange. The flow and the options are the web SDK's: the person
-//! chooses the certificate in the app's window, then `prepare` returns the
-//! digest for it.
+//! The person picks a certificate in the app's window, your closure supplies
+//! the digest for it, and the app signs it with the key (PIN included). The
+//! app is started on demand (`websign connect`) and speaks the same protocol
+//! as the browser extension; this crate hides the framing and the message
+//! exchange. The flow and the options are the web SDK's and the Node
+//! client's (`@websign/desktop`).
+//!
+//! # Quickstart
 //!
 //! ```no_run
-//! use websign_client::{Client, ClientError, ErrorCode, HashName, SignOptions};
+//! use websign_client::{Client, ErrorCode, HashName, SignOptions};
 //!
-//! # fn signed_attributes_digest(_: &[u8], _: &[&[u8]], _: websign_client::PrepareContext) -> Vec<u8> { vec![0; 32] }
-//! let mut client = Client::connect()?;
-//! let signed = client.sign(SignOptions::new(HashName::Sha256), |certificate, context| {
-//!     // The certificate arrives decoded: DER bytes of the leaf and its chain.
-//!     let chain: Vec<&[u8]> = certificate.chain.iter().map(|c| c.as_bytes()).collect();
-//!     Ok(signed_attributes_digest(certificate.der.as_bytes(), &chain, context))
-//! });
-//! match signed {
-//!     Ok(result) => println!("{} signature bytes", result.signature.as_bytes().len()),
+//! # fn my_digest(_certificate_der: &[u8]) -> Vec<u8> { vec![0; 32] }
+//! let mut client = Client::connect()?; // ClientError::AppMissing if not installed
+//! let options = SignOptions::new(HashName::Sha256);
+//! match client.sign(options, |certificate, _context| {
+//!     // Runs once the person picked a certificate (again if they switch):
+//!     // return the SHA-256 of what they will sign, 32 bytes.
+//!     Ok(my_digest(certificate.der.as_bytes()))
+//! }) {
+//!     Ok(signed) => println!("{} signature bytes", signed.signature.as_bytes().len()),
 //!     Err(error) if error.code() == ErrorCode::UserCancelled => println!("cancelled"),
 //!     Err(error) => return Err(error),
 //! }
-//! # Ok::<(), ClientError>(())
+//! # Ok::<(), websign_client::ClientError>(())
 //! ```
 //!
-//! Errors are typed ([`ClientError`]): [`ClientError::AppMissing`] when the
-//! app is not installed, [`ClientError::App`] with the protocol's stable
-//! code when the app refuses or the person cancels (or, as
-//! `InvalidRequest`, when the app asks for a digest the request did not
-//! allow), [`ClientError::Prepare`] when your closure fails, and
-//! [`ClientError::Connection`] when the pipe breaks or the app misbehaves.
-//! After a connection error the [`Client`] is unusable; drop it and connect
-//! again. Dropping a client ends the app and never leaves a process behind.
+//! For CMS/PAdES, build the signed attributes from `certificate.der` and
+//! `context.algorithm` inside the closure and return their digest: that is
+//! why the digest comes from a closure and not a parameter.
 //!
-//! The person confirms every signature in the app's window, which shows this
-//! program's name (and its code signer when the OS can verify it).
+//! # Errors
+//!
+//! Every call returns a [`ClientError`]. Branch on [`ClientError::code`]
+//! (the protocol's stable [`ErrorCode`]), show [`ClientError::hint`] to the
+//! developer, and walk [`std::error::Error::source`] for the underlying
+//! failure. After a [`ClientError::Connection`] the [`Client`] is unusable:
+//! drop it and connect again. Dropping a client ends the app and never leaves
+//! a process behind.
+//!
+//! # Testing without the app
+//!
+//! Enable the `testing` feature in your `dev-dependencies` and connect to
+//! `testing::FakeApp` instead of the real app:
+//!
+//! ```toml
+//! [dev-dependencies]
+//! websign-client = { version = "0.1", features = ["testing"] }
+//! ```
+//!
+//! ```
+//! # #[cfg(feature = "testing")] {
+//! use websign_client::testing::FakeApp;
+//! use websign_client::{HashName, SignOptions};
+//!
+//! let mut client = FakeApp::new().connect()?;
+//! let signed = client.sign(SignOptions::new(HashName::Sha256), |_, _| Ok(vec![0; 32]))?;
+//! assert_eq!(signed.signature.as_bytes().len(), 32);
+//! # }
+//! # Ok::<(), websign_client::ClientError>(())
+//! ```
+//!
+//! # Good to know
+//!
+//! - The person confirms every signature in the app's window, which shows
+//!   this program's name (and its code signer when the OS can verify it).
+//! - Blocking API over `std::process`; [`Client`] is `Send`.
+//! - `WEBSIGN_EXECUTABLE` or [`ConnectOptions::executable`] pins the binary;
+//!   otherwise [`find_executable`] searches `PATH` and the per-OS install
+//!   locations.
+//!
 //! Apache-2.0, like the web SDK.
 
+#![warn(missing_docs)]
 #![cfg_attr(
     not(test),
     warn(clippy::unwrap_used, clippy::expect_used, clippy::panic)
@@ -45,12 +82,15 @@
 mod client;
 mod error;
 mod handshake;
+mod hint;
 mod locate;
 mod options;
 mod process;
 mod reader;
 mod session;
 mod sign;
+#[cfg(feature = "testing")]
+pub mod testing;
 mod timing;
 
 pub use client::Client;

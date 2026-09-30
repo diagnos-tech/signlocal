@@ -9,11 +9,13 @@
 - `errors.ts` — `WebSignError`: failures with the protocol's stable codes, and wire-error mapping
 - `framing.ts` — 4-byte little-endian length + UTF-8 JSON, like native messaging
 - `hello.ts` — the `hello` negotiation: protocol range and the app's choice
+- `hints.ts` — what a developer can do about each error code, and the docs link
 - `index.ts` — @websign/desktop public entry point
 - `lifetime.ts` — the child vs the caller's event loop and process exit
 - `locate.ts` — `findExecutable()`: env override, `PATH`, then install locations
 - `session.ts` — the `websign connect` child: hello, request routing, timeouts, cleanup
 - `sign.ts` — the `sign.begin` flow with `prepare`, stale sequences and cancellation
+- `testing/` — `@websign/desktop/testing`: a fake `websign connect` for integrators' tests
 - `types.ts` — public option and result types, shaped like `@websign/sdk`'s
 - `validate.ts` — checks of the caller's options (hash, algorithm, certificate) before anything is sent
 - `version.ts` — library name and version sent in `hello`

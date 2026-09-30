@@ -6,7 +6,7 @@ use websign_protocol::{
     AppMessage, ClientEnvelope, ErrorCode, ProtocolRange, RequestId, negotiate,
 };
 
-use crate::error::ClientError;
+use crate::error::{ClientError, Reason};
 use crate::locate::find_executable;
 use crate::options::ConnectOptions;
 use crate::session::{Expect, Session, Wait};
@@ -23,9 +23,19 @@ pub(crate) fn connect(
         .clone()
         .or_else(find_executable)
         .ok_or_else(|| ClientError::AppMissing("no websign executable found".into()))?;
-    let mut session = Session::start(&executable, timing)?;
+    let session = Session::start(&executable, timing)?;
+    say_hello(session, options, timing)
+}
 
-    let id = RequestId::new("h").map_err(|error| ClientError::Connection(error.to_string()))?;
+/// Says `hello` over an already started session and agrees on a version.
+/// Any failure drops the session.
+pub(crate) fn say_hello(
+    mut session: Session,
+    options: ConnectOptions,
+    timing: Timing,
+) -> Result<(Session, u32), ClientError> {
+    let id = RequestId::new("h")
+        .map_err(|error| ClientError::Connection(Reason::caused_by("invalid request id", error)))?;
     let hello_v = ProtocolRange::CURRENT.max;
     let hello = ClientEnvelope {
         v: hello_v,

@@ -19,6 +19,26 @@ impl Client {
     /// waiting for a digest that will never come. So is a digest request for
     /// another hash or for an algorithm outside `options.algorithms`
     /// ([`ErrorCode::InvalidRequest`]), before `prepare` runs.
+    ///
+    /// `prepare` returns exactly 32, 48 or 64 bytes for SHA-256, -384 or
+    /// -512, or an `Err` message. The signature is raw: the RSA block, or
+    /// ECDSA `r || s`.
+    ///
+    /// ```no_run
+    /// use websign_client::{Client, HashName, SignOptions, SignatureAlgorithmName};
+    ///
+    /// # fn digest_of_signed_attributes(_der: &[u8], _algorithm: SignatureAlgorithmName) -> Result<Vec<u8>, std::io::Error> { Ok(vec![0; 32]) }
+    /// let mut client = Client::connect()?;
+    /// let options = SignOptions::new(HashName::Sha256)
+    ///     .algorithms([SignatureAlgorithmName::Ecdsa, SignatureAlgorithmName::RsaPss]);
+    /// let signed = client.sign(options, |certificate, context| {
+    ///     // Turn your own errors into the message that cancels the request.
+    ///     digest_of_signed_attributes(certificate.der.as_bytes(), context.algorithm)
+    ///         .map_err(|error| error.to_string())
+    /// })?;
+    /// println!("{:?}", signed.algorithm);
+    /// # Ok::<(), websign_client::ClientError>(())
+    /// ```
     pub fn sign(
         &mut self,
         options: SignOptions,

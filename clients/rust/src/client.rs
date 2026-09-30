@@ -19,6 +19,14 @@ use crate::timing::Timing;
 /// Calls block until the app answers; the person's decision time is limited
 /// by the app itself (300 s), so no call waits forever on a healthy app.
 /// Dropping the client ends the session and reaps the child.
+///
+/// ```no_run
+/// use websign_client::Client;
+///
+/// let mut client = Client::connect()?;
+/// println!("WebeSign {}", client.status()?.app.version);
+/// # Ok::<(), websign_client::ClientError>(())
+/// ```
 #[derive(Debug)]
 pub struct Client {
     pub(crate) session: Session,
@@ -28,11 +36,34 @@ pub struct Client {
 
 impl Client {
     /// Starts the app with default options and says `hello`.
+    ///
+    /// Fails with [`ClientError::AppMissing`] when the app is not installed
+    /// or exits at once, and with `ClientOutdated` / `AppOutdated`
+    /// ([`ClientError::App`]) when no protocol version is common.
+    ///
+    /// ```no_run
+    /// use websign_client::{Client, ClientError, ErrorCode};
+    ///
+    /// match Client::connect() {
+    ///     Ok(_client) => println!("ready"),
+    ///     Err(error) if error.code() == ErrorCode::AppMissing => eprintln!("{}", error.hint()),
+    ///     Err(error) => return Err(error),
+    /// }
+    /// # Ok::<(), ClientError>(())
+    /// ```
     pub fn connect() -> Result<Client, ClientError> {
         Client::connect_with(ConnectOptions::default())
     }
 
-    /// Starts the app and says `hello`.
+    /// Starts the app and says `hello`, with `options`.
+    ///
+    /// ```no_run
+    /// use websign_client::{Client, ConnectOptions};
+    ///
+    /// let options = ConnectOptions::new().client_name("my-invoicing-app");
+    /// let client = Client::connect_with(options)?;
+    /// # Ok::<(), websign_client::ClientError>(())
+    /// ```
     pub fn connect_with(options: ConnectOptions) -> Result<Client, ClientError> {
         Client::connect_timed(options, Timing::DEFAULT)
     }
@@ -42,14 +73,37 @@ impl Client {
         timing: Timing,
     ) -> Result<Client, ClientError> {
         let (session, protocol) = handshake::connect(options, timing)?;
-        Ok(Client {
+        Ok(Client::from_parts(session, protocol))
+    }
+
+    /// Says `hello` over a session started elsewhere (the in-process fake).
+    #[cfg(feature = "testing")]
+    pub(crate) fn connect_over(
+        session: Session,
+        options: ConnectOptions,
+    ) -> Result<Client, ClientError> {
+        let (session, protocol) = handshake::say_hello(session, options, Timing::DEFAULT)?;
+        Ok(Client::from_parts(session, protocol))
+    }
+
+    fn from_parts(session: Session, protocol: u32) -> Client {
+        Client {
             session,
             protocol,
             next_id: 0,
-        })
+        }
     }
 
-    /// `status`.
+    /// Asks the app who it is and whether this program is remembered. Never
+    /// opens a window; `remembered` says whether
+    /// [`certificates`](Client::certificates) will not open one either.
+    ///
+    /// ```no_run
+    /// # let mut client = websign_client::Client::connect()?;
+    /// let status = client.status()?;
+    /// println!("WebeSign {} (remembered: {})", status.app.version, status.remembered);
+    /// # Ok::<(), websign_client::ClientError>(())
+    /// ```
     pub fn status(&mut self) -> Result<StatusReply, ClientError> {
         let id = self.send_request(ClientMessage::Status(Status::default()))?;
         match self.next_message(&id)? {
@@ -61,6 +115,20 @@ impl Client {
     /// `choose`: the certificate the person picks (or the ones this program
     /// already used, when remembered). `algorithms` narrows the choice to
     /// keys that can produce one of them; empty = any.
+    ///
+    /// Fails with `NoCertificates` when the person chose none, and with
+    /// `UserCancelled` when they closed the window.
+    ///
+    /// ```no_run
+    /// use websign_client::{HashName, SignOptions, SignatureAlgorithmName};
+    ///
+    /// # let mut client = websign_client::Client::connect()?;
+    /// let chosen = client.certificates(&[SignatureAlgorithmName::Ecdsa])?;
+    /// // Later signatures skip the choice:
+    /// let options = SignOptions::new(HashName::Sha256).certificate(&chosen[0]);
+    /// # let _ = options;
+    /// # Ok::<(), websign_client::ClientError>(())
+    /// ```
     pub fn certificates(
         &mut self,
         algorithms: &[SignatureAlgorithmName],
@@ -81,7 +149,16 @@ impl Client {
         }
     }
 
-    /// `diagnostics.open`.
+    /// Opens the app's diagnostics window (in its own process), for example
+    /// to help a person whose token is not listed.
+    ///
+    /// ```no_run
+    /// use websign_client::DiagnosticsTab;
+    ///
+    /// # let mut client = websign_client::Client::connect()?;
+    /// client.open_diagnostics(Some(DiagnosticsTab::Devices))?;
+    /// # Ok::<(), websign_client::ClientError>(())
+    /// ```
     pub fn open_diagnostics(&mut self, tab: Option<DiagnosticsTab>) -> Result<(), ClientError> {
         let id = self.send_request(ClientMessage::OpenDiagnostics(OpenDiagnostics { tab }))?;
         match self.next_message(&id)? {
@@ -98,7 +175,7 @@ impl Client {
     ) -> Result<RequestId, ClientError> {
         self.next_id += 1;
         let id = RequestId::new(format!("n{}", self.next_id))
-            .map_err(|error| self.session.poison(error.to_string()))?;
+            .map_err(|error| self.session.poison_by("invalid request id", error))?;
         self.send(&id, message)?;
         Ok(id)
     }

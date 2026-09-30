@@ -9,10 +9,16 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    }
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "default": "./dist/testing/index.js"
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "dist",
+    "!dist/**/*.map",
     "LICENSE",
     "README.md"
   ],
@@ -22,11 +28,27 @@
   "scripts": {
     "typecheck": "tsc --noEmit -p .",
     "build": "tsc -p tsconfig.build.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "smoke": "node scripts/smoke.mjs && node scripts/smoke.cjs"
   },
   "devDependencies": {
     "@types/node": "26.6.3",
     "typescript": "7.0.2",
     "vitest": "5.0.2"
+  },
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "keywords": [
+    "websign",
+    "digital-signature",
+    "smart-card",
+    "pkcs11",
+    "pades",
+    "icp-brasil"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/diagnos-tech/web-esign.git",
+    "directory": "clients/node"
   }
 }

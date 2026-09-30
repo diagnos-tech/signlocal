@@ -1,12 +1,29 @@
 import type { ErrorCode, ErrorDetails } from "./generated/index.js";
+import { docsUrlFor, HINTS } from "./hints.js";
 
 /**
- * A failed call. `code` is the protocol's stable PascalCase string (for
- * example `UserCancelled` or `AppMissing`), so callers branch on it instead of
- * parsing `message`, which is for developers and always English.
+ * A failed call. Branch on `code`, the protocol's stable PascalCase string
+ * (for example `UserCancelled` or `AppMissing`), not on `message`, which is
+ * for developers and always English. `hint` says what to do about it and
+ * `docsUrl` links the explanation of every code.
+ *
+ * @example
+ * ```ts
+ * try {
+ *   await websign.sign({ hash: "SHA-256", prepare });
+ * } catch (error) {
+ *   if (!(error instanceof WebSignError)) throw error;
+ *   if (error.code === "UserCancelled") return; // not a failure
+ *   console.error(`${error.code}: ${error.message}\n${error.hint}\n${error.docsUrl}`);
+ * }
+ * ```
  */
 export class WebSignError extends Error {
   override readonly name = "WebSignError";
+  /** What a developer can do about this code. */
+  readonly hint: string;
+  /** The code's section on the project site (a stable anchor, like `@websign/sdk`). */
+  readonly docsUrl: string;
 
   constructor(
     readonly code: ErrorCode,
@@ -14,7 +31,28 @@ export class WebSignError extends Error {
     readonly details?: ErrorDetails,
   ) {
     super(message);
+    this.hint = HINTS[code];
+    this.docsUrl = docsUrlFor(code);
   }
+}
+
+/**
+ * Whether `error` is a {@link WebSignError}, optionally with one of `codes`.
+ * Narrows `error.code` in a `catch (error: unknown)`. Same as `@websign/sdk`.
+ *
+ * @example
+ * ```ts
+ * catch (error) {
+ *   if (isWebSignError(error, "UserCancelled", "Aborted")) return;
+ *   throw error;
+ * }
+ * ```
+ */
+export function isWebSignError<C extends ErrorCode = ErrorCode>(
+  error: unknown,
+  ...codes: readonly C[]
+): error is WebSignError & { readonly code: C } {
+  return error instanceof WebSignError && (codes.length === 0 || codes.includes(error.code as C));
 }
 
 /** Every code the app may send; the compiler keeps this in step with the generated type. */

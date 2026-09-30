@@ -14,16 +14,15 @@ websign-client = "0.1"
 ```
 
 ```rust,no_run
-use websign_client::{Client, ClientError, ErrorCode, HashName, PrepareContext, SignOptions};
+use websign_client::{Client, ClientError, ErrorCode, HashName, SignOptions};
 
 fn main() -> Result<(), ClientError> {
     let mut client = Client::connect()?; // ClientError::AppMissing if not installed
-    let options = SignOptions::new(HashName::Sha256);
-    let signed = client.sign(options, |certificate, context| {
+    let signed = client.sign(SignOptions::new(HashName::Sha256), |_certificate, _context| {
         // Runs once the person picked a certificate (again if they switch).
         // For CMS/PAdES, hash the signed attributes built from
-        // `certificate.der` and `context.algorithm` here.
-        Ok(digest_of_my_document(certificate.der.as_bytes(), context))
+        // `_certificate.der` and `_context.algorithm` here.
+        Ok(vec![0; 32]) // your document's digest, 32 bytes for SHA-256
     });
     match signed {
         Ok(result) => println!("{:?}: {} bytes", result.algorithm, result.signature.as_bytes().len()),
@@ -32,12 +31,46 @@ fn main() -> Result<(), ClientError> {
     }
     Ok(()) // dropping `client` ends the app
 }
+```
 
-/// Your code: the digest to sign, 32 bytes for SHA-256.
-fn digest_of_my_document(_certificate_der: &[u8], _context: PrepareContext) -> Vec<u8> {
-    vec![0; 32]
+## Test without the app
+
+The `testing` feature adds `FakeApp`, an in-process stand-in that speaks the
+real protocol, so your code runs unchanged:
+
+```toml
+[dev-dependencies]
+websign-client = { version = "0.1", features = ["testing"] }
+```
+
+```rust,ignore
+use websign_client::testing::FakeApp;
+use websign_client::{ErrorCode, HashName, SignOptions};
+
+#[test]
+fn a_blocked_pin_is_reported() -> Result<(), websign_client::ClientError> {
+    let app = FakeApp::builder().fail_at_confirm(ErrorCode::PinLocked).build();
+    let mut client = app.connect()?;
+    let error = client
+        .sign(SignOptions::new(HashName::Sha256), |_, _| Ok(vec![0; 32]))
+        .unwrap_err();
+    assert_eq!(error.code(), ErrorCode::PinLocked);
+    println!("{}", error.hint());
+    Ok(())
 }
 ```
+
+It answers `sign` with the digest itself as the signature: it never verifies,
+so do not use it to test signature validation. `app.requests()` lists what
+your code sent. Builder: `certificate(..)`, `remembered(..)`,
+`signature(..)`, `fail_at_choose(code)`, `fail_at_confirm(code)`.
+
+## Errors
+
+`ClientError` implements `std::error::Error`. Branch on `error.code()` (the
+protocol's stable `ErrorCode`), print `error.hint()` for what to do and
+`error.docs_url()` for the explanation; `source()` gives the underlying
+I/O or protocol failure of `AppMissing` and `Connection`.
 
 ## Good to know
 
@@ -49,8 +82,6 @@ fn digest_of_my_document(_certificate_der: &[u8], _context: PrepareContext) -> V
   and returns exactly 32/48/64 bytes for SHA-256/384/512. `Err(String)`, a
   wrong length, or an app that asks for another hash or an algorithm outside
   your set cancels the request in the app (`Aborted` / `InvalidRequest`).
-- `ClientError::code()` gives the protocol's stable `ErrorCode`; branch on
-  it, not on the message.
 - Blocking API over `std::process`; `Client` is `Send`. `WEBSIGN_EXECUTABLE`
   or `ConnectOptions::executable` pins the binary, otherwise
   `find_executable()` searches `PATH` and the per-OS install locations.
@@ -60,7 +91,7 @@ fn digest_of_my_document(_certificate_der: &[u8], _context: PrepareContext) -> V
 ## Development
 
 - API guide: [`docs/architecture/desktop-api.md`](../../docs/architecture/desktop-api.md) §7.
-- Contract: [`SPEC.md`](SPEC.md).
+- Contract: [`SPEC.md`](SPEC.md). Example: [`examples/desktop/rust-cli`](../../examples/desktop/rust-cli).
 - License: **Apache-2.0** ([`LICENSE`](LICENSE)). Runtime dependencies: the
   Apache-2.0 crates `websign-protocol` (the wire contract) and
   `websign-project` (the product and executable names), plus `thiserror`.
@@ -70,4 +101,5 @@ cargo test -p websign-client
 ```
 
 The tests run against `examples/fake_websign`, a fake `websign connect`
-(one scenario per misbehavior); no installed app is needed.
+(one scenario per misbehavior), and against the public `FakeApp`
+(`cargo test -p websign-client --all-features`); no installed app is needed.

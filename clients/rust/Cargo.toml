@@ -11,6 +11,21 @@ repository.workspace = true
 publish.workspace = true
 keywords = ["signature", "pkcs11", "smartcard", "pades", "icp-brasil"]
 categories = ["cryptography", "api-bindings"]
+readme = "README.md"
+documentation = "https://docs.rs/websign-client"
+# Only what a consumer needs: no tests, no fixtures of the misbehaving fake app.
+exclude = ["/tests", "/examples", "/SPEC.md", "/SUMMARY.md", "**/SUMMARY.md"]
+
+[features]
+# `websign_client::testing::FakeApp`: an in-process stand-in for the app, so
+# tests of your program need neither the app nor a person. Off by default.
+testing = []
+
+[package.metadata.docs.rs]
+# The fake is part of the documented surface.
+all-features = true
+# Linux is enough: the crate's API is identical on every OS.
+targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
 websign-protocol.workspace = true

@@ -11,7 +11,7 @@
  */
 
 export { WebSign } from "./client.js";
-export { WebSignError } from "./errors.js";
+export { isWebSignError, WebSignError } from "./errors.js";
 export type {
   AppInfo,
   CertificateProfile,

@@ -152,12 +152,32 @@ await websign.close();
 ```
 
 Also `status()`, `certificates({ algorithm?, signal? })`,
-`openDiagnostics(tab?)`, `findExecutable()`. The public types are the SDK's
+`openDiagnostics(tab?)`, `close()`, `findExecutable()`. The public types are the SDK's
 (`Certificate`, `SignOptions`, `SignResult`, `PrepareContext`,
 `HashAlgorithm`, `SignatureAlgorithm`): `Certificate.der`/`chain` and
 `SignResult.signature` are `Uint8Array`, `notBefore`/`notAfter` are `Date`.
-ESM, `require()` too, Node ≥ 20.19. Contract:
-[`clients/node/SPEC.md`](../../clients/node/SPEC.md).
+ESM, `require()` too, Node ≥ 20.19 (the first 20.x that loads ESM through
+`require()` without a flag). `WebSignError` has `code`, `message`, `hint`
+(what to do) and `docsUrl` (the code's anchor on the project site, like the web SDK). Every public API has TSDoc with
+an `@example`. Contract: [`clients/node/SPEC.md`](../../clients/node/SPEC.md).
+
+**Testing without the app**: `@websign/desktop/testing` exports `fakeApp()`,
+a real child process speaking the real protocol (answers `hello`, `status`,
+`choose`, `sign`, `diagnostics.open`, enforces the digest length), so the
+code under test runs unchanged:
+
+```ts
+import { fakeApp } from "@websign/desktop/testing";
+
+const app = fakeApp({ failWith: { code: "PinLocked", when: "confirm" } });
+const websign = await app.connect();          // or WebSign.connect(app.options)
+await websign.sign({ hash: "SHA-256", prepare }); // rejects with PinLocked, after prepare
+await app.close();
+```
+
+Options: `certificates`, `failWith { code, message?, when?: "choose" | "confirm" }`,
+`signature`, `remembered`; `app.requests()` lists what the client sent. It
+answers `sign` with the digest as the signature, so it never verifies.
 
 ### `websign-client` (Rust, Apache-2.0)
 
@@ -183,7 +203,68 @@ seconds. `Client` is `Send`; `ClientError` is `Send + Sync` with `code()`
 returning the protocol's `ErrorCode`. Blocking API over `std::process`;
 depends on the Apache-2.0 crates `websign-protocol` (the wire contract) and
 `websign-project` (product and executable names), both self-contained and
-publishable. Contract: [`clients/rust/SPEC.md`](../../clients/rust/SPEC.md).
+publishable. Every public item has rustdoc (runnable examples where the app
+is not needed, `no_run` where it is). `ClientError` implements
+`std::error::Error`: `source()` is the underlying I/O or protocol failure of
+`AppMissing` and `Connection`; `hint()` and `docs_url()` mirror the Node
+client; `ConnectOptions` has builders (`ConnectOptions::new().executable(..)
+.client_name(..)`). Contract:
+[`clients/rust/SPEC.md`](../../clients/rust/SPEC.md).
+
+**Testing without the app**: the `testing` feature exposes
+`websign_client::testing::FakeApp`, an in-process stand-in over pipes (no
+child process, no installed app) with the same behavior as the Node fake:
+
+```rust
+use websign_client::testing::FakeApp;
+use websign_client::{ErrorCode, HashName, SignOptions};
+
+let app = FakeApp::builder().fail_at_confirm(ErrorCode::PinLocked).build();
+let mut client = app.connect()?;
+let error = client.sign(SignOptions::new(HashName::Sha256), |_, _| Ok(vec![0; 32])).unwrap_err();
+assert_eq!(error.code(), ErrorCode::PinLocked);
+```
+
+Builder: `certificate(..)`, `remembered(..)`, `signature(..)`,
+`fail_at_choose(code)`, `fail_at_confirm(code)`; `app.requests()`. Enable it
+under `[dev-dependencies]` only.
+
+### Error codes
+
+`docsUrl` / `docs_url()` point at `developers.html#error-<Code>` on the project
+site, the same anchors as `@websign/sdk`. Both libraries branch on the protocol's stable code (`error.code` /
+`ClientError::code()`); `message` is for developers and always English.
+
+| Code | What happened | What to do |
+|---|---|---|
+| `AppMissing` | The app is not installed, or exits at once | Install it, or pin the binary (`executable` / `WEBSIGN_EXECUTABLE`); test with the fake |
+| `AppOutdated` | The app is too old for the request | Ask the user to update WebeSign |
+| `ClientOutdated` | The app speaks a newer protocol than the library | Upgrade the library |
+| `Aborted` | Your code cancelled (`AbortSignal`, `prepare` failed) | Nothing; the cause is in `cause` (Node) or the message (Rust) |
+| `UserCancelled` | The person closed the window | Not a failure: offer to retry |
+| `Timeout` | Nobody decided in 300 s, or `hello` took over 10 s | Offer to retry |
+| `NoCertificates` | No usable certificate, or none chosen | Point to diagnostics (`openDiagnostics`) |
+| `CertificateUnavailable` | The token left or the certificate was removed | Ask the person to choose again |
+| `CertificateNotValid` | Expired or not yet valid | Ask for another certificate |
+| `InvalidRequest` | Wrong digest length, other hash or algorithm than asked, malformed option | Fix the request; read the message |
+| `UnsupportedAlgorithm` | The key cannot produce the algorithm | Accept several algorithms, or filter `certificates` |
+| `PinIncorrect` | Wrong PIN (the window normally retries) | Ask to try again |
+| `PinLocked` | The PIN is blocked | The person unblocks it with the issuer's tool |
+| `TokenRemoved` | The token left while signing | Reinsert and retry |
+| `DriverFailure` | The OS key store or token driver failed | Open Diagnostics in the app |
+| `Busy` | Too many requests are waiting | Wait, then retry |
+| `Internal` | A bug, or a broken connection (Rust: after `Connection`, reconnect) | Report it |
+| `ExtensionMissing`, `ExtensionOutdated`, `InsecureOrigin` | Web-only codes | Never seen by desktop programs |
+
+The hint texts live in `clients/node/src/hints.ts` and
+`clients/rust/src/hint.rs`; keep them in step.
+
+### Examples
+
+[`examples/desktop/node-cli`](../../examples/desktop/node-cli) and
+[`examples/desktop/rust-cli`](../../examples/desktop/rust-cli) sign a file's
+SHA-256 from the command line. Both use the fake app unless `--app` is given,
+so they run in CI.
 
 ## 8. The `websign:` URL scheme
 

@@ -1,0 +1,20 @@
+[package]
+name = "websign-rust-cli-example"
+description = "Sign a file's SHA-256 from the command line with websign-client."
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.90"
+license = "Apache-2.0"
+publish = false
+
+# A standalone workspace on purpose: the example depends on the client the
+# way an integrator does, and never joins the product workspace's lockfile.
+[workspace]
+
+[dependencies]
+# `testing`: the fake app, so the example runs without the app installed.
+websign-client = { path = "../../../clients/rust", features = ["testing"] }
+sha2 = "0.11"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }

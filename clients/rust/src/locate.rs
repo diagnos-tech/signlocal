@@ -12,7 +12,14 @@ const OVERRIDE_VARIABLE: &str = "WEBSIGN_EXECUTABLE";
 
 /// The app executable: `WEBSIGN_EXECUTABLE` when set, else `websign` on
 /// `PATH`, else the install locations of `docs/architecture/
-/// packaging-and-release.md` §Install locations for this OS.
+/// packaging-and-release.md` §Install locations for this OS. `None` when
+/// none exists.
+///
+/// ```
+/// if websign_client::find_executable().is_none() {
+///     println!("Install WebeSign first.");
+/// }
+/// ```
 pub fn find_executable() -> Option<PathBuf> {
     let inputs = SearchInputs {
         override_path: env::var_os(OVERRIDE_VARIABLE),

@@ -1,11 +1,11 @@
-//! The thread that turns the child's stdout into a channel of frames.
+//! The thread that turns the app's output (a child's stdout, or an in-process
+//! pipe) into a channel of frames.
 
-use std::io;
-use std::process::ChildStdout;
+use std::io::{self, Read};
 use std::sync::mpsc::{Receiver, sync_channel};
 use std::thread;
 
-use websign_protocol::framing::read_frame;
+use websign_protocol::framing::{FrameError, read_frame};
 
 /// Frames buffered before the reader waits for the caller. Bounded so an app
 /// that floods stdout cannot make this process allocate without limit.
@@ -15,7 +15,7 @@ const BUFFERED_FRAMES: usize = 16;
 pub(crate) enum Incoming {
     Frame(Vec<u8>),
     /// The stream is unusable (oversized or truncated frame, I/O error).
-    Broken(String),
+    Broken(FrameError),
 }
 
 /// Reads frames until the stream ends. A clean end of stream simply closes
@@ -28,7 +28,7 @@ pub(crate) enum Incoming {
 /// process of its own, which then holds one blocked thread and at most one
 /// frame until it exits). Once the receiver is gone, `send` fails at once,
 /// so a full channel cannot keep it alive either.
-pub(crate) fn spawn(mut stdout: ChildStdout) -> io::Result<Receiver<Incoming>> {
+pub(crate) fn spawn(mut stdout: impl Read + Send + 'static) -> io::Result<Receiver<Incoming>> {
     let (sender, receiver) = sync_channel(BUFFERED_FRAMES);
     thread::Builder::new()
         .name("websign-client-reader".into())
@@ -38,7 +38,7 @@ pub(crate) fn spawn(mut stdout: ChildStdout) -> io::Result<Receiver<Incoming>> {
                     Ok(Some(frame)) => Incoming::Frame(frame),
                     Ok(None) => return,
                     Err(error) => {
-                        let _ = sender.send(Incoming::Broken(error.to_string()));
+                        let _ = sender.send(Incoming::Broken(error));
                         return;
                     }
                 };

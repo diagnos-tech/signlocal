@@ -1,7 +1,11 @@
 //! The framed pipe to one `websign connect` child.
 
+use std::fmt;
+#[cfg(feature = "testing")]
+use std::io::Read;
+use std::io::Write;
 use std::path::Path;
-use std::process::{Child, ChildStdin};
+use std::process::Child;
 use std::sync::mpsc::{Receiver, RecvTimeoutError};
 use std::time::Duration;
 
@@ -10,7 +14,7 @@ use websign_protocol::{
     AppEnvelope, ClientEnvelope, ParseError, parse_app_message, parse_hello_reply, to_json,
 };
 
-use crate::error::ClientError;
+use crate::error::{ClientError, Reason};
 use crate::process;
 use crate::reader::{self, Incoming};
 use crate::timing::Timing;
@@ -42,18 +46,27 @@ pub(crate) enum Wait {
     Exited,
 }
 
-/// A running child, its pipes, and the cleanup that goes with them.
+/// A running app, its pipes, and the cleanup that goes with them. The app
+/// is a child process, or (for the `testing` feature's fake) a thread at
+/// the other end of in-process pipes.
 ///
 /// After any failure the message stream can no longer be trusted (a reply
 /// may be missing or late), so the session refuses further use instead of
 /// risking answers being paired with the wrong request.
-#[derive(Debug)]
 pub(crate) struct Session {
-    child: Child,
-    stdin: Option<ChildStdin>,
+    child: Option<Child>,
+    stdin: Option<Box<dyn Write + Send>>,
     incoming: Receiver<Incoming>,
     usable: bool,
     timing: Timing,
+}
+
+impl fmt::Debug for Session {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Session")
+            .field("usable", &self.usable)
+            .finish_non_exhaustive()
+    }
 }
 
 impl Session {
@@ -62,8 +75,8 @@ impl Session {
         let mut child = spawned.child;
         match reader::spawn(spawned.stdout) {
             Ok(incoming) => Ok(Session {
-                child,
-                stdin: Some(spawned.stdin),
+                child: Some(child),
+                stdin: Some(Box::new(spawned.stdin)),
                 incoming,
                 usable: true,
                 timing,
@@ -71,11 +84,32 @@ impl Session {
             Err(error) => {
                 drop(spawned.stdin);
                 process::reap(&mut child, timing.exit_grace);
-                Err(ClientError::Connection(format!(
-                    "cannot start reader: {error}"
+                Err(ClientError::Connection(Reason::caused_by(
+                    "cannot start the reader",
+                    error,
                 )))
             }
         }
+    }
+
+    /// A session over pipes that are not a child's stdio: the app is served
+    /// in-process. Dropping the session closes `writer`, which ends the app.
+    #[cfg(feature = "testing")]
+    pub(crate) fn over_pipes(
+        reader: impl Read + Send + 'static,
+        writer: impl Write + Send + 'static,
+        timing: Timing,
+    ) -> Result<Session, ClientError> {
+        let incoming = reader::spawn(reader).map_err(|error| {
+            ClientError::Connection(Reason::caused_by("cannot start the reader", error))
+        })?;
+        Ok(Session {
+            child: None,
+            stdin: Some(Box::new(writer)),
+            incoming,
+            usable: true,
+            timing,
+        })
     }
 
     pub(crate) fn timing(&self) -> Timing {
@@ -88,7 +122,7 @@ impl Session {
             Some(stdin) => write_frame(stdin, &to_json(envelope)),
             None => return Err(self.poison("the pipe to the app is closed")),
         };
-        result.map_err(|error| self.poison(format!("cannot write to the app: {error}")))
+        result.map_err(|error| self.poison_by("cannot write to the app", error))
     }
 
     /// Waits for the next message. A `timeout` of `None` waits until the app
@@ -109,11 +143,9 @@ impl Session {
         match got {
             Ok(Incoming::Frame(frame)) => match expect.parse(&frame) {
                 Ok(envelope) => Ok(Wait::Message(Box::new(envelope))),
-                Err(error) => Err(self.poison(format!("the app sent an invalid message: {error}"))),
+                Err(error) => Err(self.poison_by("the app sent an invalid message", error)),
             },
-            Ok(Incoming::Broken(why)) => {
-                Err(self.poison(format!("cannot read from the app: {why}")))
-            }
+            Ok(Incoming::Broken(error)) => Err(self.poison_by("cannot read from the app", error)),
             Err(RecvTimeoutError::Timeout) => Ok(Wait::TimedOut),
             Err(RecvTimeoutError::Disconnected) => {
                 self.usable = false;
@@ -125,7 +157,17 @@ impl Session {
     /// Marks the session unusable and returns the matching error.
     pub(crate) fn poison(&mut self, why: impl Into<String>) -> ClientError {
         self.usable = false;
-        ClientError::Connection(why.into())
+        ClientError::Connection(Reason::from(why.into()))
+    }
+
+    /// Like [`Session::poison`], keeping the underlying failure as the source.
+    pub(crate) fn poison_by(
+        &mut self,
+        why: &str,
+        source: impl std::error::Error + Send + Sync + 'static,
+    ) -> ClientError {
+        self.usable = false;
+        ClientError::Connection(Reason::caused_by(why, source))
     }
 
     fn ensure_usable(&self) -> Result<(), ClientError> {
@@ -139,11 +181,13 @@ impl Session {
     }
 }
 
-/// Closing stdin ends the app's session; the child is then reaped, killed
+/// Closing stdin ends the app's session; a child is then reaped, killed
 /// after a bounded wait if it lingers.
 impl Drop for Session {
     fn drop(&mut self) {
         drop(self.stdin.take());
-        process::reap(&mut self.child, self.timing.exit_grace);
+        if let Some(child) = self.child.as_mut() {
+            process::reap(child, self.timing.exit_grace);
+        }
     }
 }

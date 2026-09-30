@@ -8,6 +8,11 @@ import { currentEnvironment, search } from "./candidates.js";
  *
  * The override comes first so tests and side-by-side installs can pin a build;
  * `PATH` beats fixed locations because the person's shell already chose it.
+ *
+ * @example
+ * ```ts
+ * if (findExecutable() === undefined) console.log("Install WebeSign first.");
+ * ```
  */
 export function findExecutable(): string | undefined {
   return search(currentEnvironment());

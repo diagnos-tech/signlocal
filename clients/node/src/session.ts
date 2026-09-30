@@ -71,13 +71,14 @@ export class Session {
     this.forgetExit = killOnExit(child);
   }
 
-  /** Spawns `executable connect` and completes the `hello` negotiation. */
+  /** Spawns `executable [leadingArgs…] connect` and completes the `hello` negotiation. */
   static async open(
     executable: string,
     client: ClientIdentity,
     timings: Timings = DEFAULT_TIMINGS,
+    leadingArgs: readonly string[] = [],
   ): Promise<Session> {
-    const child = spawn(executable, ["connect"], {
+    const child = spawn(executable, [...leadingArgs, "connect"], {
       stdio: ["pipe", "pipe", "ignore"],
       windowsHide: true,
     });

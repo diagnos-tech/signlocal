@@ -1,7 +1,7 @@
 # clients/rust
 
 - `src/` — sources of `websign-client`
-- `examples/` — the fake `websign connect` used by the tests
+- `examples/` — the misbehaving fake `websign connect` used by the tests
 - `tests/` — integration tests against the fake app
 - `Cargo.toml` — websign-client manifest (Apache-2.0)
 - `LICENSE` — Apache-2.0 text

@@ -5,7 +5,18 @@ use std::path::PathBuf;
 
 use websign_protocol::types::{Certificate, FingerprintHex, HashName, SignatureAlgorithmName};
 
-/// How to start the app.
+/// How to start the app. Every field is optional; the builder methods read
+/// left to right.
+///
+/// ```
+/// use websign_client::ConnectOptions;
+///
+/// let options = ConnectOptions::new()
+///     .executable("/opt/websign/websign")
+///     .client_name("my-invoicing-app")
+///     .client_version("2.1.0");
+/// assert_eq!(options.client_name.as_deref(), Some("my-invoicing-app"));
+/// ```
 #[derive(Debug, Clone, Default)]
 pub struct ConnectOptions {
     /// Use this executable instead of [`crate::find_executable`].
@@ -13,7 +24,33 @@ pub struct ConnectOptions {
     /// Sent in `hello` (logs only); defaults to `"websign-client"` and this
     /// crate's version.
     pub client_name: Option<String>,
+    /// Sent in `hello` (logs only); defaults to this crate's version.
     pub client_version: Option<String>,
+}
+
+impl ConnectOptions {
+    /// All defaults: find the app, identify as `websign-client`.
+    pub fn new() -> ConnectOptions {
+        ConnectOptions::default()
+    }
+
+    /// Starts this executable instead of searching for the app.
+    pub fn executable(mut self, path: impl Into<PathBuf>) -> ConnectOptions {
+        self.executable = Some(path.into());
+        self
+    }
+
+    /// Names this program in the app's logs.
+    pub fn client_name(mut self, name: impl Into<String>) -> ConnectOptions {
+        self.client_name = Some(name.into());
+        self
+    }
+
+    /// Versions this program in the app's logs.
+    pub fn client_version(mut self, version: impl Into<String>) -> ConnectOptions {
+        self.client_version = Some(version.into());
+        self
+    }
 }
 
 /// What to sign: the SDK's `{ hash, algorithm, certificate }`.
@@ -27,6 +64,7 @@ pub struct ConnectOptions {
 /// ```
 #[derive(Debug, Clone)]
 pub struct SignOptions {
+    /// The hash `prepare`'s digest is computed with.
     pub hash: HashName,
     /// Acceptable algorithms, preferred first; empty = the app's default
     /// preference (ECDSA for EC keys, PKCS#1 v1.5 for RSA). Duplicates are
@@ -80,8 +118,22 @@ impl SignOptions {
 }
 
 /// Passed to `prepare` with the certificate: what the signature will be.
+///
+/// ```
+/// use websign_client::{HashName, PrepareContext, SignatureAlgorithmName};
+///
+/// fn algorithm_oid_hint(context: PrepareContext) -> &'static str {
+///     match context.algorithm {
+///         SignatureAlgorithmName::Ecdsa => "ecdsa-with-SHA*",
+///         _ => "rsa",
+///     }
+/// }
+/// # let _ = algorithm_oid_hint;
+/// # let _ = HashName::Sha256;
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PrepareContext {
+    /// The hash requested in [`SignOptions`].
     pub hash: HashName,
     /// The algorithm the signature will use (for CMS `signatureAlgorithm`
     /// and the algorithm-protection attribute).

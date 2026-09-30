@@ -1,5 +1,6 @@
 # clients/node
 
+- `scripts/` — post-build smoke tests: import the built package as ESM and CJS
 - `src/` — sources of `@websign/desktop`
 - `test/` — Vitest tests of `@websign/desktop` against a fake `websign connect`
 - `LICENSE` — Apache-2.0 text

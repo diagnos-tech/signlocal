@@ -5,7 +5,7 @@ use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};
 use std::thread;
 use std::time::{Duration, Instant};
 
-use crate::error::ClientError;
+use crate::error::{ClientError, Reason};
 
 const POLL_INTERVAL: Duration = Duration::from_millis(10);
 
@@ -35,9 +35,9 @@ pub(crate) fn spawn(executable: &Path, grace: Duration) -> Result<Spawned, Clien
         use std::os::windows::process::CommandExt;
         command.creation_flags(CREATE_NO_WINDOW);
     }
-    let mut child = command
-        .spawn()
-        .map_err(|error| ClientError::AppMissing(format!("cannot start the app: {error}")))?;
+    let mut child = command.spawn().map_err(|error| {
+        ClientError::AppMissing(Reason::caused_by("cannot start the app", error))
+    })?;
     match (child.stdin.take(), child.stdout.take()) {
         (Some(stdin), Some(stdout)) => Ok(Spawned {
             child,
