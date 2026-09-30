@@ -13,6 +13,8 @@ uses no manifest), and extension pre-registration.
 | **B** | Bitwarden, `native-messaging.main.ts` (only to compare paths) |
 | **K** | KeePassXC, `NativeMessageInstaller.cpp` (same) |
 | **W** | web-eid-app (`CMakeLists.txt`, `web-eid.wxs`, manifest templates) |
+| **T** | traced here: the real browser build started with a probe extension and manifests in every candidate folder, recording which one it launched (§3.6) |
+| **E** | proven end to end in CI: `websign register --browser <name>`, then the extension signs through the app in that browser (`e2e/browsers/`, [compatibility](../compatibility.md)) |
 | **?** | not confirmed in a primary source: treat as a hypothesis until proven |
 
 Nothing here was copied: the three codebases were read only to check paths.
@@ -24,19 +26,22 @@ Nothing here was copied: the three codebases were read only to check paths.
 1. **The manifest is per browser, and the format differs by family.** Chromium: `allowed_origins`
    (`chrome-extension://<id>/`, no wildcard). Firefox: `allowed_extensions` (Gecko ID). That is two files.
 2. **Windows has no folder: it has a registry key.** `HKCU` is enough (Chrome consults `HKCU` before `HKLM`) and
-   the manifest can be in any folder. **Edge, Brave, Vivaldi, and Opera fall back to Chrome's key** when they
-   have none of their own, so one Chrome key already covers several (§3.1).
-3. **macOS and Linux use `<browser data folder>/NativeMessagingHosts/<host>.json`.** That is why
+   the manifest can be in any folder. Chromium's code reads `Software\Chromium` (Chromium-branded builds) and then
+   `Software\Google\Chrome`; Edge reads its own key first. Brave, Vivaldi and Opera document nothing, so `register`
+   writes every key they may read (§3.1).
+3. **Opera and Brave do not follow `--user-data-dir` for manifests on Linux** (traced, §3.6): Opera reads Google
+   Chrome's folder, Brave its own default folder, whatever profile they run.
+4. **macOS and Linux use `<browser data folder>/NativeMessagingHosts/<host>.json`.** That is why
    Chromium's `--user-data-dir` allows testing without touching the real profile (§3.2, §3.3).
-4. **In MV3 the host never receives `--parent-window`**: Chrome passes `0` when the caller is a service
+5. **In MV3 the host never receives `--parent-window`**: Chrome passes `0` when the caller is a service
    worker (§2). System PIN dialogs cannot depend on that handle: the app's window must find the
    browser window on its own or bring itself to the foreground.
-5. **Firefox Snap does not read the manifest: it asks the portal** (`org.freedesktop.portal.WebExtensions`, today;
+6. **Firefox Snap does not read the manifest: it asks the portal** (`org.freedesktop.portal.WebExtensions`, today;
    `org.freedesktop.NativeMessagingProxy`, next). The host runs **outside** the Snap, started by the portal,
    with the portal's environment, not Firefox's (§3.4).
-6. **Safari has no manifest, registry, or `allowed_origins`.** The extension lives inside the app and talks to an
+7. **Safari has no manifest, registry, or `allowed_origins`.** The extension lives inside the app and talks to an
    app extension (appex) through `runtime.sendNativeMessage` (§3.5).
-7. **Extension pre-registration:** Chromium has a file/registry channel (Linux without confirmation; Windows and
+8. **Extension pre-registration:** Chromium has a file/registry channel (Linux without confirmation; Windows and
    macOS ask the user to enable it). Firefox only through system policy (§4).
 
 ---
@@ -113,9 +118,9 @@ can be relative to the manifest's folder (D).
 | Chrome (and Beta/Dev/Canary) | `Software\Google\Chrome\NativeMessagingHosts\<host>` | D, C |
 | Chromium | `Software\Chromium\NativeMessagingHosts\<host>` (read first; then Chrome's) | C |
 | Edge | `Software\Microsoft\Edge\NativeMessagingHosts\<host>`; fallback: Chromium, then Chrome | D |
-| Brave | `Software\BraveSoftware\Brave-Browser\NativeMessagingHosts\<host>`; KeePassXC uses Chrome's | B, K |
-| Vivaldi | `Software\Vivaldi\NativeMessagingHosts\<host>`; KeePassXC uses Chrome's | B, K |
-| Opera | Chrome's (Opera forum; no known key of its own) | ? |
+| Brave | `Software\BraveSoftware\Brave-Browser\NativeMessagingHosts\<host>` (Bitwarden), then Chromium's and Chrome's (Chromium code; KeePassXC uses Chrome's). `register` writes all three | B, K, C, E |
+| Vivaldi | `Software\Vivaldi\NativeMessagingHosts\<host>` (Bitwarden), then Chromium's and Chrome's; all three written | B, K, C |
+| Opera (and Opera GX) | Chromium's, then Chrome's (Opera's docs name Chrome's key; no key of its own); both written | D (Opera), C, E |
 | Firefox | `Software\Mozilla\NativeMessagingHosts\<host>` | D |
 
 Chromium details (C, `launch_context_win.cc`):
@@ -153,7 +158,7 @@ User: `~/Library/Application Support/<folder>/NativeMessagingHosts/<host>.json`.
 | Edge | `Microsoft Edge` (+ ` Beta`, ` Dev`, ` Canary`) | D, B |
 | Brave | `BraveSoftware/Brave-Browser` (+ `-Beta`, `-Nightly`) | K; Beta/Nightly by analogy (?) |
 | Vivaldi | `Vivaldi` | B, K |
-| Opera | `com.operasoftware.Opera` | ? |
+| Opera | Google Chrome's folder, `Google/Chrome` (Opera developers on the Opera forum, 2017; Opera on Linux does the same, §3.6); `register` also writes `com.operasoftware.Opera` (+ `OperaNext` beta, `OperaDeveloper`, `OperaGX`), each only when that Opera's folder exists | D (forum), T (Linux), E |
 | Firefox | `Mozilla/NativeMessagingHosts` (note: `Mozilla`, no profile subfolder) | D |
 
 System (all users): `/Library/Google/Chrome/NativeMessagingHosts/`,
@@ -171,20 +176,22 @@ database). The binary the browser calls runs with `com.apple.security.inherit` i
 
 ### 3.3 Linux
 
-User: `<config folder>/NativeMessagingHosts/<host>.json` (Firefox: `~/.mozilla/native-messaging-hosts/`).
+User: `<config folder>/NativeMessagingHosts/<host>.json` (Firefox: `~/.mozilla/native-messaging-hosts/`). The config
+folder is under `$XDG_CONFIG_HOME` when set (traced for Brave and Opera; Chromium's `chrome_paths_linux.cc`), which
+`register` honours.
 In Chromium this is `DIR_USER_DATA/NativeMessagingHosts`, that is, it **applies to any `--user-data-dir`**
 (C, `chrome_paths.cc`: `DIR_USER_NATIVE_MESSAGING`; only compiled for Linux, ChromeOS, macOS, and Android, not
 for Windows).
 
 | Browser | Folder under `~/.config/` (user) | System | Basis |
 |---|---|---|---|
-| Chrome | `google-chrome`, `google-chrome-beta`, `google-chrome-unstable` | `/etc/opt/chrome/native-messaging-hosts/` | D, B |
+| Chrome | `google-chrome`, `google-chrome-beta`, `google-chrome-unstable` | `/etc/opt/chrome/native-messaging-hosts/` | D, B, E |
 | Chrome for Testing (146+) | `google-chrome-for-testing` | `/etc/opt/chrome_for_testing/native-messaging-hosts/` | D |
 | Chromium | `chromium` | `/etc/chromium/native-messaging-hosts/` | D, C |
-| Edge | `microsoft-edge`, `-beta`, `-dev` | `/etc/opt/edge/native-messaging-hosts/` | D |
-| Brave | `BraveSoftware/Brave-Browser` (+ `-Beta`, `-Nightly`) | `/etc/chromium/native-messaging-hosts/`? | B, K; system ? |
-| Vivaldi | `vivaldi`, `vivaldi-snapshot` | `/etc/chromium/native-messaging-hosts/` (forum) | B, K |
-| Opera | `opera`, `opera-beta`, `opera-developer` | ? | ? (2014 forum) |
+| Edge | `microsoft-edge`, `-beta`, `-dev` | `/etc/opt/edge/native-messaging-hosts/`, then Chrome's (traced) | D, T, E |
+| Brave | `BraveSoftware/Brave-Browser` (+ `-Beta`, `-Nightly`), **even with another `--user-data-dir`** | `/etc/opt/chrome/native-messaging-hosts/` only | T, E |
+| Vivaldi | `vivaldi`, `vivaldi-snapshot` (follows `--user-data-dir`) | `/etc/opt/chrome/native-messaging-hosts/` only (not `/etc/opt/vivaldi`, not `/etc/chromium`) | T |
+| Opera | **`google-chrome`** (Chrome's folder) for every channel, whatever the profile; `opera`, `opera-beta`, `opera-developer` only tell that Opera is installed | `/etc/opt/chrome/native-messaging-hosts/` | T, E |
 | Firefox | `~/.mozilla/native-messaging-hosts/` | `/usr/lib/mozilla/native-messaging-hosts/` and `/usr/lib64/...` | D |
 
 web-eid (system package) installs into `/usr/lib/mozilla/native-messaging-hosts/` (Debian; `${LIBDIR}` on
@@ -261,6 +268,28 @@ There is no manifest, registry key, `allowed_origins`, or child process. Apple (
 
 ---
 
+### 3.6 Traced on Linux (2026-09-30)
+
+Method (scripts kept out of the repository; reproducible in a minute): each browser's `.deb` from its vendor's
+repository, extracted and started under `xvfb-run` with a throwaway `HOME`/`XDG_CONFIG_HOME`, a two-line MV3 probe
+extension that calls `runtime.sendNativeMessage("dev.websign.probe")` every second (loaded with
+`--load-extension`), and a manifest in **every** candidate folder, each pointing to a script that records its own
+folder. The folder recorded is the one the browser read first. System folders were tested one at a time.
+
+| Browser (version) | User folder read | With another `--user-data-dir` | System folder read |
+|---|---|---|---|
+| Opera 136 (Chromium 152) | `$XDG_CONFIG_HOME/google-chrome/NativeMessagingHosts` | same (profile ignored) | `/etc/opt/chrome/…` |
+| Brave 1.96 (Chromium 154) | `$XDG_CONFIG_HOME/BraveSoftware/Brave-Browser/NativeMessagingHosts` | same (profile ignored) | `/etc/opt/chrome/…` only |
+| Edge 154 | `~/.config/microsoft-edge/NativeMessagingHosts` | the given profile | `/etc/opt/edge/…`, then `/etc/opt/chrome/…` |
+| Vivaldi 8.2 | `~/.config/vivaldi/NativeMessagingHosts` | the given profile | `/etc/opt/chrome/…` only |
+
+Notes: Opera aborts at start without the GNOME settings schemas (`gsettings-desktop-schemas`). Branded Chrome 154
+ignores `--load-extension` (also with `--disable-features=DisableLoadExtensionCommandLineSwitch`) and refuses DevTools
+on its default profile folder; the e2e loads the extension through the DevTools `Extensions.loadUnpacked` command
+(`--enable-unsafe-extension-debugging`) and runs the default folder as a link to a throwaway profile
+(`e2e/lib/installed.ts`). Vivaldi crashes (SIGSEGV) when Playwright attaches, so it is traced, not run end to end.
+
+
 ## 4. Extension pre-registration
 
 "Pre-registering" makes the browser offer/install the extension without the user going to the store. It only applies to the
@@ -312,9 +341,11 @@ Chrome ignores `HKCU` and the user folders, and only reads the system location).
 
 | Item | Why | Proof |
 |---|---|---|
-| Firefox (all OSes) and Safari | there is no Firefox or Mac in this environment; `web-ext lint` approved the manifest (only the expected `service_worker` warning) | 2, 4 |
-| Edge, Brave, Vivaldi, Opera on Windows/Linux/macOS | paths come from documentation and third parties (B, K); only Chromium was executed | 1, 2 |
-| Opera (all), Brave Beta/Nightly | no primary source | 1, 2 |
+| Safari | no Mac in this environment (see the Safari documents) | 2 |
+| Firefox (release and ESR) | proven end to end on Linux locally (T, E) and in CI on every runner OS where it installs; the temporary add-on is the unsigned development build | — |
+| Brave, Opera on Windows and macOS: which key or folder wins | CI proves that `register` makes them work (E), not which of the written keys/folders they read | — |
+| Vivaldi end to end | traced on Linux (T); Playwright crashes it | — |
+| Opera GX, Brave Beta/Nightly, Opera Beta/Developer | by analogy with the stable channel | — |
 | Chromium Snap, Flatpak, Firefox Snap | no such environments here | 4 |
 | Real `--parent-window` on Windows and a window hidden by `SW_HIDE` | only exists on Windows | 1 |
 | Pre-registration through `HKCU` (Chrome/Edge) | the doc only mentions `HKLM` | 1 |
@@ -339,6 +370,11 @@ Chrome ignores `HKCU` and the user folders, and only reads the system location).
 - Apple, messaging between the app and the JavaScript of a Safari web extension: <https://developer.apple.com/documentation/safariservices/messaging-between-the-app-and-javascript-in-a-safari-web-extension>
 - Microsoft, how packaged desktop apps (MSIX) run, with file and registry virtualization: <https://learn.microsoft.com/en-us/windows/msix/desktop/desktop-to-uwp-behind-the-scenes>
 
+- Opera, native messaging (names Chrome's locations): <https://help.opera.com/en/extensions/message-passing/>
+- Opera forum, "Porting extension from Chrome: macOS native messaging" (Opera reads Chrome's folder, 2017): <https://forums.opera.com/topic/15735/porting-extension-from-chrome-macos-native-messaging>
+- Chrome DevTools protocol, `Extensions.loadUnpacked`: <https://chromedevtools.github.io/devtools-protocol/tot/Extensions/>
+- WebDriver BiDi `webExtension.install` (Firefox): <https://w3c.github.io/webdriver-bidi/#module-webExtension>
+
 **Code read (not copied)**
 
 - Chromium, manifest lookup on Windows and launch: <https://raw.githubusercontent.com/chromium/chromium/main/chrome/browser/extensions/api/messaging/launch_context_win.cc>
@@ -349,3 +385,5 @@ Chrome ignores `HKCU` and the user folders, and only reads the system location).
 - web-eid-app, installation: <https://raw.githubusercontent.com/web-eid/web-eid-app/main/src/app/CMakeLists.txt> and <https://raw.githubusercontent.com/web-eid/web-eid-app/main/install/web-eid.wxs>
 - web-eid-app, Safari bridge: `src/mac/` (same repository)
 - KeePassXC, manifest installer: `src/browser/NativeMessageInstaller.cpp`
+- Brave, default profile folder on Linux (no override of the native messaging lookup): <https://github.com/brave/brave-core/blob/master/chromium_src/chrome/common/chrome_paths_linux.cc>
+- browserpass-native, per-browser install targets: <https://raw.githubusercontent.com/browserpass/browserpass-native/master/Makefile>

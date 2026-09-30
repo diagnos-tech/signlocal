@@ -9,7 +9,7 @@
  */
 
 import { type ChildProcess, spawn } from "node:child_process";
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { appEnv, type Confirm } from "../app.ts";
@@ -66,7 +66,7 @@ export async function launchFirefox(
     await installed.remove();
   };
   try {
-    const bidi = await Bidi.connect(await listening(firefox));
+    const bidi = await Bidi.connect(await listening(firefox, installed.profile));
     await bidi.send("webExtension.install", {
       extensionData: { type: "path", path: env.extension },
     });
@@ -97,28 +97,30 @@ export async function launchFirefox(
   }
 }
 
-/** The BiDi address Firefox prints on stderr once it listens. */
-function listening(firefox: ChildProcess): Promise<string> {
-  return new Promise((resolve, reject) => {
-    let seen = "";
-    const timer = setTimeout(
-      () => reject(new Error(`Firefox did not start listening:\n${seen.slice(-2000)}`)),
-      START_TIMEOUT,
-    );
-    // Kept draining after the address is found: a full pipe would stall Firefox.
-    firefox.stderr?.on("data", (chunk: Buffer) => {
-      seen = (seen + chunk.toString()).slice(-8000);
-      const found = /WebDriver BiDi listening on (ws:\/\/\S+)/.exec(seen);
-      if (found?.[1] !== undefined) {
-        clearTimeout(timer);
-        resolve(found[1]);
-      }
-    });
-    firefox.once("exit", (code) => {
-      clearTimeout(timer);
-      reject(new Error(`Firefox exited (${code}) before listening:\n${seen.slice(-2000)}`));
-    });
+/**
+ * The BiDi address Firefox writes to `WebDriverBiDiServer.json` in the
+ * profile once it listens. The file, not stderr: a Windows Firefox is a GUI
+ * program whose console output is not reliable. Stderr is still drained (a
+ * full pipe would stall Firefox) and kept for the error message.
+ */
+async function listening(firefox: ChildProcess, profile: string): Promise<string> {
+  let seen = "";
+  firefox.stderr?.on("data", (chunk: Buffer) => {
+    seen = (seen + chunk.toString()).slice(-8000);
   });
+  const file = join(profile, "WebDriverBiDiServer.json");
+  const deadline = Date.now() + START_TIMEOUT;
+  while (Date.now() < deadline) {
+    if (firefox.exitCode !== null) break;
+    try {
+      const server = JSON.parse(readFileSync(file, "utf8")) as { ws_host: string; ws_port: number };
+      return `ws://${server.ws_host}:${server.ws_port}`;
+    } catch {
+      // Not written yet (or half written).
+    }
+    await new Promise((done) => setTimeout(done, 200));
+  }
+  throw new Error(`Firefox did not start listening (exit ${firefox.exitCode}):\n${seen}`);
 }
 
 /** Ends Firefox, forcefully when it does not quit in time. */

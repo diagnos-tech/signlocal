@@ -22,7 +22,7 @@ const CHROME: &str = "/etc/opt/chrome/native-messaging-hosts";
 /// The `native-messaging-hosts` folders each Chromium browser reads under
 /// `/etc`, in its reading order; the first is the one written. Brave, Opera
 /// and Vivaldi read only Chrome's, Edge falls back to it (traced on Linux,
-/// `docs/research/native-messaging.md` §3.3).
+/// `docs/research/native-messaging.md` §3.6).
 fn chromium_dirs(browser: Browser) -> &'static [&'static str] {
     match browser {
         Browser::Chrome | Browser::Brave | Browser::Opera | Browser::Vivaldi => &[CHROME],

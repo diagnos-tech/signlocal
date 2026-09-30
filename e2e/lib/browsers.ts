@@ -59,14 +59,14 @@ const MACOS: Readonly<Record<BrowserName, string>> = {
 
 /**
  * The folder whose existence tells `websign register` the browser is
- * installed, which is also the browser's default profile (Chromium browsers
- * on Linux and macOS read the host manifest relative to it, and Brave and
+ * installed, and the browser's default profile folder (Chromium browsers on
+ * Linux and macOS read the host manifest next to their profile, and Brave and
  * Opera read their default folder whatever profile they run). `undefined`
  * on Windows, where registration is a registry key and any profile works.
  *
  * Linux: under the run's private home and config home (`linux`), nothing
- * real is touched. macOS: the real folder under the user's home, because the app
- * finds the home through the user database; `installedProfile` refuses it
+ * real is touched. macOS: the real folder under the user's home, because the
+ * app finds the home through the user database; `installed.ts` refuses it
  * outside CI.
  */
 export function browserRoot(

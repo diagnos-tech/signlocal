@@ -4,8 +4,8 @@
 //! `$XDG_CONFIG_HOME` (default `~/.config`); Firefox reads
 //! `~/.mozilla/native-messaging-hosts/`. Opera reads Google Chrome's folder
 //! instead of its own, and Brave reads its default folder even when started
-//! with another `--user-data-dir` (both traced, `docs/research/native-messaging.md`
-//! §3.3). Snap Firefox reads the same
+//! with another `--user-data-dir` (both traced,
+//! `docs/research/native-messaging.md` §3.6). Snap Firefox reads the same
 //! folder (or the system one), because the WebExtensions portal that starts
 //! hosts on its behalf runs outside the sandbox; the portal asks the user once
 //! per extension. Flatpak browsers see only their own `~/.var/app/<id>`, so

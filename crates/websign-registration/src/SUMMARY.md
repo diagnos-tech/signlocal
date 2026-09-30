@@ -13,7 +13,7 @@
 - `detect.rs` — Which browsers are installed, for the diagnostics Browsers tab.
 - `home.rs` — The home directory browsers keep their folders in (real home from `getpwuid_r` on macOS).
 - `lib.rs` — Making browsers find the app: `run`, `plan`, `host_binary` and the crate map.
-- `linux.rs` — Where Linux browsers look for user-level native messaging manifests (native, Snap, Flatpak).
+- `linux.rs` — Where Linux browsers look for user-level native messaging manifests (native, Snap, Flatpak; `$XDG_CONFIG_HOME`; Opera reads Chrome's folder).
 - `macos.rs` — Where macOS browsers look for user-level native messaging manifests: `NativeMessagingHosts/` inside each browser's Application Support folder.
 - `manifest.rs` — The native messaging host manifest: the small JSON file a browser reads to learn which program to start and which extensions may talk to it.
 - `msix.rs` — Windows packaging facts: the MSIX execution alias browsers must start.
@@ -22,4 +22,4 @@
 - `status.rs` — Reads registrations back, for diagnostics ("Chrome can't find the app") and for the repair button.
 - `system.rs` — System-wide manifest locations on Linux, written by the deb/rpm post-install step.
 - `url_scheme.rs` — The `websign:` URL scheme, so the website's `/activate` page can start the app once to register it.
-- `windows.rs` — How Windows browsers find hosts: a `HKCU` key per browser whose default value is the path of a manifest file.
+- `windows.rs` — How Windows browsers find hosts: the `HKCU` keys each browser reads, in order, whose default value is the path of a manifest file.

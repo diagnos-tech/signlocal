@@ -20,7 +20,8 @@ OSes → `Unsupported`).
   `opera.exe`); version from the executable's version resource.
 - macOS: LaunchServices by bundle ID (`com.google.Chrome`,
   `com.microsoft.edgemac`, `org.mozilla.firefox`, `com.brave.Browser`,
-  `com.vivaldi.Vivaldi`, `com.operasoftware.Opera`, `org.chromium.Chromium`,
+  `com.vivaldi.Vivaldi`, `com.operasoftware.Opera` (+ `OperaNext`,
+  `OperaDeveloper`, `OperaGX`), `org.chromium.Chromium`,
   `com.apple.Safari`); version from `CFBundleShortVersionString`.
 - Linux: executables on `PATH` and `/opt` (`google-chrome`, `chromium`,
   `microsoft-edge`, `firefox`, `brave-browser`, `vivaldi`, `opera`), Snap
@@ -62,12 +63,14 @@ with `update_url` (`https://clients2.google.com/service/update2/crx`,
 | Chromium | `/etc/chromium/native-messaging-hosts` |
 | Edge | `/etc/opt/edge/native-messaging-hosts` |
 | Brave | `/etc/opt/chrome/native-messaging-hosts` (Brave reads Chrome's) |
-| Vivaldi | `/etc/opt/vivaldi/native-messaging-hosts` |
+| Vivaldi | `/etc/opt/chrome/native-messaging-hosts` (Vivaldi reads only Chrome's) |
 | Opera | `/etc/opt/chrome/native-messaging-hosts` |
 | Firefox | `<lib>/mozilla/native-messaging-hosts` for each `lib_dirs` entry |
 
 System targets are written unconditionally (no `requires`), deduplicated by
-path.
+path. Status also reads the folders a browser falls back to: Edge reads
+`/etc/opt/edge` then Chrome's (traced, `docs/research/native-messaging.md`
+§3.6).
 
 ## 7. Additions beyond the sections above
 
@@ -75,14 +78,26 @@ path.
   used by §1 (Windows keys), §2 (Windows detection), §4 and §5; writes are
   `HKCU`-only by construction. `destination::apply_with` is `apply` against a
   given registry.
+- Linux user targets live under `$XDG_CONFIG_HOME` when it is absolute (else
+  `~/.config`), as Chromium's own lookup does. Opera (every channel) reads
+  Google Chrome's folder: its target is `<config>/google-chrome/
+  NativeMessagingHosts`, written when `<config>/opera*` exists (its Flatpak:
+  `config/google-chrome` inside the app). macOS Opera (`com.operasoftware.
+  Opera`, `OperaNext`, `OperaDeveloper`, `OperaGX`) gets its own folder and
+  `Google/Chrome/NativeMessagingHosts`, both when its folder exists.
 - Linux user targets also cover Chrome Canary (`google-chrome-canary`) and
   Snap Firefox (`~/.mozilla/native-messaging-hosts`, written when
   `~/snap/firefox` exists, because the portal reads the host's folder).
   macOS user targets add Arc (`Arc/User Data`, selected with Chrome).
   Flatpak host copies are named `<slug>`.
-- §3 on Windows reads keys in the browser's documented lookup order (Edge:
-  Edge, Chromium, Chrome; every other browser: its own key only) and the
-  first key found decides. A browser with several channels is `Registered` when any
+- Windows keys per browser, in reading order (first found wins): Chrome:
+  Chrome's; Chromium: Chromium's, Chrome's (Chromium's `launch_context_win.cc`);
+  Edge: Edge's, Chromium's, Chrome's (documented); Brave and Vivaldi: their
+  vendor key, Chromium's, Chrome's; Opera: Chromium's, Chrome's; Firefox:
+  Mozilla's. Registration writes Edge's own key only (documented to win) and
+  every key of the others, which document none. `--uninstall --browser
+  <name>` therefore also removes the shared Chromium and Chrome keys.
+- §3 on Windows reads keys in that order and the first key found decides. A browser with several channels is `Registered` when any
   channel is; otherwise the first problem in reading order is reported.
 - §3 reads `HKCU` only, although browsers fall back to `HKLM`: the app
   writes only `HKCU`, which browsers read first, so `Missing` leads the

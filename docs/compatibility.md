@@ -46,6 +46,39 @@ Behavior that only real devices can confirm; tick each one in the PR that record
 
 ## Browsers (native messaging)
 
+### Cross-browser core, automated
+
+What the automated run proves, per browser: `websign register --browser <name>` writes the registration a person's
+install writes (the real folder or `HKCU` key, never a test-only one), the extension (unpacked development build;
+Firefox: temporary add-on) finds the app, signs with an EC key (ECDSA SHA-256) and an RSA key (PKCS#1 v1.5 SHA-256,
+PSS SHA-384) with every signature verified outside the app, the person's Cancel reaches the page as
+`UserCancelled`, and a new site cancelled before **Continue** gets no certificate (D11). Software keys only.
+Suite: `e2e/browsers/core.spec.ts`, run per browser by `e2e/run-browsers.sh`; CI runs it after the full e2e suite
+on Ubuntu 24.04 and Windows for every push that touches the signing path, and on macOS nightly. Each CI run writes
+its own table (OS, browser, version, result) to the job summary and the `browsers-<os>` artifact; copy the
+results here when they change.
+
+Legend as above; ⏳ = runs in CI, no result recorded here yet; — = not offered on that OS.
+
+| Browser | Ubuntu 24.04 | Windows (latest runner) | macOS (latest runner) | How CI gets it |
+|---|---|---|---|---|
+| Google Chrome (stable) | ✅ 154 (local run, 2026-09-30) | ⏳ | ⏳ | preinstalled; else brew cask |
+| Microsoft Edge (stable) | ✅ 154 (local run, 2026-09-30) | ⏳ | ⏳ | preinstalled; else Microsoft's apt repository / brew cask |
+| Brave (stable) | ✅ 1.96 (local run, 2026-09-30) | ⏳ | ⏳ | Brave's apt repository; choco `brave`; brew cask |
+| Opera (stable) | ✅ 136 (local run, 2026-09-30) | ⏳ | ⏳ | Opera's apt repository; choco `opera`; brew cask |
+| Firefox (release) | ✅ 157 (local run, 2026-09-30) | ⏳ | ⏳ | Mozilla's tarball on Linux; preinstalled; brew cask |
+| Firefox ESR | ✅ 140 (local run, 2026-09-30) | | | Mozilla's tarball (Linux only) |
+| Vivaldi | ⚠️ registration traced, not run: Playwright crashes Vivaldi 8.2 | | | not in CI |
+| Safari | — | — | see [install.md](install.md#safari) | not in this suite |
+
+Not covered automatically: Chrome Beta/Dev/Canary, Edge Beta/Dev/Canary, Opera GX and Opera Beta/Developer, Brave
+Beta/Nightly (registered by analogy with the stable channel), Snap and Flatpak browsers (the Firefox Snap reaches
+the app through the desktop portal, which asks the person), and extensions installed from a store (none is
+published yet). Where each browser reads its registration, and how that was established, is in
+[research/native-messaging.md](research/native-messaging.md) §3.
+
+### Real installations (manual)
+
 | OS | Browser (version) | App installation | Host starts | Signs | Notes | Date · who |
 |---|---|---|---|---|---|---|
 | Windows 11 | Chrome | MSIX (alias) | | | | |

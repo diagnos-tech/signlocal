@@ -182,7 +182,8 @@ The extension is not in the stores yet. Download `websign-extension-<v>-chromium
 
 | Browser | Steps |
 |---|---|
-| Chrome, Edge, Brave | Open `chrome://extensions` (`edge://extensions`, `brave://extensions`), turn on **Developer mode**, click **Load unpacked** and pick the unzipped `websign-extension-<v>-chromium` folder. Keep the folder: the browser loads it from there. Its fixed development key gives the ID the app allows. |
+| Chrome, Edge, Brave, Vivaldi | Open `chrome://extensions` (`edge://extensions`, `brave://extensions`, `vivaldi://extensions`), turn on **Developer mode**, click **Load unpacked** and pick the unzipped `websign-extension-<v>-chromium` folder. Keep the folder: the browser loads it from there. Its fixed development key gives the ID the app allows. |
+| Opera, Opera GX | Open `opera://extensions`, turn on **Developer mode** (top right), click **Load unpacked** and pick the same unzipped `websign-extension-<v>-chromium` folder. Once the extension is in the Chrome Web Store, Opera installs it from there after you add Opera's **Install Chrome Extensions** add-on (from `addons.opera.com`). |
 | Firefox | Open `about:debugging`, **This Firefox**, **Load Temporary Add-on**, and pick `manifest.json` in the unzipped folder. It lasts until Firefox restarts. To keep it, use Firefox Developer Edition, Nightly or ESR: set `xpinstall.signatures.required` to `false` in `about:config`, then in `about:addons` choose **Install Add-on From File** and pick the zip. |
 | Safari | Comes inside `WebeSign.app`; nothing to download. See [Safari](#safari) below. |
 
@@ -191,6 +192,11 @@ app can allow it before the extension is in a store. Anyone can reuse that key: 
 the same ID and can start the app like ours. Only load the zip from our release after checking `SHA256SUMS`, and do not
 keep other unpacked extensions you do not trust. Your confirmation in the app window is still needed for every
 signature. Store builds never carry this key.
+
+The app registers itself with every browser it finds each time it starts (`websign register` does it by hand).
+Opera reads Google Chrome's registration, so on Linux and macOS the app writes Chrome's folder for it even when
+Chrome is not installed. Which browser and OS combinations are tested, and how, is in
+[compatibility.md](compatibility.md#browsers-native-messaging).
 
 **Uninstall:** remove it from the browser's extensions page (`about:addons` in Firefox), then delete the folder.
 
