@@ -21,7 +21,7 @@ on:
       - "e2e/**"
       - ".github/workflows/e2e.yml"
   push:
-    branches: [main, develop]
+    branches: ["**"]
     paths:
       - "app/**"
       - "extension/**"
