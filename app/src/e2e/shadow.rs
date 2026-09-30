@@ -98,7 +98,11 @@ pub fn state_name() -> Option<String> {
     let choose = shadow.choose;
     let model = shadow.model.as_mut()?;
     let now = Instant::now();
-    let _ = model.tick(now);
+    // The window keeps a notice up while its pictures are taken; so does
+    // the copy, or the capture would drop them halfway.
+    if !super::capture::in_progress() {
+        let _ = model.tick(now);
+    }
     let name = match model.state() {
         ConfirmState::Idle => return None,
         ConfirmState::LoadingCerts => "loading".to_owned(),

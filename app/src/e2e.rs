@@ -85,6 +85,13 @@ pub fn attach(ctx: &egui::Context, window: Window) {
     }
 }
 
+/// Whether a screenshot pair is being taken: the confirmation window keeps
+/// a result notice up meanwhile, since the pair can take longer than the
+/// notice's hold on a slow desktop.
+pub fn capturing() -> bool {
+    capture::in_progress()
+}
+
 /// Wraps the window's port so the driver knows which state the window
 /// shows (it names the screenshots after it).
 pub fn watch(window: Box<dyn ConfirmUi>) -> Box<dyn ConfirmUi> {

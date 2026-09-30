@@ -4,9 +4,14 @@
 //! frame brings, then do the same in the other theme, save both and go back
 //! to the system's. Files are written only for a whole pair, so a state
 //! that leaves the screen halfway never leaves (or removes) a lone picture.
+//!
+//! A pair takes a dozen frames, which on a slow desktop outlasts a result
+//! notice's hold (900 ms for success); [`in_progress`] lets the window keep
+//! a notice up until its pair is saved, so every state gets its pictures.
 
 use std::path::PathBuf;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 
 use egui::{
@@ -18,6 +23,14 @@ const SETTLE_FRAMES: u32 = 3;
 /// A screenshot that never arrives (the window was hidden meanwhile) is
 /// given up after this long, so the driver goes on.
 const GIVE_UP: Duration = Duration::from_secs(3);
+
+/// Whether a pair is being taken (one window per process).
+static IN_PROGRESS: AtomicBool = AtomicBool::new(false);
+
+/// Whether a light/dark pair is being taken in this process.
+pub fn in_progress() -> bool {
+    IN_PROGRESS.load(Ordering::Relaxed)
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Step {
@@ -75,7 +88,7 @@ impl Capture {
         }
         self.light = None;
         ctx.set_theme(ThemePreference::System);
-        self.step = Step::Idle;
+        self.set_step(Step::Idle);
         Some(std::mem::take(&mut self.state))
     }
 
@@ -93,14 +106,14 @@ impl Capture {
                     log::warn!("e2e screenshot never arrived; skipped");
                     ctx.set_theme(ThemePreference::System);
                     self.light = None;
-                    self.step = Step::Idle;
+                    self.set_step(Step::Idle);
                 }
             }
             Step::Settle(0) => {
-                self.step = Step::Awaiting(Instant::now());
+                self.set_step(Step::Awaiting(Instant::now()));
                 ctx.send_viewport_cmd(ViewportCommand::Screenshot(UserData::new(self.theme)));
             }
-            Step::Settle(n) => self.step = Step::Settle(n - 1),
+            Step::Settle(n) => self.set_step(Step::Settle(n - 1)),
         }
         if self.is_busy() {
             ctx.request_repaint();
@@ -130,7 +143,7 @@ impl Capture {
                     self.save("dark", &image);
                 }
                 ctx.set_theme(ThemePreference::System);
-                self.step = Step::Idle;
+                self.set_step(Step::Idle);
             }
         }
     }
@@ -144,7 +157,12 @@ impl Capture {
     fn pin(&mut self, ctx: &Context, theme: Theme) {
         self.theme = theme;
         ctx.set_theme(theme);
-        self.step = Step::Settle(SETTLE_FRAMES);
+        self.set_step(Step::Settle(SETTLE_FRAMES));
         ctx.request_repaint();
+    }
+
+    fn set_step(&mut self, step: Step) {
+        self.step = step;
+        IN_PROGRESS.store(step != Step::Idle, Ordering::Relaxed);
     }
 }

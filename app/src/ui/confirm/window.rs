@@ -105,7 +105,9 @@ impl ConfirmWindow {
     pub fn tick(&mut self) -> Option<Instant> {
         let now = self.clock.now();
         let before = self.model.state().clone();
-        let _ = self.model.tick(now);
+        if !notice_pinned() {
+            let _ = self.model.tick(now);
+        }
         self.after_change(&before, now);
         self.model.next_deadline(now)
     }
@@ -204,4 +206,13 @@ impl ConfirmWindow {
             });
         }
     }
+}
+
+/// e2e builds keep a result notice up while its screenshots are taken
+/// (`crate::e2e::capturing`); the hold ends with the pass after them.
+fn notice_pinned() -> bool {
+    #[cfg(feature = "e2e")]
+    return crate::e2e::capturing();
+    #[cfg(not(feature = "e2e"))]
+    false
 }
