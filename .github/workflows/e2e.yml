@@ -69,14 +69,21 @@ jobs:
             macos-*) echo "name=macos" ;;
             *) echo "name=${{ matrix.os }}" ;;
           esac >> "$GITHUB_OUTPUT"
+      # The hosted runners' Ubuntu mirror sometimes stalls a download forever and
+      # apt has no overall deadline, so each apt pass (here and Playwright's
+      # install-deps below) is bounded and retried, and apt gives up on dead
+      # connections quickly instead of waiting out the step timeout.
       - name: Install Xvfb, mesa and SoftHSM2
         if: runner.os == 'Linux'
-        timeout-minutes: 10
+        timeout-minutes: 20
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends pkg-config libpcsclite-dev libxkbcommon-dev \
-            libwayland-dev softhsm2 opensc p11-kit pcscd xvfb xauth mesa-vulkan-drivers libvulkan1 \
-            libgl1-mesa-dri libegl1 libxkbcommon-x11-0 libx11-xcb1 libxcb-xfixes0
+          printf 'Acquire::Retries "3";\nAcquire::http::Timeout "30";\nAcquire::https::Timeout "30";\n' \
+            | sudo tee /etc/apt/apt.conf.d/99-ci-network > /dev/null
+          retry() { for i in 1 2 3; do "$@" && return 0; echo "::warning::attempt $i failed: $*"; done; return 1; }
+          retry sudo timeout 180 apt-get update
+          retry sudo timeout 300 apt-get install -y --no-install-recommends pkg-config libpcsclite-dev \
+            libxkbcommon-dev libwayland-dev softhsm2 opensc p11-kit pcscd xvfb xauth mesa-vulkan-drivers \
+            libvulkan1 libgl1-mesa-dri libegl1 libxkbcommon-x11-0 libx11-xcb1 libxcb-xfixes0
       - name: Install the pinned toolchain
         run: rustup toolchain install || rustup show
       - uses: Swatinem/rust-cache@v2
@@ -94,11 +101,15 @@ jobs:
         with:
           node-version: "22"
       - name: Install packages, build the Chromium extension and the browser
-        timeout-minutes: 15
+        timeout-minutes: 30
         run: |
           bun install --frozen-lockfile
           (cd extension && bunx wxt build -b chrome)
-          (cd e2e && bunx playwright install ${{ runner.os == 'Linux' && '--with-deps' || '' }} chromium)
+          retry() { for i in 1 2 3; do "$@" && return 0; echo "::warning::attempt $i failed: $*"; done; return 1; }
+          if [ "$RUNNER_OS" = Linux ]; then
+            (cd e2e && retry timeout 420 bunx playwright install-deps chromium)
+          fi
+          (cd e2e && bunx playwright install chromium)
       - name: Build the desktop client
         run: (cd clients/node && bun run build)
       - name: Create the SoftHSM2 token (Linux)
