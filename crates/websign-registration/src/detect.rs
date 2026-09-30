@@ -1,4 +1,5 @@
-//! Which browsers are installed, for the diagnostics Browsers tab.
+//! Which browsers are installed, for the diagnostics Browsers tab and for
+//! registration (a browser never started has no folder yet).
 //!
 //! Detected from install locations, the registry (Windows `StartMenuInternet`
 //! and `App Paths`) and LaunchServices (macOS), never from profile folders
@@ -52,6 +53,23 @@ pub fn installed_browsers() -> Vec<InstalledBrowser> {
             &platform::flatpak_apps(),
         )
     }
+}
+
+/// Browsers installed as ordinary programs (not Snap or Flatpak, which
+/// registration reaches through their own folders), for
+/// [`crate::presence`]. Linux skips `flatpak list`: only native installs
+/// matter here.
+pub(crate) fn native_browsers() -> Vec<Browser> {
+    let found = if cfg!(target_os = "macos") {
+        macos::detect(&platform::find_bundle)
+    } else {
+        linux::detect(Path::new("/"), &linux::path_dirs(), &[])
+    };
+    found
+        .into_iter()
+        .filter(|entry| entry.packaging == BrowserPackaging::Native)
+        .map(|entry| entry.browser)
+        .collect()
 }
 
 /// One entry per browser and packaging, in [`Browser::ALL`] order; the first

@@ -60,6 +60,9 @@ export class Bidi {
   /** Sends `method` and resolves with its result, or rejects with the browser's error. */
   send<T = unknown>(method: string, params: object): Promise<T> {
     const id = ++this.next;
+    if (this.socket.readyState !== WebSocket.OPEN) {
+      return Promise.reject(new BidiError(`${method}: the connection is closed`));
+    }
     return new Promise<T>((resolve, reject) => {
       this.waiting.set(id, (reply) => {
         if (reply.type === "success") resolve(reply.result as T);
@@ -69,9 +72,12 @@ export class Bidi {
     });
   }
 
-  /** Ends the session (closing the browser is the caller's job). */
-  async close(): Promise<void> {
-    await this.send("session.end", {}).catch(() => undefined);
+  /**
+   * Closes the browser, which also ends the session. Waiting for its process
+   * to exit is the caller's job: Firefox keeps the profile open until then.
+   */
+  async quit(): Promise<void> {
+    await this.send("browser.close", {}).catch(() => undefined);
     this.socket.close();
   }
 }

@@ -12,8 +12,10 @@
  *   runners); a folder already there is moved aside and put back.
  *
  * Chromium browsers read the host manifest next to their profile, and Brave
- * and Opera read their default folder whatever profile they run, so the
- * browser's default folder must be its profile. Chrome refuses DevTools on
+ * (its default folder on Linux) and Opera read a fixed folder whatever
+ * profile they run, so the browser's default folder must be its profile.
+ * On macOS Brave and Opera read Google Chrome's folder, which registration
+ * writes once their own folder exists. Chrome refuses DevTools on
  * its default folder, though; the default folder is therefore a symbolic
  * link to a throwaway profile: the same directory under two names.
  */
@@ -65,12 +67,14 @@ export async function install(env: E2eEnvironment, name: BrowserName): Promise<I
       () => undefined,
     );
     restore();
-    rmSync(profile, { recursive: true, force: true });
+    // A browser that just exited may hold its files a moment longer
+    // (Windows refuses to delete an open file).
+    rmSync(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 300 });
   };
   try {
     await run(env.app, [...args, ...windows], { env: appEnv(env, "wait") });
   } catch (error) {
-    await remove();
+    await remove().catch((cleanup: unknown) => console.warn(`cleanup failed: ${cleanup}`));
     throw error;
   }
   return { profile, remove };

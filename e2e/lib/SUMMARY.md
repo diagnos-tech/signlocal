@@ -11,7 +11,7 @@
 - `global-setup.ts` — Once per run: private app folders, no stale renderer marker, the SoftHSM2 token when nothing else provides keys.
 - `keys.ts` — The software keys of the run, known by their certificates.
 - `old-app.ts` — Puts the fake old app in place of the app's registration in a throwaway profile (AppOutdated).
-- `session.ts` — The browser under test behind one interface for the cross-browser suite (Chromium family or Firefox).
+- `session.ts` — The browser under test behind one interface for the cross-browser suite (Chromium family or Firefox), and the hooks that open and close it.
 - `server.ts` — Serves the fixture page and the website from the repository on localhost.
 - `suite.ts` — What every spec shares: environment, keys, the signature checks.
 - `verify.ts` — The independent verifier (node:crypto) of every signature.

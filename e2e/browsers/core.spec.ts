@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { expect, test } from "@playwright/test";
 
 import { certificates, newMessage, ready, sign, status } from "../lib/fixture.ts";
-import { type BrowserSession, openBrowser } from "../lib/session.ts";
+import { useBrowser } from "../lib/session.ts";
 import { env, expectSigned, keyOf } from "../lib/suite.ts";
 
 // The cross-browser core (docs/compatibility.md, "Browsers"): in every
@@ -15,18 +15,12 @@ import { env, expectSigned, keyOf } from "../lib/suite.ts";
 const browser = env.browserName ?? "chromium";
 
 test.describe(`${browser}: finds the app and signs`, () => {
-  let session: BrowserSession;
-  test.beforeAll(async () => {
-    session = await openBrowser(env, "sign");
-  });
-  test.afterAll(async () => {
-    await session.close();
-  });
+  const session = useBrowser(env, "sign", "all");
 
   test("the page sees the extension and the app", async () => {
     // The version tested, for the compatibility record (`run-browsers.sh`).
-    writeFileSync(join(env.screenshots, "browser-version.txt"), `${session.version}\n`);
-    const page = await session.open();
+    writeFileSync(join(env.screenshots, "browser-version.txt"), `${session().version}\n`);
+    const page = await session().open();
     await ready(page);
     expect(await status(page)).toMatchObject({
       extension: { installed: true },
@@ -42,7 +36,7 @@ test.describe(`${browser}: finds the app and signs`, () => {
   for (const [type, algorithm, hash] of cases) {
     test(`${algorithm} ${hash} with the ${type} key`, async () => {
       const key = keyOf(type);
-      const page = await session.open();
+      const page = await session().open();
       await ready(page);
       const message = newMessage();
       const reply = await sign(page, { hash, algorithm, certificate: key.fingerprint, message });
@@ -52,23 +46,17 @@ test.describe(`${browser}: finds the app and signs`, () => {
 });
 
 test.describe(`${browser}: the person cancels`, () => {
-  let session: BrowserSession;
-  test.beforeEach(async () => {
-    session = await openBrowser(env, "cancel");
-  });
-  test.afterEach(async () => {
-    await session.close();
-  });
+  const session = useBrowser(env, "cancel", "each");
 
   test("Cancel in the window rejects with UserCancelled", async () => {
-    const page = await session.open();
+    const page = await session().open();
     await ready(page);
     const reply = await sign(page, { hash: "SHA-512", message: newMessage() });
     expect(reply).toMatchObject({ ok: false, code: "UserCancelled" });
   });
 
   test("D11: a new site cancelled before Continue gets no certificate", async () => {
-    const page = await session.open();
+    const page = await session().open();
     await ready(page);
     expect(await sign(page, { hash: "SHA-256", message: newMessage() })).toEqual({
       ok: false,

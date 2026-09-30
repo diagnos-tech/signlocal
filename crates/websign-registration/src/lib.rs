@@ -2,12 +2,12 @@
 //! `websign:` URL scheme, extension pre-registration, and read-back status
 //! for diagnostics.
 //!
-//! Registration writes only into folders a browser already created (a
-//! `~/.config/vivaldi` for a machine without Vivaldi would litter the home
-//! directory and mislead tools that treat the folder as an install). The app
-//! registers again on every start, so a browser installed later is picked up.
-//! On Windows, registry keys are written for every browser, since an unused
-//! key is invisible.
+//! Registration writes only for browsers that are there: their folder
+//! exists or they are detected ([`presence`]); a `~/.config/vivaldi` for a
+//! machine without Vivaldi would litter the home directory and mislead tools
+//! that treat the folder as an install. The app registers again on every
+//! start, so a browser installed later is picked up. On Windows, registry
+//! keys are written for every browser, since an unused key is invisible.
 //!
 //! [`browsers`], [`destination`], the manifest renderer, the per-OS target
 //! lists, the real-home lookup, [`run`] and [`plan`] are promoted from the
@@ -32,6 +32,7 @@ mod manifest;
 #[cfg(windows)]
 pub mod msix;
 pub mod preregister;
+mod presence;
 pub mod registry;
 pub mod status;
 pub mod system;
@@ -177,12 +178,16 @@ fn target_builder(request: &Request) -> Result<TargetBuilder, RegistrationError>
     if cfg!(target_os = "linux") {
         let home = real_home()?;
         let config = linux::config_home(&home);
+        let present = detected_roots(request, |b| linux::own_root(b, &home, &config));
         Ok(Box::new(move |browsers| {
-            linux::targets(browsers, &home, &config)
+            presence::waive(linux::targets(browsers, &home, &config), &present)
         }))
     } else if cfg!(target_os = "macos") {
         let home = real_home()?;
-        Ok(Box::new(move |browsers| macos::targets(browsers, &home)))
+        let present = detected_roots(request, |b| macos::own_root(b, &home));
+        Ok(Box::new(move |browsers| {
+            presence::waive(macos::targets(browsers, &home), &present)
+        }))
     } else if cfg!(windows) {
         let dir = manifest_dir(request)?;
         Ok(Box::new(move |browsers| windows::targets(browsers, &dir)))
@@ -191,6 +196,15 @@ fn target_builder(request: &Request) -> Result<TargetBuilder, RegistrationError>
             "native messaging registration is not implemented for this operating system".into(),
         ))
     }
+}
+
+/// The folders of the browsers detected on this machine, which count as
+/// present even before the browser first runs. Only an install needs them.
+fn detected_roots(request: &Request, root: impl Fn(Browser) -> PathBuf) -> Vec<PathBuf> {
+    if request.action != Action::Install {
+        return Vec::new();
+    }
+    detect::native_browsers().into_iter().map(root).collect()
 }
 
 /// The program browsers must start: the MSIX execution alias when running

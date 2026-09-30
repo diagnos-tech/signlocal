@@ -159,6 +159,18 @@ fn macos_opera_uninstall_keeps_chromes_folder() {
 }
 
 #[test]
+fn macos_brave_uninstall_keeps_chromes_folder_for_chrome_and_opera() {
+    let build = |browsers: &[Browser]| macos::targets(browsers, Path::new("/Users/u"));
+    assert!(exclusive(&[Browser::Brave], build).is_empty());
+    let removed = manifests(&exclusive(
+        &[Browser::Chrome, Browser::Brave, Browser::Opera],
+        build,
+    ));
+    let chrome = Path::new("/Users/u/Library/Application Support/Google/Chrome");
+    assert!(removed.iter().any(|m| m.starts_with(chrome)));
+}
+
+#[test]
 fn system_brave_opera_and_vivaldi_keep_chromes_folder_for_chrome() {
     for browser in [Browser::Brave, Browser::Opera, Browser::Vivaldi] {
         assert!(

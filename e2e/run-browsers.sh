@@ -47,7 +47,7 @@ while IFS='=' read -r label executable || [[ -n $label ]]; do
   fi
   echo "::group::$label ($executable)"
   folder="$shots/$label"
-  mkdir -p "$folder"
+  mkdir -p "$folder" || echo "::warning::cannot create $folder"
   if WEBSIGN_E2E_BROWSER_NAME=$name WEBSIGN_E2E_BROWSER=$executable \
     WEBSIGN_E2E_SCREENSHOTS=$folder run_suite < /dev/null; then
     result=passed
@@ -57,7 +57,11 @@ while IFS='=' read -r label executable || [[ -n $label ]]; do
     echo "::error::the cross-browser core failed in $label"
   fi
   echo "::endgroup::"
-  version=$(tr -d '\r\n' < "$folder/browser-version.txt" 2>/dev/null || echo unknown)
+  # Written by the suite's first test, so absent when the browser never started.
+  version=unknown
+  if [[ -s $folder/browser-version.txt ]]; then
+    version=$(tr -d '\r\n' < "$folder/browser-version.txt")
+  fi
   printf '| %s | %s | %s | %s |\n' "$os" "$label" "$version" "$result" >> "$results"
 done < "$list"
 

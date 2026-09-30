@@ -60,6 +60,16 @@ fn hosts_owner(browser: Browser) -> Option<&'static str> {
     (browser == Browser::Opera).then_some("google-chrome")
 }
 
+/// The folder of `browser`'s stable channel, whose existence tells that the
+/// browser has run for this user: `~/.mozilla` for Firefox, else its folder
+/// under `config`.
+pub fn own_root(browser: Browser, home: &Path, config: &Path) -> PathBuf {
+    match config_dirs(browser).first() {
+        Some((_, dir)) => config.join(dir),
+        None => home.join(".mozilla"),
+    }
+}
+
 /// `$XDG_CONFIG_HOME` when it is absolute (the XDG rule, which Chromium
 /// follows), else `<home>/.config`.
 pub fn config_home(home: &Path) -> PathBuf {

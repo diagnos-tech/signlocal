@@ -61,7 +61,9 @@ const MACOS: Readonly<Record<BrowserName, string>> = {
  * The folder whose existence tells `websign register` the browser is
  * installed, and the browser's default profile folder (Chromium browsers on
  * Linux and macOS read the host manifest next to their profile, and Brave and
- * Opera read their default folder whatever profile they run). `undefined`
+ * Opera read a fixed folder whatever profile they run: Brave its default
+ * folder on Linux, Opera Google Chrome's, and on macOS Brave Google Chrome's
+ * too, which registration writes whenever Brave's own folder exists). `undefined`
  * on Windows, where registration is a registry key and any profile works.
  *
  * Linux: under the run's private home and config home (`linux`), nothing

@@ -10,6 +10,7 @@ uses no manifest), and extension pre-registration.
 |---|---|
 | **D** | official vendor documentation (links at the end) |
 | **C** | Chromium source code, read at `raw.githubusercontent.com/chromium/chromium` |
+| **S** | Brave's source code (`brave/brave-core`), read the same way |
 | **B** | Bitwarden, `native-messaging.main.ts` (only to compare paths) |
 | **K** | KeePassXC, `NativeMessageInstaller.cpp` (same) |
 | **W** | web-eid-app (`CMakeLists.txt`, `web-eid.wxs`, manifest templates) |
@@ -156,7 +157,7 @@ User: `~/Library/Application Support/<folder>/NativeMessagingHosts/<host>.json`.
 | Chrome for Testing (146+) | `Google/ChromeForTesting` (before 146 it used Chrome's folder) | D |
 | Chromium | `Chromium` | D, K |
 | Edge | `Microsoft Edge` (+ ` Beta`, ` Dev`, ` Canary`) | D, B |
-| Brave | `BraveSoftware/Brave-Browser` (+ `-Beta`, `-Nightly`) | K; Beta/Nightly by analogy (?) |
+| Brave | Google Chrome's folder, `Google/Chrome`, for every channel and profile, never its own: `BraveMainDelegate::PreSandboxStartup` overrides the user folder with `Google/Chrome/NativeMessagingHosts` and the system one with `/Library/Google/Chrome/NativeMessagingHosts`. `register` writes Chrome's folder when a Brave folder (`BraveSoftware/Brave-Browser`, `-Beta`, `-Nightly`) exists or Brave is detected. KeePassXC and Bitwarden write Brave's own folder, which this Brave does not read | S |
 | Vivaldi | `Vivaldi` | B, K |
 | Opera | Google Chrome's folder, `Google/Chrome` (Opera developers on the Opera forum, 2017; Opera on Linux does the same, §3.6); `register` also writes `com.operasoftware.Opera` (+ `OperaNext` beta, `OperaDeveloper`, `OperaGX`), each only when that Opera's folder exists | D (forum), T (Linux), E |
 | Firefox | `Mozilla/NativeMessagingHosts` (note: `Mozilla`, no profile subfolder) | D |
@@ -200,10 +201,11 @@ absolute `path` `/usr/bin/web-eid` (W). Our app's `.deb` will do the same; the p
 "complement" and for tests.
 
 **Only register where the browser exists.** `register` only writes when the browser's config folder
-already exists (same rule as Bitwarden, which warns "not found, skipping"). Creating `~/.config/vivaldi` for someone who
-does not have Vivaldi clutters the home and misleads tools that treat the folder as proof of installation. The price: a
-browser that is installed and never opened is ignored until the next registration; the final app registers at every start and
-closes the gap. On Windows there is no folder to test, so the `HKCU` keys are always written.
+already exists (same rule as Bitwarden, which warns "not found, skipping") or the browser is detected as installed
+(its executable on Linux, its app bundle on macOS; §2 of the crate's SPEC). Creating `~/.config/vivaldi` for someone who
+does not have Vivaldi clutters the home and misleads tools that treat the folder as proof of installation, but a browser
+installed and never opened has no folder yet, and the person who installs the app before first starting that browser
+must find it working. On Windows there is no folder to test, so the `HKCU` keys are always written.
 
 **Snap (Chromium).** The Snap's Chromium reads `~/snap/chromium/common/chromium/NativeMessagingHosts/` (`register`
 writes here) and runs with a private `/tmp` (the host log ends up in the Snap's `/tmp`). Whether the confinement
@@ -343,7 +345,7 @@ Chrome ignores `HKCU` and the user folders, and only reads the system location).
 |---|---|---|
 | Safari | no Mac in this environment (see the Safari documents) | 2 |
 | Firefox (release and ESR) | proven end to end on Linux locally (T, E) and in CI on every runner OS where it installs; the temporary add-on is the unsigned development build | — |
-| Brave, Opera on Windows and macOS: which key or folder wins | CI proves that `register` makes them work (E), not which of the written keys/folders they read | — |
+| Brave on Windows, Opera on Windows and macOS: which key or folder wins | CI proves that `register` makes them work (E), not which of the written keys/folders they read (Brave on macOS is settled by its source, S) | — |
 | Vivaldi end to end | traced on Linux (T); Playwright crashes it | — |
 | Opera GX, Brave Beta/Nightly, Opera Beta/Developer | by analogy with the stable channel | — |
 | Chromium Snap, Flatpak, Firefox Snap | no such environments here | 4 |
@@ -385,5 +387,6 @@ Chrome ignores `HKCU` and the user folders, and only reads the system location).
 - web-eid-app, installation: <https://raw.githubusercontent.com/web-eid/web-eid-app/main/src/app/CMakeLists.txt> and <https://raw.githubusercontent.com/web-eid/web-eid-app/main/install/web-eid.wxs>
 - web-eid-app, Safari bridge: `src/mac/` (same repository)
 - KeePassXC, manifest installer: `src/browser/NativeMessageInstaller.cpp`
-- Brave, default profile folder on Linux (no override of the native messaging lookup): <https://github.com/brave/brave-core/blob/master/chromium_src/chrome/common/chrome_paths_linux.cc>
+- Brave, default profile folder on Linux: <https://github.com/brave/brave-core/blob/master/chromium_src/chrome/common/chrome_paths_linux.cc>
+- Brave, native messaging folders on Linux and macOS (`PreSandboxStartup`): <https://github.com/brave/brave-core/blob/master/app/brave_main_delegate.cc>
 - browserpass-native, per-browser install targets: <https://raw.githubusercontent.com/browserpass/browserpass-native/master/Makefile>

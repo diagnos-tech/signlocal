@@ -17,6 +17,7 @@ import type { E2eEnvironment } from "../environment.ts";
 import { install } from "../installed.ts";
 import { type PageServer, startServer } from "../server.ts";
 import { Bidi } from "./bidi.ts";
+import { exit, PLATFORM_ARGS } from "./process.ts";
 import { FirefoxTab } from "./tab.ts";
 
 /** How long Firefox may take to start listening. */
@@ -58,15 +59,24 @@ export async function launchFirefox(
   writeFileSync(join(installed.profile, "user.js"), `${prefs.join("\n")}\n`);
   const firefox = spawn(
     env.browser,
-    ["--remote-debugging-port=0", "--profile", installed.profile, "--no-remote", "--new-instance"],
+    [
+      "--remote-debugging-port=0",
+      "--profile",
+      installed.profile,
+      "--no-remote",
+      "--new-instance",
+      ...PLATFORM_ARGS,
+    ],
     { env: appEnv(env, confirm), stdio: ["ignore", "ignore", "pipe"] },
   );
+  let bidi: Bidi | undefined;
   const stop = async () => {
-    await exit(firefox);
+    await bidi?.quit();
+    await exit(firefox, bidi !== undefined);
     await installed.remove();
   };
   try {
-    const bidi = await Bidi.connect(await listening(firefox, installed.profile));
+    bidi = await Bidi.connect(await listening(firefox, installed.profile));
     await bidi.send("webExtension.install", {
       extensionData: { type: "path", path: env.extension },
     });
@@ -86,13 +96,14 @@ export async function launchFirefox(
         return tab;
       },
       async close() {
-        await bidi.close();
         await server.close();
         await stop();
       },
     };
   } catch (error) {
-    await stop();
+    // The launch failure is the finding; a cleanup that fails as well
+    // (Windows keeps files open a while after a crash) must not replace it.
+    await stop().catch((cleanup: unknown) => console.warn(`Firefox cleanup failed: ${cleanup}`));
     throw error;
   }
 }
@@ -121,14 +132,4 @@ async function listening(firefox: ChildProcess, profile: string): Promise<string
     await new Promise((done) => setTimeout(done, 200));
   }
   throw new Error(`Firefox did not start listening (exit ${firefox.exitCode}):\n${seen}`);
-}
-
-/** Ends Firefox, forcefully when it does not quit in time. */
-async function exit(firefox: ChildProcess): Promise<void> {
-  if (firefox.exitCode !== null || firefox.signalCode !== null) return;
-  const exited = new Promise<void>((done) => firefox.once("exit", () => done()));
-  firefox.kill();
-  const timer = setTimeout(() => firefox.kill("SIGKILL"), 10_000);
-  await exited;
-  clearTimeout(timer);
 }

@@ -4,7 +4,7 @@ Browser manifests per OS are **promoted from the Phase-0 kit**
 (`probe/src/nm/register`) with their tests: target lists for Linux (native,
 Snap, Flatpak with a host copy), macOS (real home from `getpwuid_r` inside
 the sandbox) and Windows (`HKCU` keys pointing to manifest files); writes
-only where the browser's folder exists; manifest JSON with our extension
+only where the browser's folder exists or the browser is detected (§7); manifest JSON with our extension
 origins (`allowed_origins`) or the Gecko ID (`allowed_extensions`).
 `run`/`plan`/`host_binary` are promoted too. The rest is NEW.
 
@@ -84,7 +84,19 @@ path. Status also reads the folders a browser falls back to: Edge reads
   NativeMessagingHosts`, written when `<config>/opera*` exists (its Flatpak:
   `config/google-chrome` inside the app). macOS Opera (`com.operasoftware.
   Opera`, `OperaNext`, `OperaDeveloper`, `OperaGX`) gets its own folder and
-  `Google/Chrome/NativeMessagingHosts`, both when its folder exists.
+  `Google/Chrome/NativeMessagingHosts`, both when its folder exists. macOS
+  Brave (every channel) reads only Google Chrome's folder (brave-core
+  overrides the lookup): its targets are `Google/Chrome/NativeMessagingHosts`,
+  labelled `<channel> (Chrome's folder)`, each written when that channel's
+  `BraveSoftware/Brave-Browser*` folder exists.
+- A browser counts as present (Linux and macOS user scope, install only)
+  when its folder exists or when §2 detects it natively (not Snap or
+  Flatpak; Linux skips `flatpak list` here): then the targets that require
+  its stable channel's folder (`google-chrome`, `BraveSoftware/Brave-
+  Browser`, `~/.mozilla`, `Mozilla`, …) are written even though the folder
+  does not exist yet, because a browser never started has none. Other
+  channels, Arc, Snap and Flatpak keep the folder rule. Windows keys are
+  always written.
 - Linux user targets also cover Chrome Canary (`google-chrome-canary`) and
   Snap Firefox (`~/.mozilla/native-messaging-hosts`, written when
   `~/snap/firefox` exists, because the portal reads the host's folder).
