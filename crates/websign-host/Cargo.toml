@@ -1,0 +1,30 @@
+[package]
+name = "websign-host"
+description = "The session engine: transports, hello/negotiation, request dispatch, the sign and choose flows, queue, consent, timeouts. UI and key stores are ports, so it runs under test with fakes."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+websign-core.workspace = true
+websign-protocol.workspace = true
+websign-project.workspace = true
+websign-keystores.workspace = true
+websign-devices.workspace = true
+websign-ui-model.workspace = true
+thiserror.workspace = true
+log.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+secrecy.workspace = true
+jiff.workspace = true
+dirs.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+
+[lints]
+workspace = true

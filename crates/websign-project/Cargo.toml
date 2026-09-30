@@ -1,0 +1,16 @@
+[package]
+name = "websign-project"
+description = "Names and identifiers from project.toml as compile-time constants, so nothing is written down twice."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+# Only constants; Apache-2.0 so the client crate can use the same names.
+license = "Apache-2.0"
+repository.workspace = true
+publish.workspace = true
+
+[build-dependencies]
+toml.workspace = true
+
+[lints]
+workspace = true

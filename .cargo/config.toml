@@ -1,0 +1,8 @@
+# Link the MSVC runtime statically: a clean Windows machine (and an MSIX
+# install) may not have vcruntime140.dll. Proven in the Phase-0 kit.
+[target.'cfg(all(windows, target_env = "msvc"))']
+rustflags = ["-C", "target-feature=+crt-static"]
+
+# `cargo xtask <command>`: one entry point for generation, checks and packaging.
+[alias]
+xtask = "run --package xtask --"

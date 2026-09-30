@@ -1,0 +1,94 @@
+# The product workspace. The Phase-0 kit (docs/prototypes/kit) is a separate,
+# frozen workspace and is excluded on purpose: nothing here may depend on it.
+[workspace]
+resolver = "3"
+members = ["crates/*", "app", "clients/rust", "xtask"]
+exclude = ["docs/prototypes/kit"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.90"
+license = "GPL-3.0-or-later"
+repository = "https://github.com/diagnos-tech/web-esign"
+publish = false
+
+[workspace.dependencies]
+# Internal crates.
+websign-core = { path = "crates/websign-core" }
+websign-devices = { path = "crates/websign-devices" }
+websign-host = { path = "crates/websign-host" }
+websign-i18n = { path = "crates/websign-i18n" }
+websign-keystores = { path = "crates/websign-keystores" }
+websign-project = { path = "crates/websign-project" }
+websign-protocol = { path = "crates/websign-protocol" }
+websign-registration = { path = "crates/websign-registration" }
+websign-ui-model = { path = "crates/websign-ui-model" }
+
+# Errors, data, CLI.
+thiserror = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.9"
+clap = { version = "4", features = ["derive"] }
+log = "0.4"
+jiff = "0.2"
+
+# Crypto (pure Rust). rsa 0.10 is still a release candidate: pinned exactly so
+# a new rc cannot silently change the verifier the kit reviewed.
+sha2 = "0.11"
+rsa = { version = "=0.10.0-rc.18", features = ["sha2"] }
+p256 = { version = "0.14", features = ["ecdsa"] }
+p384 = { version = "0.14", features = ["ecdsa"] }
+p521 = { version = "0.14", features = ["ecdsa"] }
+bp256 = { version = "0.14", default-features = false, features = ["std", "arithmetic", "ecdsa"] }
+bp384 = { version = "0.14", default-features = false, features = ["std", "arithmetic", "ecdsa"] }
+secrecy = "0.10"
+zeroize = "1"
+getrandom = "0.4"
+
+# Origins.
+psl = "2"
+idna = "1"
+
+# Key stores and devices.
+cryptoki = "0.12"
+# Raw `C_Sign` for keys that re-authenticate per signature; the version cryptoki uses.
+cryptoki-sys = "0.5"
+nusb = "0.2"
+pcsc = "2.9"
+windows = "0.62"
+windows-registry = "0.100"
+security-framework = "3.7"
+security-framework-sys = "2.17"
+core-foundation = "0.10"
+libc = "0.2"
+
+# UI.
+eframe = { version = "0.36", default-features = false, features = [
+  "accesskit", "default_fonts", "wgpu", "glow", "wayland", "x11",
+] }
+egui = "0.36"
+egui-phosphor = "0.14"
+egui_kittest = { version = "0.36", features = ["wgpu", "snapshot"] }
+sys-locale = "0.3"
+dirs = "6"
+
+# Code generation and tests.
+ts-rs = "12"
+tempfile = "3"
+
+[workspace.lints.rust]
+unsafe_op_in_unsafe_fn = "deny"
+missing_debug_implementations = "warn"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+# unwrap/expect/panic are denied in production code by a crate-level
+# `cfg_attr(not(test), ...)` in every lib.rs/main.rs; tests may use them.
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
+panic = "unwind"

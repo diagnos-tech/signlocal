@@ -1,0 +1,36 @@
+# web-esign
+
+WebeSign: sign with your own certificate from any website or desktop program. Start with README.md.
+
+- `.cargo/` — Cargo configuration shared by every build
+- `.github/` — GitHub configuration
+- `app/` — the `websign` binary: host process, CLI, windows and OS glue
+- `clients/` — libraries desktop programs use to call the app (Apache-2.0)
+- `crates/` — the libraries of the app, one responsibility each
+- `docs/` — documentation
+- `e2e/` — end-to-end tests (Playwright)
+- `extension/` — the WebeSign browser extension (WXT, MV3)
+- `i18n/` — translations: en (reference), pt-BR, pt-PT, es, fr, it, de
+- `packaging/` — release packaging definitions
+- `safari/` — the Safari web extension bridge (store channel)
+- `scripts/` — scripts shipped to users
+- `sdk/` — `@websign/sdk`: the web SDK (Apache-2.0)
+- `xtask/` — `cargo xtask`: repository automation
+- `.editorconfig` — editor settings (UTF-8, LF, indentation)
+- `.gitignore` — files git never tracks (build outputs, keys, PINs)
+- `CONTRIBUTING.md` — how to contribute: DCO, licenses per part, commits, TDD roles, style
+- `Cargo.lock` — resolved Rust dependency versions
+- `Cargo.toml` — the Rust workspace: members, shared dependencies, lints
+- `LICENSE` — GPL-3.0-or-later with the app-store additional permission
+- `LICENSE-CC0` — CC0-1.0 text for devices.json and its schema
+- `README.md` — what the project is and where to start
+- `biome.json` — Biome lint and format rules for the TypeScript packages
+- `bun.lock` — resolved npm dependency versions
+- `deny.toml` — cargo-deny policy: GPL-compatible licenses, advisories, bans
+- `devices.json` — device hints: USB VID:PID and ATR → model → driver per OS (CC0-1.0)
+- `devices.schema.json` — JSON Schema that devices.json must satisfy
+- `package.json` — the bun workspace of the TypeScript packages
+- `project.toml` — provisional names and identifiers, the single source (D6)
+- `rust-toolchain.toml` — the pinned Rust toolchain and targets
+- `rustfmt.toml` — rustfmt settings
+- `tsconfig.base.json` — strict TypeScript settings every package extends

@@ -1,0 +1,69 @@
+[package]
+name = "websign-app"
+description = "The WebeSign desktop app: one binary that is the browsers' native messaging host, the desktop API (`websign connect`, `sign`, `choose`), the installer (`install`, `register`) and the confirmation and diagnostics windows."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "websign"
+path = "src/main.rs"
+
+[features]
+# Test builds only (never in releases; CI checks the release binary): the
+# confirmation window confirms by itself once armed and saves a PNG of every
+# state it shows. See docs/architecture/testing.md.
+e2e = []
+
+[dependencies]
+websign-core.workspace = true
+websign-protocol.workspace = true
+websign-project.workspace = true
+websign-i18n.workspace = true
+websign-keystores.workspace = true
+websign-devices.workspace = true
+websign-host.workspace = true
+websign-registration.workspace = true
+websign-ui-model.workspace = true
+thiserror.workspace = true
+log.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+clap.workspace = true
+secrecy.workspace = true
+zeroize.workspace = true
+jiff.workspace = true
+eframe.workspace = true
+egui.workspace = true
+egui-phosphor.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+windows = { workspace = true, features = [
+  "Win32_Foundation",
+  "Win32_System_Threading",
+  "Win32_System_ProcessStatus",
+  "Win32_System_Diagnostics_ToolHelp",
+  "Win32_Security_WinTrust",
+  "Win32_Security_Cryptography",
+  "Win32_Security_Cryptography_UI",
+  "Win32_UI_WindowsAndMessaging",
+  "Win32_UI_Shell",
+  "Win32_Storage_FileSystem",
+] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+libc.workspace = true
+security-framework.workspace = true
+core-foundation.workspace = true
+
+[target.'cfg(target_os = "linux")'.dependencies]
+libc.workspace = true
+
+[dev-dependencies]
+egui_kittest.workspace = true
+
+[lints]
+workspace = true

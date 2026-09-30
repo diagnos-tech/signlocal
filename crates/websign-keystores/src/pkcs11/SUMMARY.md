@@ -1,0 +1,21 @@
+# crates/websign-keystores/src/pkcs11
+
+- `known_paths/` — known vendor module paths per OS
+- `p11kit/` — p11-kit module registrations
+- `always_authenticate.rs` — Keys with `CKA_ALWAYS_AUTHENTICATE`: the PIN is asked again for every signature, as qualified signature keys of eIDAS cards (Cartao de Cidadao, DNIe, Estonian ID card) require.
+- `ckr.rs` — Raw `CKR_*` return codes and names, which `cryptoki` hides behind its `RvError` enum.
+- `discovery.rs` — Which PKCS#11 module files to try: the ones asked for, the ones registered with p11-kit and the ones at vendors' well-known install paths.
+- `errors.rs` — Translation of `cryptoki` errors into [`KeystoreError`].
+- `file_id.rs` — Identity of a module file, so the same library reached through symlinks, hard links or a different spelling of its path is loaded only once.
+- `finder.rs` — Finding, at signing time, the certificate and private key that `list` reported.
+- `keystore.rs` — One loaded PKCS#11 module as a [`Keystore`].
+- `listing.rs` — `list`: the signing certificates on every token of a module, without a PIN.
+- `locator.rs` — The opaque handle a listed key carries so it can be found again when signing: `slot=3;id=0a1b`.
+- `login.rs` — `C_Login`: the only place a PIN leaves its `SecretString`.
+- `mechanism.rs` — Which PKCS#11 mechanism signs an already-computed digest, and how to bring the token's answer into the format the SDK promises.
+- `mod.rs` — PKCS#11 modules: p11-kit registrations, known vendor paths and modules given on the command line.
+- `module.rs` — Loading a PKCS#11 module once per process.
+- `objects.rs` — Reading certificates and private key identifiers from a token session.
+- `path_patterns.rs` — Expansion of the path templates in the list of known modules: Windows environment variables and one wildcard directory.
+- `provider.rs` — How a token is described to people, and whether it counts as hardware.
+- `signing.rs` — `sign`: one signature with a PKCS#11 private key.

@@ -1,0 +1,40 @@
+[package]
+name = "websign-keystores"
+description = "Key sources behind one trait: Windows CNG/CAPI, macOS Keychain/CryptoTokenKit, PKCS#11 on every OS; de-duplicated listing and signing."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+websign-core.workspace = true
+websign-devices.workspace = true
+websign-project.workspace = true
+thiserror.workspace = true
+log.workspace = true
+secrecy.workspace = true
+zeroize.workspace = true
+cryptoki.workspace = true
+cryptoki-sys.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+windows = { workspace = true, features = [
+  "Win32_Foundation",
+  "Win32_Security_Cryptography",
+  "Win32_Security_Cryptography_UI",
+  "Win32_System_Console",
+  "Win32_UI_WindowsAndMessaging",
+] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+security-framework.workspace = true
+security-framework-sys.workspace = true
+core-foundation.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+
+[lints]
+workspace = true

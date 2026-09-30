@@ -1,0 +1,18 @@
+[package]
+name = "websign-ui-model"
+description = "Pure view logic of the two windows: certificate rows, the confirmation state machine and its host contract, diagnostics status and report. No egui, no OS."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+websign-core.workspace = true
+websign-protocol.workspace = true
+secrecy.workspace = true
+jiff.workspace = true
+
+[lints]
+workspace = true

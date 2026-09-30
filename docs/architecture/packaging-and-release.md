@@ -1,0 +1,107 @@
+# Packaging and release
+
+## Channels
+
+| Channel | When | Windows | macOS | Linux | Extension |
+|---|---|---|---|---|---|
+| **direct** | now | zip + `install.ps1` (x64, arm64) | universal `.app` zip + `install.sh` (not sandboxed, so PKCS#11 works: D10) | `.deb`, `.rpm` (amd64, arm64), tar.gz + `install.sh` | unpacked zips (Chromium, Firefox) |
+| **store** | later (D10) | MSIX (Microsoft Store; `unvirtualizedResources`, proven in proof 1) | Mac App Store (sandbox, entitlements of proof 2) + Safari appex; PKCS#11-only tokens need the Add-on | APT/YUM repositories on GitHub Pages | Chrome Web Store, Edge Add-ons, AMO, Safari (inside the app) |
+
+Same code on both channels. Differences are detected at run time
+(`app/src/platform/channel.rs`: MSIX package identity, macOS sandbox
+container) and reported as `AppInfo.channel`; there are no build forks.
+
+## Artifacts (every `v*` tag)
+
+| File | Contents |
+|---|---|
+| `websign-<v>-windows-x64.zip`, `websign-<v>-windows-arm64.zip` | `websign.exe` (MSVC, `+crt-static`), `README.txt`, licenses |
+| `websign-<v>-macos-universal.zip` | `WebeSign.app` (arm64 + x86_64 `lipo`), ad-hoc signed |
+| `websign_<v>_amd64.deb`, `websign_<v>_arm64.deb` | `/usr/bin/websign`, desktop entry, icons, system manifests via postinst |
+| `websign-<v>-1.x86_64.rpm`, `websign-<v>-1.aarch64.rpm` | same layout |
+| `websign-<v>-linux-x64.tar.gz`, `websign-<v>-linux-arm64.tar.gz` | binary + desktop entry + icons, for `install.sh` and other distros |
+| `websign-extension-<v>-chromium.zip`, `websign-extension-<v>-firefox.zip` | built extension (development key for Chromium, so its ID matches the manifests) |
+| `install.sh`, `install.ps1` | one-line installers |
+| `SHA256SUMS` | hashes of every file above |
+
+Built by `cargo xtask package --target <triple>` (nfpm for deb/rpm), on the
+native runner of each OS; the release job assembles and publishes.
+
+## Install locations
+
+| OS / package | Binary | Registration |
+|---|---|---|
+| Windows direct | `%LOCALAPPDATA%\Programs\WebeSign\websign.exe`, folder added to the user `PATH` | `websign install`: `HKCU\Software\<vendor>\NativeMessagingHosts\dev.websign.host` for every browser, manifests in `%LOCALAPPDATA%\websign\NativeMessagingHosts`, `HKCU\Software\Classes\websign`, Start menu shortcut |
+| Windows store | package folder; alias `websign.exe` in `%LOCALAPPDATA%\Microsoft\WindowsApps` | same keys, written by the app on first start (manifests point at the alias) |
+| macOS direct | `/Applications/WebeSign.app` (or `~/Applications` without admin rights); `~/.local/bin/websign` symlink | `websign install`: manifests in each browser's `NativeMessagingHosts` under `~/Library/Application Support`; URL scheme from `Info.plist` |
+| Linux deb/rpm | `/usr/bin/websign`, `/usr/share/applications/websign.desktop` | postinst runs `websign install --system` (system manifests: the Firefox Snap portal reads only these) and enables `pcscd.socket`; `Depends: libpcsclite1` / `Requires: pcsc-lite-libs`; `Recommends: pcscd, p11-kit` |
+| Linux tar.gz | `~/.local/bin/websign`, `~/.local/share/applications/websign.desktop` | `websign install` (per user); the script offers `sudo websign install --system` for Firefox Snap |
+
+`websign-client` and `@websign/desktop` search these locations in this order
+after `WEBSIGN_EXECUTABLE` and `PATH`.
+
+## One-line install
+
+Public repository (after it opens):
+
+```sh
+# macOS and Linux
+curl -fsSL https://github.com/diagnos-tech/web-esign/releases/latest/download/install.sh | sh
+```
+
+```powershell
+# Windows (PowerShell)
+irm https://github.com/diagnos-tech/web-esign/releases/latest/download/install.ps1 | iex
+```
+
+While the repository is **private**, downloads need authentication:
+
+```sh
+gh release download --repo diagnos-tech/web-esign --pattern install.sh && sh install.sh
+```
+
+```powershell
+gh release download --repo diagnos-tech/web-esign --pattern install.ps1; ./install.ps1
+```
+
+The scripts use `gh` when it is installed and logged in, else
+`WEBSIGN_GITHUB_TOKEN` as a bearer token, else anonymous HTTPS. They:
+detect OS and architecture; download the artifact and `SHA256SUMS`; **verify
+the hash**; place the app (table above); remove the quarantine/Mark of the
+Web; run `websign install`; print the extension step. Flags: `--version`,
+`--prefix`, `--no-register`, `--uninstall`, `--dry-run` (`-Version`, … in
+PowerShell). Contract: `scripts/install/README.md`.
+
+## Unsigned builds: what users must do (for now)
+
+Direct builds are not code-signed yet (costs and accounts pending, brief
+§12). Every release page and README shows this notice:
+
+| Where | What happens | What to do |
+|---|---|---|
+| Windows | SmartScreen "Windows protected your PC" when running a downloaded `websign.exe` by hand | The install script avoids it (it downloads with PowerShell and unblocks the file). Manual download: **More info → Run anyway**. |
+| macOS | Gatekeeper "cannot be opened because the developer cannot be verified" | The install script removes the quarantine attribute (`xattr -dr com.apple.quarantine`). Manual: right-click the app → **Open**, or System Settings → Privacy & Security → **Open Anyway**. |
+| Linux | nothing (packages are unsigned; `apt install ./websign_<v>_amd64.deb`, `dnf install ./websign-<v>-1.x86_64.rpm`) | — |
+| Chrome / Edge / Brave | the extension is not in the stores yet | `chrome://extensions` → Developer mode → **Load unpacked** → the unzipped `websign-extension-<v>-chromium` folder. The development key pins the ID the app allows. |
+| Firefox | release Firefox refuses unsigned add-ons | `about:debugging` → This Firefox → **Load Temporary Add-on** (lasts until restart), or Firefox Developer/Nightly/ESR with `xpinstall.signatures.required = false`. `TODO(gustavo)`: sign on AMO as *unlisted* (free, automatic) to remove this step. |
+| Safari | not available in direct builds | — (store channel) |
+
+## Release workflow
+
+1. Versions move in lockstep: workspace `Cargo.toml`, `sdk/`, `clients/node/`,
+   `extension/` (`cargo xtask check` verifies they match the tag).
+2. Push tag `vX.Y.Z` → the release workflow builds every artifact on native
+   runners, runs the e2e smoke suite against the packaged binaries, verifies
+   the release binary has no `e2e` marker, writes `SHA256SUMS`.
+3. Creates a GitHub **prerelease** (while unsigned) with the artifacts, the
+   install commands, the unsigned-build notice and the changelog section.
+4. npm packages (`@websign/sdk`, `@websign/desktop`) and the `websign-client`
+   crate are published by hand by the maintainer until the names are final
+   (D6).
+
+## Later: signing and stores
+
+Authenticode (SignPath or Azure Trusted Signing), Apple Developer ID +
+notarization, MSIX and Mac App Store submissions, AMO/Chrome/Edge listings.
+The code paths already exist (proofs 1 and 2); only packaging and accounts
+remain.

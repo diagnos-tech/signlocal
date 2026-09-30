@@ -1,0 +1,5 @@
+/* Popup styles: tokens from docs/ux.md §11 (design/tokens.css), system font. */
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+}

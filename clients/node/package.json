@@ -1,0 +1,31 @@
+{
+  "name": "@websign/desktop",
+  "version": "0.1.0",
+  "description": "Call the WebeSign app from Node.js, Bun or Electron: choose a certificate and sign a digest through `websign connect`. Zero runtime dependencies.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.3",
+    "typescript": "7.0.2",
+    "vitest": "5.0.2"
+  }
+}

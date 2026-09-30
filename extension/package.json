@@ -1,0 +1,21 @@
+{
+  "name": "websign-extension",
+  "version": "0.1.0",
+  "private": true,
+  "description": "WebeSign browser extension: the bridge between pages using @websign/sdk and the WebeSign app (native messaging). No UI besides the toolbar popup.",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "scripts": {
+    "postinstall": "wxt prepare",
+    "dev": "wxt",
+    "build": "wxt build -b chrome && wxt build -b firefox --mv3 && wxt build -b edge && wxt build -b safari",
+    "zip": "wxt zip -b chrome && wxt zip -b firefox --mv3",
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2",
+    "vitest": "5.0.2",
+    "wxt": "0.21.4"
+  }
+}

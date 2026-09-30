@@ -1,0 +1,21 @@
+[package]
+name = "websign-client"
+description = "Call the WebeSign app from any Rust program: choose a certificate and sign a digest through `websign connect`, with the same flow as the web SDK."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license = "Apache-2.0"
+repository.workspace = true
+# Publishing is a release decision; the crate is ready for crates.io.
+publish.workspace = true
+keywords = ["signature", "pkcs11", "smartcard", "pades", "icp-brasil"]
+categories = ["cryptography", "api-bindings"]
+
+[dependencies]
+websign-protocol.workspace = true
+websign-project.workspace = true
+thiserror.workspace = true
+serde_json.workspace = true
+
+[lints]
+workspace = true

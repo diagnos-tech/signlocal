@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/diagnos-tech/web-esign/devices.schema.json",
+  "title": "WebeSign device hints",
+  "description": "Known tokens, cards and readers, and the driver each needs per OS. Hints only: a device missing here still works when its driver is installed. CC0-1.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "devices"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "const": 1 },
+    "devices": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/device" }
+    }
+  },
+  "$defs": {
+    "device": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "kind", "match"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "kind": { "enum": ["token", "card", "reader"] },
+        "match": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "usb": {
+              "type": "array",
+              "items": { "type": "string", "pattern": "^[0-9a-f]{4}:[0-9a-f]{4}$" }
+            },
+            "atr": {
+              "type": "array",
+              "items": { "type": "string", "pattern": "^([0-9A-F]{2}|\\.\\.)+$" }
+            }
+          }
+        },
+        "driver": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name"],
+          "properties": {
+            "name": { "type": "string", "minLength": 1 },
+            "download": { "$ref": "#/$defs/perOsUrl" },
+            "pkcs11": { "$ref": "#/$defs/perOsPath" }
+          }
+        },
+        "macos": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["cryptotokenkit"],
+          "properties": { "cryptotokenkit": { "type": "boolean" } }
+        },
+        "pinUnlock": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["tool"],
+          "properties": { "tool": { "type": "string", "minLength": 1 } }
+        }
+      }
+    },
+    "perOsUrl": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "windows": { "type": "string", "pattern": "^https://" },
+        "macos": { "type": "string", "pattern": "^https://" },
+        "linux": { "type": "string", "pattern": "^https://" }
+      }
+    },
+    "perOsPath": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "windows": { "type": "string" },
+        "macos": { "type": "string" },
+        "linux": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "./devices.schema.json",
+  "version": 1,
+  "devices": [
+    {
+      "id": "safenet-etoken-5110",
+      "name": "SafeNet eToken 5110",
+      "kind": "token",
+      "match": { "usb": ["0529:0620"], "atr": [] },
+      "driver": {
+        "name": "SafeNet Authentication Client",
+        "download": {},
+        "pkcs11": {
+          "windows": "eTPKCS11.dll",
+          "macos": "/usr/local/lib/libeTPkcs11.dylib",
+          "linux": "/usr/lib/libeTPkcs11.so"
+        }
+      },
+      "pinUnlock": { "tool": "SafeNet Authentication Client" }
+    }
+  ]
+}
