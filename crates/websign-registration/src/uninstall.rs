@@ -39,11 +39,18 @@ fn without_shared(removed: Vec<Target>, remaining: &[Target]) -> Vec<Target> {
         .collect()
 }
 
-/// What makes two locations the same place: the manifest path, or the
-/// registry key (whose names are case-insensitive).
+/// What makes two locations the same place: the manifest path compared by
+/// components (so `a/b` and `a\b` agree on Windows), or the registry key
+/// (whose names are case-insensitive).
 fn identity(location: &Location) -> String {
     match location {
-        Location::File { manifest, .. } => format!("file:{}", manifest.display()),
+        Location::File { manifest, .. } => {
+            let parts: Vec<_> = manifest
+                .components()
+                .map(|c| c.as_os_str().to_string_lossy())
+                .collect();
+            format!("file:{}", parts.join("/"))
+        }
         Location::Registry { subkey, .. } => format!("key:{}", subkey.to_lowercase()),
     }
 }

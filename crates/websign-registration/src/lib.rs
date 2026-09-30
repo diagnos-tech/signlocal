@@ -129,8 +129,8 @@ pub fn run(request: &Request) -> Result<Report, RegistrationError> {
 }
 
 /// Every place to register or unregister for `request` on this OS. An
-/// uninstall of some browsers leaves out the locations that other browsers
-/// share (see [`uninstall`]).
+/// uninstall of some browsers keeps every location that a browser not being
+/// uninstalled also uses.
 pub fn plan(request: &Request) -> Result<Vec<Target>, RegistrationError> {
     let browsers = browsers::selected(&request.browsers);
     if let Some(dir) = &request.user_data_dir {
