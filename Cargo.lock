@@ -4448,6 +4448,7 @@ version = "0.1.0"
 dependencies = [
  "bp256",
  "bp384",
+ "ecdsa",
  "idna",
  "p256",
  "p384",

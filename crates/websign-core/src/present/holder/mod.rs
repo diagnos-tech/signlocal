@@ -4,43 +4,40 @@ mod title_case;
 
 pub use title_case::title_case;
 
+use super::visible::visible;
 use crate::cert::CertInfo;
 
-/// Length of the fingerprint prefix [`CertInfo::display_name`] falls back to.
-const FALLBACK_LEN: usize = 16;
+/// Hex digits of the fingerprint shown when the certificate names no one
+/// (the same prefix as [`CertInfo::display_name`]).
+const FINGERPRINT_CHARS: usize = 16;
 
-/// The name to show for `info`: [`CertInfo::display_name`] (ICP-Brasil holder
-/// without the document suffix, CN, O, or a fingerprint prefix), then, when
-/// it has letters and all of them are uppercase, [`title_case`].
+/// The name to show for `info`.
 ///
-/// Before falling back to the fingerprint, `givenName` + `surname` is tried:
-/// eIDAS personal certificates often carry no CN.
+/// The first non-blank of the ICP-Brasil holder (CN without its document
+/// suffix), the CN, `givenName` + `surname`, and the organization, without
+/// control or bidirectional formatting characters, and in [`title_case`] when
+/// it has letters and all of them are uppercase (certificate authorities
+/// often issue names in capitals; people do not write them that way).
+/// Without any (or when nothing visible is left), the fingerprint prefix,
+/// untouched.
 pub fn display_name(info: &CertInfo) -> String {
-    let name = info.display_name();
-    let name = if is_fingerprint_fallback(info, &name) {
-        given_and_surname(info).unwrap_or(name)
-    } else {
-        name
+    let Some(name) = info
+        .name_candidate()
+        .map(|name| visible(&name))
+        .filter(|name| !name.trim().is_empty())
+    else {
+        return info
+            .fingerprint
+            .to_hex()
+            .chars()
+            .take(FINGERPRINT_CHARS)
+            .collect();
     };
     if is_all_uppercase(&name) {
         title_case(&name)
     } else {
         name
     }
-}
-
-fn is_fingerprint_fallback(info: &CertInfo, name: &str) -> bool {
-    let hex = info.fingerprint.to_hex();
-    hex.get(..FALLBACK_LEN) == Some(name)
-}
-
-fn given_and_surname(info: &CertInfo) -> Option<String> {
-    fn usable(text: &Option<String>) -> Option<&str> {
-        text.as_deref().map(str::trim).filter(|t| !t.is_empty())
-    }
-    let given = usable(&info.subject.given_name)?;
-    let surname = usable(&info.subject.surname)?;
-    Some(format!("{given} {surname}"))
 }
 
 /// At least one letter, and no lowercase one.

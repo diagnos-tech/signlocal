@@ -3,9 +3,11 @@
 - `der/` — the minimal DER reader and its tests
 - `icp_brasil/` — ICP-Brasil profile: holder, CPF/CNPJ, level
 - `tests/` — unit tests of the certificate reader over synthetic DER
+- `debug.rs` — `Debug` that masks the CPF, the subject serialNumber and the CN's document suffix.
 - `extensions.rs` — The certificate extensions the summary reads.
 - `key.rs` — Public key classification and the raw key material the verifier needs.
 - `mod.rs` — Human-meaningful summary of an X.509 certificate.
+- `name_candidate.rs` — Which subject attribute names the holder: ICP holder, CN, givenName + surname, O.
 - `names.rs` — Distinguished-name extraction.
 - `oid.rs` — OBJECT IDENTIFIERs: dotted text, and the encoded form of every OID the summary recognizes.
 - `parse.rs` — Turning certificate bytes into a [`CertInfo`].

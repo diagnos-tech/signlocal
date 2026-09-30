@@ -90,19 +90,15 @@ fn decodes_bmp_strings_like_the_other_attributes() {
 }
 
 #[test]
-fn the_new_attributes_do_not_disturb_the_display_name_rules() {
-    // SPEC §6.5 is unchanged: CN, then O, then the fingerprint prefix.
+fn display_name_uses_given_name_and_surname_after_the_common_name() {
+    // SPEC §6.5: holder, CN, givenName + surname, O, fingerprint prefix.
     assert_eq!(
         info("dn-pii").display_name(),
         "JOSÉ ÂNGELO CONCEIÇÃO",
         "CN wins"
     );
-    let only = info("dn-pii-only");
-    assert_eq!(
-        only.display_name(),
-        only.fingerprint.to_hex()[..16].to_owned(),
-        "no CN or O: the core keeps using the fingerprint"
-    );
+    assert_eq!(info("dn-pii-only").display_name(), "MARIA SILVA");
+    assert_eq!(info("dn-pii-bmp").display_name(), "Bmp Person");
 }
 
 #[test]

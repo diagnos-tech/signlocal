@@ -1,8 +1,8 @@
 # websign-core — specification
 
 Pure Rust library (no operating-system calls) with the pieces every key source
-and both windows share. It is the source of truth for the tests (`tests/`, one
-file per section, over OpenSSL fixtures) and for the implementation (`src/`,
+and both windows share. It is the source of truth for the tests (`tests/`, one test
+binary per section, over OpenSSL fixtures) and for the implementation (`src/`,
 whose unit tests cover what OpenSSL cannot generate). Every behavior change
 starts here. If the spec is silent while writing a test or code, record the
 assumption as a `// SPEC:` comment for the reviewer; once reconciled, the rule
@@ -12,8 +12,9 @@ moves into this file and the comment goes away.
 contract. Private modules are free.
 
 Sections §1–§8 are **promoted from the Phase-0 kit's `probe-core`**, reviewed
-through blind TDD (391 tests, 460 k mutated inputs without panic). Sections
-marked **NEW** are to be implemented.
+through blind TDD (391 tests, 460 k mutated inputs without panic). §4.1,
+§6.1a and §9–§13 were added later by a second blind-TDD round and reconciled
+by review.
 
 General conventions:
 
@@ -119,23 +120,27 @@ INTEGER, s INTEGER }` — what macOS returns).
   curve order pass.
 - `der_to_raw(raw_to_der(x)) == x` for every `x` with non-zero `r` and `s`.
 
-### 4.1 Brainpool curves — NEW
+### 4.1 Brainpool curves
 
 - `from_oid`: `1.3.36.3.3.2.8.1.1.7` → `BrainpoolP256r1`,
   `1.3.36.3.3.2.8.1.1.11` → `BrainpoolP384r1`, `1.3.36.3.3.2.8.1.1.13` →
   `BrainpoolP512r1`. The `t1` twisted variants (`…1.1.8`, `…1.1.12`,
   `…1.1.14`) stay unknown (`None`).
 - Consequence for §6.2: certificates on these curves summarize as
-  `Ec { curve }` instead of `Unsupported`. **Update** the promoted tests that
-  list `brainpoolP256r1` as unsupported (`tests/cert_key.rs`,
-  `tests/ecdsa.rs`, `tests/verify.rs`, `tests/fixtures/README.md`).
+  `Ec { curve }` instead of `Unsupported`.
 - `der_to_raw`/`raw_to_der` work unchanged with `field_len` 32/48/64.
 - `verify` (§7): BrainpoolP256r1 and BrainpoolP384r1 verify with the `bp256`/
-  `bp384` crates (`r1::ecdsa::VerifyingKey`, prehash, FIPS 186-5 digest
+  `bp384` curves (`ecdsa::VerifyingKey`, prehash, FIPS 186-5 digest
   truncation as for NIST curves). BrainpoolP512r1 → `UnsupportedKey` (no
   maintained verifier); callers check `has_verifier()` first.
-- New fixtures: keys and certificates for the three curves, signature
-  vectors for P256r1/P384r1 from OpenSSL (`tests/fixtures/gen`).
+- Fixtures: certificates for the three `r1` curves and the three `t1`
+  curves, OpenSSL signatures for the `r1` curves × SHA-256/384/512 and the
+  six DER shapes of `ecdsa.txt` (`tests/fixtures/gen/brainpool.sh`). The
+  keys are not committed: verification needs only the certificate.
+- Error order on `BrainpoolP512r1` is §7's: digest length, then
+  `KeyMismatch`, then `UnsupportedKey`, whatever the signature bytes.
+- An off-curve point is made in tests by changing the point's last byte
+  (the chance that the result is still on the curve is about 2⁻²⁵⁶).
 
 ## 5. `fingerprint` — `Fingerprint`
 
@@ -220,12 +225,16 @@ given_name, surname, serial_number }` (all `Option<String>` but the units).
 - A single-valued attribute appearing more than once: the first **readable**
   value wins (a CN ignored by the rule above does not hide the next CN).
 
-### 6.1a New attributes — NEW
+### 6.1a Personal attributes
 
 - `given_name` (2.5.4.42), `surname` (2.5.4.4), `serial_number` (2.5.4.5),
   same string rules and first-readable-wins as CN. Absent → `None`.
 - `serial_number` is personal data: it may be read here, but only masked
   forms (§11) leave the crate's presentation layer.
+- `Debug` of `DistinguishedName` prints `serial_number` as `<redacted>` and a
+  CN's trailing `:<digits>` as `:<redacted>`; `Debug` of `IcpBrasil` prints
+  the CPF as `masked_cpf()` (or `<redacted>`). This is a safety net: nothing
+  logs a certificate summary on purpose.
 
 ### 6.2 `PublicKeyKind` and `KeyUsage`
 
@@ -313,9 +322,12 @@ statementInfo ANY OPTIONAL }`.
   `digital_signature` or `non_repudiation`). KeyUsage present without either →
   `false`. EKU is not considered: the site decides.
 - `display_name()`: `icp_brasil.holder_name`, else `subject.common_name`,
+  else `given_name + " " + surname` (each trimmed; both must be non-blank),
   else `subject.organization`, else the first 16 characters of
   `fingerprint.to_hex()`. Empty or whitespace-only candidates are skipped (a
-  CN `":123"` gives holder `""`, also skipped).
+  CN `":123"` gives holder `""`, also skipped). The person's name comes before
+  `O` (`docs/ux.md` §5.2) because a personal certificate's `O` is usually the
+  employer.
 
 ## 7. `verify` — check a raw signature
 
@@ -369,32 +381,54 @@ Keychain/CryptoTokenKit); it wins.
 
 ---
 
-## 9. `present::origin` — NEW (`docs/ux.md` §4.3, vectors §16.2)
+Sections §9–§13 are the presentation layer. The verification code of
+`docs/ux.md` §16.1 is not here: it is `websign_protocol::code`
+(re-exported by this crate) and its vectors are tested in that crate.
+
+## 9. `present::origin` (`docs/ux.md` §4.3, vectors §16.2)
 
 `format_origin(origin: &str) -> Result<FormattedOrigin, OriginError>`
 
 Input: a serialized origin as browsers produce it (`scheme://host[:port]`,
 no path, no trailing slash). Steps:
 
-1. Parse: scheme `https` or `http` (ASCII-case-insensitive); host non-empty;
-   optional port 1–65535. A path, query, fragment, userinfo, `null`, a length
-   over 512, or anything else → `Malformed`. A trailing `/` alone is accepted
-   and ignored.
-2. Hosts: lowercase; a Unicode host is converted to ASCII (IDNA/UTS 46,
-   `idna` crate); IPv6 literals in brackets are kept with brackets.
+1. Parse, in this order: a length over 512 bytes → `Malformed`; no `://`
+   (`null`, `data:…`, `about:blank`, `javascript:…`) → `Malformed`; a scheme
+   that is not `[A-Za-z][A-Za-z0-9+.-]*` → `Malformed`; a well-formed scheme
+   other than `https`/`http` (ASCII-case-insensitive: `file://`,
+   `chrome-extension://…`, `ws://`) → `Insecure`. Then the authority: a
+   trailing `/` alone is dropped; any `/ \ ? # @ %`, whitespace or control
+   character (path, query, fragment, userinfo, percent-encoding) →
+   `Malformed`; host non-empty; optional port of ASCII digits only
+   (`:+443`, `:` with nothing after it → `Malformed`) in 1–65535.
+2. Hosts: IPv6 literals in brackets (`std` syntax, no zone) are kept with
+   brackets, lowercase. Other hosts go through WHATWG "domain to ASCII"
+   (`idna::domain_to_ascii_cow` with `AsciiDenyList::URL`: UTS 46 mapping,
+   lowercase, punycode; forbidden domain code points such as `< > ^ |` →
+   `Malformed`). An empty label (`a..b`, `.a`, a trailing dot
+   `example.com.`) → `Malformed`. A host whose last label is all digits or
+   `0x` + hex ("ends in a number") must be a dotted-quad IPv4 address; other
+   IPv4 spellings (`127.1`, `0x7f.0.0.1`, `1.2.3`) → `Malformed` (browsers
+   always serialize the dotted quad).
 3. Secure context: `https` always; `http` only for `localhost`,
-   `*.localhost`, `127.0.0.0/8` and `[::1]` → else `Insecure`. Any other
-   scheme → `Insecure`.
+   `*.localhost`, `127.0.0.0/8` and `[::1]` → else `Insecure`. IPv4-mapped
+   IPv6 (`[::ffff:a.b.c.d]`) is classified here and in step 8 as the IPv4
+   address it carries.
 4. `canonical` = `scheme://ascii-host[:port]`, default ports (443 for https,
    80 for http) omitted.
 5. Split: for IP literals, `localhost` and `*.localhost`, `registrable` = the
    whole host, `prefix` = `scheme://`. Otherwise `registrable` = eTLD+1 from
    the Public Suffix List (`psl` crate, ICANN and private sections); when the
    host is itself a public suffix, `registrable` = the whole host.
-   `prefix` = `scheme://` + the labels before `registrable` + `.`.
+   `prefix` = `scheme://` + the labels before `registrable` + `.`. The list
+   is the `psl` crate's snapshot (so `app.tenant.github.io` →
+   `tenant.github.io`; `github.io` alone is shown whole).
 6. `port` = the non-default port.
-7. `unicode` = the Unicode form when any label is `xn--` (after step 2).
-8. `warning` (first that applies): IDN → `Idn`; loopback or `localhost` →
+7. `unicode` = the Unicode form of the whole host when any label is `xn--`
+   (after step 2): `xn--dignos-4nf.health` → `diаgnos.health` (Cyrillic
+   `а`, U+0430); `bücher.example.com` → `bücher.example.com`.
+8. `warning` (first that applies): IDN → `Idn` (so `http://bücher.localhost`
+   is accepted, warns `Idn` and cannot be remembered); loopback or `localhost` →
    `Localhost`; private IPv4 (10/8, 172.16/12, 192.168/16), link-local
    (169.254/16, fe80::/10), unique-local (fc00::/7) → `LocalIp`; any other IP
    literal → `PublicIp`; else `None`.
@@ -417,27 +451,36 @@ Vectors (`docs/ux.md` §16.2, extended):
 | `http://[::1]:3000` | same | `http://` | `[::1]` | 3000 | `Localhost` | yes |
 | `HTTPS://App.Example.COM` | `https://app.example.com` | `https://app.` | `example.com` | — | — | yes |
 | `http://laudos.exemplo.com` | — | — | — | — | `Err(Insecure)` | — |
-| `file://`, `chrome-extension://abc`, `data:` | — | — | — | — | `Err(Insecure)` or `Err(Malformed)` (no host) | — |
+| `file://`, `chrome-extension://abc` | — | — | — | — | `Err(Insecure)` | — |
+| `data:`, `about:blank`, `null` | — | — | — | — | `Err(Malformed)` | — |
 | `https://a.example/path` | — | — | — | — | `Err(Malformed)` | — |
 
-## 10. `present::holder` — NEW (`docs/ux.md` §5.2, vectors §16.3)
+## 10. `present::holder` (`docs/ux.md` §5.2, vectors §16.3)
 
-`display_name(info)`: take `info.display_name()` (§6.5); if no candidate was
-found (fingerprint fallback), first try `given_name + " " + surname` when both
-exist; then apply `title_case` **only** when the result has at least one
-letter and all its letters are uppercase.
+`display_name(info)`: the first non-blank candidate of §6.5 (holder, CN,
+given name + surname, O) with control characters and bidirectional formatting
+characters (U+061C, U+200E/F, U+202A–U+202E, U+2066–U+2069) removed and
+whitespace controls turned into spaces; then `title_case` **only** when it has
+at least one letter and all its letters are uppercase. Without a candidate (or
+when nothing visible is left) → the 16-character fingerprint prefix, never
+title-cased.
 
 `title_case(name)`:
 
-- Words are maximal runs of non-space characters; separators are kept exactly.
-- Each word: first character uppercase, rest lowercase (Unicode-aware:
-  `ÇÃO` → `Ção`), except:
-  - particles `da das de di do dos du e del la van von y` → all lowercase,
-    unless it is the first word;
-  - company suffixes kept as written in the input: `ME`, `EPP`, `EIRELI`,
-    `S.A.`, `S/A`; `LTDA` → `Ltda`.
-- Hyphenated parts are capitalized each (`MARIA-CLARA` → `Maria-Clara`), and
-  so is the letter after an apostrophe (`D'ÁVILA` → `D'Ávila`).
+- Words are maximal runs of non-whitespace characters; whitespace is kept
+  exactly (leading spaces too: the first word is the first non-space run).
+- Particles `da das de di do dos du e del la van von y`, matched as whole
+  words case-insensitively → all lowercase, unless it is the first word.
+  `DA-SILVA` is not a particle.
+- Company suffixes `ME`, `EPP`, `EIRELI`, `S.A.`, `S/A`, matched
+  case-insensitively → that official spelling. `LTDA` is an ordinary word
+  (`Ltda`).
+- Any other word is lowercased and the first letter of each part is
+  uppercased (Unicode-aware: `ÇÃO` → `Ção`). A part starts at the word start
+  and after any character that is neither a letter, a digit nor a combining
+  mark (U+0300–U+036F): `MARIA-CLARA` → `Maria-Clara`, `D'ÁVILA` →
+  `D'Ávila`, `R2:D2` → `R2:D2`, `A.B.` → `A.B.`, `(SP)` → `(Sp)`. Digits
+  neither take a case nor start a part: `3M` → `3M`.
 
 | CN | Result |
 |---|---|
@@ -448,27 +491,43 @@ letter and all its letters are uppercase.
 | `Marta Sofia Carvalho` | `Marta Sofia Carvalho` |
 | `JOSÉ D'ÁVILA` | `José D'Ávila` |
 
-## 11. `present::document` — NEW (`docs/ux.md` §5.5, vectors §16.4)
+## 11. `present::document` (`docs/ux.md` §5.5, vectors §16.4)
 
 `display_document(info) -> Option<DocumentLabel>`, first match:
 
-1. `icp_brasil.cpf` = `12345678909` → `Cpf { masked: "•••.456.789-••",
-   visible: "456 789" }` (digits 4–9; `•` is U+2022).
-2. `icp_brasil.cnpj` = `12345678000190` → `Cnpj { formatted:
-   "12.345.678/0001-90" }`.
-3. `subject.serial_number` with an ETSI prefix (`^[A-Z]{3}[A-Z]{2}-` such as
-   `IDCPT-`, `PNOPT-`, `IDCES-`, `TINIT-`) and at least 3 characters after
-   the dash → `National { masked: "•••••" + last 3 }`.
+1. `icp_brasil.cnpj` = `12345678000190` → `Cnpj { formatted:
+   "12.345.678/0001-90" }`. First because a certificate with a CNPJ
+   (DOC-ICP-04 `2.16.76.1.3.3`) belongs to the company; its CPF is the person
+   responsible for it (`2.16.76.1.3.4`), not the holder.
+2. `icp_brasil.cpf` = `12345678909` → `Cpf { masked: "•••.456.789-••",
+   visible: "456 789" }` (digits 4–9; `•` is U+2022). A company certificate
+   whose CNPJ is unusable falls here, with its responsible person's CPF
+   masked.
+3. `subject.serial_number` = ETSI EN 319 412-1 §5.1.3 semantics identifier of
+   a natural person: type `PAS`, `IDC`, `PNO`, `TAX` or `TIN`, two uppercase
+   ASCII letters (country), `-`, then at least 3 characters (everything after
+   the first dash, so `IDCPT-ABCDEFGH-1234` → `•••••234`) → `National {
+   masked: "•••••" + last 3 characters }`.
 4. Otherwise `None`.
+
+A CPF or CNPJ that is not exactly 11 / 14 ASCII digits (the fields are public
+and can be set by hand) is skipped: the next rule applies.
 
 The full CPF never appears in any output of this crate.
 
-## 12. `present::caller` — NEW (`docs/architecture/desktop-api.md` §6)
+## 12. `present::caller` (`docs/architecture/desktop-api.md` §6)
 
 `caller_label(caller) -> CallerLabel`:
 
-- `name` = `product_name` when non-blank (trimmed, at most 64 characters with
-  `…`), else the executable's file name.
+- `name` = `product_name` when non-blank, trimmed; over 64 characters it
+  becomes its first 63 characters, trailing whitespace removed, plus `…`
+  (64 at most, ellipsis included). Else the executable's file name as the
+  host OS splits paths (`\` is a separator only on Windows); a path with no
+  file name (`/`, `..`) is shown whole.
+- `name` and `detail` have control and bidirectional formatting characters
+  removed as in §10 (the program writes its own metadata: a U+202E in a file
+  name turns `gpj.exe` into `exe.jpg` on screen). `consent_key` uses the raw
+  values.
 - Signed: `detail` = the signer (`Authenticode.subject`, or
   `Apple.identifier` + ` (` + `team_id` + `)`), `verified = true`.
 - Unsigned: `detail` = the executable path, `verified = false`.
@@ -477,16 +536,20 @@ The full CPF never appears in any output of this crate.
 
 - Authenticode: `"app:authenticode:" + subject + ":" + file name (lowercase)`.
 - Apple: `"app:apple:" + team_id + ":" + identifier`.
-- Unsigned: `"path:" + executable path` (as given, not canonicalized here).
+- Unsigned: `"path:" + executable path` (as given, not canonicalized here;
+  a non-Unicode path uses its lossy form).
+- The three prefixes keep the families apart: an unsigned program whose path
+  spells `app:apple:…` gets `path:app:apple:…`.
 
-## 13. `present::wire::certificate_profile` — NEW
+## 13. `present::wire::certificate_profile`
 
 `certificate_profile(info, hardware) -> CertificateProfile`:
 
 - `icp_brasil`: `Some(level.to_string())` for `A1…T4`, `Some("ICP-Brasil")`
   for `Other(_)` or `None` level on an ICP-Brasil certificate, `None` otherwise.
 - `eidas`: `Some { qualified: compliance, qscd: sscd, types }` when
-  `qualified` is `Some`, mapping `ESign/ESeal/Web` → `esign/eseal/web`.
+  `qualified` is `Some`, mapping `ESign/ESeal/Web` → `esign/eseal/web` one to
+  one, keeping order and repeats (§6.4).
 - `key_storage`: `Some(true)` → `Hardware`, `Some(false)` → `Software`,
   `None` → `Unknown`.
 

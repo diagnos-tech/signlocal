@@ -18,7 +18,9 @@ const CPF_LEN: usize = 11;
 const CNPJ_LEN: usize = 14;
 
 /// ICP-Brasil data extracted from policies and SubjectAltName `otherName`s.
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+///
+/// `Debug` prints the CPF masked, so a stray `{:?}` cannot leak it.
+#[derive(Clone, Default, PartialEq, Eq)]
 pub struct IcpBrasil {
     /// From the first `2.16.76.1.2.<n>` policy.
     pub level: Option<IcpLevel>,

@@ -23,15 +23,24 @@ pub enum DocumentLabel {
     National { masked: String },
 }
 
-/// The document to show for `info`, in the order CPF, CNPJ, ETSI serial
-/// number; `None` when there is none.
+/// Semantics identifier types of a natural person (ETSI EN 319 412-1
+/// §5.1.3): passport, national identity card, personal number, tax numbers.
+const ETSI_TYPES: [&str; 5] = ["PAS", "IDC", "PNO", "TAX", "TIN"];
+
+/// The document to show for `info`, first match: CNPJ, CPF, ETSI national
+/// identifier; `None` when there is none.
+///
+/// The CNPJ comes first because a certificate that has one belongs to the
+/// company: its CPF (DOC-ICP-04 `2.16.76.1.3.4`) is the person responsible
+/// for it, not the holder. Values that are not exactly 14 / 11 ASCII digits
+/// (the fields are public and may be set by hand) are skipped.
 pub fn display_document(info: &CertInfo) -> Option<DocumentLabel> {
     let icp = info.icp_brasil.as_ref();
-    if let Some(cpf) = icp.and_then(|icp| icp.cpf.as_deref()).and_then(cpf_label) {
-        return Some(cpf);
-    }
     if let Some(formatted) = icp.and_then(|icp| icp.formatted_cnpj()) {
         return Some(DocumentLabel::Cnpj { formatted });
+    }
+    if let Some(cpf) = icp.and_then(|icp| icp.cpf.as_deref()).and_then(cpf_label) {
+        return Some(cpf);
     }
     info.subject
         .serial_number
@@ -43,18 +52,23 @@ fn cpf_label(cpf: &str) -> Option<DocumentLabel> {
     if cpf.len() != 11 || !cpf.bytes().all(|b| b.is_ascii_digit()) {
         return None;
     }
-    let (a, b) = (&cpf[3..6], &cpf[6..9]);
+    let (a, b) = (cpf.get(3..6)?, cpf.get(6..9)?);
     Some(DocumentLabel::Cpf {
         masked: format!("{DOT}{DOT}{DOT}.{a}.{b}-{DOT}{DOT}"),
         visible: format!("{a} {b}"),
     })
 }
 
-/// `^[A-Z]{3}[A-Z]{2}-` (country and type, ETSI EN 319 412-1 §5.1.3) followed
-/// by at least three characters.
+/// `<type><country>-<identifier>`: one of [`ETSI_TYPES`], two uppercase
+/// ASCII letters (ISO 3166-1), a dash and at least three characters. The
+/// identifier is everything after the first dash.
 fn national_label(serial: &str) -> Option<DocumentLabel> {
     let (prefix, number) = serial.split_once('-')?;
-    if prefix.len() != 5 || !prefix.bytes().all(|b| b.is_ascii_uppercase()) {
+    let (kind, country) = (prefix.get(..3)?, prefix.get(3..)?);
+    if !ETSI_TYPES.contains(&kind)
+        || country.len() != 2
+        || !country.bytes().all(|b| b.is_ascii_uppercase())
+    {
         return None;
     }
     let count = number.chars().count();

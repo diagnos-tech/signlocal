@@ -4,10 +4,12 @@
 //! a certificate the way a doctor recognizes it — holder name, ICP-Brasil
 //! level, eIDAS qualification, validity — without platform APIs.
 
+mod debug;
 mod der;
 mod extensions;
 mod icp_brasil;
 mod key;
+mod name_candidate;
 mod names;
 mod oid;
 mod parse;
@@ -32,6 +34,9 @@ use crate::ecdsa::Curve;
 use crate::fingerprint::Fingerprint;
 
 /// Summary of one certificate. See `SPEC.md` §6 for every field's rule.
+///
+/// `Debug` is derived, but the personal identifiers inside it (CPF, subject
+/// `serialNumber`) print masked: see `debug.rs`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CertInfo {
     pub fingerprint: Fingerprint,
@@ -81,26 +86,12 @@ impl CertInfo {
                 .is_none_or(|usage| usage.digital_signature || usage.non_repudiation)
     }
 
-    /// The name a person recognizes: ICP-Brasil holder, CN, O, or a
-    /// fingerprint prefix as the last resort. Blank candidates are skipped so
-    /// the confirmation window never shows an empty name.
+    /// The name a person recognizes: [`CertInfo::name_candidate`], or a
+    /// fingerprint prefix as the last resort, so the confirmation window never
+    /// shows an empty name.
     pub fn display_name(&self) -> String {
-        let holder = self
-            .icp_brasil
-            .as_ref()
-            .and_then(|icp| icp.holder_name.as_deref());
-        [
-            holder,
-            self.subject.common_name.as_deref(),
-            self.subject.organization.as_deref(),
-        ]
-        .into_iter()
-        .flatten()
-        .find(|name| !name.trim().is_empty())
-        .map_or_else(
-            || self.fingerprint.to_hex().chars().take(16).collect(),
-            str::to_owned,
-        )
+        self.name_candidate()
+            .unwrap_or_else(|| self.fingerprint.to_hex().chars().take(16).collect())
     }
 }
 
@@ -117,7 +108,9 @@ fn malformed(what: &str, detail: impl Display) -> CertError {
 }
 
 /// The distinguished-name attributes the UI shows.
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+///
+/// `Debug` masks `serial_number` (a national identifier).
+#[derive(Clone, Default, PartialEq, Eq)]
 pub struct DistinguishedName {
     pub common_name: Option<String>,
     pub organization: Option<String>,

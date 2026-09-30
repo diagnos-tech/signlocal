@@ -7,3 +7,4 @@
 - `document.rs` — The holder's document number, masked (`docs/ux.md` §5.5, vectors §16.4).
 - `mod.rs` — Text rules the confirmation window, the diagnostics window and the site all rely on: how an origin, a holder name, a document number and a desktop caller are shown (`docs/ux.md` §4.3, §5.2, §5.5, §16).
 - `wire.rs` — Conversions between core types and the wire types of `websign-protocol`.
+- `visible.rs` — Removing control and bidirectional formatting characters from displayed names.

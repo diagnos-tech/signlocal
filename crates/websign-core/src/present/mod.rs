@@ -11,5 +11,7 @@ pub mod holder;
 pub mod origin;
 pub mod wire;
 
+mod visible;
+
 #[cfg(test)]
 mod tests;

@@ -2,9 +2,14 @@
 
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
+use idna::AsciiDenyList;
+
 use super::{OriginError, OriginWarning};
 
 /// A validated host in its canonical (lowercase, ASCII) spelling.
+///
+/// IPv4-mapped IPv6 literals (`[::ffff:127.0.0.1]`) are classified as the
+/// IPv4 address they carry, and keep their IPv6 spelling.
 #[derive(Debug)]
 pub(super) enum Host {
     Ip(IpAddr),
@@ -24,17 +29,20 @@ impl Host {
         if text.is_empty() {
             return Err(OriginError::Malformed);
         }
-        if text.chars().all(|c| c.is_ascii_digit() || c == '.') {
-            let ip = text
+        let ascii = idna::domain_to_ascii_cow(text.as_bytes(), AsciiDenyList::URL)
+            .map_err(|_| OriginError::Malformed)?;
+        if ascii.split('.').any(str::is_empty) {
+            return Err(OriginError::Malformed);
+        }
+        if ends_in_a_number(&ascii) {
+            // Browsers serialize every IPv4 host as a dotted quad, so the
+            // other WHATWG spellings (`127.1`, `0x7f.0.0.1`) are refused.
+            let ip = ascii
                 .parse::<Ipv4Addr>()
                 .map_err(|_| OriginError::Malformed)?;
             return Ok(Self::Ip(IpAddr::V4(ip)));
         }
-        let ascii = idna::domain_to_ascii(text).map_err(|_| OriginError::Malformed)?;
-        if ascii.split('.').any(str::is_empty) {
-            return Err(OriginError::Malformed);
-        }
-        Ok(Self::Name(ascii))
+        Ok(Self::Name(ascii.into_owned()))
     }
 
     /// The host as it appears in the canonical origin.
@@ -49,7 +57,7 @@ impl Host {
     /// Whether plain `http` is acceptable: the host cannot leave the machine.
     pub(super) fn is_loopback(&self) -> bool {
         match self {
-            Self::Ip(ip) => ip.is_loopback(),
+            Self::Ip(ip) => ip.to_canonical().is_loopback(),
             Self::Name(name) => is_localhost(name),
         }
     }
@@ -83,10 +91,21 @@ impl Host {
             return Some(OriginWarning::Localhost);
         }
         match self {
-            Self::Ip(ip) if is_local(ip) => Some(OriginWarning::LocalIp),
+            Self::Ip(ip) if is_local(&ip.to_canonical()) => Some(OriginWarning::LocalIp),
             Self::Ip(_) => Some(OriginWarning::PublicIp),
             Self::Name(_) => None,
         }
+    }
+}
+
+/// The WHATWG URL "ends in a number" check: a host whose last label is all
+/// digits, or `0x` and hex digits, is an IPv4 address, never a name.
+fn ends_in_a_number(host: &str) -> bool {
+    let last = host.rsplit('.').next().unwrap_or(host);
+    let hex = last.strip_prefix("0x").or_else(|| last.strip_prefix("0X"));
+    match hex {
+        Some(digits) => digits.bytes().all(|b| b.is_ascii_hexdigit()),
+        None => !last.is_empty() && last.bytes().all(|b| b.is_ascii_digit()),
     }
 }
 

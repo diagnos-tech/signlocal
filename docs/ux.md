@@ -1578,6 +1578,10 @@ local time zone. Output strings are shown in the `en` locale.
 | `https://203.0.113.7` | `203.0.113.7` | `https://` | `ip` | no |
 | `http://localhost:5173` | `localhost` | `http://`, `:5173` | `localhost` | yes |
 | `http://laudos.exemplo.com` | n/a | n/a | blocked (`InsecureOrigin`) | n/a |
+| `ftp://files.exemplo.com` | n/a | n/a | blocked (`InsecureOrigin`) | n/a |
+| `null`, `data:…`, `about:blank` | n/a | n/a | refused (malformed) | n/a |
+| `https://exa<mple.com`, `https://host:`, `https://host.com.` | n/a | n/a | refused (malformed) | n/a |
+| `https://127.1`, `https://0x7f.0.0.1` | n/a | n/a | refused (malformed; browsers never send these) | n/a |
 
 ### 16.3 Holder name (`display_name`)
 

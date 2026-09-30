@@ -8,11 +8,7 @@ fn national(serial: &str) -> Option<DocumentLabel> {
 
 #[test]
 fn cpf_is_masked_and_readable_aloud() {
-    let info = icp_info(
-        "ANA:12345678909",
-        Some("12345678909"),
-        Some("12345678000190"),
-    );
+    let info = icp_info("ANA:12345678909", Some("12345678909"), None);
     assert_eq!(
         display_document(&info),
         Some(DocumentLabel::Cpf {
@@ -23,14 +19,14 @@ fn cpf_is_masked_and_readable_aloud() {
 }
 
 #[test]
-fn cnpj_is_shown_in_full_when_there_is_no_cpf() {
-    let info = icp_info("CLINICA", None, Some("12345678000190"));
-    assert_eq!(
-        display_document(&info),
-        Some(DocumentLabel::Cnpj {
-            formatted: "12.345.678/0001-90".into()
-        })
-    );
+fn a_company_shows_its_cnpj_in_full_even_with_a_cpf() {
+    let cnpj = Some(DocumentLabel::Cnpj {
+        formatted: "12.345.678/0001-90".into(),
+    });
+    let company = icp_info("CLINICA", None, Some("12345678000190"));
+    assert_eq!(display_document(&company), cnpj);
+    let with_officer = icp_info("CLINICA", Some("12345678909"), Some("12345678000190"));
+    assert_eq!(display_document(&with_officer), cnpj);
 }
 
 #[test]
@@ -58,6 +54,7 @@ fn other_serial_numbers_and_certificates_show_nothing() {
         "IDC-12345",
         "12345123",
         "IDCPTX-12345",
+        "ABCPT-12345",
         "-12345",
     ] {
         assert_eq!(national(serial), None, "{serial}");

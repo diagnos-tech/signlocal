@@ -6,6 +6,8 @@
 
 use std::path::PathBuf;
 
+use super::visible::visible;
+
 /// A calling program, as the platform layer identified it.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DesktopCaller {
@@ -38,17 +40,30 @@ pub struct CallerLabel {
     pub verified: bool,
 }
 
-/// Longest product name shown, ellipsis included.
+/// Longest product name shown, ellipsis included: the window has room for
+/// one line of it, and a caller must not push the signer out of view.
 const MAX_NAME_CHARS: usize = 64;
 
 /// The label to show for `caller`.
+///
+/// Every text comes from the calling program's own metadata, so control and
+/// bidirectional formatting characters are removed before it is shown.
 pub fn caller_label(caller: &DesktopCaller) -> CallerLabel {
+    let label = raw_label(caller);
+    CallerLabel {
+        name: visible(&label.name),
+        detail: visible(&label.detail),
+        verified: label.verified,
+    }
+}
+
+fn raw_label(caller: &DesktopCaller) -> CallerLabel {
     let name = caller
         .product_name
         .as_deref()
-        .map(str::trim)
+        .map(|name| visible(name).trim().to_owned())
         .filter(|name| !name.is_empty())
-        .map_or_else(|| file_name(caller), shorten);
+        .map_or_else(|| file_name(caller), |name| shorten(&name));
     match &caller.signer {
         Some(CodeSigner::Authenticode { subject }) => CallerLabel {
             name,
@@ -74,6 +89,12 @@ pub fn caller_label(caller: &DesktopCaller) -> CallerLabel {
 /// The key consent is remembered under: `"app:<signer>"` for signed
 /// programs (survives updates that move the binary), `"path:<executable>"`
 /// otherwise.
+///
+/// The three prefixes keep the families apart: an unsigned program at a path
+/// that spells a signed key still gets a `path:` key. A path that is not
+/// valid Unicode is keyed by its lossy form; the platform layer reports
+/// absolute, real paths, and two such paths differing only in invalid bytes
+/// are not a practical way to borrow another program's consent.
 pub fn consent_key(caller: &DesktopCaller) -> String {
     match &caller.signer {
         Some(CodeSigner::Authenticode { subject }) => {
@@ -90,6 +111,8 @@ pub fn consent_key(caller: &DesktopCaller) -> String {
     }
 }
 
+/// The last path component, split the way the host OS splits paths; the
+/// whole path when there is none (`/`, `..`, empty).
 fn file_name(caller: &DesktopCaller) -> String {
     caller
         .executable
@@ -99,6 +122,8 @@ fn file_name(caller: &DesktopCaller) -> String {
         .into_owned()
 }
 
+/// `name` when it fits [`MAX_NAME_CHARS`]; else its first 63 characters,
+/// trailing whitespace removed, and `…`.
 fn shorten(name: &str) -> String {
     if name.chars().count() <= MAX_NAME_CHARS {
         return name.to_owned();
