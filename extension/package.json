@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit -p .",
     "test": "vitest run",
     "zip:store": "WEBSIGN_CHANNEL=store wxt zip -b chrome && WEBSIGN_CHANNEL=store wxt zip -b edge && WEBSIGN_CHANNEL=store wxt zip -b firefox --mv3",
-    "size": "bun scripts/size.ts"
+    "size": "bun scripts/size.ts",
+    "screenshots": "bun scripts/screenshots.ts"
   },
   "devDependencies": {
     "happy-dom": "20.14.5",

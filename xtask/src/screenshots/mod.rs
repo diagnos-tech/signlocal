@@ -127,12 +127,22 @@ fn write_root_summary(root: &Path) -> Result<(), String> {
     );
     for (name, is_dir) in list_dir(&folder)? {
         if is_dir {
-            text.push_str(&format!(
-                "- `{name}/` — every window state on {name}, light and dark\n"
-            ));
+            text.push_str(&format!("- `{name}/` — {}\n", folder_description(&name)));
         }
     }
     write_text(&folder.join("SUMMARY.md"), &text)
+}
+
+/// Folders named after an OS hold window screenshots; `popup/` (written by
+/// the extension's `bun run screenshots`) holds popup states and locales.
+fn folder_description(name: &str) -> String {
+    match name {
+        "popup" => {
+            "every extension popup state, light and dark, and the missing state in 7 locales"
+                .to_owned()
+        }
+        os => format!("every window state on {os}, light and dark"),
+    }
 }
 
 #[cfg(test)]

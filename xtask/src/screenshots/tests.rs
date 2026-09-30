@@ -83,3 +83,18 @@ fn bad_input_is_refused_with_a_reason() {
             .contains("another folder")
     );
 }
+
+#[test]
+fn the_root_summary_describes_popup_as_popup_states_not_an_os() {
+    let repo = TempDir::new();
+    std::fs::create_dir_all(repo.path().join("docs/screenshots/popup")).unwrap();
+    let from = TempDir::new();
+    png_bytes(&from, "a-x-light.png");
+    publish(repo.path(), from.path(), "macos").unwrap();
+
+    let root = std::fs::read_to_string(repo.path().join("docs/screenshots/SUMMARY.md")).unwrap();
+    assert!(root.contains(
+        "- `popup/` — every extension popup state, light and dark, and the missing state in 7 locales\n"
+    ));
+    assert!(root.contains("- `macos/` — every window state on macos, light and dark\n"));
+}

@@ -11,6 +11,14 @@ const CHROMIUM = ["chrome", "edge"];
 const ALL = [...CHROMIUM, "firefox", "safari"];
 
 describe("manifestFor", () => {
+  it.each(ALL)("%s declares its toolbar and store icons", (browser) => {
+    const manifest = manifestFor({ browser, mode: "production", channel: "direct" });
+    expect(Object.keys(manifest.icons as object)).toEqual(["16", "32", "48", "96", "128"]);
+    const toolbar = (manifest.action as { default_icon: Record<string, string> }).default_icon;
+    const expected = browser === "safari" ? ["16", "32"] : ["16", "19", "32", "38"];
+    expect(Object.keys(toolbar)).toEqual(expected);
+  });
+
   it.each(ALL)("%s asks for nativeMessaging only and no host permissions", (browser) => {
     for (const channel of ["direct", "store"] as const) {
       const manifest = manifestFor({ browser, mode: "production", channel });

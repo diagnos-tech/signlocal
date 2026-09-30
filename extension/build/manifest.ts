@@ -43,6 +43,23 @@ function isChromium(browser: string): boolean {
   return browser !== "firefox" && browser !== "safari";
 }
 
+/** Store and management-page icons; the same art for every browser. */
+const ICONS = Object.fromEntries(
+  [16, 32, 48, 96, 128].map((size) => [size, `icons/icon-${size}.png`]),
+);
+
+/**
+ * Toolbar icons: 16/19/32/38 px are the sizes Chromium and Firefox pick from
+ * at 1x and 2x (19 and 38 are Chrome's legacy sizes). Safari draws toolbar
+ * icons as monochrome templates, so it gets the black-on-transparent set.
+ */
+function toolbarIcons(browser: string): Record<string, string> {
+  if (browser === "safari") {
+    return { 16: "icons/template-16.png", 32: "icons/template-32.png" };
+  }
+  return Object.fromEntries([16, 19, 32, 38].map((size) => [size, `icons/icon-${size}.png`]));
+}
+
 /** Manifest fields for `target`, merged by WXT over what it derives itself. */
 export function manifestFor(target: Target): Record<string, unknown> {
   const { browser, mode, channel } = target;
@@ -53,6 +70,8 @@ export function manifestFor(target: Target): Record<string, unknown> {
     default_locale: "en",
     permissions: ["nativeMessaging"],
     minimum_chrome_version: "121",
+    icons: ICONS,
+    action: { default_icon: toolbarIcons(browser) },
     ...(pinId ? { key: DEV_KEY } : {}),
     ...(mode === "development"
       ? {}
