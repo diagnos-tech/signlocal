@@ -1,0 +1,157 @@
+# Spike: can the real app window be rendered and screenshotted on every OS?
+# Runs the window path (auto / wgpu / glow) and the headless egui_kittest path
+# on each target, records results without failing on a single approach, and
+# uploads every PNG as `ui-spike-<os>`. Manual only.
+name: ui-spike
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: "1"
+  KIT: docs/prototypes/kit
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: docs/prototypes/kit
+      - name: Build
+        timeout-minutes: 25
+        run: cd "$KIT" && cargo build -p ui-probe --release --tests
+      - name: Run approaches
+        timeout-minutes: 10
+        run: bash "$KIT/ui-probe/ci/run-spike.sh" windows
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-spike-windows
+          path: ui-spike-out/
+          if-no-files-found: warn
+
+  macos:
+    runs-on: macos-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: docs/prototypes/kit
+      - name: Build
+        timeout-minutes: 25
+        run: cd "$KIT" && cargo build -p ui-probe --release --tests
+      - name: Run approaches
+        timeout-minutes: 10
+        run: bash "$KIT/ui-probe/ci/run-spike.sh" macos
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-spike-macos
+          path: ui-spike-out/
+          if-no-files-found: warn
+
+  ubuntu:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install Xvfb and mesa software drivers
+        timeout-minutes: 5
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xvfb xauth mesa-vulkan-drivers \
+            libgl1-mesa-dri libegl1 libxkbcommon-x11-0 libx11-xcb1 libxcb-xfixes0
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: docs/prototypes/kit
+      - name: Build
+        timeout-minutes: 25
+        run: cd "$KIT" && cargo build -p ui-probe --release --tests
+      - name: Run approaches
+        timeout-minutes: 10
+        run: xvfb-run -a -s "-screen 0 1280x800x24" bash "$KIT/ui-probe/ci/run-spike.sh" ubuntu-24.04
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-spike-ubuntu-24.04
+          path: ui-spike-out/
+          if-no-files-found: warn
+
+  container:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ["debian:12", "fedora:42", "rockylinux:9", "archlinux:latest"]
+    container:
+      image: ${{ matrix.image }}
+    steps:
+      # Node is needed by the JavaScript actions inside the container, and
+      # git/tar/gzip by checkout and the cache.
+      - name: Install base packages and drivers
+        timeout-minutes: 15
+        shell: sh
+        run: |
+          case "${{ matrix.image }}" in
+            debian:*)
+              apt-get update
+              apt-get install -y --no-install-recommends ca-certificates curl git gcc g++ make pkg-config \
+                nodejs xvfb xauth mesa-vulkan-drivers libgl1-mesa-dri libegl1 libxkbcommon-x11-0 \
+                libx11-xcb1 libxcb-xfixes0 libwayland-client0 libxkbcommon0
+              ;;
+            fedora:*)
+              dnf install -y --setopt=install_weak_deps=False ca-certificates curl git gcc gcc-c++ make \
+                pkgconf-pkg-config tar gzip nodejs xorg-x11-server-Xvfb xorg-x11-xauth mesa-vulkan-drivers \
+                mesa-dri-drivers mesa-libEGL libxkbcommon-x11 libxcb libwayland-client
+              ;;
+            rockylinux:*)
+              dnf install -y epel-release
+              dnf install -y --allowerasing ca-certificates curl git gcc gcc-c++ make pkgconf-pkg-config \
+                tar gzip nodejs xorg-x11-server-Xvfb xorg-x11-xauth mesa-vulkan-drivers mesa-dri-drivers \
+                mesa-libEGL libxkbcommon-x11 libxcb libwayland-client
+              ;;
+            archlinux:*)
+              pacman -Syu --noconfirm --needed base-devel ca-certificates curl git nodejs xorg-server-xvfb \
+                xorg-xauth vulkan-swrast mesa libxkbcommon-x11 libxcb wayland
+              ;;
+          esac
+      - uses: actions/checkout@v5
+      - name: Install Rust via rustup
+        timeout-minutes: 5
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+      - name: Build
+        timeout-minutes: 30
+        run: cd "$KIT" && cargo build -p ui-probe --release --tests
+      - name: Run approaches
+        timeout-minutes: 10
+        run: |
+          xvfb-run -a -s "-screen 0 1280x800x24" bash "$KIT/ui-probe/ci/run-spike.sh" \
+            "$(echo '${{ matrix.image }}' | tr ':' '-')"
+      - name: Artifact name
+        id: art
+        if: always()
+        shell: sh
+        run: echo "name=$(echo '${{ matrix.image }}' | tr ':' '-' | sed 's/-latest//')" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-spike-${{ steps.art.outputs.name }}
+          path: ui-spike-out/
+          if-no-files-found: warn
