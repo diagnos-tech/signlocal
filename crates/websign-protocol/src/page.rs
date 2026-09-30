@@ -26,7 +26,12 @@ pub const EXTENSION_SOURCE: &str = "websign-extension";
 
 /// SDK → content script.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(tag = "kind", rename_all = "camelCase")]
+#[serde(
+    remote = "Self",
+    tag = "kind",
+    rename_all = "camelCase",
+    deny_unknown_fields
+)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
 pub enum PageToExtension {
     /// Asks the content script to announce itself again (the SDK may load
@@ -43,24 +48,36 @@ pub enum PageToExtension {
 
 /// What a page may ask.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(tag = "type")]
+#[serde(remote = "Self", tag = "type", deny_unknown_fields)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
 pub enum PageRequest {
     #[serde(rename = "status")]
     Status {},
     #[serde(rename = "choose")]
     Choose {
-        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::strict::present",
+            skip_serializing_if = "Option::is_none"
+        )]
         #[cfg_attr(feature = "typescript", ts(optional))]
         filter: Option<CertificateFilter>,
     },
     #[serde(rename = "sign.begin", rename_all = "camelCase")]
     SignBegin {
         hash: HashName,
-        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::strict::present",
+            skip_serializing_if = "Option::is_none"
+        )]
         #[cfg_attr(feature = "typescript", ts(optional))]
         algorithms: Option<Vec<SignatureAlgorithmName>>,
-        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[serde(
+            default,
+            deserialize_with = "crate::strict::present",
+            skip_serializing_if = "Option::is_none"
+        )]
         #[cfg_attr(feature = "typescript", ts(optional))]
         certificate: Option<FingerprintHex>,
     },
@@ -72,7 +89,12 @@ pub enum PageRequest {
 
 /// Content script → SDK.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(tag = "kind", rename_all = "camelCase")]
+#[serde(
+    remote = "Self",
+    tag = "kind",
+    rename_all = "camelCase",
+    deny_unknown_fields
+)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
 pub enum ExtensionToPage {
     /// Posted at `document_start`, on `load`, and in answer to `discover`.
@@ -92,7 +114,7 @@ pub enum ExtensionToPage {
 
 /// The extension build.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(remote = "Self", rename_all = "camelCase", deny_unknown_fields)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
 pub struct ExtensionInfo {
     pub version: String,
@@ -102,7 +124,7 @@ pub struct ExtensionInfo {
 
 /// What the page receives.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(tag = "type")]
+#[serde(remote = "Self", tag = "type", deny_unknown_fields)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
 pub enum PageReply {
     #[serde(rename = "status")]
@@ -119,15 +141,28 @@ pub enum PageReply {
 
 /// `status()` as the extension answers it: its own facts plus the app's.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(remote = "Self", rename_all = "camelCase", deny_unknown_fields)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
 pub struct PageStatus {
     pub extension: ExtensionInfo,
     /// Absent when the app is missing or did not answer.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::strict::present",
+        skip_serializing_if = "Option::is_none"
+    )]
     #[cfg_attr(feature = "typescript", ts(optional))]
     pub app: Option<AppInfo>,
     /// The app is older than the extension's `MIN_APP_VERSION`.
     pub app_outdated: bool,
     pub remembered: bool,
 }
+
+crate::strict::object_serde!(
+    PageToExtension,
+    PageRequest,
+    ExtensionToPage,
+    ExtensionInfo,
+    PageReply,
+    PageStatus
+);

@@ -19,7 +19,8 @@ export type Certificate = {
 der: Base64Bytes, 
 /**
  * Issuer certificates, leaf excluded, nearest first; best effort (OS
- * chain engine or certificates on the token). May be empty.
+ * chain engine or certificates on the token). May be empty; at most 8
+ * (`MAX_CHAIN_LEN`).
  */
 chain: Array<Base64Bytes>, fingerprint: FingerprintHex, 
 /**

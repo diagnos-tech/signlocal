@@ -9,10 +9,11 @@ use std::time::Duration;
 /// Longest request id, in bytes.
 pub const MAX_REQUEST_ID_LEN: usize = 64;
 
-/// Longest origin string accepted in a [`crate::types::WebContext`].
+/// Longest origin string accepted in a [`crate::types::WebContext`], in bytes.
 pub const MAX_ORIGIN_LEN: usize = 512;
 
-/// Longest free-text field a client may send (client name, version strings).
+/// Longest free-text field a client may send (client name, version strings),
+/// in UTF-8 bytes.
 pub const MAX_SHORT_TEXT_LEN: usize = 64;
 
 /// Largest frame the app reads. Every request is tiny; the cap bounds the

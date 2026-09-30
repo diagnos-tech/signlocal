@@ -8,7 +8,7 @@ import type { HelloReason } from "./HelloReason";
  */
 export type BrowserInfo = { name: BrowserName, 
 /**
- * Major.minor as the browser reports it; at most 64 characters.
+ * Major.minor as the browser reports it; at most 64 bytes.
  */
 version: string, 
 /**

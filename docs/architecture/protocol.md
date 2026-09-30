@@ -55,12 +55,16 @@ Every message is a flat JSON object:
 | `v` | Protocol version of this message's schema (§3). Integer ≥ 1. |
 | `id` | 1–64 characters from `[A-Za-z0-9._:-]`. Chosen by the client, unique among the requests it has open on this connection. Replies and continuations carry the id of the request they belong to. |
 | `type` | One of the catalog's types (§4). Unknown → `InvalidRequest`. |
-| everything else | The type's fields, camelCase. **Unknown fields are refused** (`InvalidRequest`). |
+| everything else | The type's fields, camelCase. **Unknown fields are refused** (`InvalidRequest`). Optional fields are omitted, never `null`. |
 
 Parsing is strict (`websign_protocol::parse_client_message`): a hostile page
 must not be able to smuggle data through fields the app ignores today and
-reads tomorrow. When a frame is malformed but has a readable `id`, the error
-reply goes to that id; without one, the app logs and closes the connection.
+reads tomorrow. Every message has exactly one spelling: a repeated object key,
+`null` for an absent field, an array where an object belongs, or `1.0` for an
+integer is refused, so the extension and the app can never read the same bytes
+differently (`crates/websign-protocol/SPEC.md` §1). When a frame is malformed
+but has a readable `id`, the error reply goes to that id; without one, the app
+logs and closes the connection.
 
 ## 3. Versioning and negotiation
 
@@ -69,7 +73,9 @@ reply goes to that id; without one, the app logs and closes the connection.
 - Each party supports a contiguous range `{min, max}`. The app keeps old
   versions parseable for at least 12 months after the next one ships.
 - `hello` is the first message of every connection. Any other first message →
-  `InvalidRequest`, then the connection closes.
+  `InvalidRequest`, then the connection closes. A second `hello` →
+  `InvalidRequest`; the connection stays open. The client's `hello` has `v`
+  within its own `protocols`; the app's reply has `v` equal to `protocol`.
 - Negotiation (`websign_protocol::negotiate`): the highest version in both
   ranges. `client.max < app.min` → `ClientOutdated` (reported to pages as
   `ExtensionOutdated`); `app.max < client.min` → `AppOutdated`.
@@ -97,9 +103,9 @@ reply of its own. *Event* = non-final message from the app.
 | `hello` | ← | final | `app` (`AppInfo`), `protocol` | — |
 | `status` | → | request | `web?` | `status` |
 | `status` | ← | final | `app`, `remembered` | — |
-| `choose` | → | request | `web?`, `filter? {algorithms?}` | `choose.result` |
+| `choose` | → | request | `web?`, `filter? {algorithms?}` (non-empty) | `choose.result` |
 | `choose.result` | ← | final | `certificates` (≥ 1) | — |
-| `sign.begin` | → | request | `web?`, `hash`, `algorithms?`, `certificate?` (fingerprint) | `sign.result` |
+| `sign.begin` | → | request | `web?`, `hash`, `algorithms?` (non-empty), `certificate?` (fingerprint) | `sign.result` |
 | `sign.need_digest` | ← | event | `seq`, `certificate`, `hash`, `algorithm` | — |
 | `sign.digest` | → | continuation | `seq`, `digest` (Base64) | — |
 | `sign.result` | ← | final | `certificate`, `hash`, `algorithm`, `signature` (Base64) | — |
@@ -296,14 +302,17 @@ with the SDK's `WebSignError.code` and `docs/ux.md` §15:
 
 ## 8. Limits and timeouts
 
-All in `websign_protocol::limits`:
+All in `websign_protocol::limits`. Size limits a single frame decides
+(origin, `hello` texts, chain) are enforced by the parser; the others by the
+app or the extension:
 
 | Limit | Value | Why |
 |---|---|---|
 | Incoming frame | 1 MiB | every request is tiny; bounds allocation |
 | Outgoing frame | 1 MiB | Chrome/Firefox drop hosts that exceed it; an oversized reply becomes `Internal` |
 | Request id | 64 chars | safe to log and echo |
-| Origin | 512 chars | real origins are short |
+| Origin | 512 bytes | real origins are short |
+| Client name / versions in `hello` | 64 bytes | informational only |
 | Open requests per connection | 16 | bounds memory per peer |
 | Queue | 10 waiting | `docs/ux.md` §4.11 |
 | `hello` | 5 s after start | a process nobody talks to exits |

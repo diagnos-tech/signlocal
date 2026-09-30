@@ -26,7 +26,7 @@ use crate::error::WireError;
 
 /// Client → app.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(tag = "type")]
+#[serde(remote = "Self", tag = "type", deny_unknown_fields)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
 pub enum ClientMessage {
     #[serde(rename = "hello")]
@@ -47,7 +47,7 @@ pub enum ClientMessage {
 
 /// App → client.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(tag = "type")]
+#[serde(remote = "Self", tag = "type", deny_unknown_fields)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
 pub enum AppMessage {
     #[serde(rename = "hello")]
@@ -95,3 +95,5 @@ impl AppMessage {
         !matches!(self, AppMessage::NeedDigest(_))
     }
 }
+
+crate::strict::object_serde!(ClientMessage, AppMessage);

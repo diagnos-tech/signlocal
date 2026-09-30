@@ -1,5 +1,6 @@
 # crates/websign-protocol/src
 
+- `envelope/` — the strict frame parser, its helpers and its tests
 - `framing/` — tests of the framing
 - `messages/` — the message catalog
 - `types/` — value types messages are made of
@@ -12,4 +13,5 @@
 - `lib.rs` — The WebeSign wire contract, shared by every party that talks to the app.
 - `limits.rs` — Every size and time limit of the protocol, in one place.
 - `page.rs` — Page ↔ extension messages (`window.postMessage`).
+- `strict.rs` — Serde glue that makes the derived impls as strict as the protocol: objects only, no `null`.
 - `version.rs` — Protocol versions and their negotiation.

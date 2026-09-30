@@ -7,6 +7,6 @@ import type { SignatureAlgorithmName } from "./SignatureAlgorithmName";
  */
 export type CertificateFilter = { 
 /**
- * Only keys that can produce one of these. Absent = any.
+ * Only keys that can produce one of these. Absent = any; never empty.
  */
 algorithms?: Array<SignatureAlgorithmName>, };

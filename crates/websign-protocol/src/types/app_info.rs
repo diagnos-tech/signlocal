@@ -6,7 +6,7 @@ use crate::version::ProtocolRange;
 
 /// The app build that answered.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(remote = "Self", rename_all = "camelCase", deny_unknown_fields)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
 pub struct AppInfo {
     /// Semantic version, e.g. `"1.4.0"`.
@@ -39,3 +39,5 @@ pub enum Channel {
     /// Microsoft Store (MSIX) or Mac App Store.
     Store,
 }
+
+crate::strict::object_serde!(AppInfo);

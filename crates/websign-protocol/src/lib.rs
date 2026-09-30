@@ -29,6 +29,7 @@ pub mod id;
 pub mod limits;
 pub mod messages;
 pub mod page;
+mod strict;
 pub mod types;
 pub mod version;
 

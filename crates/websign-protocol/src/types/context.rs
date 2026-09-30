@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 /// messaging; refused on `websign connect`, where the app identifies the
 /// calling program itself.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(remote = "Self", rename_all = "camelCase", deny_unknown_fields)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
 pub struct WebContext {
     /// Serialized origin of the frame that called the SDK
@@ -23,24 +23,24 @@ pub struct WebContext {
 /// The calling program, as a client library describes itself in `hello`.
 /// Informational (logs, diagnostics); the app never trusts it for decisions.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(remote = "Self", rename_all = "camelCase", deny_unknown_fields)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
 pub struct ClientInfo {
     /// `"websign-extension"`, `"@websign/desktop"`, `"websign-client"`, or a
-    /// program's own name; at most 64 characters.
+    /// program's own name; at most 64 bytes.
     pub name: String,
-    /// The client's version; at most 64 characters.
+    /// The client's version; at most 64 bytes.
     pub version: String,
 }
 
 /// The browser hosting the extension. Sent once per connection in `hello`,
 /// so the window can say "via Chrome" and diagnostics can list connections.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(remote = "Self", rename_all = "camelCase", deny_unknown_fields)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
 pub struct BrowserInfo {
     pub name: BrowserName,
-    /// Major.minor as the browser reports it; at most 64 characters.
+    /// Major.minor as the browser reports it; at most 64 bytes.
     pub version: String,
     /// Why the extension connected (diagnostics only).
     pub reason: HelloReason,
@@ -76,3 +76,5 @@ pub enum HelloReason {
     /// The toolbar popup opened.
     Popup,
 }
+
+crate::strict::object_serde!(WebContext, ClientInfo, BrowserInfo);

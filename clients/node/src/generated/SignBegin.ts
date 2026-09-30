@@ -17,7 +17,7 @@ hash: HashName,
 /**
  * Acceptable algorithms, preferred first. Absent =
  * [`SignatureAlgorithmName::DEFAULT_PREFERENCE`]. Certificates whose key
- * can do none of them are shown disabled.
+ * can do none of them are shown disabled. Never empty.
  */
 algorithms?: Array<SignatureAlgorithmName>, 
 /**

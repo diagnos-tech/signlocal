@@ -59,33 +59,49 @@ pub enum ErrorCode {
 
 /// An error reply.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(remote = "Self", rename_all = "camelCase", deny_unknown_fields)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
 pub struct WireError {
     pub code: ErrorCode,
     /// For developers, in English. Never shown to end users and never contains
     /// personal data (names, document numbers, digests, PINs).
     pub message: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::strict::present",
+        skip_serializing_if = "Option::is_none"
+    )]
     #[cfg_attr(feature = "typescript", ts(optional))]
     pub details: Option<ErrorDetails>,
 }
 
 /// Machine-readable context for some codes.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(remote = "Self", rename_all = "camelCase", deny_unknown_fields)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
 pub struct ErrorDetails {
     /// `AppOutdated`/`ExtensionOutdated`/`ClientOutdated`: the version found.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::strict::present",
+        skip_serializing_if = "Option::is_none"
+    )]
     #[cfg_attr(feature = "typescript", ts(optional))]
     pub installed: Option<String>,
     /// `AppOutdated`/`ExtensionOutdated`/`ClientOutdated`: the version needed.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::strict::present",
+        skip_serializing_if = "Option::is_none"
+    )]
     #[cfg_attr(feature = "typescript", ts(optional))]
     pub required: Option<String>,
     /// `DriverFailure`: the native status, e.g. `"CKR_DEVICE_ERROR (0x00000030)"`.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::strict::present",
+        skip_serializing_if = "Option::is_none"
+    )]
     #[cfg_attr(feature = "typescript", ts(optional))]
     pub native: Option<String>,
 }
@@ -166,3 +182,5 @@ impl ErrorCode {
         }
     }
 }
+
+crate::strict::object_serde!(WireError, ErrorDetails);

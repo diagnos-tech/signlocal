@@ -14,6 +14,11 @@ use crate::error::ErrorCode;
 use crate::id::RequestId;
 use crate::messages::{AppMessage, ClientMessage};
 
+mod bounds;
+mod describe;
+mod json;
+mod parse;
+
 /// A client message with its envelope.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
@@ -60,18 +65,35 @@ pub fn parse_client_message(
     frame: &[u8],
     negotiated: Option<u32>,
 ) -> Result<ClientEnvelope, ParseError> {
-    let _ = (frame, negotiated);
-    todo!("SPEC.md §5")
+    let checked = parse::check_envelope(frame, negotiated, parse::Sender::Client)?;
+    let message = parse::parse_body(&checked)?;
+    bounds::check_client(&message).map_err(|why| parse::invalid(Some(&checked.id), why))?;
+    Ok(ClientEnvelope {
+        v: checked.v,
+        id: checked.id,
+        message,
+    })
 }
 
 /// Parses one frame from the app, strictly. Used by client libraries.
 pub fn parse_app_message(frame: &[u8], negotiated: Option<u32>) -> Result<AppEnvelope, ParseError> {
-    let _ = (frame, negotiated);
-    todo!("SPEC.md §5")
+    let checked = parse::check_envelope(frame, negotiated, parse::Sender::App)?;
+    let message = parse::parse_body(&checked)?;
+    bounds::check_app(&message).map_err(|why| parse::invalid(Some(&checked.id), why))?;
+    Ok(AppEnvelope {
+        v: checked.v,
+        id: checked.id,
+        message,
+    })
 }
 
 /// Serializes an envelope as compact JSON. Infallible for these types.
 pub fn to_json<T: Serialize>(envelope: &T) -> Vec<u8> {
-    let _ = envelope;
-    todo!("SPEC.md §5")
+    // Every envelope is a struct of strings, numbers and enums with string
+    // keys: serialization cannot fail, and an empty frame would be rejected
+    // by the peer rather than mistaken for a message.
+    serde_json::to_vec(envelope).unwrap_or_default()
 }
+
+#[cfg(test)]
+mod tests;

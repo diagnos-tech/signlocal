@@ -14,11 +14,29 @@ reviewed, with their tests. Everything else is NEW.
 - `type` values are the dotted names of `protocol.md` §4; enum values as the
   serde attributes say (`"SHA-256"`, `"RSASSA-PKCS1-v1_5"`, `"chrome"`,
   `"UserCancelled"`).
-- Optional fields are omitted when `None` (never `null`) and accepted when
-  absent.
 - `Base64Bytes`: canonical padded standard Base64 (§7) both ways.
 - `i64` times are JSON numbers (TypeScript `number`).
-- Every struct carries `deny_unknown_fields`; unknown fields fail parsing.
+- Every struct and every tagged enum (page enums included) refuses unknown
+  fields (D12).
+
+**One spelling per message.** A relay that validates one spelling could be
+walked around with another, so every alternative spelling is refused, by the
+types themselves (`serde_json::from_*` on any wire type) as well as by the
+parsers:
+
+| Spelling | Rule |
+|---|---|
+| Optional field | Omitted when `None`, accepted when absent; an explicit `null` is **refused**. No field of the protocol accepts `null`. |
+| Struct or tagged enum | A JSON object only; the array form serde would accept (`[1, 1]` for a `ProtocolRange`, `["RSA", 2048]` for a key) is **refused**. |
+| Integer (`v`, `seq`, `bits`, …) | A JSON integer only: `1.0`, `1e0` and `"1"` are refused. |
+| Object keys | Unique per object after unescaping (`"id"` = `"i\u0064"`); a repeated key makes the whole frame unreadable (§5 step 1). The types alone reject repeated *known* fields; the parsers reject every repeat. |
+
+Implementation (`src/strict.rs`): wire types derive with
+`#[serde(remote = "Self")]` and get their trait impls from `object_serde!`,
+which deserializes through an object-only wrapper; optional fields use
+`deserialize_with = "crate::strict::present"`. The derived inherent
+`X::deserialize` functions this leaves behind do not refuse arrays: always go
+through the `Deserialize` trait.
 
 ## 2. `version::negotiate(app, client)`
 
@@ -49,25 +67,56 @@ negotiated)`; `to_json(envelope)` serializes compactly (no whitespace).
 
 Order of checks, first failure wins:
 
-1. Not UTF-8 JSON, or not an object → `ParseError { id: None, code: InvalidRequest }`.
+1. Not UTF-8 JSON, trailing data, not an object, or a repeated object key at
+   any depth → `ParseError { id: None, code: InvalidRequest }`.
 2. `id`: absent, not a string, or invalid (§3) → `id: None`, `InvalidRequest`.
    From here on the error carries the id.
-3. `v`: absent or not a positive integer → `InvalidRequest`.
+3. `v`: absent or not a positive JSON integer that fits `u32` → `InvalidRequest`.
 4. `type`: absent, not a string, or unknown for the direction → `InvalidRequest`
    (message names the type only if it is ≤ 32 printable ASCII characters).
 5. Version:
    - `negotiated == None`: only `hello` is accepted (anything else →
-     `InvalidRequest` "hello must be the first message"); `v` must be within
-     `hello.protocols` and at least 1 — the app does not reject `hello` for
-     `v` alone, negotiation decides.
+     `InvalidRequest` "hello must be the first message").
+     Client `hello`: `v` must be within `hello.protocols` (the app does not
+     reject `hello` for `v` alone, negotiation decides). App `hello`: `v` must
+     equal `hello.protocol`, the version the app picked. A malformed
+     `protocols`/`protocol` is left to step 6.
    - `negotiated == Some(n)`: `v` must equal `n`, else `InvalidRequest`
-     "message version v does not match the negotiated version n".
-6. Body: every other field deserialized strictly into the type's struct;
-   unknown field, wrong type, invalid enum value, invalid Base64, invalid
-   fingerprint → `InvalidRequest` naming the field (never echoing its value).
+     "message version v does not match the negotiated version n". This holds
+     for `hello` too: a second `hello` with `v == n` **parses**, and the
+     session refuses it (`websign-host` SPEC §2).
+6. Body: every other field deserialized strictly into the type's struct (§1);
+   unknown field, `null`, wrong type, invalid enum value, invalid Base64,
+   invalid fingerprint → `InvalidRequest` naming the field by its path
+   (`web.sneaky`, `filter.algorithms`, `certificates[0].key`), never echoing
+   a value. A path segment is a key taken from the frame, so it is echoed only
+   if it is ≤ 32 printable ASCII characters ("a field of web is unknown …"
+   otherwise). A missing required field is named as-is ("required field hash
+   is missing"). Exact wording is free; tests check only the field name and
+   the absence of values.
+7. Limits the types cannot express (`src/envelope/bounds.rs`), each failure
+   `InvalidRequest` naming the field:
+
+   | Direction | Rule |
+   |---|---|
+   | client | `web.origin`, `web.topOrigin` ≤ `MAX_ORIGIN_LEN` (512) bytes |
+   | client | `hello`: `client.name`, `client.version`, `browser.version` ≤ `MAX_SHORT_TEXT_LEN` (64) bytes |
+   | client | `sign.begin.algorithms` and `choose.filter.algorithms`: absent or non-empty (an empty list would disable every certificate) |
+   | app | `choose.result.certificates`: at least one |
+   | app | every `certificate.chain` ≤ `MAX_CHAIN_LEN` (8) |
+
+   Not checked here: the digest's length (it depends on the `hash` of the
+   open request; the app refuses a wrong length, `websign-host` SPEC §4) and
+   whether `web`/`browser` are required or refused (that depends on the
+   transport, `websign-host` SPEC §2.2).
 
 The app side additionally rejects frames larger than
-`limits::MAX_INCOMING_FRAME` before parsing (framing).
+`limits::MAX_INCOMING_FRAME` before parsing (framing). Parsing never panics
+and its work is linear in the frame size (nesting is capped at 128 by
+`serde_json`; locating the offending field descends at most 8 levels).
+
+`AppMessage::is_final` is true for every message but `sign.need_digest`
+(`hello` included). `Base64Bytes`' `Debug` prints the length only.
 
 Round trip: for every message type, `parse(to_json(x)) == x` (property test
 over generated values).
@@ -115,7 +164,9 @@ The SDK's `fingerprint()` and both client libraries implement the same table.
 
 `PageToExtension`/`ExtensionToPage` are tagged by `kind`
 (`"discover"`, `"request"`, `"announce"`, `"message"`); `PageRequest`/`PageReply`
-by `type`. `source` is `PAGE_SOURCE` or `EXTENSION_SOURCE`; a message with any
+by `type`. They follow §1 like every wire type: unknown fields are refused on
+every variant, so a page cannot smuggle `web` (or anything else) into a
+request. `source` is `PAGE_SOURCE` or `EXTENSION_SOURCE`; a message with any
 other `source` is not ours (the receiver ignores it; parsing it is not an
 error of this crate).
 
@@ -127,5 +178,6 @@ websign-protocol --features typescript export_bindings` with
 `TS_RS_EXPORT_DIR`, adds an `index.ts` barrel, and copies the folder to
 `sdk/src/generated`, `extension/src/generated` and
 `clients/node/src/generated`. ts-rs prints "failed to parse serde attribute"
-notes for `try_from`/`into`; they are harmless (the `ts(type = "string")`
-override is what applies).
+notes for `try_from`/`into`, `remote` and `deserialize_with`; they are
+harmless (the `ts(type = "string")` overrides and `ts(optional)` are what
+apply, and the generated TypeScript is unchanged by them).

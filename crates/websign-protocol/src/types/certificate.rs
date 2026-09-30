@@ -19,8 +19,14 @@ pub struct InvalidFingerprint;
 impl FingerprintHex {
     /// Validates `text`: exactly 64 characters from `[0-9a-f]`.
     pub fn new(text: impl Into<String>) -> Result<FingerprintHex, InvalidFingerprint> {
-        let _ = text.into();
-        todo!("SPEC.md §4")
+        let text = text.into();
+        let valid =
+            text.len() == 64 && text.bytes().all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f'));
+        if valid {
+            Ok(FingerprintHex(text))
+        } else {
+            Err(InvalidFingerprint)
+        }
     }
 
     /// The hex text.
@@ -49,13 +55,14 @@ impl From<FingerprintHex> for String {
 /// profile so the caller can enforce its own "qualified" policy. The app never
 /// claims legal qualification; it reports what the certificate says.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(remote = "Self", rename_all = "camelCase", deny_unknown_fields)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
 pub struct Certificate {
     /// The certificate, DER.
     pub der: Base64Bytes,
     /// Issuer certificates, leaf excluded, nearest first; best effort (OS
-    /// chain engine or certificates on the token). May be empty.
+    /// chain engine or certificates on the token). May be empty; at most 8
+    /// (`MAX_CHAIN_LEN`).
     pub chain: Vec<Base64Bytes>,
     pub fingerprint: FingerprintHex,
     /// The holder's name as the window shows it (`"Ana Beatriz Souza"`).
@@ -76,7 +83,7 @@ pub struct Certificate {
 
 /// The public key, as far as a caller building a signature format cares.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(tag = "type", deny_unknown_fields)]
+#[serde(remote = "Self", tag = "type", deny_unknown_fields)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
 pub enum KeyDescription {
     #[serde(rename = "RSA")]
@@ -87,17 +94,25 @@ pub enum KeyDescription {
 
 /// What the certificate declares about its legal profile.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(remote = "Self", rename_all = "camelCase", deny_unknown_fields)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
 pub struct CertificateProfile {
     /// ICP-Brasil class from the certificate policy (`"A1"`, `"A3"`, `"S3"`,
     /// `"T3"`, …); `"ICP-Brasil"` when it is ICP-Brasil with an unknown
     /// class; absent when not ICP-Brasil.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::strict::present",
+        skip_serializing_if = "Option::is_none"
+    )]
     #[cfg_attr(feature = "typescript", ts(optional))]
     pub icp_brasil: Option<String>,
     /// Present when the certificate has ETSI qcStatements.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::strict::present",
+        skip_serializing_if = "Option::is_none"
+    )]
     #[cfg_attr(feature = "typescript", ts(optional))]
     pub eidas: Option<EidasProfile>,
     /// Where the private key lives, as far as the key store can tell.
@@ -106,7 +121,7 @@ pub struct CertificateProfile {
 
 /// ETSI EN 319 412-5 statements.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(remote = "Self", rename_all = "camelCase", deny_unknown_fields)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
 pub struct EidasProfile {
     /// `QcCompliance`: issued as a qualified certificate.
@@ -140,11 +155,43 @@ pub enum KeyStorage {
 /// Which certificates a request can use (`docs/ux.md` R6). Others are shown
 /// disabled as "Not compatible with this request".
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(remote = "Self", rename_all = "camelCase", deny_unknown_fields)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
 pub struct CertificateFilter {
-    /// Only keys that can produce one of these. Absent = any.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    /// Only keys that can produce one of these. Absent = any; never empty.
+    #[serde(
+        default,
+        deserialize_with = "crate::strict::present",
+        skip_serializing_if = "Option::is_none"
+    )]
     #[cfg_attr(feature = "typescript", ts(optional))]
     pub algorithms: Option<Vec<SignatureAlgorithmName>>,
+}
+
+crate::strict::object_serde!(
+    Certificate,
+    KeyDescription,
+    CertificateProfile,
+    EidasProfile,
+    CertificateFilter
+);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn accepts_64_lowercase_hex_digits() {
+        assert!(FingerprintHex::new("0123456789abcdef".repeat(4)).is_ok());
+    }
+
+    #[test]
+    fn rejects_uppercase_separators_and_wrong_lengths() {
+        let ok = "ab".repeat(32);
+        assert!(FingerprintHex::new(ok.to_uppercase()).is_err());
+        assert!(FingerprintHex::new(&ok[..63]).is_err());
+        assert!(FingerprintHex::new(format!("{ok}0")).is_err());
+        assert!(FingerprintHex::new(format!("{}:{}", &ok[..31], &ok[32..])).is_err());
+        assert!(FingerprintHex::new("é".repeat(32)).is_err());
+    }
 }

@@ -7,10 +7,10 @@
 export type ClientInfo = { 
 /**
  * `"websign-extension"`, `"@websign/desktop"`, `"websign-client"`, or a
- * program's own name; at most 64 characters.
+ * program's own name; at most 64 bytes.
  */
 name: string, 
 /**
- * The client's version; at most 64 characters.
+ * The client's version; at most 64 bytes.
  */
 version: string, };
