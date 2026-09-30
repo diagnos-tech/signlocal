@@ -1,9 +1,7 @@
 # websign-i18n — specification
 
 Rules and vectors for the localization engine. Format and workflow:
-[`docs/architecture/i18n.md`](../../docs/architecture/i18n.md). The key
-generator (`build.rs`) is implemented; everything under `src/` with
-`todo!()` is to be implemented blind.
+[`docs/architecture/i18n.md`](../../docs/architecture/i18n.md).
 
 ## 1. Keys (implemented by `build.rs`)
 
@@ -11,7 +9,10 @@ generator (`build.rs`) is implemented; everything under `src/` with
   dashes → `_`, uppercase): `confirm.window_title` → `k::CONFIRM_WINDOW_TITLE`.
 - A table whose keys are all CLDR categories and contains `other` becomes one
   `PluralKey` (`cert.expires_in` → `k::CERT_EXPIRES_IN`).
-- `ALL_KEYS` lists every path in file order; `SOURCES` embeds the 7 files.
+- A table with any other key (`several`, a nested table) is a section: its
+  string leaves are ordinary keys.
+- `k`, `ALL_KEYS` (every path in file order) and `SOURCES` (`(tag, TOML)` of
+  the 7 files, `en` first) are exported at the crate root.
 
 ## 2. `Locale`
 
@@ -37,13 +38,19 @@ generator (`build.rs`) is implemented; everything under `src/` with
 ## 3. `Catalog`
 
 - `new(locale)` parses the embedded sources of the chain once. A source that
-  fails to parse is skipped (logged with `log::error!`), never panics.
-- `tr(key)`: the template from the first locale of the chain that has the
-  key; if none has it, the template is the key path itself (visible, caught by
-  review).
-- `plural(key, count)`: category from `plural::category(locale_found, count)`;
-  if that category is missing in the table, `other`; `{count}` is filled
-  with the decimal integer.
+  fails to parse is skipped (logged with `log::error!`: locale tag and parse
+  error), never panics.
+- `from_sources(locale, &[(Locale, &str)])` (`#[doc(hidden)]`) builds the
+  same catalog over explicit sources in lookup order; `new` uses it, and
+  tests use it to exercise fallback, which shipped files never need.
+- `tr(key)`: the first string found at the key's path along the chain (a
+  table there does not count); if none, the template is the key path itself
+  (visible, caught by review).
+- `plural(key, count)`: the first table found at the path along the chain (a
+  string there does not count). Category from
+  `plural::category(locale_that_had_the_table, count)`; if that category is
+  missing in the table, `other`; if `other` is missing too, the key path.
+  `{count}` is filled with the decimal integer, sign included (`-5`).
 
 ## 4. `Message` rendering
 
@@ -51,6 +58,10 @@ generator (`build.rs`) is implemented; everything under `src/` with
   it; without an argument it stays as `{name}`.
 - Any other `{`/`}` is literal (`"{ x }"`, `"{Name}"`, `"{"` stay).
 - Arguments without a placeholder are ignored.
+- Substitution is one pass over the template: an argument value is inserted
+  verbatim and never scanned for placeholders (`"{a} {b}"` + a=`{b}`, b=`x`
+  → `"{b} x"`), so user-controlled values cannot inject other arguments.
+  Values are not escaped; the UI layer escapes for its medium.
 - Vectors: `"Sign for {site} — WebeSign"` + site=`a.b` → `"Sign for a.b —
   WebeSign"`; `"{a}{a}"` + a=`x` → `"xx"`; `"{missing}"` → `"{missing}"`;
   `"{{x}}"` + x=`1` → `"{1}"`.
@@ -65,7 +76,8 @@ generator (`build.rs`) is implemented; everything under `src/` with
 | fr | n = 0 or 1 | n ≠ 0 and n mod 1 000 000 = 0 | rest |
 
 German and English have no `many`. Negative numbers use their absolute
-value. Vectors: en 0→other, 1→one, 2→other; pt-BR 0→one, 1→one, 2→other,
+value (`i64::MIN` included, no overflow). Only the six CLDR categories exist
+(`plural::PluralCategory`). Vectors: en 0→other, 1→one, 2→other; pt-BR 0→one, 1→one, 2→other,
 1 000 000→many; fr 1→one, 2→other; de 1 000 000→other; es 1 000 000→many.
 
 ## 6. Dates and times
@@ -84,10 +96,18 @@ Problems, in this order of detection, all reported (not just the first):
 2. `Missing` — reference key absent in candidate.
 3. `Extra` — candidate key absent in reference.
 4. `Placeholders` — for strings, the set of `{name}` differs; for plurals,
-   every category's set must equal the reference `other`'s set.
-5. `Plural` — a plural without `other`, or with a category outside CLDR.
+   every category's set must equal the reference `other`'s set (one problem
+   per differing form). `expected`/`found` are sorted, deduplicated names.
+5. `Plural` — a plural without `other`, or with a category outside CLDR
+   (`several`). A candidate table is a plural when the reference has a plural
+   at that path, or when it has `other` and only CLDR keys; so a renamed or
+   invented category is a `Plural` problem, not `Missing`/`Extra`.
 6. `Extension` — a plural under `[popup]`, `[store]` or `[extension]`, or
-   `extension.description` longer than 132 characters.
+   `extension.description` longer than 132 characters (Unicode scalar
+   values, not bytes). Checked on the candidate, so `check_locale(en, en)`
+   also catches them in the reference.
 
-Keys are compared by full dotted path; a table-vs-string mismatch is one
-`Missing` + one `Extra`.
+A `Syntax` problem in either file stops the comparison: only the `Syntax`
+problems are returned. Keys are compared by full dotted path; a
+table-vs-string mismatch is one `Missing` + one `Extra`. Hostile input never
+panics.

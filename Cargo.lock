@@ -4496,8 +4496,8 @@ name = "websign-i18n"
 version = "0.1.0"
 dependencies = [
  "jiff",
+ "log",
  "sys-locale",
- "thiserror 2.0.21",
  "toml 0.9.12+spec-1.1.0",
 ]
 

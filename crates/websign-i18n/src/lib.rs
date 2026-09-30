@@ -5,7 +5,9 @@
 //! reference that defines the keys. The build script turns every key into a
 //! constant in [`k`], so a key that does not exist does not compile:
 //!
-//! ```ignore
+//! ```
+//! use websign_i18n::{Catalog, Locale, k};
+//!
 //! let catalog = Catalog::new(Locale::from_system());
 //! let title = catalog.tr(k::CONFIRM_WINDOW_TITLE).arg("site", "app.example.com");
 //! let expiry = catalog.plural(k::CERT_EXPIRES_IN, 23);

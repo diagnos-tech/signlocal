@@ -2,6 +2,7 @@
 
 - `catalog.rs` — Loaded messages for one locale.
 - `check.rs` — Consistency rules between a locale file and the reference, used by `cargo xtask check i18n` and by this crate's tests.
+- `check/` — Flattening of a locale file (`flatten.rs`) and the unit tests of the checker (`tests.rs`).
 - `dates.rs` — Dates and times per locale, without ICU.
 - `lib.rs` — Translated text for the app, generated key constants, plural rules and date formatting (`docs/architecture/i18n.md`).
 - `locale.rs` — The supported locales and how one is picked.
