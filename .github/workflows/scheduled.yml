@@ -1,0 +1,102 @@
+# The slow gates of docs/architecture/testing.md §6: mutation testing weekly
+# and fuzzing nightly. Both also run by hand (workflow_dispatch runs both).
+name: scheduled
+
+on:
+  schedule:
+    - cron: "41 2 * * *" # fuzzing, nightly
+    - cron: "23 4 * * 6" # mutation, Saturdays
+  workflow_dispatch:
+
+concurrency:
+  group: scheduled-${{ github.event.schedule || github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+
+jobs:
+  mutants:
+    name: mutants (${{ matrix.crate }})
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '23 4 * * 6'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        crate: [websign-core, websign-ui-model]
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install the pinned toolchain
+        run: rustup toolchain install || rustup show
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: mutants
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-mutants
+      - name: Mutate
+        timeout-minutes: 270
+        # Exit 2 (missed mutants) and 3 (timeouts) are judged by the ratio
+        # below; anything else (e.g. a failing baseline) fails the step.
+        run: |
+          status=0
+          cargo mutants --package "${{ matrix.crate }}" --output "$RUNNER_TEMP" || status=$?
+          case $status in 0|2|3) ;; *) exit "$status" ;; esac
+      - name: At least 85 % of viable mutants killed
+        run: |
+          outcomes="$RUNNER_TEMP/mutants.out/outcomes.json"
+          read -r caught missed timeout < <(jq -r '"\(.caught) \(.missed) \(.timeout)"' "$outcomes")
+          total=$((caught + missed + timeout))
+          percent=$(( total == 0 ? 100 : caught * 100 / total ))
+          echo "${{ matrix.crate }}: $caught of $total viable mutants killed ($percent %)"
+          [ "$percent" -ge 85 ]
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mutants-${{ matrix.crate }}
+          path: ${{ runner.temp }}/mutants.out/
+          if-no-files-found: ignore
+
+  fuzz:
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '41 2 * * *'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+      - name: Find fuzz targets
+        id: targets
+        run: |
+          dirs=$(find crates -mindepth 2 -maxdepth 2 -type d -name fuzz | sort | tr '\n' ' ')
+          if [ -z "$dirs" ]; then
+            echo "::notice::no crates/*/fuzz directory yet; fuzzing skipped"
+          fi
+          echo "dirs=$dirs" >> "$GITHUB_OUTPUT"
+      - name: Install nightly for cargo-fuzz
+        if: steps.targets.outputs.dirs != ''
+        run: rustup toolchain install nightly --profile minimal
+      - uses: taiki-e/install-action@v2
+        if: steps.targets.outputs.dirs != ''
+        with:
+          tool: cargo-fuzz
+      - name: Fuzz every target for 10 minutes
+        if: steps.targets.outputs.dirs != ''
+        timeout-minutes: 80
+        run: |
+          for dir in ${{ steps.targets.outputs.dirs }}; do
+            for target in $(cargo +nightly fuzz list --fuzz-dir "$dir"); do
+              echo "::group::$dir $target"
+              cargo +nightly fuzz run --fuzz-dir "$dir" "$target" -- -max_total_time=600
+              echo "::endgroup::"
+            done
+          done
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: fuzz-artifacts
+          path: crates/*/fuzz/artifacts/
+          if-no-files-found: ignore

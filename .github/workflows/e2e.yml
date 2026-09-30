@@ -1,0 +1,260 @@
+# End-to-end matrix of docs/architecture/testing.md §5: fixture page → SDK →
+# extension in Chromium → app built with `--features e2e` → software keys,
+# then `cargo xtask screenshots` collects every window state per OS.
+#
+# Pull requests touching the signing path run Windows and Ubuntu; macOS and
+# the distribution containers run nightly (and by hand).
+#
+# Readiness guard: until the e2e hooks exist, every job only reports that it
+# was skipped. The suite counts as ready when `app/src/e2e.rs` no longer
+# contains `todo!(` and `e2e/lib/environment.ts` no longer contains
+# `unimplemented` (step `ready`); nothing else needs to change here.
+name: e2e
+
+on:
+  pull_request:
+    paths:
+      - "app/**"
+      - "extension/**"
+      - "sdk/**"
+      - "crates/websign-protocol/**"
+      - "crates/websign-host/**"
+      - "e2e/**"
+      - ".github/workflows/e2e.yml"
+  push:
+    branches: [main, develop]
+    paths:
+      - "app/**"
+      - "extension/**"
+      - "sdk/**"
+      - "crates/websign-protocol/**"
+      - "crates/websign-host/**"
+      - "e2e/**"
+      - ".github/workflows/e2e.yml"
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  RUST_BACKTRACE: "1"
+
+jobs:
+  runner:
+    name: e2e (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON((github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && '["windows-latest","macos-latest","ubuntu-22.04","ubuntu-24.04"]' || '["windows-latest","ubuntu-22.04","ubuntu-24.04"]') }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+      - name: Is the e2e suite implemented?
+        id: ready
+        run: |
+          if grep -q 'todo!(' app/src/e2e.rs || grep -q 'unimplemented' e2e/lib/environment.ts; then
+            echo "::notice::e2e hooks not implemented yet; e2e skipped"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Screenshot folder name
+        id: os
+        run: |
+          case "${{ matrix.os }}" in
+            windows-*) echo "name=windows" ;;
+            macos-*) echo "name=macos" ;;
+            *) echo "name=${{ matrix.os }}" ;;
+          esac >> "$GITHUB_OUTPUT"
+      - name: Install Xvfb, mesa and SoftHSM2
+        if: steps.ready.outputs.ready == 'true' && runner.os == 'Linux'
+        timeout-minutes: 10
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends pkg-config libpcsclite-dev libxkbcommon-dev \
+            libwayland-dev softhsm2 opensc p11-kit pcscd xvfb xauth mesa-vulkan-drivers libvulkan1 \
+            libgl1-mesa-dri libegl1 libxkbcommon-x11-0 libx11-xcb1 libxcb-xfixes0
+      - name: Install the pinned toolchain
+        if: steps.ready.outputs.ready == 'true'
+        run: rustup toolchain install || rustup show
+      - uses: Swatinem/rust-cache@v2
+        if: steps.ready.outputs.ready == 'true'
+        with:
+          key: e2e
+          save-if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+      - name: Build the app with the e2e feature
+        if: steps.ready.outputs.ready == 'true'
+        timeout-minutes: 30
+        run: cargo build -p websign-app --features e2e
+      - uses: oven-sh/setup-bun@v2
+        if: steps.ready.outputs.ready == 'true'
+        with:
+          bun-version: "1.3.11"
+      - name: Install packages, build the Chromium extension and the browser
+        if: steps.ready.outputs.ready == 'true'
+        timeout-minutes: 15
+        run: |
+          bun install --frozen-lockfile
+          (cd extension && bunx wxt build -b chrome)
+          (cd e2e && bunx playwright install ${{ runner.os == 'Linux' && '--with-deps' || '' }} chromium)
+      # Pending the e2e suite: create the per-OS software keys (SoftHSM2 fixture,
+      # make-test-certs.ps1, temporary keychain) once the suite defines how
+      # it receives them.
+      - name: Run the suite
+        if: steps.ready.outputs.ready == 'true'
+        timeout-minutes: 20
+        working-directory: e2e
+        env:
+          WEBSIGN_E2E_APP: ${{ github.workspace }}/target/debug/websign${{ runner.os == 'Windows' && '.exe' || '' }}
+          WEBSIGN_E2E_EXTENSION: ${{ github.workspace }}/extension/.output/chrome-mv3
+          WEBSIGN_E2E_SCREENSHOTS: ${{ runner.temp }}/screenshots
+        run: |
+          if [[ $RUNNER_OS == Linux ]]; then
+            xvfb-run -a -s "-screen 0 1280x800x24" bun run test:ci
+          else
+            bun run test:ci
+          fi
+      - name: Collect screenshots
+        if: steps.ready.outputs.ready == 'true'
+        timeout-minutes: 15
+        run: cargo xtask screenshots --from "$RUNNER_TEMP/screenshots" --os "${{ steps.os.outputs.name }}"
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.ready.outputs.ready == 'true'
+        with:
+          name: screenshots-${{ steps.os.outputs.name }}
+          path: docs/screenshots/${{ steps.os.outputs.name }}/
+          if-no-files-found: warn
+
+  container:
+    name: e2e (${{ matrix.image }})
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    # Arch Linux is best effort (testing.md §5 matrix).
+    continue-on-error: ${{ matrix.image == 'archlinux:latest' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { image: "debian:12", os: debian-12, browser: /usr/bin/chromium }
+          - { image: "fedora:42", os: fedora-42, browser: /usr/bin/chromium-browser }
+          - { image: "rockylinux:9", os: rockylinux-9, browser: /usr/bin/chromium-browser }
+          - { image: "archlinux:latest", os: archlinux, browser: /usr/bin/chromium }
+    container:
+      image: ${{ matrix.image }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      # git and tar are needed by checkout and the caches; bash by the steps.
+      - name: Install base packages
+        timeout-minutes: 10
+        shell: sh
+        run: |
+          case "${{ matrix.image }}" in
+            debian:*) apt-get update && apt-get install -y --no-install-recommends bash ca-certificates curl git ;;
+            fedora:*|rockylinux:*) dnf install -y bash ca-certificates curl git tar gzip ;;
+            archlinux:*) pacman -Syu --noconfirm --needed bash ca-certificates curl git ;;
+          esac
+      - uses: actions/checkout@v5
+      - name: Is the e2e suite implemented?
+        id: ready
+        run: |
+          if grep -q 'todo!(' app/src/e2e.rs || grep -q 'unimplemented' e2e/lib/environment.ts; then
+            echo "::notice::e2e hooks not implemented yet; e2e skipped"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+      # Besides proof 5's packages: the X11 client libraries winit loads
+      # with dlopen (testing.md §5), SoftHSM2 and the distribution Chromium.
+      - name: Install build tools, drivers, SoftHSM2 and Chromium
+        if: steps.ready.outputs.ready == 'true'
+        timeout-minutes: 20
+        run: |
+          case "${{ matrix.image }}" in
+            debian:*)
+              apt-get install -y --no-install-recommends gcc g++ make pkg-config unzip libpcsclite-dev \
+                libxkbcommon-dev libwayland-dev softhsm2 opensc p11-kit xvfb xauth mesa-vulkan-drivers \
+                libgl1-mesa-dri libegl1 libxkbcommon-x11-0 libx11-xcb1 libxcb-xfixes0 libx11-6 \
+                libxcursor1 libxi6 libxrandr2 chromium
+              ;;
+            fedora:*)
+              dnf install -y --setopt=install_weak_deps=False gcc gcc-c++ make pkgconf-pkg-config unzip \
+                pcsc-lite-devel libxkbcommon-devel wayland-devel softhsm opensc p11-kit \
+                xorg-x11-server-Xvfb xorg-x11-xauth mesa-vulkan-drivers mesa-dri-drivers mesa-libEGL \
+                libxkbcommon-x11 libxcb libX11 libXcursor libXi libXrandr chromium
+              ;;
+            rockylinux:*)
+              dnf install -y epel-release dnf-plugins-core
+              dnf config-manager --set-enabled crb
+              dnf install -y --allowerasing gcc gcc-c++ make pkgconf-pkg-config unzip pcsc-lite-devel \
+                libxkbcommon-devel wayland-devel softhsm opensc p11-kit xorg-x11-server-Xvfb \
+                xorg-x11-xauth mesa-vulkan-drivers mesa-dri-drivers mesa-libEGL libxkbcommon-x11 libxcb \
+                libX11 libXcursor libXi libXrandr chromium
+              ;;
+            archlinux:*)
+              pacman -S --noconfirm --needed base-devel unzip pcsclite libxkbcommon wayland softhsm \
+                opensc p11-kit xorg-server-xvfb xorg-xauth vulkan-swrast mesa libxkbcommon-x11 libxcb \
+                libx11 libxcursor libxi libxrandr chromium
+              ;;
+          esac
+      - name: Install Rust via rustup (version from rust-toolchain.toml)
+        if: steps.ready.outputs.ready == 'true'
+        timeout-minutes: 10
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain none
+          "$HOME/.cargo/bin/rustup" toolchain install
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+      - uses: Swatinem/rust-cache@v2
+        if: steps.ready.outputs.ready == 'true'
+        with:
+          key: e2e-${{ matrix.os }}
+      - name: Build the app with the e2e feature
+        if: steps.ready.outputs.ready == 'true'
+        timeout-minutes: 40
+        run: cargo build -p websign-app --features e2e
+      - uses: oven-sh/setup-bun@v2
+        if: steps.ready.outputs.ready == 'true'
+        with:
+          bun-version: "1.3.11"
+      - name: Install packages and build the Chromium extension
+        if: steps.ready.outputs.ready == 'true'
+        timeout-minutes: 15
+        run: |
+          bun install --frozen-lockfile
+          (cd extension && bunx wxt build -b chrome)
+      # Pending the e2e suite: create the SoftHSM2 keys once the suite defines how it
+      # receives them.
+      - name: Run the suite with the distribution Chromium
+        if: steps.ready.outputs.ready == 'true'
+        timeout-minutes: 20
+        working-directory: e2e
+        env:
+          WEBSIGN_E2E_APP: ${{ github.workspace }}/target/debug/websign
+          WEBSIGN_E2E_EXTENSION: ${{ github.workspace }}/extension/.output/chrome-mv3
+          WEBSIGN_E2E_SCREENSHOTS: ${{ runner.temp }}/screenshots
+          WEBSIGN_E2E_BROWSER: ${{ matrix.browser }}
+        run: xvfb-run -a -s "-screen 0 1280x800x24" bun run test:ci
+      - name: Collect screenshots
+        if: steps.ready.outputs.ready == 'true'
+        timeout-minutes: 10
+        run: cargo xtask screenshots --from "$RUNNER_TEMP/screenshots" --os "${{ matrix.os }}"
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.ready.outputs.ready == 'true'
+        with:
+          name: screenshots-${{ matrix.os }}
+          path: docs/screenshots/${{ matrix.os }}/
+          if-no-files-found: warn
