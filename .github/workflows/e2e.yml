@@ -275,7 +275,7 @@ jobs:
         run: |
           touch "$RUNNER_TEMP/browsers.txt"
           bash e2e/run-browsers.sh "$RUNNER_TEMP/browsers.txt"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() && steps.build.outcome == 'success' && matrix.os != 'ubuntu-22.04' }}
         with:
           name: browsers-${{ steps.os.outputs.name }}
@@ -294,7 +294,7 @@ jobs:
           sleep 5
           cp "$HOME"/Library/Logs/DiagnosticReports/websign-* target/e2e-results/crash-reports/ 2>/dev/null || true
       # Traces of failed scenarios (fixture page and test keys only).
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: e2e-results-${{ steps.os.outputs.name }}
@@ -303,7 +303,7 @@ jobs:
       - name: Collect screenshots
         timeout-minutes: 15
         run: cargo xtask screenshots --from "$RUNNER_TEMP/screenshots" --os "${{ steps.os.outputs.name }}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: screenshots-${{ steps.os.outputs.name }}
@@ -422,7 +422,7 @@ jobs:
           WEBSIGN_E2E_SCREENSHOTS: ${{ runner.temp }}/screenshots
           WEBSIGN_E2E_BROWSER: ${{ matrix.browser }}
         run: xvfb-run -a -s "-screen 0 1600x900x24" bun run test:ci
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: e2e-results-${{ matrix.os }}
@@ -431,7 +431,7 @@ jobs:
       - name: Collect screenshots
         timeout-minutes: 10
         run: cargo xtask screenshots --from "$RUNNER_TEMP/screenshots" --os "${{ matrix.os }}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: screenshots-${{ matrix.os }}

@@ -121,7 +121,7 @@ jobs:
       - name: Release binary has no e2e marker
         timeout-minutes: 10
         run: cargo xtask check release --binary target/${{ matrix.target }}/release/websign
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: release-linux-${{ matrix.arch }}
           path: |
@@ -186,7 +186,7 @@ jobs:
             [[ $target == *windows* ]] && binary="$binary.exe"
             cargo xtask check release --binary "$binary"
           done
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: release-${{ matrix.name }}
           path: |
@@ -231,7 +231,7 @@ jobs:
           for package in sdk clients/node; do
             (cd "$package" && bun run build && npm pack --pack-destination "$GITHUB_WORKSPACE/npm")
           done
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: release-extension
           path: |
@@ -241,7 +241,7 @@ jobs:
           retention-days: 7
       # For the maintainer only: npm packages, the Safari and Edge builds and
       # the Firefox sources zip AMO asks for. None is a release file.
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: maintainer-npm
           path: |
