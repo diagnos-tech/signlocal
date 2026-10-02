@@ -1,0 +1,43 @@
+/* Landing page (index.html): hero, the "how it works" flow, badges and FAQ. */
+.home .hero { padding: 32px 0 16px; max-width: 820px; }
+.home h1 { font-size: clamp(2rem, 6vw, 3.25rem); line-height: 1.1; letter-spacing: -0.02em; overflow-wrap: break-word; hyphens: auto; }
+.home h2 { font-size: clamp(1.4rem, 3.5vw, 1.9rem); letter-spacing: -0.01em; margin: 72px 0 8px; }
+.home .section-lead { color: var(--ws-fg-muted); margin: 0 0 24px; max-width: 720px; }
+.eyebrow { display: inline-block; font-size: .85rem; font-weight: 600; color: var(--ws-accent-fg); background: var(--ws-accent-soft); border-radius: 999px; padding: 4px 12px; margin: 0 0 16px; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; margin: 24px 0 8px; }
+.cta .btn { margin: 0; padding: 12px 24px; font-size: 1.05rem; }
+.cta-note { font-size: .9rem; color: var(--ws-fg-subtle); margin: 8px 0 0; }
+
+/* How it works: four steps drawn as a flow, the last three inside "your computer". Vertical on phones. */
+.flow-row { display: grid; gap: 12px; }
+.step { position: relative; background: var(--ws-bg-surface); border: 1px solid var(--ws-border); border-radius: var(--ws-radius-lg); padding: 16px; box-shadow: var(--ws-shadow); }
+.step h3 { display: flex; align-items: center; gap: 10px; font-size: 1rem; padding-right: 20px; }
+.step p { margin: 6px 0 0; color: var(--ws-fg-muted); font-size: .95rem; }
+.step svg.icon { flex: none; width: 32px; height: 32px; color: var(--ws-accent-fg); }
+.step .num { position: absolute; top: 12px; right: 14px; font-size: .8rem; font-weight: 700; color: var(--ws-fg-subtle); }
+.arrow { display: block; width: 24px; height: 24px; margin: -6px auto -6px; color: var(--ws-border-strong); }
+.local { border: 2px dashed var(--ws-accent-fg); border-radius: 16px; padding: 12px; display: grid; gap: 12px; }
+.local-label { grid-column: 1 / -1; margin: 0; color: var(--ws-accent-fg); font-weight: 600; font-size: .9rem; display: flex; gap: 6px; align-items: baseline; }
+.local-label svg { flex: none; width: 16px; height: 16px; align-self: center; }
+.back { display: flex; gap: 10px; align-items: center; margin: 16px 0 0; padding: 12px 16px; border-radius: var(--ws-radius-lg); background: var(--ws-success-soft); border: 1px solid var(--ws-success-border); color: var(--ws-fg); }
+.back svg { flex: none; width: 24px; height: 24px; color: var(--ws-success); }
+@media (min-width: 900px) {
+  .flow-row { display: grid; grid-template-columns: 1fr auto 3fr; align-items: stretch; gap: 8px; }
+  .local { grid-template-columns: 1fr auto 1fr auto 1fr; align-items: stretch; gap: 8px; }
+  .local-label { margin-bottom: 4px; }
+  .arrow { margin: auto 0; transform: rotate(-90deg); }
+}
+
+/* Where it works: plain text badges (no third-party logos). */
+.works { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.works h3 { font-size: .85rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ws-fg-subtle); margin: 0 0 12px; }
+.badges { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.badges li { background: var(--ws-bg-sunken); border: 1px solid var(--ws-border); border-radius: 999px; padding: 4px 14px; font-weight: 600; font-size: .95rem; }
+
+/* FAQ: native disclosure widgets, keyboard and screen-reader friendly. */
+.faq details { background: var(--ws-bg-surface); border: 1px solid var(--ws-border); border-radius: var(--ws-radius-lg); margin: 8px 0; }
+.faq summary { cursor: pointer; padding: 14px 16px; font-weight: 600; list-style: none; display: flex; gap: 10px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::before { content: ""; flex: none; width: 8px; height: 8px; margin-top: .55em; border-right: 2px solid var(--ws-accent-fg); border-bottom: 2px solid var(--ws-accent-fg); transform: rotate(-45deg); transition: transform .15s; }
+.faq details[open] summary::before { transform: rotate(45deg); }
+.faq details p { margin: 0; padding: 0 16px 16px 34px; color: var(--ws-fg-muted); }

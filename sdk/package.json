@@ -1,0 +1,52 @@
+{
+  "name": "@websign/sdk",
+  "version": "0.1.0",
+  "description": "Sign with the visitor's certificate (smart card, USB token or OS certificate) from any web page, through the WebeSign extension and app. Zero dependencies, typed, under 5 KB, with a fake extension for your tests.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./messages": {
+      "types": "./dist/messages.d.ts",
+      "import": "./dist/messages.js"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "import": "./dist/testing/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "size": "bun scripts/size.ts",
+    "docs": "sh tools/docs.sh",
+    "docs:check": "sh tools/docs.sh --check",
+    "check:package": "bun run build && cd tools && bun install --frozen-lockfile --silent && ./node_modules/.bin/publint .. && ./node_modules/.bin/attw --pack .. --profile esm-only"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2",
+    "vitest": "5.0.2"
+  },
+  "types": "./dist/index.d.ts",
+  "keywords": [
+    "digital signature",
+    "smart card",
+    "pades",
+    "cades",
+    "webcrypto",
+    "pkcs11",
+    "icp-brasil",
+    "eidas"
+  ]
+}

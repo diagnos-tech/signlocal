@@ -1,0 +1,27 @@
+# app/src/ui/widgets
+
+- `mod.rs` — Widgets egui lacks, one per file, shared by both windows; they take localized text and expose AccessKit roles and names.
+- `badge.rs` — The neutral certificate type badge (§5.3).
+- `banner.rs` — Notices: icon, optional title, wrapping text, announced as a live region (§4.3, §4.6, §4.8).
+- `button/` — Primary, secondary and ghost buttons in three heights, with the Sign button's arming (§4.7); Enter reported apart, never a click (`mod.rs`), weights, sizes and colors (`look.rs`).
+- `cert_row/` — A 72 px certificate row with radio semantics and badge (`mod.rs`); line 3 with location, validity and "Details" (`line3.rs`) (§5.1).
+- `chip.rs` — Status chips: 22 px pill with icon and text (§4.3, §8.1).
+- `code_card.rs` — The verification-code card with identicon, code and skeleton while preparing (§4.4).
+- `field.rs` — The frame and focus ring every input shares.
+- `focus.rs` — The 2 px focus ring (§14).
+- `identicon.rs` — The mirrored 5 × 5 identicon of a verification code (§4.4).
+- `keys.rs` — Takes Enter away from a focused button or row so egui never turns it into a click (§4.4, §4.9).
+- `link.rs` — A text link painted inside another widget ("Details").
+- `list.rs` — The list container and a row's position in it (divider, rounded outer corners).
+- `pin_buffer.rs` — Editing a PIN in a `Zeroizing` buffer without leaving copies.
+- `pin_field.rs` — The PIN field: bullets, show/hide, a `PasswordInput` with no value in AccessKit (§4.6).
+- `pin_keys.rs` — Reads keystrokes into the PIN and wipes egui's copies; no clipboard, no IME.
+- `radio.rs` — The 16 px selection circle of list rows (§5.1).
+- `skeleton.rs` — Static loading placeholders (§4.4, §4.8).
+- `spinner.rs` — The busy arc; still when motion is reduced.
+- `tabs.rs` — A diagnostics sidebar tab with its traffic light (§8.1).
+- `text.rs` — Laying out one run of text for hand-painted widgets.
+- `text_field.rs` — A one-line text input in the field frame (the certificate filter, §5.13).
+- `tone.rs` — What a colored element means: neutral, info, success, warning, danger.
+- `snapshots/` — reviewed kittest baselines, one folder per OS
+- `tests/` — kittest checks of every widget: AccessKit and light/dark snapshots

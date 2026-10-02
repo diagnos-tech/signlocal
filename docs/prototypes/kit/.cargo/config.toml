@@ -1,0 +1,4 @@
+# Link the MSVC runtime statically: a clean Windows machine (and an MSIX
+# install) may not have vcruntime140.dll.
+[target.'cfg(all(windows, target_env = "msvc"))']
+rustflags = ["-C", "target-feature=+crt-static"]

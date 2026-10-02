@@ -1,0 +1,25 @@
+# Weekly dependency updates. The Phase-0 kit (docs/prototypes/kit) is frozen
+# and not listed.
+version: 2
+updates:
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      cargo-minor:
+        update-types: [minor, patch]
+
+  # The bun workspace (sdk, clients/node, extension, e2e) with its bun.lock.
+  - package-ecosystem: bun
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      bun-minor:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

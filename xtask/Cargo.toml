@@ -1,0 +1,23 @@
+[package]
+name = "xtask"
+description = "Repository automation: `cargo xtask gen|check|package|screenshots`."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+websign-i18n.workspace = true
+# The Info.plist URL-scheme declaration, so packaging and the app share it.
+websign-registration.workspace = true
+# Protocol limits the extension must share (`gen` limits).
+websign-protocol.workspace = true
+clap.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+toml.workspace = true
+thiserror.workspace = true
+
+[lints]
+workspace = true

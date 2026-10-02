@@ -1,0 +1,34 @@
+[package]
+name = "websign-registration"
+description = "Registers the app with browsers: native messaging manifests per OS and browser, the websign: URL scheme, extension pre-registration, and read-back status."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+websign-project.workspace = true
+thiserror.workspace = true
+serde_json.workspace = true
+# Internal error plumbing of the promoted kit code; the public API is typed.
+anyhow = "1"
+
+[target.'cfg(windows)'.dependencies]
+windows-registry.workspace = true
+windows = { workspace = true, features = [
+  "Win32_Foundation",
+  "Win32_Storage_FileSystem",
+  "Win32_Storage_Packaging_Appx",
+] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+# getpwuid_r: the real home directory from inside the App Sandbox.
+libc.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,21 @@
+# app/src/ui/diagnostics/view
+
+- `mod.rs` — The window's layout (200 px sidebar, scrolling content) and the `Screen` every view reads.
+- `sidebar.rs` — Brand, overall light, the tab list (↑/↓ between tabs) and "Copy diagnostics".
+- `header.rs` — Tab title, subtitle and [Scan again]; the first-scan spinner.
+- `onboarding.rs` — "Getting started" (§8.2): steps done as check marks, one row per step to do with its fix, then "You're ready to sign".
+- `onboarding_steps.rs` — What each step still to do says and the click that fixes it (Repair, install, `pcscd` command, driver download, `.pfx` import, test page).
+- `browsers.rs` — Browsers on this computer: connection, install extension, repair (§8.3).
+- `sites.rs` — Allowed sites and programs with inline "Confirm revoke" (§8.3).
+- `devices.rs` — Card service, tokens and cards, card readers with masked ATR (§8.4).
+- `presence.rs` — What a device row says about its certificates and driver download.
+- `drivers.rs` — Token drivers with [Remove] and [Add driver…] (§8.4).
+- `certificates.rs` — Import bar, groups by origin and the "Can't sign (n)" group (§8.5).
+- `cert_text.rs` — A certificate row's localized words for the shared row widget.
+- `help.rs` — Common questions, report preview with copy and support link, About (§8.6).
+- `faq.rs` — The questions accordion, with the keyboard shortcuts answer.
+- `row.rs` — The 56 px diagnostics row: icon, title, status, extra line, one action.
+- `action.rs` — A row's trailing button or icon button.
+- `spans.rs` — Row titles as styled runs (strong name, dim origin prefix, mono detail).
+- `section.rs` — Section label, list, empty card and note.
+- `words.rs` — Relative times, dates and the OS name, localized.

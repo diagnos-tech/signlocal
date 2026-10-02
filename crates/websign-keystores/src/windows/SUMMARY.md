@@ -1,0 +1,24 @@
+# crates/websign-keystores/src/windows
+
+- `acquire.rs` — Opening a certificate's private key with `CryptAcquireCertificatePrivateKey`, the one call that reaches CNG providers, legacy CSPs and minidrivers alike.
+- `aes_reopen.rs` — Reopening A1 keys from Microsoft's SHA-1-only `PROV_RSA_FULL` CSPs in the AES CSP, so plain CAPI can sign SHA-2.
+- `capabilities.rs` — What a key can sign with, from its provider and acquisition preference: CNG everything, bridged Microsoft CSPs PKCS#1 v1.5 and PSS, plain CAPI PKCS#1 v1.5 only.
+- `capi.rs` — Signing with a legacy CAPI key (`CryptSignHash`): old token CSPs and A1 certificates imported into Microsoft's software CSPs.
+- `cert_context.rs` — Owned certificate contexts and their properties.
+- `chain.rs` — Issuer certificates from `CertGetCertificateChain`, built offline (no AIA, no root update), leaf excluded.
+- `errors.rs` — Windows status codes turned into [`KeystoreError`], so the app can tell a cancelled PIN dialog, a wrong PIN or a pulled card apart from a real failure.
+- `fallback.rs` — The per-key fallback from the CNG bridge (`PREFER_NCRYPT`) to plain CAPI for CSPs that refuse it.
+- `handles.rs` — Native key handles, each released exactly once by its owner.
+- `hardware.rs` — Whether a provider keeps its keys in hardware, asked of the provider itself (never of a key), so that listing never touches a card.
+- `key_info.rs` — Where a certificate's private key lives, read from the certificate's `CERT_KEY_PROV_INFO` property only, so that listing never opens a key for signing and never prompts.
+- `keystore.rs` — The store as a `Keystore`: listing, signing with the fallback, chains, and the per-session key cache.
+- `listing.rs` — Every certificate of `CurrentUser\MY` with a private key, described from metadata only.
+- `mod.rs` — Windows certificate store (`CurrentUser\MY`), signing through CNG (NCrypt) or legacy CAPI, whichever the key's provider speaks.
+- `ncrypt.rs` — Signing with a CNG key (`NCryptSignHash`): PKCS#1 v1.5, PSS with salt = digest length, ECDSA as raw `r || s`.
+- `reader.rs` — Which PC/SC reader a key's card sits in, from the container name or a silent query to Microsoft's smart card providers.
+- `reader_query.rs` — The silent `NCRYPT_READER_PROPERTY` / `PP_SMARTCARD_READER` queries behind `reader.rs`.
+- `request.rs` — Checks on a signing request (digest length, algorithm vs key) made before any key is opened.
+- `status_names.rs` — Symbolic names (`NTE_BAD_KEYSET`) of the status codes providers return, for error reports.
+- `store.rs` — `CurrentUser\MY` and the certificates in it.
+- `thumbprint.rs` — The SHA-1 thumbprint Windows indexes certificates by.
+- `window.rs` — Which window owns the OS PIN dialog.

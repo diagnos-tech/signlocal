@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Native messaging e2e</title>
+</head>
+<body>
+  <h1>Native messaging e2e</h1>
+  <pre id="out">waiting for the extension...</pre>
+  <script>
+    // Plays the part of a website: waits for the extension to announce itself,
+    // talks to the native host through it and publishes everything it saw in
+    // window.__result for the test runner to judge.
+    const ANNOUNCE_TIMEOUT_MS = 15000;
+    const REPLY_TIMEOUT_MS = 130000;
+
+    const result = {
+      done: false,
+      failure: null,
+      announce: null,
+      status: null,
+      ping: null,
+      list: null,
+      wrongDigest: null,
+      sign: null,
+    };
+    window.__result = result;
+
+    const waiting = new Map();
+    let announced = null;
+    let counter = 0;
+
+    window.addEventListener("message", (event) => {
+      if (event.source !== window || event.origin !== location.origin) return;
+      const data = event.data;
+      if (!data || data.source !== "websign-extension") return;
+      if (data.type === "announce") {
+        result.announce = { version: data.version };
+        announced?.();
+      } else if (data.type === "response") {
+        waiting.get(data.id)?.(data.response);
+      }
+    });
+
+    const post = (message) =>
+      window.postMessage({ source: "websign-page", ...message }, location.origin);
+
+    function waitForAnnounce() {
+      return new Promise((resolve, reject) => {
+        if (result.announce) return resolve();
+        // The announcement may have fired before this page listened: ask again.
+        const poll = setInterval(() => post({ type: "hello" }), 500);
+        setTimeout(() => {
+          clearInterval(poll);
+          reject(new Error("the extension never announced itself"));
+        }, ANNOUNCE_TIMEOUT_MS);
+        announced = () => {
+          clearInterval(poll);
+          resolve();
+        };
+      });
+    }
+
+    function call(request) {
+      return new Promise((resolve, reject) => {
+        const id = `page-${++counter}`;
+        const timer = setTimeout(() => {
+          waiting.delete(id);
+          reject(new Error(`no reply to "${request.type}"`));
+        }, REPLY_TIMEOUT_MS);
+        waiting.set(id, (response) => {
+          clearTimeout(timer);
+          waiting.delete(id);
+          resolve(response);
+        });
+        post({ type: "request", id, request });
+      });
+    }
+
+    const base64 = (bytes) => btoa(String.fromCharCode(...bytes));
+    const randomDigest = (length) => base64(crypto.getRandomValues(new Uint8Array(length)));
+
+    /** A certificate the host says can sign, with an algorithm its key supports. */
+    function pickSigner(list) {
+      for (const cert of list?.certificates ?? []) {
+        if (!cert.can_sign) continue;
+        const algorithm = ["ECDSA", "RSASSA-PKCS1-v1_5"].find((a) => cert.algorithms.includes(a));
+        if (algorithm) return { cert, algorithm };
+      }
+      return null;
+    }
+
+    async function run() {
+      await waitForAnnounce();
+      result.status = await call({ type: "status" });
+      result.ping = await call({ type: "ping" });
+      result.list = await call({ type: "list" });
+
+      // Validation must not depend on any key being present: a 31-byte
+      // "SHA-256 digest" is refused before the host looks for the key.
+      result.wrongDigest = await call({
+        type: "sign",
+        fingerprint: "00".repeat(32),
+        hash: "SHA-256",
+        algorithm: "ECDSA",
+        digest: randomDigest(31),
+      });
+
+      const signer = result.list.ok ? pickSigner(result.list) : null;
+      if (signer) {
+        result.sign = await call({
+          type: "sign",
+          fingerprint: signer.cert.fingerprint,
+          hash: "SHA-256",
+          algorithm: signer.algorithm,
+          digest: randomDigest(32),
+        });
+        result.sign.usedAlgorithm = signer.algorithm;
+      }
+    }
+
+    run()
+      .catch((error) => {
+        result.failure = String(error?.message ?? error);
+      })
+      .finally(() => {
+        result.done = true;
+        document.getElementById("out").textContent = JSON.stringify(result, null, 2);
+      });
+  </script>
+</body>
+</html>

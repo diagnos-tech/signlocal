@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Download WebeSign</title>
+<meta name="description" content="Install the WebeSign app for Windows, macOS or Linux and the extension for Chrome, Edge, Brave, Opera or Firefox.">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="stylesheet" href="assets/download.css">
+<script src="assets/i18n.js" defer></script>
+<script src="assets/detect.js" defer></script>
+<script src="assets/cta.js" defer></script>
+<script src="assets/tabs.js" defer></script>
+</head>
+<body class="dl">
+<a class="skip" href="#main" data-i18n="nav.skip">Skip to content</a>
+<header class="bar">
+<a class="brand" href="index.html"><img src="assets/icon.svg" alt="" width="24" height="24">WebeSign</a>
+<nav aria-label="Main"><a href="index.html" data-i18n="nav.home">Home</a><a href="download.html" aria-current="page" data-i18n="nav.download">Download</a><a href="privacy.html" data-i18n="nav.privacy">Privacy</a><a href="developers.html" data-i18n="nav.developers">Developers</a></nav>
+<label class="lang"><span class="sr" data-i18n="nav.language">Language</span><select id="lang"><option value="en">English</option><option value="es">Español</option><option value="pt-PT">Português (Portugal)</option><option value="pt-BR">Português (Brasil)</option><option value="fr">Français</option><option value="it">Italiano</option><option value="de">Deutsch</option></select></label>
+</header>
+<main id="main">
+<h1 data-i18n="dl.title">Download WebeSign</h1>
+<p class="lead" data-i18n="dl.lead">Two parts work together: the app on your computer and the extension in your browser. Install both, then finish the setup.</p>
+<div class="notice" role="note"><strong data-i18n="dl.unsigned_h">Prerelease builds are not code-signed yet</strong><p data-i18n="dl.unsigned">Windows shows SmartScreen and macOS shows Gatekeeper the first time. The steps below say what to click. Code signing is planned. Always check the SHA256SUMS file.</p><p data-i18n="dl.private">The repository is private for now, so downloads need the GitHub CLI signed in (gh auth login).</p></div>
+<p class="detected" data-when-os="mobile" hidden data-i18n="home.mobile">WebeSign runs on computers with Windows, macOS or Linux. Open this page on your computer to install it.</p>
+
+<section aria-labelledby="s1">
+<h2 id="s1"><span class="n" aria-hidden="true">1</span><span data-i18n="dl.step1_h">Install the app</span></h2>
+<div data-tabs data-detect="os">
+<div role="tablist" data-i18n-label="dl.os_label" aria-label="Operating system"><button role="tab" id="t-windows" data-tab="windows" type="button">Windows</button><button role="tab" id="t-macos" data-tab="macos" type="button">macOS</button><button role="tab" id="t-linux" data-tab="linux" type="button">Linux</button></div>
+
+<div class="panel" id="windows">
+<h3 class="panel-h">Windows</h3>
+<p><span data-i18n="dl.win">The installer script checks the download, installs WebeSign for your user (no administrator rights) and connects it to your browsers.</span> <span data-i18n="dl.win_arch">For x64 and arm64 PCs.</span></p>
+<p class="muted" data-i18n="dl.private_h">While the repository is private</p>
+<pre><code>gh release download v&lt;v&gt; --repo diagnos-tech/web-esign --pattern install.ps1 --pattern SHA256SUMS
+# check install.ps1 against SHA256SUMS (see "Check every download"), then:
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Version &lt;v&gt;</code></pre>
+<p class="muted" data-i18n="dl.public_h">Once the repository is public</p>
+<pre><code>$base = 'https://github.com/diagnos-tech/web-esign/releases/download/v&lt;v&gt;'
+Invoke-WebRequest -UseBasicParsing -Uri "$base/install.ps1" -OutFile install.ps1
+Invoke-WebRequest -UseBasicParsing -Uri "$base/SHA256SUMS" -OutFile SHA256SUMS</code></pre>
+<p class="tip" data-i18n="dl.win_warn">If you unzip and run websign.exe by hand, SmartScreen says “Windows protected your PC”: click More info, then Run anyway. The script avoids this prompt.</p>
+</div>
+
+<div class="panel" id="macos">
+<h3 class="panel-h">macOS</h3>
+<p><span data-i18n="dl.mac">The installer script checks the download, installs WebeSign.app without sudo and connects it to your browsers.</span> <span data-i18n="dl.mac_arch">One app for Apple silicon and Intel Macs.</span></p>
+<p class="muted" data-i18n="dl.private_h">While the repository is private</p>
+<pre><code>gh release download v&lt;v&gt; --repo diagnos-tech/web-esign --pattern install.sh --pattern SHA256SUMS
+shasum -a 256 --ignore-missing -c SHA256SUMS &amp;&amp; sh install.sh --version &lt;v&gt;</code></pre>
+<p class="muted" data-i18n="dl.public_h">Once the repository is public</p>
+<pre><code>curl -fsSLO https://github.com/diagnos-tech/web-esign/releases/download/v&lt;v&gt;/install.sh
+curl -fsSLO https://github.com/diagnos-tech/web-esign/releases/download/v&lt;v&gt;/SHA256SUMS
+shasum -a 256 --ignore-missing -c SHA256SUMS &amp;&amp; sh install.sh --version &lt;v&gt;</code></pre>
+<p class="tip" data-i18n="dl.mac_warn">The app is not notarized yet. If you installed it by hand and macOS says it cannot be opened, open System Settings, Privacy &amp; Security, and click Open Anyway, or run: xattr -dr com.apple.quarantine /Applications/WebeSign.app</p>
+</div>
+
+<div class="panel" id="linux">
+<h3 class="panel-h">Linux</h3>
+<p><span data-i18n="dl.linux">The installer script works on any distribution and installs for your user, without root. On Debian, Ubuntu, Fedora and Rocky Linux it can install the system package instead.</span> <span data-i18n="dl.linux_arch">For amd64 and arm64.</span></p>
+<p class="muted" data-i18n="dl.private_h">While the repository is private</p>
+<pre><code>gh release download v&lt;v&gt; --repo diagnos-tech/web-esign --pattern install.sh --pattern SHA256SUMS
+sha256sum --ignore-missing -c SHA256SUMS &amp;&amp; sh install.sh --version &lt;v&gt;</code></pre>
+<p class="muted" data-i18n="dl.public_h">Once the repository is public</p>
+<pre><code>curl -fsSLO https://github.com/diagnos-tech/web-esign/releases/download/v&lt;v&gt;/install.sh
+curl -fsSLO https://github.com/diagnos-tech/web-esign/releases/download/v&lt;v&gt;/SHA256SUMS
+sha256sum --ignore-missing -c SHA256SUMS &amp;&amp; sh install.sh --version &lt;v&gt;</code></pre>
+<h4 data-i18n="dl.pkgs_h">System packages</h4>
+<div class="table-wrap"><table>
+<thead><tr><th data-i18n="dl.th_dist">Distribution</th><th data-i18n="dl.th_install">Install</th></tr></thead>
+<tbody>
+<tr><td>Ubuntu 22.04, 24.04, Debian 12</td><td><code>sudo apt install ./websign_&lt;v&gt;_amd64.deb</code></td></tr>
+<tr><td>Fedora 42, Rocky Linux 9</td><td><code>sudo dnf install ./websign-&lt;v&gt;-1.x86_64.rpm</code></td></tr>
+<tr><td data-i18n="dl.arch_others">Arch Linux and others</td><td data-i18n="dl.use_script">The installer script above</td></tr>
+</tbody></table></div>
+<p class="tip"><span data-i18n="dl.pcsc">Smart cards and tokens need the PC/SC service:</span> <code>sudo apt install pcscd</code> · <code>sudo dnf install pcsc-lite</code> · <code>sudo systemctl enable --now pcscd.socket</code></p>
+</div>
+</div>
+</section>
+
+<section aria-labelledby="s2">
+<h2 id="s2"><span class="n" aria-hidden="true">2</span><span data-i18n="dl.step2_h">Add the browser extension</span></h2>
+<p data-i18n="dl.ext_intro">The extension is not in the stores yet. From the same release, download websign-extension-&lt;v&gt;-chromium.zip (for Firefox: websign-extension-&lt;v&gt;-firefox.zip), check it against SHA256SUMS and unzip it.</p>
+<div data-tabs data-detect="browser">
+<div role="tablist" data-i18n-label="dl.browser_label" aria-label="Browser"><button role="tab" id="t-chrome" data-tab="chrome" type="button">Chrome</button><button role="tab" id="t-edge" data-tab="edge" type="button">Edge</button><button role="tab" id="t-brave" data-tab="brave" type="button">Brave</button><button role="tab" id="t-opera" data-tab="opera" type="button">Opera</button><button role="tab" id="t-firefox" data-tab="firefox" type="button">Firefox</button><button role="tab" id="t-safari" data-tab="safari" type="button">Safari</button></div>
+<div class="panel" id="chrome"><h3 class="panel-h">Chrome</h3><ol class="how"><li><span data-i18n="dl.cr_open">Open the extensions page:</span> <code>chrome://extensions</code></li><li data-i18n="dl.cr_dev">Turn on Developer mode.</li><li data-i18n="dl.cr_load">Click Load unpacked and choose the unzipped websign-extension-&lt;v&gt;-chromium folder.</li><li data-i18n="dl.cr_keep">Keep that folder: the browser loads the extension from there.</li></ol></div>
+<div class="panel" id="edge"><h3 class="panel-h">Edge</h3><ol class="how"><li><span data-i18n="dl.cr_open">Open the extensions page:</span> <code>edge://extensions</code></li><li data-i18n="dl.cr_dev">Turn on Developer mode.</li><li data-i18n="dl.cr_load">Click Load unpacked and choose the unzipped websign-extension-&lt;v&gt;-chromium folder.</li><li data-i18n="dl.cr_keep">Keep that folder: the browser loads the extension from there.</li></ol></div>
+<div class="panel" id="brave"><h3 class="panel-h">Brave</h3><ol class="how"><li><span data-i18n="dl.cr_open">Open the extensions page:</span> <code>brave://extensions</code></li><li data-i18n="dl.cr_dev">Turn on Developer mode.</li><li data-i18n="dl.cr_load">Click Load unpacked and choose the unzipped websign-extension-&lt;v&gt;-chromium folder.</li><li data-i18n="dl.cr_keep">Keep that folder: the browser loads the extension from there.</li></ol></div>
+<div class="panel" id="opera"><h3 class="panel-h">Opera</h3><ol class="how"><li><span data-i18n="dl.cr_open">Open the extensions page:</span> <code>opera://extensions</code></li><li data-i18n="dl.cr_dev">Turn on Developer mode.</li><li data-i18n="dl.cr_load">Click Load unpacked and choose the unzipped websign-extension-&lt;v&gt;-chromium folder.</li><li data-i18n="dl.cr_keep">Keep that folder: the browser loads the extension from there.</li></ol></div>
+<div class="panel" id="firefox"><h3 class="panel-h">Firefox</h3><ol class="how"><li><span data-i18n="dl.ff_open">Open this page and choose This Firefox:</span> <code>about:debugging</code></li><li data-i18n="dl.ff_load">Click Load Temporary Add-on and choose manifest.json in the unzipped folder.</li></ol><p class="tip" data-i18n="dl.ff_keep">A temporary add-on lasts until Firefox restarts. To keep it, use Firefox Developer Edition, Nightly or ESR: set xpinstall.signatures.required to false in about:config, then in about:addons choose Install Add-on From File and pick the zip.</p></div>
+<div class="panel" id="safari"><h3 class="panel-h">Safari</h3><p data-i18n="dl.safari">The Safari extension comes inside WebeSign.app (macOS 13 or later, Safari 17 or later): nothing else to download. Until the app is signed by Apple, Safari loads it only with a developer setting.</p><ol class="how"><li data-i18n="dl.sf1">Install the app for macOS above and open WebeSign once from Applications, then close its window.</li><li data-i18n="dl.sf2">In Safari, open Settings, Advanced, and turn on Show features for web developers.</li><li data-i18n="dl.sf3">Open Settings, Developer, and turn on Allow unsigned extensions. Safari asks for your Mac password.</li><li data-i18n="dl.sf4">Open Settings, Extensions, tick WebeSign and allow it on the websites where you sign.</li></ol><p class="tip" data-i18n="dl.sf_restart">Safari turns Allow unsigned extensions off every time it quits: repeat step 3 after each restart. Certificates in the Keychain and tokens that work with macOS behave as in other browsers; tokens that only have a PKCS#11 driver may not work in Safari yet.</p></div>
+</div>
+<p class="tip" data-i18n="dl.devkey">The unpacked extension carries a public development key, so the app can recognize it before it is in a store. Only load the zip from our release after checking SHA256SUMS, and remove unpacked extensions you do not trust. Every signature still needs your confirmation in the app window.</p>
+</section>
+
+<section aria-labelledby="s3">
+<h2 id="s3"><span class="n" aria-hidden="true">3</span><span data-i18n="dl.step3_h">Finish setting up</span></h2>
+<p data-i18n="dl.finish">The installer already connected the app to your browsers. Sign a harmless test message to check that everything works. If the extension cannot find the app, open the activation page once.</p>
+<p><a class="btn" href="test/" data-i18n="test.link">Test your setup</a> <a class="btn ghost" href="activate/" data-i18n="act.link">Already installed? Finish setting up</a></p>
+</section>
+
+<section aria-labelledby="verify">
+<h2 id="verify" data-i18n="dl.verify_h">Check every download</h2>
+<p data-i18n="dl.verify">Each release has a SHA256SUMS file. Compare the hash of your file with its line. The installer scripts do this for you.</p>
+<p class="muted">Linux · macOS</p>
+<pre><code>sha256sum --ignore-missing -c SHA256SUMS        # Linux
+shasum -a 256 --ignore-missing -c SHA256SUMS    # macOS</code></pre>
+<p class="muted">Windows (PowerShell)</p>
+<pre><code>$file = 'install.ps1'
+$m = Select-String -Path .\SHA256SUMS -Pattern ('^([0-9a-fA-F]{64}) [ *]' + [regex]::Escape($file) + '$')
+if (-not $m) { throw "${file} is not listed in SHA256SUMS" }
+if ((Get-FileHash -Algorithm SHA256 -LiteralPath $file).Hash -ne $m.Matches[0].Groups[1].Value) {
+  throw "Checksum mismatch for ${file}: delete it and do not run it"
+}
+"${file}: OK"</code></pre>
+<p data-i18n="dl.mismatch">A mismatch means the file is damaged or was altered: delete it and do not run it.</p>
+<p><a href="https://github.com/diagnos-tech/web-esign/blob/main/docs/install.md" data-i18n="dl.guide">Full guide, file names and uninstall steps: docs/install.md</a> · <a href="https://github.com/diagnos-tech/web-esign/releases" data-i18n="dl.releases">All releases</a></p>
+</section>
+</main>
+<footer class="foot"><span data-i18n="foot.license">Free software (GPL-3.0-or-later; SDK and clients Apache-2.0)</span> · <a href="https://github.com/diagnos-tech/web-esign" data-i18n="foot.source">Source code</a> · <a href="https://github.com/diagnos-tech/web-esign/blob/main/SECURITY.md" data-i18n="foot.security">Security</a></footer>
+</body>
+</html>

@@ -1,0 +1,142 @@
+{
+  "extension_description": {
+    "message": "Signieren Sie auf jeder Website mit Chipkarte, USB-Token oder Zertifikat des Betriebssystems. Kostenlos und Open Source für alle."
+  },
+  "extension_name": {
+    "message": "WebeSign"
+  },
+  "popup_activate": {
+    "message": "Schon installiert? Einrichtung abschließen"
+  },
+  "popup_checking": {
+    "message": "App wird gesucht…"
+  },
+  "popup_download": {
+    "message": "Für $os$ herunterladen",
+    "placeholders": {
+      "os": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_error_body": {
+    "message": "Versuchen Sie es erneut. Wenn das Problem bestehen bleibt, starten Sie Ihren Computer neu."
+  },
+  "popup_error_code": {
+    "message": "Fehlercode: $code$",
+    "placeholders": {
+      "code": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_error_title": {
+    "message": "Die App hat nicht geantwortet"
+  },
+  "popup_footer_extension": {
+    "message": "Erweiterung $ext$",
+    "placeholders": {
+      "ext": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_footer_versions": {
+    "message": "Erweiterung $ext$ · App $app$",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      },
+      "ext": {
+        "content": "$2"
+      }
+    }
+  },
+  "popup_missing_body": {
+    "message": "Zum Signieren benötigt die Erweiterung die App auf Ihrem Computer."
+  },
+  "popup_missing_title": {
+    "message": "WebeSign-App installieren"
+  },
+  "popup_new_tab": {
+    "message": "Öffnet sich in einem neuen Tab"
+  },
+  "popup_open_diagnostics": {
+    "message": "Diagnose öffnen"
+  },
+  "popup_outdated_body": {
+    "message": "Sie haben Version $installed$. Dieser Browser benötigt $required$ oder neuer.",
+    "placeholders": {
+      "installed": {
+        "content": "$1"
+      },
+      "required": {
+        "content": "$2"
+      }
+    }
+  },
+  "popup_outdated_title": {
+    "message": "WebeSign-App aktualisieren"
+  },
+  "popup_privacy": {
+    "message": "Datenschutz"
+  },
+  "popup_ready_body": {
+    "message": "Die WebeSign-App $version$ ist mit diesem Browser verbunden.",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_ready_title": {
+    "message": "Bereit zum Signieren"
+  },
+  "popup_redownload": {
+    "message": "Erneut herunterladen"
+  },
+  "popup_retry": {
+    "message": "Erneut versuchen"
+  },
+  "popup_test": {
+    "message": "Ihre Einrichtung testen"
+  },
+  "popup_unsupported_body": {
+    "message": "Verwenden Sie einen Computer mit Windows, macOS oder Linux."
+  },
+  "popup_unsupported_title": {
+    "message": "WebeSign funktioniert auf diesem System noch nicht"
+  },
+  "popup_update": {
+    "message": "Update herunterladen"
+  },
+  "popup_update_in": {
+    "message": "In $store$ aktualisieren",
+    "placeholders": {
+      "store": {
+        "content": "$1"
+      }
+    }
+  },
+  "store_apple": {
+    "message": "Mac App Store"
+  },
+  "store_github": {
+    "message": "die Download-Seite"
+  },
+  "store_linux": {
+    "message": "Download-Seite"
+  },
+  "store_listing_description": {
+    "message": "Signieren Sie auf jeder Website mit Ihrer Smartcard, Ihrem USB-Token oder einem Zertifikat Ihres Betriebssystems. Funktioniert mit Chrome, Edge, Firefox, Opera, Brave und Safari unter Windows, macOS und Linux. Frei und Open Source für alle.\n\nWenn eine Website eine Signatur anfordert, öffnet die WebeSign-App ein eigenes Fenster auf Ihrem Computer: Sie sehen, wer anfragt, wählen Ihr Zertifikat, prüfen den Prüfcode und bestätigen. Die PIN geben Sie in der App oder im Fenster des Betriebssystems ein, nie auf einer Webseite.\n\n• Funktioniert mit den Zertifikaten, die Sie schon haben: USB-Tokens, Smartcards und auf dem Computer installierte Zertifikate.\n• Die Website sendet nur einen Fingerabdruck (Hash) des Dokuments; das Dokument selbst verlässt sie nie.\n• Jede Signatur braucht Ihre Bestätigung, und jede Website Ihre Erlaubnis, die Sie jederzeit widerrufen können.\n• Kein Konto, keine Tracker, kein Hintergrunddienst und kein offener Netzwerkport.\n\nDie Erweiterung arbeitet mit der kostenlosen WebeSign-App für Windows, macOS und Linux zusammen, erhältlich auf der Projektwebsite. Quellcode: GPL-3.0-or-later; Entwicklerbibliotheken: Apache-2.0."
+  },
+  "store_listing_name": {
+    "message": "WebeSign: mit Ihrem Zertifikat signieren"
+  },
+  "store_listing_summary": {
+    "message": "Signieren Sie auf jeder Website mit Smartcard, USB-Token oder Systemzertifikat. Windows, macOS und Linux. Frei und Open Source."
+  },
+  "store_microsoft": {
+    "message": "Microsoft Store"
+  }
+}

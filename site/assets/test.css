@@ -1,0 +1,25 @@
+/* Test-signature page. Tokens from tokens.css; identicon palette from docs/ux.md §11.1. */
+:root {
+  --ws-id-0: #D6453A; --ws-id-1: #C4610A; --ws-id-2: #3B8A3B; --ws-id-3: #12857B;
+  --ws-id-4: #2D78D2; --ws-id-5: #5A55D6; --ws-id-6: #9549C4; --ws-id-7: #C63E7B;
+}
+.label { font-weight: 600; }
+.state > div, #result-ok, #result-error { background: var(--ws-bg-surface); border: 1px solid var(--ws-border); border-radius: var(--ws-radius-lg); padding: 12px 16px; }
+.state .ok, #result-ok:not(.warn) { background: var(--ws-accent-soft); border-color: var(--ws-accent); }
+.state .warn, #result-ok.warn, #result-error, #nocrypto { background: var(--ws-warning-soft); border: 1px solid var(--ws-warning-border); border-radius: var(--ws-radius-lg); padding: 12px 16px; }
+.state p, #result-error p { margin: 4px 0 8px; }
+.state .btn, #copy { margin-bottom: 0; }
+button.btn { border: 0; font: inherit; font-weight: 600; cursor: pointer; }
+button.btn.ghost { border: 1px solid var(--ws-border-strong); }
+button.btn:disabled { background: var(--ws-bg-sunken); color: var(--ws-fg-subtle); cursor: not-allowed; }
+.facts { display: grid; grid-template-columns: 1fr; gap: 2px 16px; margin: 8px 0 0; }
+.facts dt { font-weight: 600; margin-top: 8px; }
+.facts dd { margin: 0; overflow-wrap: anywhere; }
+@media (min-width: 560px) { .facts { grid-template-columns: max-content 1fr; } .facts dt { margin-top: 0; } }
+.code { display: inline-flex; align-items: center; gap: 12px; }
+.identicon { display: grid; grid-template-columns: repeat(5, 10px); gap: 2px; padding: 4px; background: var(--ws-bg-sunken); border: 1px solid var(--ws-border); border-radius: var(--ws-radius-sm); }
+.identicon i { width: 10px; height: 10px; }
+.identicon i.on { background: var(--id); }
+#sample { overflow-wrap: anywhere; }
+#summary { white-space: pre-wrap; overflow-wrap: anywhere; }
+#setup [hidden], #result [hidden] { display: none; }

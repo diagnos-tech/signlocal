@@ -1,0 +1,142 @@
+{
+  "extension_description": {
+    "message": "Use su tarjeta inteligente, token USB o certificado del sistema para firmar en cualquier sitio web. Gratis y de código abierto."
+  },
+  "extension_name": {
+    "message": "WebeSign"
+  },
+  "popup_activate": {
+    "message": "¿Ya la instaló? Termine la configuración"
+  },
+  "popup_checking": {
+    "message": "Buscando la app…"
+  },
+  "popup_download": {
+    "message": "Descargar para $os$",
+    "placeholders": {
+      "os": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_error_body": {
+    "message": "Inténtelo de nuevo. Si continúa, reinicie el equipo."
+  },
+  "popup_error_code": {
+    "message": "Código de error: $code$",
+    "placeholders": {
+      "code": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_error_title": {
+    "message": "La app no respondió"
+  },
+  "popup_footer_extension": {
+    "message": "Extensión $ext$",
+    "placeholders": {
+      "ext": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_footer_versions": {
+    "message": "Extensión $ext$ · App $app$",
+    "placeholders": {
+      "app": {
+        "content": "$1"
+      },
+      "ext": {
+        "content": "$2"
+      }
+    }
+  },
+  "popup_missing_body": {
+    "message": "La extensión necesita la app en su equipo para firmar."
+  },
+  "popup_missing_title": {
+    "message": "Instale la app WebeSign"
+  },
+  "popup_new_tab": {
+    "message": "Se abre en una pestaña nueva"
+  },
+  "popup_open_diagnostics": {
+    "message": "Abrir diagnóstico"
+  },
+  "popup_outdated_body": {
+    "message": "Tiene la versión $installed$. Este navegador requiere la $required$ o posterior.",
+    "placeholders": {
+      "installed": {
+        "content": "$1"
+      },
+      "required": {
+        "content": "$2"
+      }
+    }
+  },
+  "popup_outdated_title": {
+    "message": "Actualice la app WebeSign"
+  },
+  "popup_privacy": {
+    "message": "Privacidad"
+  },
+  "popup_ready_body": {
+    "message": "La app WebeSign $version$ está conectada a este navegador.",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_ready_title": {
+    "message": "Listo para firmar"
+  },
+  "popup_redownload": {
+    "message": "Descargar de nuevo"
+  },
+  "popup_retry": {
+    "message": "Intentar de nuevo"
+  },
+  "popup_test": {
+    "message": "Pruebe su configuración"
+  },
+  "popup_unsupported_body": {
+    "message": "Use un equipo con Windows, macOS o Linux."
+  },
+  "popup_unsupported_title": {
+    "message": "WebeSign aún no funciona en este sistema"
+  },
+  "popup_update": {
+    "message": "Descargar la actualización"
+  },
+  "popup_update_in": {
+    "message": "Actualizar en $store$",
+    "placeholders": {
+      "store": {
+        "content": "$1"
+      }
+    }
+  },
+  "store_apple": {
+    "message": "Mac App Store"
+  },
+  "store_github": {
+    "message": "la página de descarga"
+  },
+  "store_linux": {
+    "message": "página de descarga"
+  },
+  "store_listing_description": {
+    "message": "Use su tarjeta inteligente, token USB o certificado del sistema para firmar en cualquier sitio web. Funciona con Chrome, Edge, Firefox, Opera, Brave y Safari en Windows, macOS y Linux. Software libre y de código abierto para todos.\n\nCuando un sitio web pide una firma, la aplicación WebeSign abre su propia ventana en su ordenador: usted ve quién la pide, elige el certificado, comprueba el código de verificación y confirma. El PIN se escribe en la aplicación o en la ventana del sistema operativo, nunca en una página web.\n\n• Funciona con los certificados que ya tiene: tokens USB, tarjetas inteligentes (como el DNIe) y certificados instalados en el ordenador.\n• El sitio envía solo una huella (hash) del documento; el documento nunca sale de él.\n• Cada firma le pide confirmación, y cada sitio necesita su permiso, que puede retirar cuando quiera.\n• Sin cuenta, sin rastreadores, sin servicio en segundo plano y sin puertos de red abiertos.\n\nLa extensión funciona junto con la aplicación WebeSign, gratuita, para Windows, macOS y Linux, disponible en el sitio web del proyecto. Código fuente: GPL-3.0-or-later; bibliotecas para desarrolladores: Apache-2.0."
+  },
+  "store_listing_name": {
+    "message": "WebeSign: firme con su certificado"
+  },
+  "store_listing_summary": {
+    "message": "Firme en cualquier web con su tarjeta inteligente, token USB o certificado del sistema. Windows, macOS y Linux. Libre y abierto."
+  },
+  "store_microsoft": {
+    "message": "Microsoft Store"
+  }
+}

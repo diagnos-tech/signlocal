@@ -1,0 +1,21 @@
+{
+  "name": "websign-workspace",
+  "private": true,
+  "description": "TypeScript packages of WebeSign: the web SDK, the Node desktop client, the browser extension and the end-to-end tests.",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "workspaces": ["sdk", "clients/node", "extension", "e2e"],
+  "scripts": {
+    "typecheck": "bun run --filter '*' typecheck",
+    "test": "bun run --filter '*' test",
+    "lint": "biome check .",
+    "format": "biome format --write ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.14",
+    "typescript": "7.0.2"
+  },
+  "engines": {
+    "bun": ">=1.3"
+  }
+}

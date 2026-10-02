@@ -1,0 +1,55 @@
+# Single source of truth for every provisional name and identifier.
+#
+# The final product name depends on a trademark search (INPI, EUIPO, USPTO).
+# Renaming the project must only require editing this file: build scripts,
+# the extension manifest and the packaging read their identifiers from here.
+#
+# Generated from here: Rust constants (crates/websign-project), the extension
+# manifest, native messaging manifests, packaging metadata.
+#
+# TODO(gustavo): final name, domain and IDs after the trademark search.
+
+[product]
+name = "WebeSign"
+# Lowercase ASCII: binary names, folders, log files.
+slug = "websign"
+tagline = "Use your smart card, USB token, or OS certificate to sign on any website."
+repository = "https://github.com/diagnos-tech/web-esign"
+# TODO(gustavo): own GitHub Pages subdomain (CNAME file + DNS).
+homepage = "https://diagnos-tech.github.io/web-esign/"
+
+[ids]
+# Native messaging host name. Chrome only accepts [a-z0-9_.] here.
+native_host = "dev.websign.host"
+# URL scheme the extension uses to open the app once so it can register
+# itself with the browsers (stores run no install scripts).
+url_scheme = "websign"
+# TODO(gustavo): Apple Team ID and Microsoft Store publisher.
+macos_bundle_id = "dev.websign.app"
+macos_app_group = "TEAMID.dev.websign"
+safari_extension_bundle_id = "dev.websign.app.extension"
+windows_package_name = "WebeSign"
+windows_publisher = "CN=TODO"
+
+[extension]
+# Gecko ID: fixed by us, so it is known before publishing to AMO.
+firefox_id = "websign@dev.websign"
+# Store IDs are assigned on first upload; empty until then.
+chrome_web_store_id = ""
+edge_addons_id = ""
+# Slug of the addons.mozilla.org listing, empty until it is published: an
+# unclaimed slug can be registered by anyone, so nothing links to AMO before.
+firefox_amo_slug = ""
+# Public key of the development build. It pins the unpacked extension ID to
+# `dev_id` on every machine, so the native host can allow it before the
+# extension is published. The private key is not needed and is not kept.
+dev_key = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA23qNhgRgdrtE1Zfv2sefK7ibzL7EUVCI74ebI41HhUKADp0GA+XN8PhM8P5Bd4xbVw1rlYRUub213UAswnhY9Q32Ou2lCyKWlIbYZnAah+GiT2RQrg0b5b25RPmMSoitbsm4tqTkc0Bv/pxD6lMi12fXWXeo4etAeDFxueMpus1M4OC0yuOjK9eLLuHL1b/dYfe43WjsQSsvfxNScu8faC2R/31UKYNhhcEZlLl/HCXiPB9pZNms81SPViDhMKtdSXj38uPFSmN0Tl0BlHdnsxd72RLaaS9qr1YTFPeoSXuNvrx8E5NvjJOe6E/HI+2BSkm1ncxsd3xx0F2g0ngHjwIDAQAB"
+dev_id = "nhnkdpljdgjflbflkhnkmfmcmodboeii"
+# Oldest app the extension accepts; older apps make the popup and the SDK
+# report AppOutdated. Raise it when the extension needs an app feature.
+min_app_version = "0.1.0"
+
+[npm]
+scope = "@websign"
+sdk_package = "@websign/sdk"
+desktop_package = "@websign/desktop"

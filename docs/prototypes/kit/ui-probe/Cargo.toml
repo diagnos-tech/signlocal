@@ -1,0 +1,25 @@
+[package]
+name = "ui-probe"
+version = "0.0.0"
+description = "Spike: real eframe window with wgpu/glow selection, screenshot to PNG, headless kittest snapshot."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+# Both backends are compiled in so the runtime can fall back from wgpu to glow.
+eframe = { version = "0.36", default-features = false, features = [
+  "accesskit", "default_fonts", "wgpu", "glow", "wayland", "x11",
+] }
+egui = "0.36"
+image = { version = "0.25", default-features = false, features = ["png"] }
+thiserror = { workspace = true }
+clap = { version = "4", features = ["derive"] }
+
+[dev-dependencies]
+egui_kittest = { version = "0.36", features = ["wgpu", "snapshot"] }
+egui-wgpu = "0.36"
+
+[lints]
+workspace = true

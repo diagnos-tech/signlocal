@@ -1,0 +1,10 @@
+# Text files are stored and checked out with LF so generated files compare
+# byte for byte on every OS.
+* text=auto eol=lf
+*.png binary
+*.der binary
+*.p12 binary
+*.pfx binary
+*.ttf binary
+*.otf binary
+*.woff2 binary

@@ -1,0 +1,12 @@
+# extension
+
+- `build/` — build-time code: the manifest per target and channel (`manifest.ts`)
+- `scripts/` — CI helpers: `size.ts`, the popup's 15 KB budget check
+- `public/` — static files copied into the extension: the generated `_locales/`
+- `src/` — sources of the extension
+- `test/` — Vitest tests of the extension modules
+- `README.md` — what this component is, how to build and test it, where its contract lives
+- `SPEC.md` — the behavior contract: rules, errors, edge cases and test vectors (source of truth for blind TDD)
+- `package.json` — extension package manifest and WXT scripts
+- `tsconfig.json` — type-checking settings on top of WXT's generated config
+- `wxt.config.ts` — WXT build configuration: one source, four targets (chrome, edge, firefox, safari).

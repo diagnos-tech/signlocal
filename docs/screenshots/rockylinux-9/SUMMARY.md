@@ -1,0 +1,23 @@
+# docs/screenshots/rockylinux-9
+
+- `index.md` — every screenshot on one page, light next to dark
+- `confirm-choose-dark.png` — confirm window, choose, dark theme
+- `confirm-choose-light.png` — confirm window, choose, light theme
+- `confirm-continue-new-site-dark.png` — confirm window, continue new site, dark theme
+- `confirm-continue-new-site-light.png` — confirm window, continue new site, light theme
+- `confirm-preparing-dark.png` — confirm window, preparing, dark theme
+- `confirm-preparing-light.png` — confirm window, preparing, light theme
+- `confirm-ready-dark.png` — confirm window, ready, dark theme
+- `confirm-ready-light.png` — confirm window, ready, light theme
+- `confirm-site-cancelled-dark.png` — confirm window, site cancelled, dark theme
+- `confirm-site-cancelled-light.png` — confirm window, site cancelled, light theme
+- `confirm-success-dark.png` — confirm window, success, dark theme
+- `confirm-success-light.png` — confirm window, success, light theme
+- `diagnostics-browsers-dark.png` — diagnostics window, browsers, dark theme
+- `diagnostics-browsers-light.png` — diagnostics window, browsers, light theme
+- `diagnostics-certificates-dark.png` — diagnostics window, certificates, dark theme
+- `diagnostics-certificates-light.png` — diagnostics window, certificates, light theme
+- `diagnostics-devices-dark.png` — diagnostics window, devices, dark theme
+- `diagnostics-devices-light.png` — diagnostics window, devices, light theme
+- `diagnostics-help-dark.png` — diagnostics window, help, dark theme
+- `diagnostics-help-light.png` — diagnostics window, help, light theme

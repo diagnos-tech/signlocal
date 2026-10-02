@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>For developers: WebeSign</title>
+<meta name="description" content="Add signing with the visitor's smart card, USB token or OS certificate to your website: @websign/sdk quickstart, errors, testing utilities and API reference.">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/i18n.js" defer></script>
+<style>
+  /* Page-only styles: the table of errors and the in-page menu. */
+  .toc { display: flex; flex-wrap: wrap; gap: 4px 16px; padding: 0; margin: 16px 0 0; list-style: none; font-size: .95rem; }
+  .errors { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: .95rem; }
+  .errors th, .errors td { text-align: left; vertical-align: top; padding: 8px; border-top: 1px solid var(--ws-border); }
+  .errors th { color: var(--ws-fg-muted); font-weight: 600; }
+  .errors td:first-child { white-space: nowrap; }
+  .errors tr:target { background: var(--ws-accent-soft); }
+  .errors a { text-decoration: none; }
+  @media (max-width: 560px) { .errors td:first-child { white-space: normal; overflow-wrap: anywhere; } }
+  ol.flow li { margin: 6px 0; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main" data-i18n="nav.skip">Skip to content</a>
+<header class="bar">
+<a class="brand" href="index.html"><img src="assets/icon.svg" alt="" width="24" height="24">WebeSign</a>
+<nav aria-label="Main"><a href="index.html" data-i18n="nav.home">Home</a><a href="download.html" data-i18n="nav.download">Download</a><a href="privacy.html" data-i18n="nav.privacy">Privacy</a><a href="developers.html" aria-current="page" data-i18n="nav.developers">Developers</a></nav>
+<label class="lang"><span class="sr" data-i18n="nav.language">Language</span><select id="lang"><option value="en">English</option><option value="es">Español</option><option value="pt-PT">Português (Portugal)</option><option value="pt-BR">Português (Brasil)</option><option value="fr">Français</option><option value="it">Italiano</option><option value="de">Deutsch</option></select></label>
+</header>
+<main id="main">
+<h1 data-i18n="dev.title">For developers</h1>
+<p class="lead" data-i18n="dev.lead">Let people sign on your website with the certificate they already have. You build the document and its hash; WebeSign returns the signature and the certificate.</p>
+<nav aria-labelledby="toc-label"><span id="toc-label" class="sr" data-i18n="dev.toc">On this page</span><ul class="toc">
+<li><a href="#quickstart" data-i18n="dev.nav_quick">Quickstart</a></li>
+<li><a href="#prepare" data-i18n="dev.nav_prepare">How prepare works</a></li>
+<li><a href="#status" data-i18n="dev.nav_status">Detect WebeSign</a></li>
+<li><a href="#errors" data-i18n="dev.nav_errors">Errors</a></li>
+<li><a href="#testing" data-i18n="dev.nav_testing">Testing</a></li>
+<li><a href="#frameworks" data-i18n="dev.nav_frameworks">React and Vue</a></li>
+<li><a href="#pdf" data-i18n="dev.nav_pdf">PDF (PAdES)</a></li>
+<li><a href="#api" data-i18n="dev.nav_api">API reference</a></li>
+<li><a href="#desktop" data-i18n="dev.nav_desktop">Desktop programs</a></li>
+</ul></nav>
+
+<section id="quickstart" aria-labelledby="quickstart-h">
+<h2 id="quickstart-h" data-i18n="dev.quick_h">Quickstart: your website</h2>
+<p data-i18n="dev.install">Install the package. It has no dependencies, is fully typed and adds under 5 KB to your page.</p>
+<pre><code>bun add @websign/sdk     # or: npm install @websign/sdk</code></pre>
+<p data-i18n="dev.quick">Then sign. prepare receives the certificate the person chose and returns the hash to sign:</p>
+<pre><code>import { sign } from &quot;@websign/sdk&quot;;
+
+const { signature, certificate } = await sign({
+  hash: &quot;SHA-256&quot;,
+  prepare: (certificate, { hash }) =&gt; crypto.subtle.digest(hash, signedAttributesFor(certificate)),
+});</code></pre>
+<p data-i18n="dev.quick_note">result.signature is the raw signature (ECDSA r‖s, or the RSA block). Put it in your CMS or PDF together with result.certificate.der and result.certificate.chain.</p>
+</section>
+
+<section id="prepare" aria-labelledby="prepare-h">
+<h2 id="prepare-h" data-i18n="dev.prepare_h">How prepare works</h2>
+<ol class="flow">
+<li data-i18n="dev.prepare1">Your page calls sign(). The WebeSign window opens and the person chooses a certificate.</li>
+<li data-i18n="dev.prepare2">prepare(certificate) runs in your page. PAdES and CAdES put the certificate inside the signed data, so this is where you build the signed attributes and return their hash (32, 48 or 64 bytes).</li>
+<li data-i18n="dev.prepare3">The person compares the verification code and confirms, typing the PIN in the app if needed. The document never leaves your page.</li>
+<li data-i18n="dev.prepare4">sign() resolves with the signature. If the person switches certificate, prepare runs again and only the last hash is signed.</li>
+</ol>
+<p data-i18n="dev.types">The types follow your options: with hash: "SHA-384" and algorithm: "ECDSA", prepare's context and the result are typed with exactly those values.</p>
+</section>
+
+<section id="status" aria-labelledby="status-h">
+<h2 id="status-h" data-i18n="dev.status_h">Show the Sign button only when WebeSign is ready</h2>
+<p data-i18n="dev.status">status() never opens a window and never fails. problem says what is missing; onChange tells you when the person installs or updates something while your page is open.</p>
+<pre><code>import { installUrl, onChange, status } from &quot;@websign/sdk&quot;;
+import { errorText } from &quot;@websign/sdk/messages&quot;;
+
+function show({ ready, problem }) {
+  signButton.hidden = !ready;
+  installLink.hidden = problem !== &quot;ExtensionMissing&quot;;
+  installLink.href = installUrl();             // the extension store of this browser
+  notice.textContent = errorText(problem)?.body ?? &quot;&quot;;
+}
+show(await status());
+onChange(show);</code></pre>
+</section>
+
+<section id="errors" aria-labelledby="errors-h">
+<h2 id="errors-h" data-i18n="dev.errors_h">Errors</h2>
+<p data-i18n="dev.errors">Every failure is a WebSignError with a stable code, a message and a hint for you, and a docsUrl that points to this table. For the person, errorText(error) from @websign/sdk/messages gives a title and the next step in 7 languages.</p>
+<pre><code>import { isWebSignError, sign } from &quot;@websign/sdk&quot;;
+import { errorText } from &quot;@websign/sdk/messages&quot;;
+
+try {
+  await sign({ hash: &quot;SHA-256&quot;, prepare });
+} catch (error) {
+  if (!isWebSignError(error)) throw error;
+  if (error.code === &quot;UserCancelled&quot;) return;          // nothing to show
+  console.warn(error.code, error.hint, error.docsUrl);  // for you
+  const text = errorText(error);                        // for the person, localized
+  if (text) showBanner(text.title, text.body);
+}</code></pre>
+<table class="errors">
+<thead><tr><th scope="col" data-i18n="dev.col_code">Code</th><th scope="col" data-i18n="dev.col_meaning">What happened and what to do</th></tr></thead>
+<tbody>
+<tr id="error-ExtensionMissing"><td><a href="#error-ExtensionMissing"><code>ExtensionMissing</code></a></td><td data-i18n="dev.err.ExtensionMissing">The WebeSign extension did not answer: it is not installed, or it is disabled for this site. Show a link to installUrl().</td></tr>
+<tr id="error-AppMissing"><td><a href="#error-AppMissing"><code>AppMissing</code></a></td><td data-i18n="dev.err.AppMissing">The extension is there but the WebeSign app is not. The person installs the app; the extension guides them.</td></tr>
+<tr id="error-AppOutdated"><td><a href="#error-AppOutdated"><code>AppOutdated</code></a></td><td data-i18n="dev.err.AppOutdated">The app is older than the extension needs (details has both versions). The person updates the app.</td></tr>
+<tr id="error-ExtensionOutdated"><td><a href="#error-ExtensionOutdated"><code>ExtensionOutdated</code></a></td><td data-i18n="dev.err.ExtensionOutdated">The extension is older than the app needs. The person restarts the browser so it updates.</td></tr>
+<tr id="error-ClientOutdated"><td><a href="#error-ClientOutdated"><code>ClientOutdated</code></a></td><td data-i18n="dev.err.ClientOutdated">The extension only speaks a newer protocol than your copy of @websign/sdk. Update the package in your site.</td></tr>
+<tr id="error-InsecureOrigin"><td><a href="#error-InsecureOrigin"><code>InsecureOrigin</code></a></td><td data-i18n="dev.err.InsecureOrigin">The page is not served over https. Serve it over https (http://localhost also works).</td></tr>
+<tr id="error-Aborted"><td><a href="#error-Aborted"><code>Aborted</code></a></td><td data-i18n="dev.err.Aborted">Your AbortSignal fired, or prepare threw (your error is in cause). Nothing to show the person.</td></tr>
+<tr id="error-UserCancelled"><td><a href="#error-UserCancelled"><code>UserCancelled</code></a></td><td data-i18n="dev.err.UserCancelled">The person closed the window. Leave the page as it was; no message is needed.</td></tr>
+<tr id="error-Timeout"><td><a href="#error-Timeout"><code>Timeout</code></a></td><td data-i18n="dev.err.Timeout">Nobody confirmed in time, or prepare took more than 60 seconds. Offer to try again.</td></tr>
+<tr id="error-NoCertificates"><td><a href="#error-NoCertificates"><code>NoCertificates</code></a></td><td data-i18n="dev.err.NoCertificates">No usable certificate was found. The person plugs in the token or card and tries again.</td></tr>
+<tr id="error-CertificateUnavailable"><td><a href="#error-CertificateUnavailable"><code>CertificateUnavailable</code></a></td><td data-i18n="dev.err.CertificateUnavailable">The chosen certificate is gone (the token was removed). The person plugs it back in or chooses another one.</td></tr>
+<tr id="error-CertificateNotValid"><td><a href="#error-CertificateNotValid"><code>CertificateNotValid</code></a></td><td data-i18n="dev.err.CertificateNotValid">The certificate has expired or is not valid yet. The person chooses another one.</td></tr>
+<tr id="error-InvalidRequest"><td><a href="#error-InvalidRequest"><code>InvalidRequest</code></a></td><td data-i18n="dev.err.InvalidRequest">A bug in the call: a wrong option, or a hash of the wrong length. The message says which.</td></tr>
+<tr id="error-UnsupportedAlgorithm"><td><a href="#error-UnsupportedAlgorithm"><code>UnsupportedAlgorithm</code></a></td><td data-i18n="dev.err.UnsupportedAlgorithm">The key cannot produce the algorithm you asked for. Accept more algorithms, or ask for another certificate.</td></tr>
+<tr id="error-PinIncorrect"><td><a href="#error-PinIncorrect"><code>PinIncorrect</code></a></td><td data-i18n="dev.err.PinIncorrect">A wrong PIN. The app asks again, so a website rarely sees this.</td></tr>
+<tr id="error-PinLocked"><td><a href="#error-PinLocked"><code>PinLocked</code></a></td><td data-i18n="dev.err.PinLocked">The PIN is blocked. The person unlocks it with the PUK, using the issuer's tools.</td></tr>
+<tr id="error-TokenRemoved"><td><a href="#error-TokenRemoved"><code>TokenRemoved</code></a></td><td data-i18n="dev.err.TokenRemoved">The token was removed while signing. The person plugs it back in and tries again.</td></tr>
+<tr id="error-DriverFailure"><td><a href="#error-DriverFailure"><code>DriverFailure</code></a></td><td data-i18n="dev.err.DriverFailure">The token driver failed; details.native has its status. Try again; if it keeps failing, the person reconnects the token.</td></tr>
+<tr id="error-Busy"><td><a href="#error-Busy"><code>Busy</code></a></td><td data-i18n="dev.err.Busy">Other requests are waiting in the WebeSign window. Try again once they are done.</td></tr>
+<tr id="error-Internal"><td><a href="#error-Internal"><code>Internal</code></a></td><td data-i18n="dev.err.Internal">A bug in WebeSign. Please report it with the diagnostics from the app.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="testing" aria-labelledby="testing-h">
+<h2 id="testing-h" data-i18n="dev.testing_h">Test without the extension</h2>
+<p data-i18n="dev.testing">@websign/sdk/testing installs a fake extension and app on window. Your code runs unchanged: status(), certificates() and sign() work, prepare runs, and the signatures are real ECDSA or RSA made with public test keys, so you can verify them. Script every outcome: the person cancels, no certificates, app missing, outdated, driver errors.</p>
+<pre><code>import { installFakeWebSign, type FakeWebSign } from &quot;@websign/sdk/testing&quot;;
+
+let fake: FakeWebSign;
+beforeEach(async () =&gt; (fake = await installFakeWebSign()));   // in jsdom or happy-dom
+afterEach(() =&gt; fake.uninstall());
+
+it(&quot;signs the contract&quot;, async () =&gt; {
+  const result = await signContract();                         // your code, calling sign()
+  expect(await fake.verify(result, signedAttributes)).toBe(true);
+});
+
+it(&quot;stays calm when the person cancels&quot;, async () =&gt; {
+  fake.failNext(&quot;UserCancelled&quot;);
+  await expect(signContract()).rejects.toMatchObject({ code: &quot;UserCancelled&quot; });
+});
+
+// Other setups: installFakeWebSign({ scenario: &quot;app-missing&quot; | &quot;app-outdated&quot; | &quot;extension-missing&quot; | … }),
+// installFakeWebSign({ certificates: [] }), fake.switchDuringNextSign(1), fake.requests.</code></pre>
+<p data-i18n="dev.testing_dev">The same fake lets you build your page before installing anything. Load it only in development:</p>
+<pre><code>if (import.meta.env.DEV) {
+  const { installFakeWebSign } = await import(&quot;@websign/sdk/testing&quot;);
+  await installFakeWebSign();
+}</code></pre>
+<div class="notice" role="note"><p><strong data-i18n="dev.testing_warn_h">Never ship the fake.</strong> <span data-i18n="dev.testing_warn">Anyone can sign with its keys. It refuses to run outside localhost-like addresses and warns on the console when installed.</span></p></div>
+</section>
+
+<section id="frameworks" aria-labelledby="frameworks-h">
+<h2 id="frameworks-h" data-i18n="dev.frameworks_h">React and Vue</h2>
+<p data-i18n="dev.frameworks">The SDK has no framework code. The examples include a copy-paste useWebSign() hook for React and the same as a Vue composable: live status, progress, error, and cancelling when the component goes away.</p>
+<pre><code>const { status, signing, error, sign } = useWebSign();
+
+&lt;button disabled={!status?.ready || signing} onClick={() =&gt; sign({ hash: &quot;SHA-256&quot;, prepare })}&gt;
+  Sign
+&lt;/button&gt;</code></pre>
+</section>
+
+<section id="pdf" aria-labelledby="pdf-h">
+<h2 id="pdf-h" data-i18n="dev.pdf_h">Signing PDFs (PAdES)</h2>
+<p data-i18n="dev.pdf">Your PDF library reserves room for the signature and hashes the rest of the file. In prepare you build the signed attributes for the chosen certificate and return their hash; the signature you get back goes into the CMS inside the PDF. The PAdES example does this with pdf-lib and PKI.js, and its test checks the result with OpenSSL.</p>
+<p><a class="btn" href="https://github.com/diagnos-tech/web-esign/tree/main/examples/web" data-i18n="dev.examples_link">See the examples</a><a class="btn ghost" href="test/" data-i18n="test.link">Test your setup</a></p>
+</section>
+
+<section id="api" aria-labelledby="api-h">
+<h2 id="api-h" data-i18n="dev.api_h">API reference</h2>
+<p data-i18n="dev.api">Every function and type of @websign/sdk, @websign/sdk/messages and @websign/sdk/testing, with examples, generated from the source.</p>
+<p><a class="btn ghost" href="api/index.html" data-i18n="dev.api_link">Open the API reference</a></p>
+</section>
+
+<section id="desktop" aria-labelledby="desktop-h">
+<h2 id="desktop-h" data-i18n="dev.nav_desktop">Desktop programs</h2>
+<h3 data-i18n="dev.desk_h">Desktop program (Node, Bun, Electron): @websign/desktop</h3>
+<p data-i18n="dev.desk">Connect to the app, then call sign(). The app names your program in its confirmation window.</p>
+<pre><code>import { createHash } from &quot;node:crypto&quot;;
+import { WebSign } from &quot;@websign/desktop&quot;;
+
+const websign = await WebSign.connect(); // AppMissing if not installed
+try {
+  const { signature, certificate } = await websign.sign({
+    hash: &quot;SHA-256&quot;,
+    prepare: () =&gt; createHash(&quot;sha256&quot;).update(&quot;my document&quot;).digest(),
+  });
+  console.log(`${certificate.displayName}: ${signature.byteLength} bytes`);
+} finally {
+  await websign.close();
+}</code></pre>
+<h3 data-i18n="dev.rust_h">Desktop program (Rust): websign-client</h3>
+<p data-i18n="dev.rust">Client::connect(), then certificates() or sign(). The app is started on demand.</p>
+<p class="muted" data-i18n="dev.docs">API guides and contracts in the repository: docs/architecture/web-api.md and docs/architecture/desktop-api.md</p>
+</section>
+</main>
+<footer class="foot wide">
+<p><strong>WebeSign</strong> · <span data-i18n="foot.license">Free software (GPL-3.0-or-later; SDK and clients Apache-2.0)</span></p>
+<nav aria-label="Footer"><a href="https://github.com/diagnos-tech/web-esign" data-i18n="foot.source">Source code</a><a href="https://github.com/diagnos-tech/web-esign/blob/main/LICENSE" data-i18n="foot.license_link">License</a><a href="https://github.com/diagnos-tech/web-esign/blob/main/SECURITY.md" data-i18n="foot.security">Security</a><a href="privacy.html" data-i18n="nav.privacy">Privacy</a></nav>
+</footer>
+</body>
+</html>

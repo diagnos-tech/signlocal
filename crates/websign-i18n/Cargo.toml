@@ -1,0 +1,21 @@
+[package]
+name = "websign-i18n"
+description = "Locale loading, compile-time message keys generated from i18n/en.toml, plural rules and date formatting, without ICU."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+toml.workspace = true
+jiff.workspace = true
+log.workspace = true
+sys-locale.workspace = true
+
+[build-dependencies]
+toml.workspace = true
+
+[lints]
+workspace = true

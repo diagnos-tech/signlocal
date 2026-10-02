@@ -1,0 +1,4 @@
+# kittest output next to the baselines; only reviewed *.png baselines are committed.
+*.new.png
+*.diff.png
+*.old.png

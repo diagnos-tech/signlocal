@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- TODO(gustavo): replace with the brand icon once the name clears the
+     trademark search. Deliberately neutral: it only keeps the desktop entry
+     and the package layout complete. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="24" fill="#4b5563"/>
+  <path d="M28 84c14-30 22-40 30-40s2 30 12 30 14-16 30-20" fill="none"
+        stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

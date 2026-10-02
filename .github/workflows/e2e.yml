@@ -1,0 +1,439 @@
+# End-to-end matrix of docs/architecture/testing.md §5: fixture page → SDK →
+# extension in Chromium → app built with `--features e2e` → software keys,
+# then `cargo xtask screenshots` collects every window state per OS.
+#
+# Pull requests touching the signing path run Windows and Ubuntu; macOS and
+# the distribution containers run nightly (and by hand).
+#
+# After the full suite, each runner (but Ubuntu 22.04) proves every browser
+# it can install — Chrome, Edge, Brave, Opera, Firefox (and ESR on Linux) —
+# with the cross-browser core (e2e/browsers/, e2e/run-browsers.sh): the host
+# registered as `websign install` does, results in the job summary and in
+# docs/compatibility.md.
+#
+# Software keys per OS (e2e/lib/environment.ts): SoftHSM2 token on Linux
+# (WEBSIGN_E2E_SOFTHSM), CNG/CAPI software keys on Windows and a temporary
+# keychain on macOS, whose certificates the suite reads from WEBSIGN_E2E_CERTS.
+name: e2e
+
+on:
+  pull_request:
+    paths:
+      - "app/**"
+      - "extension/**"
+      - "sdk/**"
+      - "crates/websign-protocol/**"
+      - "crates/websign-host/**"
+      - "crates/websign-registration/**"
+      - "e2e/**"
+      - ".github/workflows/e2e.yml"
+  push:
+    branches: ["**"]
+    paths:
+      - "app/**"
+      - "extension/**"
+      - "sdk/**"
+      - "crates/websign-protocol/**"
+      - "crates/websign-host/**"
+      - "crates/websign-registration/**"
+      - "e2e/**"
+      - ".github/workflows/e2e.yml"
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+concurrency:
+  # Per event: a manual full run must not cancel the push run of the same commit.
+  group: e2e-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  RUST_BACKTRACE: "1"
+
+jobs:
+  runner:
+    name: e2e (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON((github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && '["windows-latest","macos-latest","ubuntu-22.04","ubuntu-24.04"]' || '["windows-latest","ubuntu-22.04","ubuntu-24.04"]') }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 100
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+      - name: Screenshot folder name
+        id: os
+        run: |
+          case "${{ matrix.os }}" in
+            windows-*) echo "name=windows" ;;
+            macos-*) echo "name=macos" ;;
+            *) echo "name=${{ matrix.os }}" ;;
+          esac >> "$GITHUB_OUTPUT"
+      # The hosted runners' Ubuntu mirror sometimes stalls a download forever and
+      # apt has no overall deadline, so each apt pass (here and Playwright's
+      # install-deps below) is bounded and retried, and apt gives up on dead
+      # connections quickly instead of waiting out the step timeout.
+      - name: Install Xvfb, mesa and SoftHSM2
+        if: runner.os == 'Linux'
+        timeout-minutes: 20
+        run: |
+          printf 'Acquire::Retries "3";\nAcquire::http::Timeout "30";\nAcquire::https::Timeout "30";\n' \
+            | sudo tee /etc/apt/apt.conf.d/99-ci-network > /dev/null
+          retry() { for i in 1 2 3; do "$@" && return 0; echo "::warning::attempt $i failed: $*"; done; return 1; }
+          retry sudo timeout 180 apt-get update
+          retry sudo timeout 300 apt-get install -y --no-install-recommends pkg-config libpcsclite-dev \
+            libxkbcommon-dev libwayland-dev softhsm2 opensc p11-kit pcscd xvfb xauth mesa-vulkan-drivers \
+            libvulkan1 libgl1-mesa-dri libegl1 libxkbcommon-x11-0 libx11-xcb1 libxcb-xfixes0
+      - name: Install the pinned toolchain
+        run: rustup toolchain install || rustup show
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: e2e
+          save-if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+      - name: Build the app with the e2e feature
+        id: build
+        timeout-minutes: 30
+        run: cargo build -p websign-app --features e2e
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.11"
+      # Playwright runs on Node.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install packages, build the extensions and the browser
+        timeout-minutes: 30
+        run: |
+          bun install --frozen-lockfile
+          (cd extension && bunx wxt build -b chrome && bunx wxt build -b firefox --mv3)
+          retry() { for i in 1 2 3; do "$@" && return 0; echo "::warning::attempt $i failed: $*"; done; return 1; }
+          if [ "$RUNNER_OS" = Linux ]; then
+            (cd e2e && retry timeout 420 bunx playwright install-deps chromium)
+          fi
+          (cd e2e && bunx playwright install chromium)
+      - name: Build the desktop client
+        run: (cd clients/node && bun run build)
+      - name: Create the SoftHSM2 token (Linux)
+        if: runner.os == 'Linux'
+        timeout-minutes: 5
+        run: |
+          bash crates/websign-keystores/tests/support/softhsm-fixture.sh "$RUNNER_TEMP/softhsm"
+          echo "WEBSIGN_E2E_SOFTHSM=$RUNNER_TEMP/softhsm" >> "$GITHUB_ENV"
+      - name: Create CNG and CAPI software keys (Windows)
+        if: runner.os == 'Windows'
+        # make-test-certs.ps1 bounds every key creation itself; this is the
+        # backstop for a provider dialog nobody can answer.
+        timeout-minutes: 15
+        shell: pwsh
+        run: |
+          $certs = Join-Path $env:RUNNER_TEMP 'certs'
+          New-Item -ItemType Directory -Force -Path $certs | Out-Null
+          $created = ./docs/prototypes/kit/windows/make-test-certs.ps1
+          # The suite signs with CNG keys (every scheme, PSS included); the
+          # CAPI ones stay in the store, as a person's would.
+          foreach ($c in $created | Where-Object { $_.Api -eq 'CNG' }) {
+            $cert = Get-Item -LiteralPath "Cert:\CurrentUser\My\$($c.Thumbprint)"
+            Export-Certificate -Cert $cert -FilePath (Join-Path $certs "$($c.Name).cer") | Out-Null
+          }
+          "WEBSIGN_E2E_CERTS=$certs" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+      - name: Create a temporary keychain with software keys (macOS)
+        if: runner.os == 'macOS'
+        timeout-minutes: 10
+        run: |
+          set -euo pipefail
+          source docs/prototypes/kit/macos/lib/common.sh
+          find_openssl
+          P12_PASSWORD=websign-e2e
+          keychain_create websign-e2e.keychain websign-e2e
+          work=$(mktemp -d)
+          certs="$RUNNER_TEMP/certs"
+          mkdir -p "$certs"
+          for key in rsa2048 p256 p384; do
+            make_identity "$work" "websign-e2e-$key" "$key"
+            keychain_import "$work/websign-e2e-$key.p12"
+            cp "$work/websign-e2e-$key.cert.pem" "$certs/$key.pem"
+          done
+          # The partition list names the e2e binary by cdhash: built above.
+          keychain_allow "$GITHUB_WORKSPACE/target/debug/websign"
+          echo "WEBSIGN_E2E_CERTS=$certs" >> "$GITHUB_ENV"
+      - name: Run the suite
+        timeout-minutes: 20
+        working-directory: e2e
+        env:
+          WEBSIGN_E2E_APP: ${{ github.workspace }}/target/debug/websign${{ runner.os == 'Windows' && '.exe' || '' }}
+          WEBSIGN_E2E_EXTENSION: ${{ github.workspace }}/extension/.output/chrome-mv3
+          WEBSIGN_E2E_SCREENSHOTS: ${{ runner.temp }}/screenshots
+        run: |
+          if [[ $RUNNER_OS == Linux ]]; then
+            xvfb-run -a -s "-screen 0 1600x900x24" bun run test:ci
+          else
+            bun run test:ci
+          fi
+      # The browsers to prove, as `<label>=<executable>` lines for
+      # run-browsers.sh; an empty path is reported as "skipped". Installs are
+      # retried (infrastructure), never the tests.
+      - name: Install the browsers to prove (Linux)
+        id: browsers-linux
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && runner.os == 'Linux' && matrix.os != 'ubuntu-22.04' }}
+        timeout-minutes: 20
+        continue-on-error: true
+        run: |
+          retry() { for i in 1 2 3; do "$@" && return 0; echo "::warning::attempt $i failed: $*"; sleep 5; done; return 1; }
+          # Opera aborts without the GNOME settings schemas.
+          retry sudo timeout 300 apt-get install -y --no-install-recommends gsettings-desktop-schemas
+          # Brave and Opera from their vendors' apt repositories.
+          retry sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg \
+            https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main" \
+            | sudo tee /etc/apt/sources.list.d/brave-browser-release.list
+          curl -fsSL --retry 3 https://deb.opera.com/archive.key | sudo gpg --batch --yes --dearmor -o /usr/share/keyrings/opera-browser.gpg
+          echo "deb [signed-by=/usr/share/keyrings/opera-browser.gpg] https://deb.opera.com/opera-stable/ stable non-free" \
+            | sudo tee /etc/apt/sources.list.d/opera-stable.list
+          retry sudo timeout 180 apt-get update
+          for package in brave-browser opera-stable; do
+            retry sudo DEBIAN_FRONTEND=noninteractive timeout 600 apt-get install -y "$package" \
+              || echo "::warning::$package could not be installed"
+          done
+          if ! command -v microsoft-edge > /dev/null; then
+            curl -fsSL --retry 3 https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --batch --yes --dearmor -o /usr/share/keyrings/microsoft-edge.gpg
+            echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-edge.gpg] https://packages.microsoft.com/repos/edge stable main" \
+              | sudo tee /etc/apt/sources.list.d/microsoft-edge.list
+            retry sudo timeout 180 apt-get update
+            retry sudo DEBIAN_FRONTEND=noninteractive timeout 600 apt-get install -y microsoft-edge-stable \
+              || echo "::warning::Edge could not be installed"
+          fi
+          # Firefox and Firefox ESR from Mozilla (not the Snap, whose native
+          # messaging goes through a portal that asks the person).
+          for product in firefox-latest-ssl:firefox firefox-esr-latest-ssl:firefox-esr; do
+            mkdir -p "$RUNNER_TEMP/${product#*:}"
+            retry curl -fsSL -o "$RUNNER_TEMP/firefox.tar" "https://download.mozilla.org/?product=${product%%:*}&os=linux64&lang=en-US" \
+              && tar -xf "$RUNNER_TEMP/firefox.tar" -C "$RUNNER_TEMP/${product#*:}"
+          done
+          real() { [[ -e $1 ]] && readlink -f "$1"; }
+          {
+            echo "chrome=$(real /opt/google/chrome/chrome)"
+            echo "edge=$(real /opt/microsoft/msedge/msedge)"
+            echo "brave=$(real /opt/brave.com/brave/brave)"
+            echo "opera=$(real /usr/bin/opera)"
+            echo "firefox=$(real "$RUNNER_TEMP/firefox/firefox/firefox")"
+            echo "firefox-esr=$(real "$RUNNER_TEMP/firefox-esr/firefox/firefox")"
+          } | tee "$RUNNER_TEMP/browsers.txt"
+      - name: Install the browsers to prove (Windows)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && runner.os == 'Windows' }}
+        timeout-minutes: 20
+        continue-on-error: true
+        run: |
+          retry() { for i in 1 2 3; do "$@" && return 0; echo "::warning::attempt $i failed: $*"; sleep 5; done; return 1; }
+          for package in brave opera; do
+            retry choco install "$package" -y --no-progress || echo "::warning::$package could not be installed"
+          done
+          pf="C:/Program Files"; pf86="C:/Program Files (x86)"; local=$(cygpath -m "$LOCALAPPDATA")
+          first() { for path in "$@"; do [[ -f $path ]] && { echo "$path"; return; }; done; }
+          # Opera's top-level opera.exe is a launcher; the browser sits in the version folder.
+          {
+            echo "chrome=$(first "$pf/Google/Chrome/Application/chrome.exe" "$pf86/Google/Chrome/Application/chrome.exe")"
+            echo "edge=$(first "$pf86/Microsoft/Edge/Application/msedge.exe" "$pf/Microsoft/Edge/Application/msedge.exe")"
+            echo "brave=$(first "$pf/BraveSoftware/Brave-Browser/Application/brave.exe" "$local/BraveSoftware/Brave-Browser/Application/brave.exe")"
+            echo "opera=$(first "$pf"/Opera/*/opera.exe "$local"/Programs/Opera/*/opera.exe)"
+            echo "firefox=$(first "$pf/Mozilla Firefox/firefox.exe")"
+          } | tee "$RUNNER_TEMP/browsers.txt"
+      - name: Install the browsers to prove (macOS)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && runner.os == 'macOS' }}
+        timeout-minutes: 20
+        continue-on-error: true
+        run: |
+          retry() { for i in 1 2 3; do "$@" && return 0; echo "::warning::attempt $i failed: $*"; sleep 5; done; return 1; }
+          cask() { [[ -d "/Applications/$1.app" ]] || retry brew install --cask "$2" || echo "::warning::$2 could not be installed"; }
+          cask "Google Chrome" google-chrome
+          cask "Microsoft Edge" microsoft-edge
+          cask "Brave Browser" brave-browser
+          cask Opera opera
+          cask Firefox firefox
+          app() { [[ -x "/Applications/$1.app/Contents/MacOS/$2" ]] && echo "/Applications/$1.app/Contents/MacOS/$2"; }
+          {
+            echo "chrome=$(app "Google Chrome" "Google Chrome")"
+            echo "edge=$(app "Microsoft Edge" "Microsoft Edge")"
+            echo "brave=$(app "Brave Browser" "Brave Browser")"
+            echo "opera=$(app Opera Opera)"
+            echo "firefox=$(app Firefox firefox)"
+          } | tee "$RUNNER_TEMP/browsers.txt"
+      - name: Prove every installed browser
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && matrix.os != 'ubuntu-22.04' }}
+        timeout-minutes: 45
+        env:
+          WEBSIGN_E2E_APP: ${{ github.workspace }}/target/debug/websign${{ runner.os == 'Windows' && '.exe' || '' }}
+          WEBSIGN_E2E_SCREENSHOTS: ${{ runner.temp }}/browser-screenshots
+          WEBSIGN_E2E_BROWSER_RESULTS: ${{ runner.temp }}/browser-screenshots/results.md
+        run: |
+          touch "$RUNNER_TEMP/browsers.txt"
+          bash e2e/run-browsers.sh "$RUNNER_TEMP/browsers.txt"
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && matrix.os != 'ubuntu-22.04' }}
+        with:
+          name: browsers-${{ steps.os.outputs.name }}
+          path: ${{ runner.temp }}/browser-screenshots/
+          if-no-files-found: ignore
+      # A native crash prints nothing; the OS crash report is its only trace.
+      # `websign doctor` runs the diagnostics scan without a window, which
+      # tells a crash in the scan from one in the window.
+      - name: Keep the app's crash reports (macOS)
+        if: failure() && runner.os == 'macOS'
+        run: |
+          mkdir -p target/e2e-results/crash-reports
+          status=0
+          target/debug/websign doctor >/dev/null || status=$?
+          echo "websign doctor exited with $status"
+          sleep 5
+          cp "$HOME"/Library/Logs/DiagnosticReports/websign-* target/e2e-results/crash-reports/ 2>/dev/null || true
+      # Traces of failed scenarios (fixture page and test keys only).
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-results-${{ steps.os.outputs.name }}
+          path: target/e2e-results/
+          if-no-files-found: ignore
+      - name: Collect screenshots
+        timeout-minutes: 15
+        run: cargo xtask screenshots --from "$RUNNER_TEMP/screenshots" --os "${{ steps.os.outputs.name }}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots-${{ steps.os.outputs.name }}
+          path: docs/screenshots/${{ steps.os.outputs.name }}/
+          if-no-files-found: warn
+      - name: Remove the test certificates (Windows)
+        if: always() && runner.os == 'Windows'
+        timeout-minutes: 5
+        shell: pwsh
+        run: ./docs/prototypes/kit/windows/make-test-certs.ps1 -Remove
+      - name: Delete the temporary keychain (macOS)
+        if: always() && runner.os == 'macOS'
+        run: security delete-keychain "$HOME/Library/Keychains/websign-e2e.keychain-db" || true
+
+  container:
+    name: e2e (${{ matrix.image }})
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    # Arch Linux is best effort (testing.md §5 matrix).
+    continue-on-error: ${{ matrix.image == 'archlinux:latest' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { image: "debian:12", os: debian-12, browser: /usr/bin/chromium }
+          - { image: "fedora:42", os: fedora-42, browser: /usr/bin/chromium-browser }
+          - { image: "rockylinux:9", os: rockylinux-9, browser: /usr/bin/chromium-browser }
+          - { image: "archlinux:latest", os: archlinux, browser: /usr/bin/chromium }
+    container:
+      image: ${{ matrix.image }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      # git and tar are needed by checkout and the caches; bash by the steps.
+      - name: Install base packages
+        timeout-minutes: 10
+        shell: sh
+        run: |
+          case "${{ matrix.image }}" in
+            debian:*) apt-get update && apt-get install -y --no-install-recommends bash ca-certificates curl git ;;
+            # The images ship curl-minimal, which conflicts with the full curl.
+            fedora:*|rockylinux:*) dnf install -y --allowerasing bash ca-certificates curl git tar gzip ;;
+            archlinux:*) pacman -Syu --noconfirm --needed bash ca-certificates curl git ;;
+          esac
+      - uses: actions/checkout@v5
+      # Besides proof 5's packages: the X11 client libraries winit loads
+      # with dlopen (testing.md §5), SoftHSM2 and the distribution Chromium.
+      - name: Install build tools, drivers, SoftHSM2 and Chromium
+        timeout-minutes: 20
+        run: |
+          case "${{ matrix.image }}" in
+            debian:*)
+              apt-get install -y --no-install-recommends gcc g++ make pkg-config unzip libpcsclite-dev \
+                libxkbcommon-dev libwayland-dev softhsm2 opensc p11-kit openssl xvfb xauth mesa-vulkan-drivers \
+                libgl1-mesa-dri libegl1 libxkbcommon-x11-0 libx11-xcb1 libxcb-xfixes0 libx11-6 \
+                libxcursor1 libxi6 libxrandr2 chromium
+              ;;
+            fedora:*)
+              dnf install -y --setopt=install_weak_deps=False gcc gcc-c++ make pkgconf-pkg-config unzip \
+                pcsc-lite-devel libxkbcommon-devel wayland-devel softhsm opensc p11-kit openssl \
+                xorg-x11-server-Xvfb xorg-x11-xauth mesa-vulkan-drivers mesa-dri-drivers mesa-libEGL \
+                libxkbcommon-x11 libxcb libX11 libXcursor libXi libXrandr chromium
+              ;;
+            rockylinux:*)
+              dnf install -y epel-release dnf-plugins-core
+              dnf config-manager --set-enabled crb
+              dnf install -y --allowerasing gcc gcc-c++ make pkgconf-pkg-config unzip pcsc-lite-devel \
+                libxkbcommon-devel wayland-devel softhsm opensc p11-kit openssl xorg-x11-server-Xvfb \
+                xorg-x11-xauth mesa-vulkan-drivers mesa-dri-drivers mesa-libEGL libxkbcommon-x11 libxcb \
+                libX11 libXcursor libXi libXrandr chromium
+              ;;
+            archlinux:*)
+              pacman -S --noconfirm --needed base-devel unzip pcsclite libxkbcommon wayland softhsm \
+                opensc p11-kit openssl xorg-server-xvfb xorg-xauth vulkan-swrast mesa libxkbcommon-x11 libxcb \
+                libx11 libxcursor libxi libxrandr chromium
+              ;;
+          esac
+      - name: Install Rust via rustup (version from rust-toolchain.toml)
+        timeout-minutes: 10
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain none
+          "$HOME/.cargo/bin/rustup" toolchain install
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: e2e-${{ matrix.os }}
+      - name: Build the app with the e2e feature
+        timeout-minutes: 40
+        run: cargo build -p websign-app --features e2e
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.11"
+      # Playwright runs on Node.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install packages and build the Chromium extension
+        timeout-minutes: 15
+        run: |
+          bun install --frozen-lockfile
+          (cd extension && bunx wxt build -b chrome)
+      - name: Build the desktop client and create the SoftHSM2 token
+        timeout-minutes: 5
+        run: |
+          (cd clients/node && bun run build)
+          bash crates/websign-keystores/tests/support/softhsm-fixture.sh "$RUNNER_TEMP/softhsm"
+          echo "WEBSIGN_E2E_SOFTHSM=$RUNNER_TEMP/softhsm" >> "$GITHUB_ENV"
+      - name: Run the suite with the distribution Chromium
+        timeout-minutes: 20
+        working-directory: e2e
+        env:
+          WEBSIGN_E2E_APP: ${{ github.workspace }}/target/debug/websign
+          WEBSIGN_E2E_EXTENSION: ${{ github.workspace }}/extension/.output/chrome-mv3
+          WEBSIGN_E2E_SCREENSHOTS: ${{ runner.temp }}/screenshots
+          WEBSIGN_E2E_BROWSER: ${{ matrix.browser }}
+        run: xvfb-run -a -s "-screen 0 1600x900x24" bun run test:ci
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-results-${{ matrix.os }}
+          path: target/e2e-results/
+          if-no-files-found: ignore
+      - name: Collect screenshots
+        timeout-minutes: 10
+        run: cargo xtask screenshots --from "$RUNNER_TEMP/screenshots" --os "${{ matrix.os }}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots-${{ matrix.os }}
+          path: docs/screenshots/${{ matrix.os }}/
+          if-no-files-found: warn

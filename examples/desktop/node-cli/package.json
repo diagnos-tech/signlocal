@@ -1,0 +1,21 @@
+{
+  "name": "websign-node-cli-example",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Sign a file's SHA-256 from the command line with @websign/desktop.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "bin": {
+    "websign-sign-file": "sign-file.mjs"
+  },
+  "scripts": {
+    "start": "node sign-file.mjs",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@websign/desktop": "file:../../../clients/node"
+  }
+}

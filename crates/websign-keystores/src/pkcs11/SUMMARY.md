@@ -1,0 +1,29 @@
+# crates/websign-keystores/src/pkcs11
+
+- `known_paths/` — known vendor module paths per OS
+- `p11kit/` — p11-kit module registrations
+- `always_authenticate.rs` — Keys with `CKA_ALWAYS_AUTHENTICATE`: the PIN is asked again for every signature, as qualified signature keys of eIDAS cards (Cartao de Cidadao, DNIe, Estonian ID card) require.
+- `capabilities.rs` — What a token can sign with (`CKM_RSA_PKCS`, `CKM_RSA_PKCS_PSS`, `CKM_ECDSA` with `CKF_SIGN`), cached per slot until the next listing.
+- `cert_names.rs` — The issuer and subject names of a certificate as raw DER, for chaining CA certificates byte for byte.
+- `chain.rs` — `chain`: the CA certificates stored on the token, nearest issuer first, leaf excluded, at most 8.
+- `ckr.rs` — Raw `CKR_*` return codes and names, which `cryptoki` hides behind its `RvError` enum.
+- `device_link.rs` — Which hardware a key lives on: the PC/SC reader of a removable card, else the token's model and manufacturer.
+- `discovery.rs` — Which PKCS#11 module files to try: the ones asked for, the ones registered with p11-kit and the ones at vendors' well-known install paths.
+- `errors.rs` — Translation of `cryptoki` errors into [`KeystoreError`].
+- `file_id.rs` — Identity of a module file, so the same library reached through symlinks, hard links or a different spelling of its path is loaded only once.
+- `finder.rs` — Finding, at signing time, the certificate and private key that `list` reported; a certificate no slot holds is `NotFound`.
+- `has_key.rs` — Whether a certificate on a token has a private key, decided without a login (CA certificates never count).
+- `key_checks.rs` — What is checked before a key signs: the certificate's curve, the token's mechanism, the private key's type.
+- `keystore.rs` — One loaded PKCS#11 module as a [`Keystore`], with the sessions it keeps unlocked.
+- `listing.rs` — `list`: the signing certificates on every token of a module, without a PIN.
+- `locator.rs` — The opaque handle a listed key carries so it can be found again when signing: `slot=3;id=0a1b`.
+- `login.rs` — `C_Login`: the only place a PIN leaves its `SecretString`.
+- `mechanism.rs` — Which PKCS#11 mechanism signs an already-computed digest, and how to bring the token's answer into the format the SDK promises.
+- `mod.rs` — PKCS#11 modules: p11-kit registrations, known vendor paths and modules given on the command line.
+- `module.rs` — Loading a PKCS#11 module once per process.
+- `objects.rs` — Reading certificates and private key identifiers from a token session.
+- `path_patterns.rs` — Expansion of the path templates in the list of known modules: Windows environment variables and one wildcard directory.
+- `pin_state.rs` — `pin_state`: PIN length limits and `CKF_USER_PIN_*` warnings without a login, plus the session and `CKA_ALWAYS_AUTHENTICATE`.
+- `provider.rs` — How a token is described to people (never its label or serial), and whether it counts as hardware.
+- `sessions.rs` — Logged-in sessions kept between signatures (D5): the token's login, never the PIN.
+- `signing.rs` — `sign`: one signature, reusing an unlocked token or logging in, and leaving the login parked or logged out on every outcome.

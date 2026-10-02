@@ -1,0 +1,26 @@
+[package]
+name = "websign-core"
+description = "Pure signing logic: algorithms, signature encodings, tolerant certificate summaries, verification, de-duplication, and the text rules the confirmation window shows (origin, holder, document)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+websign-protocol.workspace = true
+thiserror.workspace = true
+sha2.workspace = true
+rsa.workspace = true
+p256.workspace = true
+p384.workspace = true
+p521.workspace = true
+ecdsa = { version = "=0.17.0", default-features = false, features = ["algorithm"] }
+bp256.workspace = true
+bp384.workspace = true
+psl.workspace = true
+idna.workspace = true
+
+[lints]
+workspace = true

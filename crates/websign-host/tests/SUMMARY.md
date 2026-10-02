@@ -1,0 +1,30 @@
+# crates/websign-host/tests
+
+- `common/` — fakes (ports, manual clock, in-memory stores), harness, output readers, fixtures from websign-core
+- `caller_identity.rs` — SPEC §3: `Caller::web`, consent key, `can_remember`
+- `engine_cancel.rs` — SPEC §8.9: cancel from page and person, disconnect, requests after their end
+- `engine_choose.rs` — SPEC §8.12 and §5: remembered, revoked and new `choose`, chains in the answer
+- `engine_consent_per_certificate.rs` — SPEC §8.20-21 and D11: consent per caller and certificate, arrowing, revoke, interpreters
+- `engine_consent.rs` — consent per caller: status, revoke, ticked Remember, usage, caller view
+- `engine_devices.rs` — SPEC §8.13: device events while a request is open
+- `engine_diagnostics_idle.rs` — SPEC §8.14-15: `diagnostics.open`, desktop idle exit
+- `engine_digest.rs` — SPEC §8.6: exact digest length for 32/48/64
+- `engine_hello.rs` — SPEC §8.1, §8.16, §2.1 and §1: negotiation, refusal version, hello timeout, allowed launches
+- `engine_logs.rs` — T10: capturing logger, no personal data in any log line
+- `engine_origin.rs` — SPEC §8.2: `web` rules per transport, insecure origins
+- `engine_pin.rs` — SPEC §8.7: PIN errors stay in the window, PIN never reaches the page
+- `engine_queue.rs` — SPEC §8.11: 1 + 10 queue, `Busy`, FIFO, no batching, callers never mix
+- `engine_sign_new_site.rs` — SPEC §8.4 and D11: nothing released before Continue
+- `engine_sign_remembered.rs` — SPEC §8.3: the happy path and confirmation on every signature
+- `engine_sign_switch.rs` — SPEC §8.5 and §4.2: switching certificate, stale digests, algorithm choice
+- `engine_store_failures.rs` — SPEC §7: store errors never fail a request
+- `engine_timeouts.rs` — SPEC §8.10: decision (300 s) and digest (60 s) timeouts
+- `engine_verify.rs` — SPEC §8.8 and §4.1: signatures are verified before they are sent
+- `fixtures_sanity.rs` — the fixture certificates and signatures verify (passes today)
+- `flow_choose.rs` — SPEC §5: choose flow effects
+- `flow_sign_digest.rs` — SPEC §4: digest and Sign rows of the sign flow
+- `flow_sign_finish.rs` — SPEC §4 and §4.1: key store replies, cancel and end
+- `flow_sign_states.rs` — SPEC §4: activate, listing, selection and Continue
+- `queue_unit.rs` — SPEC §6: `RequestQueue`
+- `session_accept.rs` — SPEC §2: `Session::accept`, open requests, limits
+- `session_validate.rs` — SPEC §2.2: the per-transport table

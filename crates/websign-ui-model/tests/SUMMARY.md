@@ -1,0 +1,36 @@
+# crates/websign-ui-model/tests
+
+- `common/` — shared builders: certificates, candidates, list contexts, report inputs, fake-clock confirmation window
+- `atr_mask_devices.rs` — `mask_atr` on every ATR of `devices.json`.
+- `cert_badge.rs` — badge rules and their priority
+- `cert_filter.rs` — filter field matching (text, accents, document digits)
+- `cert_list_append.rs` — merging a new listing into an open window (nothing moves)
+- `cert_list_disabled.rs` — disabled reasons, their priority, ordering of disabled rows
+- `cert_list_hidden.rs` — hidden reasons and their priority
+- `cert_list_login_sibling.rs` — the login sibling rule and what "same device" means
+- `cert_list_order.rs` — usable ordering and initial selection
+- `cert_list_vector.rs` — the ux 16.6 vector end to end
+- `cert_location.rs` — "where the certificate is" phrases and the via-driver flag
+- `cert_row_fields.rs` — the lines of a row: name, issuer, document, badge, location
+- `cert_validity.rs` — validity label and tone table, calendar-day arithmetic, the context time zone
+- `confirm_arming.rs` — the Arming type with instants
+- `confirm_arming_events.rs` — what arms and re-arms the button, focus, input ignored while unarmed
+- `confirm_cancel_codes.rs` — cancel_code per state and banner_code per failure
+- `confirm_choose_mode.rs` — Choose mode and the remember box
+- `confirm_deadlines.rs` — next_deadline: arming, holds, countdown, skeleton
+- `confirm_empty_and_live.rs` — empty state, possible cards, tokens inserted and removed
+- `confirm_errors.rs` — failures while signing, Try again, the alternate path
+- `confirm_escape_and_enter.rs` — leaving always works; Enter only ever signs
+- `confirm_flow_new_caller.rs` — Continue step, digest, sign
+- `confirm_flow_remembered.rs` — remembered caller flow and the preparing skeleton
+- `confirm_outcomes.rs` — success hold, site gave up, timeout, abort, hide
+- `confirm_pin.rs` — PIN field limits, OS prompt, PIN pad, unlocked token
+- `confirm_pin_errors.rs` — wrong PIN messages and the locked PIN
+- `confirm_selection_change.rs` — changing the certificate, stale digests
+- `confirm_view_and_timers.rs` — header, queue line, footer countdown
+- `diagnostics_onboarding.rs` — the "Getting started" strip
+- `diagnostics_report.rs` — golden Copy diagnostics text as a whole
+- `diagnostics_report_edges.rs` — masked ATR, known-card line, empty tallies, the 20-error cap
+- `diagnostics_report_lines.rs` — each line of the report: browsers, devices, modules, counts, errors
+- `diagnostics_status.rs` — traffic lights and the overall light
+- `time_relative.rs` — relative times

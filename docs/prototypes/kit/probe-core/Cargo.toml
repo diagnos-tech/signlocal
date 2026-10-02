@@ -1,0 +1,20 @@
+[package]
+name = "probe-core"
+version = "0.1.0"
+description = "Platform-independent signing primitives: algorithms, encodings, certificate summaries, verification."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+thiserror.workspace = true
+sha2.workspace = true
+# rsa 0.10 is still a release candidate; pinned so a new rc cannot break the build.
+rsa = { version = "=0.10.0-rc.18", features = ["sha2"] }
+p256 = { version = "0.14", features = ["ecdsa"] }
+p384 = { version = "0.14", features = ["ecdsa"] }
+p521 = { version = "0.14", features = ["ecdsa"] }
+
+[lints]
+workspace = true

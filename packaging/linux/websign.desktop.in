@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name={{name}}
+Comment={{tagline}}
+Exec={{slug}}
+Icon={{slug}}
+Terminal=false
+Categories=Utility;Security;
+Keywords=signature;certificate;pdf;
+StartupNotify=true

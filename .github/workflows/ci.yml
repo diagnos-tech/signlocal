@@ -1,0 +1,466 @@
+# Required gates of docs/architecture/testing.md §6 that run on every push and
+# pull request: Rust (format, lints, tests, docs, licenses, coverage) on the
+# three OSes, the OS keystore contract with software keys, the xtask
+# repository checks, the TypeScript packages and the installer self-tests.
+# E2E lives in e2e.yml (path-filtered and nightly), mutation and fuzzing in
+# scheduled.yml.
+name: ci
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  # A tag run is a release input: never cancel it.
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  RUST_BACKTRACE: "1"
+  # Only the default branch writes caches, so pull requests cannot evict them.
+  SAVE_CACHE: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+  # Build dependencies of pcsc-sys and the app's window stack, plus what the
+  # tests load at run time: SoftHSM2 and pkcs11-tool for the PKCS#11 fixture,
+  # pcscd, and mesa's software Vulkan for the egui_kittest snapshots.
+  LINUX_PACKAGES: >-
+    pkg-config libpcsclite-dev libxkbcommon-dev libwayland-dev
+    softhsm2 opensc p11-kit pcscd
+    mesa-vulkan-drivers libvulkan1 libgl1-mesa-dri libegl1
+
+jobs:
+  fmt:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      # rust-toolchain.toml pins the version; `rustup show` covers rustup
+      # releases older than 1.28, which lack the argument-less install.
+      - name: Install the pinned toolchain
+        run: rustup toolchain install || rustup show
+      - run: cargo fmt --all --check
+
+  clippy:
+    name: clippy (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install build dependencies
+        if: runner.os == 'Linux'
+        timeout-minutes: 10
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ${{ env.LINUX_PACKAGES }}
+      - name: Install the pinned toolchain
+        run: rustup toolchain install || rustup show
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: clippy
+          save-if: ${{ env.SAVE_CACHE }}
+      - name: Clippy
+        timeout-minutes: 35
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+  test:
+    name: test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install build and test dependencies
+        if: runner.os == 'Linux'
+        timeout-minutes: 10
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ${{ env.LINUX_PACKAGES }}
+      - name: Install the pinned toolchain
+        run: rustup toolchain install || rustup show
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: test
+          save-if: ${{ env.SAVE_CACHE }}
+      - name: Build tests
+        timeout-minutes: 35
+        run: cargo test --workspace --no-run
+      # On Linux a missing SoftHSM2 must fail the PKCS#11 tests, not skip
+      # them. The tests check whether the variable is set at all, so the
+      # other OSes run without it.
+      - name: Test (with SoftHSM2 required)
+        if: runner.os == 'Linux'
+        timeout-minutes: 20
+        env:
+          WEBSIGN_REQUIRE_SOFTHSM: "1"
+        run: cargo test --workspace
+      - name: Test
+        if: runner.os != 'Linux'
+        timeout-minutes: 20
+        run: cargo test --workspace
+
+  rustdoc:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install build dependencies
+        timeout-minutes: 10
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ${{ env.LINUX_PACKAGES }}
+      - name: Install the pinned toolchain
+        run: rustup toolchain install || rustup show
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: rustdoc
+          save-if: ${{ env.SAVE_CACHE }}
+      - name: Rustdoc
+        timeout-minutes: 20
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo doc --workspace --no-deps
+
+  deny:
+    name: deny (${{ matrix.checks }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        # Separate so a new advisory does not hide license results.
+        checks: [advisories, bans licenses sources]
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install the pinned toolchain
+        run: rustup toolchain install || rustup show
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deny
+      - run: cargo deny check ${{ matrix.checks }}
+
+  coverage:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install build and test dependencies
+        timeout-minutes: 10
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ${{ env.LINUX_PACKAGES }}
+      - name: Install the pinned toolchain
+        run: rustup toolchain install || rustup show && rustup component add llvm-tools-preview
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: coverage
+          save-if: ${{ env.SAVE_CACHE }}
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-llvm-cov
+      - name: Line coverage of the core crates (at least 90 % each)
+        timeout-minutes: 45
+        run: |
+          for crate in websign-core websign-protocol websign-host websign-ui-model; do
+            echo "::group::$crate"
+            cargo llvm-cov --package "$crate" --summary-only --fail-under-lines 90
+            echo "::endgroup::"
+          done
+
+  keystores-windows:
+    name: keystore contract (windows)
+    runs-on: windows-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install the pinned toolchain
+        run: rustup toolchain install || rustup show
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: contract
+          save-if: ${{ env.SAVE_CACHE }}
+      - name: Build the contract test
+        timeout-minutes: 30
+        run: cargo test -p websign-keystores --test contract_os --no-run
+      - name: Contract against CNG and CAPI software keys
+        # make-test-certs.ps1 bounds every key creation itself; this is the
+        # backstop for a provider dialog nobody can answer.
+        timeout-minutes: 15
+        shell: pwsh
+        run: |
+          $c = ./docs/prototypes/kit/windows/make-test-certs.ps1
+          $env:WEBSIGN_CONTRACT_SOURCE = 'windows'
+          $env:WEBSIGN_CONTRACT_EXPECTED = ($c.Sha256 -join ',')
+          cargo test -p websign-keystores --test contract_os -- --nocapture
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Remove the test certificates
+        if: always()
+        timeout-minutes: 5
+        shell: pwsh
+        run: ./docs/prototypes/kit/windows/make-test-certs.ps1 -Remove
+
+  keystores-macos:
+    name: keystore contract (macos)
+    runs-on: macos-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install the pinned toolchain
+        run: rustup toolchain install || rustup show
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: contract
+          save-if: ${{ env.SAVE_CACHE }}
+      - name: Contract against a temporary keychain
+        timeout-minutes: 30
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The partition list names the test binary by cdhash, so it must be
+          # built before the keys are allowed and run directly afterwards.
+          BIN=$(cargo test -p websign-keystores --test contract_os --no-run --message-format=json \
+            | jq -r 'select(.reason == "compiler-artifact" and .target.name == "contract_os" and .executable != null) | .executable' \
+            | tail -n1)
+          [[ -x $BIN ]] || { echo "contract_os test binary not found" >&2; exit 1; }
+          source docs/prototypes/kit/macos/lib/common.sh
+          find_openssl
+          P12_PASSWORD=websign-ci
+          keychain_create websign-ci.keychain websign-ci
+          trap keychain_destroy EXIT
+          work=$(mktemp -d)
+          expected=()
+          for key in rsa2048 p256 p384; do
+            make_identity "$work" "websign-ci-$key" "$key"
+            keychain_import "$work/websign-ci-$key.p12"
+            # Full SHA-256: the kit's cert_fingerprint keeps only 16 digits.
+            expected+=("$("$OPENSSL" x509 -in "$work/websign-ci-$key.cert.pem" -outform DER | shasum -a 256 | cut -d' ' -f1)")
+          done
+          keychain_allow "$BIN"
+          WEBSIGN_CONTRACT_SOURCE=macos:keychain \
+          WEBSIGN_CONTRACT_EXPECTED=$(IFS=,; echo "${expected[*]}") \
+            with_timeout 300 "$BIN" --nocapture
+
+  xtask:
+    name: xtask checks (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        # Windows checks out with CRLF line endings: the generated files must
+        # still compare equal there.
+        os: [ubuntu-24.04, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install build dependencies
+        if: runner.os == 'Linux'
+        timeout-minutes: 10
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ${{ env.LINUX_PACKAGES }}
+      - name: Install the pinned toolchain
+        run: rustup toolchain install || rustup show
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: xtask
+          save-if: ${{ env.SAVE_CACHE }}
+      - name: SUMMARY.md files
+        if: runner.os == 'Linux'
+        timeout-minutes: 15
+        run: cargo xtask check summaries
+      - name: Locales
+        if: runner.os == 'Linux'
+        timeout-minutes: 15
+        run: cargo xtask check i18n
+      - name: Generated files are current
+        timeout-minutes: 25
+        run: cargo xtask check generated
+      - name: Build the release binary
+        if: runner.os == 'Linux' && startsWith(github.ref, 'refs/tags/v')
+        timeout-minutes: 30
+        run: cargo build --release -p websign-app
+      - name: Release hygiene (versions match the tag, no e2e marker)
+        if: runner.os == 'Linux' && startsWith(github.ref, 'refs/tags/v')
+        timeout-minutes: 10
+        run: cargo xtask check release --binary target/release/websign
+
+  ts:
+    name: typescript
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.11"
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+      - name: Install (workspaces sdk, clients/node, extension, e2e)
+        timeout-minutes: 10
+        run: bun install --frozen-lockfile
+      - name: Biome
+        run: bunx biome check .
+      # e2e imports the Node client's built `dist/`, which is not committed.
+      - name: Build the Node client
+        working-directory: clients/node
+        run: bun run build
+      - name: Typecheck
+        run: |
+          for package in sdk extension clients/node e2e; do
+            echo "::group::$package"
+            (cd "$package" && bun run typecheck)
+            echo "::endgroup::"
+          done
+      # e2e is excluded: its suites need the app and a browser (e2e.yml).
+      - name: Unit tests
+        timeout-minutes: 10
+        run: |
+          for package in sdk extension clients/node; do
+            echo "::group::$package"
+            (cd "$package" && bun run test)
+            echo "::endgroup::"
+          done
+      - name: Site tests (key extractor, verifier, locales)
+        timeout-minutes: 5
+        run: bun test site/tests
+      - name: SDK build and size budget (5 KB gzip)
+        working-directory: sdk
+        run: bun run build && bun run size
+      # sdk/tools has its own lockfile; both scripts install it frozen.
+      - name: SDK API reference is current
+        timeout-minutes: 5
+        working-directory: sdk
+        run: bun run docs:check
+      - name: SDK package checks (publint, are-the-types-wrong)
+        timeout-minutes: 5
+        working-directory: sdk
+        run: bun run check:package
+      - name: Extension builds and zips (chrome, edge, firefox, safari)
+        timeout-minutes: 10
+        working-directory: extension
+        run: |
+          bunx wxt zip -b chrome
+          bunx wxt zip -b edge
+          bunx wxt zip -b firefox --mv3
+          bunx wxt zip -b safari
+          bun run size
+      - uses: actions/upload-artifact@v4
+        with:
+          name: websign-extension-zips
+          path: extension/.output/*.zip
+          if-no-files-found: error
+          # `.output` is a dot folder, which upload-artifact skips by default.
+          include-hidden-files: true
+
+  node-client:
+    name: node client (node ${{ matrix.node }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["20", "22"]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.11"
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+      - name: Install
+        timeout-minutes: 10
+        run: bun install --frozen-lockfile
+      - name: Build
+        working-directory: clients/node
+        run: bun run build
+      - name: Import the built package with Node
+        working-directory: clients/node
+        run: |
+          node --version
+          node -e "import(require('node:url').pathToFileURL('dist/index.js').href).then((m) => { if (Object.keys(m).length === 0) throw new Error('no exports'); console.log('exports:', Object.keys(m).join(', ')); })"
+
+  examples:
+    name: examples
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.11"
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock', 'examples/web/bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+      - name: Install the pinned toolchain
+        run: rustup toolchain install || rustup show
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: examples/desktop/rust-cli
+          key: examples
+          save-if: ${{ env.SAVE_CACHE }}
+      # examples/web aliases @websign/sdk to sdk/src but has its own lockfile.
+      - name: Web examples (typecheck, PAdES test, build)
+        timeout-minutes: 10
+        working-directory: examples/web
+        run: bun install --frozen-lockfile && bun run check
+      # The Node example depends on clients/node by path, so build it first.
+      - name: Build the Node client
+        timeout-minutes: 10
+        run: bun install --frozen-lockfile && bun run build
+        working-directory: clients/node
+      - name: Node CLI example tests
+        timeout-minutes: 5
+        working-directory: examples/desktop/node-cli
+        run: npm install --no-audit --no-fund && npm test
+      - name: Rust CLI example tests (own workspace)
+        timeout-minutes: 15
+        working-directory: examples/desktop/rust-cli
+        run: cargo test --locked
+
+  installers:
+    name: installer self-test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - name: Shellcheck the installer and its tests (POSIX sh)
+        if: runner.os != 'Windows'
+        run: |
+          command -v shellcheck >/dev/null || brew install shellcheck
+          shellcheck -s sh scripts/install/install.sh scripts/install/tests/install_sh_test.sh \
+            packaging/linux/postinst.sh packaging/linux/prerm.sh
+      - name: install.sh tests
+        if: runner.os != 'Windows'
+        timeout-minutes: 15
+        run: sh scripts/install/tests/install_sh_test.sh
+      - name: install.ps1 self-test (PowerShell 7)
+        if: runner.os == 'Windows'
+        timeout-minutes: 15
+        shell: pwsh
+        run: ./scripts/install/tests/install_ps1_selftest.ps1
+      - name: install.ps1 self-test (Windows PowerShell 5.1)
+        if: runner.os == 'Windows'
+        timeout-minutes: 15
+        shell: powershell
+        run: ./scripts/install/tests/install_ps1_selftest.ps1

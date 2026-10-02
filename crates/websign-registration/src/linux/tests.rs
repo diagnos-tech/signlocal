@@ -1,0 +1,149 @@
+use std::path::PathBuf;
+
+use super::*;
+use crate::destination::Location;
+use crate::manifest;
+
+fn manifests(browsers: &[Browser]) -> Vec<(String, PathBuf, Option<PathBuf>)> {
+    targets(browsers, Path::new("/home/u"), Path::new("/home/u/.config"))
+        .into_iter()
+        .map(|target| {
+            let Location::File {
+                manifest, requires, ..
+            } = target.location
+            else {
+                panic!("Linux registers files only");
+            };
+            (target.label, manifest, requires)
+        })
+        .collect()
+}
+
+fn manifest_for(label: &str, browsers: &[Browser]) -> PathBuf {
+    manifests(browsers)
+        .into_iter()
+        .find(|(l, _, _)| l == label)
+        .unwrap_or_else(|| panic!("no target labelled {label}"))
+        .1
+}
+
+#[test]
+fn chrome_and_chromium_use_their_config_folders() {
+    let name = manifest::file_name();
+    assert_eq!(
+        manifest_for("Google Chrome", &[Browser::Chrome]),
+        PathBuf::from("/home/u/.config/google-chrome/NativeMessagingHosts").join(&name)
+    );
+    assert_eq!(
+        manifest_for("Chromium", &[Browser::Chromium]),
+        PathBuf::from("/home/u/.config/chromium/NativeMessagingHosts").join(&name)
+    );
+    assert_eq!(
+        manifest_for("Brave", &[Browser::Brave]),
+        PathBuf::from("/home/u/.config/BraveSoftware/Brave-Browser/NativeMessagingHosts")
+            .join(&name)
+    );
+}
+
+#[test]
+fn firefox_uses_the_lowercase_hyphenated_folder() {
+    let (_, manifest, requires) = manifests(&[Browser::Firefox]).remove(0);
+    assert_eq!(
+        manifest,
+        PathBuf::from("/home/u/.mozilla/native-messaging-hosts").join(manifest::file_name())
+    );
+    assert_eq!(requires, Some(PathBuf::from("/home/u/.mozilla")));
+}
+
+#[test]
+fn a_browser_counts_as_installed_when_its_config_root_exists() {
+    for (label, manifest, requires) in manifests(&Browser::ALL) {
+        let requires = requires.unwrap_or_else(|| panic!("{label} must require its root"));
+        if label.contains("Snap, through the portal") || label.starts_with("Opera") {
+            continue;
+        }
+        assert!(manifest.starts_with(&requires), "{label}: {manifest:?}");
+    }
+}
+
+#[test]
+fn snap_firefox_writes_the_host_manifest_the_portal_reads() {
+    let (_, manifest, requires) = manifests(&[Browser::Firefox])
+        .into_iter()
+        .find(|(label, _, _)| label == "Firefox (Snap, through the portal)")
+        .unwrap();
+    assert!(manifest.starts_with("/home/u/.mozilla/native-messaging-hosts"));
+    assert_eq!(requires, Some(PathBuf::from("/home/u/snap/firefox")));
+}
+
+#[test]
+fn snap_chromium_and_flatpak_browsers_have_their_own_targets() {
+    let all = manifests(&Browser::ALL);
+    assert!(all.iter().any(|(label, path, _)| label == "Chromium (Snap)"
+        && path.starts_with("/home/u/snap/chromium/common/chromium")));
+    assert!(all.iter().any(|(label, path, _)| {
+        label == "Firefox (Flatpak)"
+            && path
+                .starts_with("/home/u/.var/app/org.mozilla.firefox/.mozilla/native-messaging-hosts")
+    }));
+    assert!(
+        all.iter()
+            .any(|(label, path, _)| label == "Google Chrome (Flatpak)"
+                && path.starts_with(
+                    "/home/u/.var/app/com.google.Chrome/config/google-chrome/NativeMessagingHosts"
+                ))
+    );
+}
+
+#[test]
+fn flatpak_targets_copy_the_host_next_to_the_manifest() {
+    let flatpak = targets(
+        &[Browser::Chrome],
+        Path::new("/home/u"),
+        Path::new("/home/u/.config"),
+    )
+    .into_iter()
+    .find(|t| t.label == "Google Chrome (Flatpak)")
+    .unwrap();
+    let Location::File {
+        manifest,
+        host_copy,
+        ..
+    } = flatpak.location
+    else {
+        panic!("expected a file target");
+    };
+    assert_eq!(host_copy.unwrap().parent(), manifest.parent());
+}
+
+#[test]
+fn opera_writes_into_chromes_folder_once_its_own_exists() {
+    let name = manifest::file_name();
+    for (label, dir) in [("Opera", "opera"), ("Opera Developer", "opera-developer")] {
+        let (_, manifest, requires) = manifests(&[Browser::Opera])
+            .into_iter()
+            .find(|(l, _, _)| l == label)
+            .unwrap();
+        assert_eq!(
+            manifest,
+            PathBuf::from("/home/u/.config/google-chrome/NativeMessagingHosts").join(&name)
+        );
+        assert_eq!(requires, Some(PathBuf::from("/home/u/.config").join(dir)));
+    }
+}
+
+#[test]
+fn chromium_browsers_follow_the_config_home() {
+    let all = targets(&[Browser::Brave], Path::new("/home/u"), Path::new("/xdg"));
+    let Location::File {
+        manifest, requires, ..
+    } = &all[0].location
+    else {
+        panic!("files only");
+    };
+    assert!(manifest.starts_with("/xdg/BraveSoftware/Brave-Browser/NativeMessagingHosts"));
+    assert_eq!(
+        requires.as_deref(),
+        Some(Path::new("/xdg/BraveSoftware/Brave-Browser"))
+    );
+}

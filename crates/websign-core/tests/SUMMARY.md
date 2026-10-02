@@ -1,0 +1,26 @@
+# crates/websign-core/tests
+
+- `cert_icp_brasil/` — SPEC §6.3: ICP-Brasil detection, level, holder, CPF and CNPJ (one binary, split by topic)
+- `cert_usage/` — SPEC §6 and §6.5: `KeyUsage`, BasicConstraints, EKU, policies and `can_sign` (one binary, split by topic)
+- `common/` — shared helpers of the integration tests
+- `dedup/` — SPEC §8: `dedup_by_fingerprint`, `SourceKind`, `Deduped` (one binary, split by topic)
+- `ecdsa/` — SPEC §4: `Curve`, `der_to_raw`, `raw_to_der` (one binary, split by topic)
+- `ecdsa_brainpool/` — SPEC §4.1: Brainpool curves, OIDs and encodings (one binary, split by topic)
+- `fingerprint/` — SPEC §5: `Fingerprint`, `ParseFingerprintError` (one binary, split by topic)
+- `fixtures/` — OpenSSL-generated certificates and vectors
+- `hash/` — SPEC §1: `HashAlgorithm`, `DigestLengthError` (one binary, split by topic)
+- `present_caller/` — SPEC §12: `caller_label`, `consent_key` (one binary, split by topic)
+- `present_document/` — SPEC §11: `display_document` and the masks (one binary, split by topic)
+- `present_holder/` — SPEC §10: `display_name`, `title_case` (one binary, split by topic)
+- `present_origin/` — SPEC §9: `format_origin` (one binary, split by topic)
+- `present_wire/` — SPEC §13: `certificate_profile` and the wire mappings (one binary, split by topic)
+- `verify/` — SPEC §7: `verify`, `VerifyError` (one binary, split by topic)
+- `verify_brainpool/` — SPEC §4.1 and §7: `verify` on Brainpool keys (one binary, split by topic)
+- `algorithm.rs` — SPEC §2: `SignatureAlgorithm`, `UnknownAlgorithmError`.
+- `cert.rs` — SPEC §6 and §6.0: parsing `CertInfo` from DER, and `CertError`.
+- `cert_key.rs` — SPEC §6.2: `PublicKeyKind`.
+- `cert_names.rs` — SPEC §6.1 and `display_name` (§6.5): `DistinguishedName`.
+- `cert_names_personal.rs` — SPEC §6.1a: `given_name`, `surname`, `serial_number`.
+- `cert_qualified.rs` — SPEC §6.4: eIDAS qcStatements (`Qualified`, `QcType`).
+- `cert_validity.rs` — SPEC §6: `serial_hex`, `not_before`, `not_after` and `is_valid_at` (§6.5).
+- `pkcs1.rs` — SPEC §3: `pkcs1::digest_info`.

@@ -1,3 +1,63 @@
+WebeSign
+Copyright (C) 2026 MedDeck LTDA and the WebeSign contributors
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version, with the additional permission below.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+Scope: this file covers the whole repository except the parts that carry
+their own license file:
+  - sdk/                     Apache License 2.0  (sdk/LICENSE)
+  - clients/node/            Apache License 2.0  (clients/node/LICENSE)
+  - clients/rust/            Apache License 2.0  (clients/rust/LICENSE)
+  - crates/websign-protocol/ Apache License 2.0  (crates/websign-protocol/LICENSE)
+  - crates/websign-project/  Apache License 2.0  (crates/websign-project/LICENSE)
+  - devices.json and devices.schema.json
+                             CC0 1.0 Universal   (LICENSE-CC0 next to them)
+
+Dual-licensed inputs: project.toml and every i18n/*.toml are licensed under
+this License OR, at your option, the Apache License 2.0 (the text in
+sdk/LICENSE). The Apache-2.0 parts above embed or generate code from them
+(sdk/src/project.ts, sdk/src/messages.gen.ts, the websign-project crate), so
+those generated files stay Apache-2.0. Contributions to these inputs are
+accepted under both licenses.
+
+-------------------------------------------------------------------------------
+Additional permission under GNU GPL version 3 section 7
+-------------------------------------------------------------------------------
+
+As a special exception, the copyright holders of this program give you
+permission to convey this program, or any covered work based on it, in object
+code form through an application distribution service operated by a third
+party (such as the Apple App Store, the Mac App Store or the Microsoft Store),
+even if the terms of service or usage rules of that service impose on
+recipients restrictions or requirements beyond those of this License (for
+example, limits on the number of devices, digital rights management, or
+restrictions on further conveying), and even if you do not convey the
+installation information that section 6 would otherwise require, provided
+that:
+
+  a) the Corresponding Source of the conveyed work is made available to
+     everyone, at no charge, under the terms of this License, through a
+     publicly accessible network server; and
+
+  b) the conveyed work, or the store listing that offers it, includes a
+     prominent notice stating that it is licensed under this License and
+     where its Corresponding Source can be obtained.
+
+Recipients of copies conveyed under this permission keep every right this
+License grants them over the Corresponding Source. If you modify this
+program, you may extend this exception to your version, but you are not
+obliged to do so; if you do not wish to, delete this exception statement
+from your version.
+
+-------------------------------------------------------------------------------
+
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 

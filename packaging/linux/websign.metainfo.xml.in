@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- AppStream data: software centers show the summary and link to the project. -->
+<component type="desktop-application">
+  <id>{{bundle_id}}</id>
+  <name>{{name}}</name>
+  <summary>{{tagline}}</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <url type="homepage">{{homepage}}</url>
+  <url type="vcs-browser">{{repository}}</url>
+  <launchable type="desktop-id">{{slug}}.desktop</launchable>
+  <provides>
+    <binary>{{slug}}</binary>
+  </provides>
+  <releases>
+    <release version="{{version}}"/>
+  </releases>
+</component>

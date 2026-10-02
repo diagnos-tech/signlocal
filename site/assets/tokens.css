@@ -1,0 +1,24 @@
+/* Mirrors docs/ux.md §11 (and design/tokens.css when present). Keep in sync. */
+:root {
+  --ws-bg-canvas: #F5F6F9; --ws-bg-surface: #FFFFFF; --ws-bg-sunken: #EDEFF4; --ws-bg-hover: #F1F3F8;
+  --ws-accent-soft: #EEF0FD; --ws-border: #DCE0E8; --ws-border-strong: #848D9F;
+  --ws-fg: #141722; --ws-fg-muted: #545C6D; --ws-fg-subtle: #636B7D;
+  --ws-accent: #3346D1; --ws-accent-hover: #2A3BB8; --ws-accent-fg: #3346D1; --ws-on-accent: #FFFFFF; --ws-focus: #3346D1;
+  --ws-warning: #935300; --ws-warning-soft: #FFF2D9; --ws-warning-border: #EFCB8A;
+  --ws-success: #127A41; --ws-success-soft: #E6F5EC; --ws-success-border: #A8DCBE;
+  --ws-shadow: 0 1px 2px #1417220F, 0 8px 24px #1417220F;
+  --ws-radius-sm: 4px; --ws-radius-lg: 10px;
+  --ws-font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --ws-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ws-bg-canvas: #0E1016; --ws-bg-surface: #161922; --ws-bg-sunken: #0B0D12; --ws-bg-hover: #1E222D;
+    --ws-accent-soft: #1A1F3C; --ws-border: #2A2F3C; --ws-border-strong: #6B7488;
+    --ws-fg: #E7E9EF; --ws-fg-muted: #A3AAB9; --ws-fg-subtle: #8C94A6;
+    --ws-accent: #4E5EE4; --ws-accent-hover: #4555DA; --ws-accent-fg: #9DA8FF; --ws-focus: #9DA8FF;
+    --ws-warning: #EFB35E; --ws-warning-soft: #2A1F0E; --ws-warning-border: #5C4418;
+    --ws-success: #5BCB8D; --ws-success-soft: #10281B; --ws-success-border: #1F5C3B;
+    --ws-shadow: 0 1px 2px #0000004D, 0 8px 24px #00000033;
+  }
+}

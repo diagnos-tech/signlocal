@@ -1,0 +1,18 @@
+[meta]
+language_name = "English"
+
+[confirm]
+# {site} is the host.
+window_title = "Sign for {site}"
+queue = "{current} of {total}"
+
+[cert.expires_in]
+one = "Expires in {count} day"
+other = "Expires in {count} days"
+
+[popup]
+ready_title = "Ready"
+
+[extension]
+name = "WebeSign"
+description = "Sign documents with your certificate."

@@ -1,0 +1,54 @@
+{
+  "name": "@websign/desktop",
+  "version": "0.1.0",
+  "description": "Call the WebeSign app from Node.js, Bun or Electron: choose a certificate and sign a digest through `websign connect`. Zero runtime dependencies.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "default": "./dist/testing/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "smoke": "node scripts/smoke.mjs && node scripts/smoke.cjs"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.3",
+    "typescript": "7.0.2",
+    "vitest": "5.0.2"
+  },
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "keywords": [
+    "websign",
+    "digital-signature",
+    "smart-card",
+    "pkcs11",
+    "pades",
+    "icp-brasil"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/diagnos-tech/web-esign.git",
+    "directory": "clients/node"
+  }
+}

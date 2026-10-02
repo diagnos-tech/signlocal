@@ -1,0 +1,199 @@
+# Web API — `@websign/sdk`
+
+What a website uses to sign with the visitor's certificate. Apache-2.0, zero
+runtime dependencies, < 5 KB gzipped. Source and contract:
+[`sdk/`](../../sdk/), [`sdk/SPEC.md`](../../sdk/SPEC.md). Wire details:
+[protocol.md](protocol.md).
+
+## 1. Surface
+
+Free functions rather than a client object: the extension is one per page,
+there is nothing to connect or close, and unused calls are tree-shaken.
+
+```ts
+import { status, certificates, sign, installUrl, onChange, fingerprint, WebSignError, isWebSignError } from "@websign/sdk";
+import { errorText } from "@websign/sdk/messages"; // optional localized texts
+import { installFakeWebSign } from "@websign/sdk/testing"; // tests and local development only
+
+status(): Promise<Status>                                  // never opens a window, never rejects
+certificates(options?: CertificateOptions): Promise<Certificate[]>
+sign<H, A>(options: SignOptions<H, A>): Promise<SignResult<H, A>>  // literal hash/algorithm flow into prepare and the result
+installUrl(): string                                       // store page for this browser
+onChange(listener: (status: Status) => void): () => void   // returns unsubscribe
+fingerprint(digest: Uint8Array | ArrayBuffer): VerificationCode  // same code the app shows
+isWebSignError(error, ...codes): error is WebSignError     // narrows error.code
+errorText(error: ErrorCode | WebSignError | undefined, locale = navigator.language): { title; body } | undefined
+```
+
+### Types
+
+```ts
+type HashAlgorithm = "SHA-256" | "SHA-384" | "SHA-512";
+type SignatureAlgorithm = "ECDSA" | "RSASSA-PKCS1-v1_5" | "RSASSA-PSS";
+
+interface SignOptions {
+  hash: HashAlgorithm;
+  algorithm?: SignatureAlgorithm | readonly SignatureAlgorithm[]; // preference order
+  certificate?: Certificate | string;                             // preselect (fingerprint)
+  prepare(certificate: Certificate, context: { hash: H; algorithm: A }): Uint8Array | ArrayBuffer | Promise<…>;
+  signal?: AbortSignal;
+}
+
+interface SignResult { certificate: Certificate; hash: H; algorithm: A; signature: Uint8Array; digest: Uint8Array } // digest: what was signed
+
+interface Certificate {
+  der: Uint8Array; chain: Uint8Array[]; fingerprint: string;       // SHA-256 hex
+  displayName: string; issuerName: string; notBefore: Date; notAfter: Date;
+  key: { type: "RSA"; bits: number } | { type: "EC"; curve: "P-256" | … | "brainpoolP512r1" };
+  algorithms: SignatureAlgorithm[];
+  profile: { icpBrasil?: string; eidas?: { qualified; qscd; types }; keyStorage: "hardware" | "software" | "unknown" };
+}
+
+interface Status {
+  extension: { installed: boolean; version?: string };
+  app: { installed: boolean; version?: string; outdated: boolean };
+  remembered: boolean;   // certificates() will answer without a window (for certificates already consented to)
+  ready: boolean;        // extension + compatible app
+  problem?: "ExtensionMissing" | "ExtensionOutdated" | "ClientOutdated" | "AppMissing" | "AppOutdated"; // absent when ready
+}
+
+interface VerificationCode { text: string; colorIndex: number; cells: boolean[] } // 25 cells, row-major
+
+class WebSignError extends Error {
+  code: ErrorCode; message: string;   // what happened (English, for developers)
+  hint: string;                       // what to do next (English, for developers)
+  docsUrl: string;                    // <homepage>developers.html#error-<code>
+  details?: { installed?; required?; native? };
+}
+```
+
+`ErrorCode` is the protocol's list ([protocol.md §7](protocol.md#7-errors)).
+Every rejection is a `WebSignError`; nothing else is thrown. Bytes the SDK
+returns are `Uint8Array<ArrayBuffer>`, which WebCrypto takes as is.
+
+## 2. Usage
+
+### PAdES with `@repo/ihatepdf` (`ExternalPdfSigner`)
+
+```ts
+const result = await sign({
+  hash: "SHA-256",
+  prepare: async (certificate, { algorithm }) => {
+    const signedAttrs = buildSignedAttributes(certificate.der, algorithm); // signing-certificate-v2, …
+    return new Uint8Array(await crypto.subtle.digest("SHA-256", signedAttrs));
+  },
+});
+// result.signature: raw (ECDSA r‖s), result.certificate.der, result.certificate.chain
+```
+
+`prepare` may run more than once (the person switches certificate in the
+window); keep it pure and fast. Throwing inside `prepare` aborts the request
+(`Aborted`).
+
+### Errors: one table for developers, localized texts for people
+
+```ts
+try {
+  await sign({ hash: "SHA-256", prepare });
+} catch (error) {
+  if (!isWebSignError(error)) throw error;
+  if (error.code === "UserCancelled") return;
+  console.warn(error.code, error.hint, error.docsUrl);
+  const text = errorText(error); // title + next step, {installed}/{required} filled
+}
+```
+
+`site/developers.html` has one row per code with the anchor `error-<Code>`;
+the desktop clients link to the same rows.
+
+### Test without the extension
+
+`@websign/sdk/testing` (`installFakeWebSign()`) answers the SDK on `window`
+like the extension and app: real ECDSA/RSA signatures with public test keys,
+scripted outcomes (`scenario`, `failNext`, `choose`, `switchDuringNextSign`),
+`requests` and `verify()` for assertions. Separate entry point, refuses
+non-local origins, warns on the console: it cannot reach production by
+accident. Examples in [`examples/web/`](../../examples/web/).
+
+### Show the verification code next to your button
+
+```ts
+const code = fingerprint(digest); // "7F3A 9C21 E0B4 55D8" + identicon cells + color
+```
+
+Draw the identicon as a 5×5 grid, cell size ≥ 6 px, color from the palette of
+[`docs/ux.md` §11.1](../ux.md#111-cores) (`id-0` … `id-7`).
+
+### Enforce a qualified policy
+
+The app reports; the site decides:
+
+```ts
+const ok = c.profile.icpBrasil?.match(/^A[34]$/) || (c.profile.eidas?.qualified && c.profile.eidas.qscd);
+```
+
+## 3. Page ↔ extension protocol
+
+- **Discovery.** The content script (all frames, `document_start`) posts
+  `announce` immediately and on `load`. The SDK listens from import time and
+  posts `discover` on first use; with no `announce` within **1000 ms**,
+  `ExtensionMissing`. The result is cached per page; `onChange` fires when a
+  later announcement arrives (extension installed or updated).
+- **Messages** are plain objects on `window.postMessage(msg, location.origin)`
+  (never `"*"`) with `source: "websign-page"` (SDK) or `"websign-extension"`
+  (content script). Each side ignores messages from other windows, other
+  origins, other sources or of an unexpected shape. Shapes: `PageToExtension`, `ExtensionToPage`
+  ([protocol.md §9](protocol.md#9-page-messages)).
+- **Ids** are generated by the SDK (`p` + counter + random suffix), unique per
+  page.
+- **Trust.** The content script shares a process with the page; it rebuilds
+  every request field by field and answers a malformed one itself with
+  `InvalidRequest` (unknown fields are refused, not stripped), and the
+  background validates again, takes the origin from `MessageSender` (never
+  from the payload) and refuses insecure contexts with `InsecureOrigin`.
+- **Lifetime.** A request ends when its tab closes, when the tab's top frame
+  navigates to another origin, or when its document is unloaded
+  (`pagehide`); the extension then sends `cancel` to the app. Replies are
+  bound to the requesting document and never reach a page that replaced it.
+- **Iframes** work; the window says "Inside a page from {top site}" when the
+  frame's origin differs from the tab's.
+
+## 4. Behavior details
+
+| Call | Window | Resolves with | Typical rejections |
+|---|---|---|---|
+| `status()` | never | `Status` (never rejects; missing pieces are `installed: false`) | — |
+| `certificates()` | choose mode, unless remembered (only for certificates in the caller's consent record; anything else needs Continue) | `[chosen]` or the remembered ones | `ExtensionMissing`, `AppMissing`, `AppOutdated`, `UserCancelled`, `NoCertificates`, `Timeout`, `Busy` |
+| `sign()` | always | `SignResult` | the above + `PinLocked`, `TokenRemoved`, `DriverFailure`, `UnsupportedAlgorithm`, `CertificateUnavailable`, `CertificateNotValid`, `InvalidRequest`, `Aborted` |
+
+- Digest length is validated in the SDK before sending (`InvalidRequest`
+  "Digest is 20 bytes; SHA-256 requires 32."). A `need_digest` whose hash or
+  algorithm differs from what `sign()` asked is refused before `prepare`
+  runs (`cancel` + `InvalidRequest`).
+- `AppMissing` also covers an app that starts but never answers the
+  extension's `hello` (8 s until it has answered once since the
+  extension's background started, 3 s after): to the person it is a broken install with the same remedy, so
+  it is not reported as `Internal`.
+- Protocol ranges: an extension that only speaks newer page protocols than
+  the SDK rejects with `ClientOutdated` (update `@websign/sdk`); one that only
+  speaks older ones with `ExtensionOutdated`. Nothing is posted in either case.
+- A reply the SDK cannot use (wrong kind, malformed, unknown error code) is
+  `Internal`. `status()` gives up after 10 s without an answer: the
+  extension answers within 9.5 s even when the app starts for the first
+  time (8 s for its `hello`, 1.5 s for its `status`).
+- Importing the SDK without a `window` (server-side rendering) is safe.
+- `installUrl()`: Chrome → Chrome Web Store, Edge → Edge Add-ons, Firefox →
+  AMO, Safari/unknown → the project's download page (`project.toml`
+  `homepage` + `download.html`). Each store is linked only once its ID
+  (`chrome_web_store_id`, `edge_addons_id`, `firefox_amo_slug`) is set in
+  `project.toml`; until then it points to the download page. A guessed AMO
+  slug is never used: an unpublished slug can be claimed by anyone.
+- `@websign/sdk/messages` `errorText(error, locale?)` returns title/body from
+  `i18n/*.toml` `[site.errors]` for the closest of en, pt-BR, pt-PT, es, fr,
+  it, de.
+
+## 5. Versioning
+
+Semantic versioning of the npm package. The SDK speaks page messages, which
+change only with a protocol version; a new SDK keeps working with older
+extensions for as long as their protocol ranges overlap.

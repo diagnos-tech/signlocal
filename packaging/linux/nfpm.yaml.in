@@ -1,0 +1,45 @@
+# Rendered by `cargo xtask package` (values from project.toml and Cargo.toml),
+# then passed to nfpm. One file for deb and rpm: only the dependency names differ.
+name: {{slug}}
+arch: {{arch}}
+platform: linux
+version: {{version}}
+version_schema: semver
+release: 1
+section: utils
+priority: optional
+maintainer: WebeSign maintainers <noreply@users.noreply.github.com>
+description: |
+  {{tagline}}
+homepage: {{homepage}}
+license: GPL-3.0-or-later
+contents:
+  - src: "{{binary}}"
+    dst: /usr/bin/{{slug}}
+    file_info:
+      mode: 0755
+  - src: "{{share}}/applications/{{slug}}.desktop"
+    dst: /usr/share/applications/{{slug}}.desktop
+  - src: "{{share}}/metainfo/{{bundle_id}}.metainfo.xml"
+    dst: /usr/share/metainfo/{{bundle_id}}.metainfo.xml
+  - src: "{{share}}/icons/hicolor/scalable/apps/{{slug}}.svg"
+    dst: /usr/share/icons/hicolor/scalable/apps/{{slug}}.svg
+  - src: "{{share}}/doc/{{slug}}/"
+    dst: /usr/share/doc/{{slug}}/
+    type: tree
+scripts:
+  postinstall: "{{packaging}}/linux/postinst.sh"
+  preremove: "{{packaging}}/linux/prerm.sh"
+overrides:
+  deb:
+    depends:
+      - libpcsclite1
+    recommends:
+      - pcscd
+      - p11-kit
+  rpm:
+    depends:
+      - pcsc-lite-libs
+    recommends:
+      - pcsc-lite
+      - p11-kit

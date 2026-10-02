@@ -1,0 +1,13 @@
+{{name}} {{version}}
+
+{{tagline}}
+
+Install:  powershell -NoProfile -ExecutionPolicy Bypass -File install.ps1 -Version {{version}}
+Manual:   unzip to %LOCALAPPDATA%\Programs\{{name}} and run "{{slug}}.exe install".
+
+This build is not code-signed yet, so Windows SmartScreen may say "Windows
+protected your PC" when you run websign.exe from a browser download. Click
+"More info", then "Run anyway". install.ps1 avoids the prompt.
+
+Verify downloads against SHA256SUMS. Licenses are in the licenses folder.
+Project: {{homepage}}

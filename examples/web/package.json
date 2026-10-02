@@ -1,0 +1,32 @@
+{
+  "name": "websign-web-examples",
+  "private": true,
+  "version": "0.0.0",
+  "description": "@websign/sdk examples: vanilla HTML, React, Vue and a PAdES (PDF) flow. They run without the extension, on the SDK's testing fake.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p .",
+    "test": "bun test pades",
+    "check": "bun run typecheck && bun run test && bun run build"
+  },
+  "dependencies": {
+    "asn1js": "3.0.10",
+    "pdf-lib": "1.17.1",
+    "pkijs": "3.4.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "vue": "3.5.43"
+  },
+  "devDependencies": {
+    "@types/bun": "1.3.11",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-vue": "6.0.9",
+    "typescript": "6.0.3",
+    "vite": "8.3.1"
+  }
+}
