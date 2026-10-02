@@ -49,7 +49,7 @@ jobs:
             --exclude='*/SUMMARY.md' --exclude=./SUMMARY.md --exclude=./README.md \
             -cf - . | tar -C "$RUNNER_TEMP/site" -xf -
       - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: ${{ runner.temp }}/site
 
