@@ -56,13 +56,13 @@ jobs:
           PROBE_EXE: ${{ github.workspace }}/docs/prototypes/kit/target/release/websign-probe
           REPORT_PATH: ${{ runner.temp }}/report-linux.md
         run: bash linux/ci-linux.sh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: report-linux
           path: ${{ runner.temp }}/report-*.md
           if-no-files-found: ignore
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: websign-probe-linux-x64
           path: docs/prototypes/kit/target/release/websign-probe
@@ -114,7 +114,7 @@ jobs:
         run: |
           ./msix/build-msix.ps1 -OutDir "$env:RUNNER_TEMP\websign-msix"
           ./msix/test-msix.ps1
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: report-windows
@@ -122,7 +122,7 @@ jobs:
           if-no-files-found: ignore
       # Ready-to-run binaries so real tokens can be tested without a toolchain.
       # The .cer is the throwaway test publisher: trust it to install the .msix.
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: websign-probe-windows-x64
@@ -162,13 +162,13 @@ jobs:
         env:
           PROBE_EXE: ${{ github.workspace }}/docs/prototypes/kit/target/release/websign-probe
         run: bash macos/sandbox/sandbox-test.sh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: report-macos
           path: ${{ runner.temp }}/report-*.md
           if-no-files-found: ignore
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: websign-probe-macos-arm64
           path: docs/prototypes/kit/target/release/websign-probe
