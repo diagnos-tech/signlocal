@@ -6,6 +6,34 @@
 <meta name="color-scheme" content="light dark">
 <title>WebeSign: sign on any website with your smart card, USB token or OS certificate</title>
 <meta name="description" content="Use your smart card, USB token, or OS certificate to sign on any website. Works with Chrome, Edge, Firefox, Opera, Brave and Safari on Windows, macOS, and Linux. Free and Open Source for everyone.">
+<!-- SEO and social cards. The absolute URLs use the homepage declared in
+     project.toml; keep them in sync if the product is renamed. -->
+<link rel="canonical" href="https://diagnos-tech.github.io/web-esign/">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#F5F6F9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="WebeSign">
+<meta property="og:title" content="WebeSign: sign on any website with your smart card, USB token or OS certificate">
+<meta property="og:description" content="Use your smart card, USB token, or OS certificate to sign on any website. Works with Chrome, Edge, Firefox, Opera, Brave and Safari on Windows, macOS, and Linux. Free and Open Source for everyone.">
+<meta property="og:url" content="https://diagnos-tech.github.io/web-esign/">
+<meta property="og:image" content="https://diagnos-tech.github.io/web-esign/assets/og.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="WebeSign: use your smart card, USB token, or OS certificate to sign on any website.">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="pt_PT">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="de_DE">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="WebeSign: sign on any website with your smart card, USB token or OS certificate">
+<meta name="twitter:description" content="Sign on any website with your smart card, USB token or OS certificate. Chrome, Edge, Firefox, Opera, Brave and Safari on Windows, macOS and Linux. Free and Open Source.">
+<meta name="twitter:image" content="https://diagnos-tech.github.io/web-esign/assets/og.png">
+<meta name="twitter:image:alt" content="WebeSign: use your smart card, USB token, or OS certificate to sign on any website.">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/tokens.css">
 <link rel="stylesheet" href="assets/site.css">
@@ -13,6 +41,41 @@
 <script src="assets/i18n.js" defer></script>
 <script src="assets/detect.js" defer></script>
 <script src="assets/cta.js" defer></script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "name": "WebeSign",
+      "applicationCategory": "SecurityApplication",
+      "operatingSystem": "Windows, macOS, Linux",
+      "description": "Use your smart card, USB token, or OS certificate to sign on any website. Works with Chrome, Edge, Firefox, Opera, Brave and Safari on Windows, macOS, and Linux.",
+      "url": "https://diagnos-tech.github.io/web-esign/",
+      "downloadUrl": "https://diagnos-tech.github.io/web-esign/download.html",
+      "softwareHelp": "https://diagnos-tech.github.io/web-esign/download.html",
+      "browserRequirements": "Requires Chrome, Edge, Firefox, Opera, Brave or Safari.",
+      "isAccessibleForFree": true,
+      "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "author": { "@type": "Organization", "name": "WebeSign", "url": "https://diagnos-tech.github.io/web-esign/" },
+      "sameAs": ["https://github.com/diagnos-tech/web-esign"]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "Is it really free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, for everyone, with no account. The app and the extension are free software (GPL-3.0-or-later); the libraries for developers are Apache-2.0, so any website or program can use them." } },
+        { "@type": "Question", "name": "Which certificates work?", "acceptedAnswer": { "@type": "Answer", "text": "Any certificate your operating system or your token's driver can use: USB tokens, smart cards and certificates installed on the computer (for example from a .pfx file). There is no list of approved models." } },
+        { "@type": "Question", "name": "Can a website see my PIN, my keys or my other certificates?", "acceptedAnswer": { "@type": "Answer", "text": "No. The PIN is typed in the app or the system window, and the private key never leaves your computer or your token. A website only receives the certificate you choose and the signature you confirm." } },
+        { "@type": "Question", "name": "Why do Windows and macOS warn when I install it?", "acceptedAnswer": { "@type": "Answer", "text": "Prerelease builds are not code-signed yet. The download page says what to click, and how to check each file against the published SHA256SUMS." } },
+        { "@type": "Question", "name": "Which signature formats does it support?", "acceptedAnswer": { "@type": "Answer", "text": "WebeSign returns a raw signature and the certificate; the website builds the format it needs (PAdES, CAdES, XAdES or JAdES), for any country's rules." } },
+        { "@type": "Question", "name": "Does it work on phones?", "acceptedAnswer": { "@type": "Answer", "text": "No. WebeSign runs on computers with Windows, macOS or Linux, where tokens and smart cards are plugged in." } },
+        { "@type": "Question", "name": "Is something always running in the background?", "acceptedAnswer": { "@type": "Answer", "text": "No. The browser starts the app only when a website asks for a signature, and the app opens no network port." } }
+      ]
+    }
+  ]
+}
+</script>
 </head>
 <body class="home">
 <a class="skip" href="#main" data-i18n="nav.skip">Skip to content</a>

@@ -1,0 +1,10 @@
+# WebeSign website. Crawlers are welcome: the whole site is public.
+# Note: on GitHub Pages project sites the crawled robots.txt is the domain
+# root (diagnos-tech.github.io/robots.txt), not this file under /web-esign/.
+# This file takes effect once the site moves to its own domain (see the CNAME
+# TODO in project.toml). The sitemap below can be submitted directly in Search
+# Console in the meantime.
+User-agent: *
+Allow: /
+
+Sitemap: https://diagnos-tech.github.io/web-esign/sitemap.xml
