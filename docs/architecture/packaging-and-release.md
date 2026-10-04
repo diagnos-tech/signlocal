@@ -16,7 +16,7 @@ container) and reported as `AppInfo.channel`; there are no build forks.
 | File | Contents |
 |---|---|
 | `websign-<v>-windows-x64.zip`, `websign-<v>-windows-arm64.zip` | `websign.exe` (MSVC, `+crt-static`), `README.txt`, licenses |
-| `websign-<v>-macos-universal.zip` | `WebeSign.app` (arm64 + x86_64 `lipo`) with the Safari appex in `Contents/PlugIns` (§Safari appex), ad-hoc signed inside out |
+| `websign-<v>-macos-universal.zip` | `SignLocal.app` (arm64 + x86_64 `lipo`) with the Safari appex in `Contents/PlugIns` (§Safari appex), ad-hoc signed inside out |
 | `websign_<v>_amd64.deb`, `websign_<v>_arm64.deb` | `/usr/bin/websign`, desktop entry, icons, system manifests via postinst |
 | `websign-<v>-1.x86_64.rpm`, `websign-<v>-1.aarch64.rpm` | same layout |
 | `websign-<v>-linux-x64.tar.gz`, `websign-<v>-linux-arm64.tar.gz` | binary + desktop entry + icons, for `install.sh` and other distros |
@@ -29,7 +29,7 @@ native runner of each OS; the release job assembles and publishes.
 
 ### Safari appex
 
-Safari ships in the **direct** channel, inside `WebeSign.app` (macOS 13+); the unsigned prerelease needs "Allow
+Safari ships in the **direct** channel, inside `SignLocal.app` (macOS 13+); the unsigned prerelease needs "Allow
 Unsigned Extensions". `TODO(gustavo)`: Developer ID signing, notarization and the Mac App Store. The host runs
 sandboxed in the appex: Keychain works and the CryptoTokenKit query runs (no real token tried yet), but PKCS#11-only
 tokens may not work, because the sandbox limits which driver files it can load.
@@ -38,11 +38,11 @@ tokens may not work, because the sandbox limits which driver files it can load.
 adds the app extension Safari requires ([`safari/SPEC.md`](../../safari/SPEC.md)):
 
 ```
-WebeSign.app/Contents/
+SignLocal.app/Contents/
   MacOS/websign                                  the app (Chrome, Edge, Brave, Firefox, CLI)
-  PlugIns/WebeSignExtension.appex/Contents/
+  PlugIns/SignLocalExtension.appex/Contents/
     Info.plist                                   packaging/macos/Extension-Info.plist.in
-    MacOS/WebeSignExtension                      safari/Relay + safari/Extension, swiftc per slice, lipo
+    MacOS/SignLocalExtension                      safari/Relay + safari/Extension, swiftc per slice, lipo
     MacOS/websign                                copy of the app binary, started per Safari session
     Resources/                                   extension/.output/safari-mv3 (the WXT safari build)
 ```
@@ -65,9 +65,9 @@ WebeSign.app/Contents/
 
 | OS / package | Binary | Registration |
 |---|---|---|
-| Windows direct | `%LOCALAPPDATA%\Programs\WebeSign\websign.exe`, folder added to the user `PATH` | `websign install`: `HKCU\Software\<vendor>\NativeMessagingHosts\dev.websign.host` for every browser, manifests in `%LOCALAPPDATA%\websign\NativeMessagingHosts`, `HKCU\Software\Classes\websign`, Start menu shortcut |
+| Windows direct | `%LOCALAPPDATA%\Programs\SignLocal\websign.exe`, folder added to the user `PATH` | `websign install`: `HKCU\Software\<vendor>\NativeMessagingHosts\dev.websign.host` for every browser, manifests in `%LOCALAPPDATA%\websign\NativeMessagingHosts`, `HKCU\Software\Classes\websign`, Start menu shortcut |
 | Windows store | package folder; alias `websign.exe` in `%LOCALAPPDATA%\Microsoft\WindowsApps` | same keys, written by the app on first start (manifests point at the alias) |
-| macOS direct | `/Applications/WebeSign.app` (or `~/Applications` without admin rights); `~/.local/bin/websign` symlink | `websign install`: manifests in each browser's `NativeMessagingHosts` under `~/Library/Application Support`; URL scheme from `Info.plist` |
+| macOS direct | `/Applications/SignLocal.app` (or `~/Applications` without admin rights); `~/.local/bin/websign` symlink | `websign install`: manifests in each browser's `NativeMessagingHosts` under `~/Library/Application Support`; URL scheme from `Info.plist` |
 | Linux deb/rpm | `/usr/bin/websign`, `/usr/share/applications/websign.desktop` | postinst runs `websign install --system` (system manifests; the Firefox Snap portal also reads `~/.mozilla`, which `websign install` writes per user); it leaves `pcscd.socket` to the pcscd package (diagnostics shows the enable command); `Depends: libpcsclite1` / `Requires: pcsc-lite-libs`; `Recommends: pcscd, p11-kit` |
 | Linux tar.gz | `~/.local/bin/websign`, `~/.local/share/applications/websign.desktop` | `websign install` (per user); per-user manifests also cover the Firefox Snap; the script offers `sudo websign install --system` for other users |
 
@@ -114,7 +114,7 @@ Direct builds are not code-signed yet (costs and accounts pending, brief
 | Where | What happens | What to do |
 |---|---|---|
 | Windows | SmartScreen "Windows protected your PC" when running a downloaded `websign.exe` by hand | The install script avoids it (it downloads with PowerShell and unblocks the file). Manual download: **More info → Run anyway**. |
-| macOS | Gatekeeper "cannot be opened because the developer cannot be verified" | The install script removes the quarantine attribute from `WebeSign.app` only (`xattr -dr com.apple.quarantine`). Manual: System Settings → Privacy & Security → **Open Anyway** (macOS 14 and earlier: right-click the app → **Open**). |
+| macOS | Gatekeeper "cannot be opened because the developer cannot be verified" | The install script removes the quarantine attribute from `SignLocal.app` only (`xattr -dr com.apple.quarantine`). Manual: System Settings → Privacy & Security → **Open Anyway** (macOS 14 and earlier: right-click the app → **Open**). |
 | Linux | nothing (packages are unsigned; `apt install ./websign_<v>_amd64.deb`, `dnf install ./websign-<v>-1.x86_64.rpm`) | — |
 | Chrome / Edge / Brave | the extension is not in the stores yet | `chrome://extensions` → Developer mode → **Load unpacked** → the unzipped `websign-extension-<v>-chromium` folder. The development key pins the ID the app allows. |
 | Firefox | release Firefox refuses unsigned add-ons | `about:debugging` → This Firefox → **Load Temporary Add-on** (lasts until restart), or Firefox Developer/Nightly/ESR with `xpinstall.signatures.required = false`. `TODO(gustavo)`: sign on AMO as *unlisted* (free, automatic) to remove this step. |

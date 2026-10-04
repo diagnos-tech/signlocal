@@ -1,4 +1,4 @@
-//! Test your program without the WebeSign app (feature `testing`).
+//! Test your program without the SignLocal app (feature `testing`).
 //!
 //! [`FakeApp`] is an in-process stand-in for `websign connect`: it speaks the
 //! real protocol, so the code under test runs unchanged. Enable it for tests

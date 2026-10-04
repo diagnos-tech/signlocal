@@ -1,5 +1,5 @@
 /**
- * @websign/desktop — call the WebeSign app from a desktop program.
+ * @websign/desktop — call the SignLocal app from a desktop program.
  *
  * Starts `websign connect` as a child process and speaks the framed protocol
  * on its stdin/stdout. Same flow as the web SDK: the certificate is chosen in

@@ -3,7 +3,7 @@
     "message": "Use your smart card, USB token, or OS certificate to sign on any website. Free and Open Source for everyone."
   },
   "extension_name": {
-    "message": "WebeSign"
+    "message": "SignLocal"
   },
   "popup_activate": {
     "message": "Already installed? Finish setting up"
@@ -56,7 +56,7 @@
     "message": "The extension needs the app on your computer to sign."
   },
   "popup_missing_title": {
-    "message": "Install the WebeSign app"
+    "message": "Install the SignLocal app"
   },
   "popup_new_tab": {
     "message": "Opens in a new tab"
@@ -76,13 +76,13 @@
     }
   },
   "popup_outdated_title": {
-    "message": "Update the WebeSign app"
+    "message": "Update the SignLocal app"
   },
   "popup_privacy": {
     "message": "Privacy"
   },
   "popup_ready_body": {
-    "message": "The WebeSign app $version$ is connected to this browser.",
+    "message": "The SignLocal app $version$ is connected to this browser.",
     "placeholders": {
       "version": {
         "content": "$1"
@@ -105,7 +105,7 @@
     "message": "Use a computer running Windows, macOS, or Linux."
   },
   "popup_unsupported_title": {
-    "message": "WebeSign doesn't work on this system yet"
+    "message": "SignLocal doesn't work on this system yet"
   },
   "popup_update": {
     "message": "Download the update"
@@ -128,10 +128,10 @@
     "message": "download page"
   },
   "store_listing_description": {
-    "message": "Use your smart card, USB token, or OS certificate to sign on any website. Works with Chrome, Edge, Firefox, Opera, Brave and Safari on Windows, macOS, and Linux. Free and Open Source for everyone.\n\nWhen a website asks for a signature, the WebeSign app opens its own window on your computer: you see who is asking, choose your certificate, check the verification code and confirm. Your PIN is typed in the app or in the operating system's window, never in a web page.\n\n• Works with the certificates you already have: USB tokens, smart cards and certificates installed on your computer.\n• The website sends only a fingerprint (hash) of the document; the document itself never leaves it.\n• Every signature asks you first, and each website needs your permission, which you can revoke at any time.\n• No account, no trackers, no background service and no open network port.\n\nThe extension works together with the free WebeSign app for Windows, macOS and Linux, available on the project website. Source code: GPL-3.0-or-later; developer libraries: Apache-2.0."
+    "message": "Use your smart card, USB token, or OS certificate to sign on any website. Works with Chrome, Edge, Firefox, Opera, Brave and Safari on Windows, macOS, and Linux. Free and Open Source for everyone.\n\nWhen a website asks for a signature, the SignLocal app opens its own window on your computer: you see who is asking, choose your certificate, check the verification code and confirm. Your PIN is typed in the app or in the operating system's window, never in a web page.\n\n• Works with the certificates you already have: USB tokens, smart cards and certificates installed on your computer.\n• The website sends only a fingerprint (hash) of the document; the document itself never leaves it.\n• Every signature asks you first, and each website needs your permission, which you can revoke at any time.\n• No account, no trackers, no background service and no open network port.\n\nThe extension works together with the free SignLocal app for Windows, macOS and Linux, available on the project website. Source code: GPL-3.0-or-later; developer libraries: Apache-2.0."
   },
   "store_listing_name": {
-    "message": "WebeSign: sign with your certificate"
+    "message": "SignLocal: sign with your certificate"
   },
   "store_listing_summary": {
     "message": "Use your smart card, USB token, or OS certificate to sign on any website. Windows, macOS and Linux. Free and Open Source."

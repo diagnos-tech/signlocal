@@ -11,4 +11,4 @@
 - `package.json` — standalone package with its own lockfile (not a workspace member)
 - `bun.lock` — resolved dependency versions
 - `biome.json` — lint and format settings for this folder
-- `README.md` — how to run, what each example shows, where the PDF library meets WebeSign
+- `README.md` — how to run, what each example shows, where the PDF library meets SignLocal

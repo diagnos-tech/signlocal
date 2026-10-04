@@ -33,7 +33,7 @@ fn reads_the_new_attributes_next_to_the_old_ones() {
     );
     assert_eq!(
         subject.organization.as_deref(),
-        Some("WebeSign Test Fixtures")
+        Some("SignLocal Test Fixtures")
     );
     assert_eq!(subject.country.as_deref(), Some("PT"));
     assert_eq!(subject.given_name.as_deref(), Some("José Ângelo"));

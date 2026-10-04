@@ -22,16 +22,16 @@ export const MESSAGES: Readonly<Record<MessageLocale, LocaleMessages>> = {
       body: "The signature was stopped before it finished.",
     },
     AppMissing: {
-      title: "Install the WebeSign app",
+      title: "Install the SignLocal app",
       body: "The extension needs the app on your computer to sign.",
     },
     AppOutdated: {
-      title: "Update the WebeSign app",
+      title: "Update the SignLocal app",
       body: "You have version {installed}; {required} or newer is required.",
     },
     Busy: {
       title: "Requests are waiting for confirmation",
-      body: "Finish the open requests in the WebeSign window.",
+      body: "Finish the open requests in the SignLocal window.",
     },
     CertificateNotValid: {
       title: "Certificate out of validity",
@@ -46,20 +46,20 @@ export const MESSAGES: Readonly<Record<MessageLocale, LocaleMessages>> = {
       body: "Try again; if it keeps happening, reconnect the token.",
     },
     ExtensionMissing: {
-      title: "Install the WebeSign extension",
+      title: "Install the SignLocal extension",
       body: "To sign in this browser, install the free extension.",
     },
     ExtensionOutdated: {
-      title: "Update the WebeSign extension",
+      title: "Update the SignLocal extension",
       body: "Restart your browser so it updates.",
     },
     InsecureOrigin: {
       title: "Insecure site",
-      body: "This site doesn't use https. For your safety, WebeSign won't sign for it.",
+      body: "This site doesn't use https. For your safety, SignLocal won't sign for it.",
     },
     Internal: {
-      title: "Something went wrong in WebeSign",
-      body: "Open WebeSign diagnostics to report the problem.",
+      title: "Something went wrong in SignLocal",
+      body: "Open SignLocal diagnostics to report the problem.",
     },
     NoCertificates: {
       title: "No certificates found",
@@ -92,16 +92,16 @@ export const MESSAGES: Readonly<Record<MessageLocale, LocaleMessages>> = {
       body: "A assinatura foi interrompida antes de terminar.",
     },
     AppMissing: {
-      title: "Instale o app WebeSign",
+      title: "Instale o app SignLocal",
       body: "A extensão precisa do app no computador para assinar.",
     },
     AppOutdated: {
-      title: "Atualize o app WebeSign",
+      title: "Atualize o app SignLocal",
       body: "Você tem a versão {installed}; é preciso a {required} ou mais nova.",
     },
     Busy: {
       title: "Há pedidos esperando confirmação",
-      body: "Conclua os pedidos abertos na janela do WebeSign.",
+      body: "Conclua os pedidos abertos na janela do SignLocal.",
     },
     CertificateNotValid: {
       title: "Certificado fora da validade",
@@ -116,20 +116,20 @@ export const MESSAGES: Readonly<Record<MessageLocale, LocaleMessages>> = {
       body: "Tente de novo; se continuar, reconecte o token.",
     },
     ExtensionMissing: {
-      title: "Instale a extensão WebeSign",
+      title: "Instale a extensão SignLocal",
       body: "Para assinar neste navegador, instale a extensão gratuita.",
     },
     ExtensionOutdated: {
-      title: "Atualize a extensão WebeSign",
+      title: "Atualize a extensão SignLocal",
       body: "Reinicie o navegador para ela se atualizar.",
     },
     InsecureOrigin: {
       title: "Site sem conexão segura",
-      body: "Este site não usa https. Por segurança, o WebeSign não assina para ele.",
+      body: "Este site não usa https. Por segurança, o SignLocal não assina para ele.",
     },
     Internal: {
-      title: "Algo deu errado no WebeSign",
-      body: "Abra o diagnóstico do WebeSign para relatar o problema.",
+      title: "Algo deu errado no SignLocal",
+      body: "Abra o diagnóstico do SignLocal para relatar o problema.",
     },
     NoCertificates: {
       title: "Nenhum certificado encontrado",
@@ -162,16 +162,16 @@ export const MESSAGES: Readonly<Record<MessageLocale, LocaleMessages>> = {
       body: "A assinatura foi interrompida antes de terminar.",
     },
     AppMissing: {
-      title: "Instale a aplicação WebeSign",
+      title: "Instale a aplicação SignLocal",
       body: "A extensão precisa da aplicação no computador para assinar.",
     },
     AppOutdated: {
-      title: "Atualize a aplicação WebeSign",
+      title: "Atualize a aplicação SignLocal",
       body: "Tem a versão {installed}; é necessária a {required} ou posterior.",
     },
     Busy: {
       title: "Há pedidos a aguardar confirmação",
-      body: "Conclua os pedidos abertos na janela do WebeSign.",
+      body: "Conclua os pedidos abertos na janela do SignLocal.",
     },
     CertificateNotValid: {
       title: "Certificado fora do prazo de validade",
@@ -186,20 +186,20 @@ export const MESSAGES: Readonly<Record<MessageLocale, LocaleMessages>> = {
       body: "Tente novamente; se continuar, volte a ligar o token.",
     },
     ExtensionMissing: {
-      title: "Instale a extensão WebeSign",
+      title: "Instale a extensão SignLocal",
       body: "Para assinar neste navegador, instale a extensão gratuita.",
     },
     ExtensionOutdated: {
-      title: "Atualize a extensão WebeSign",
+      title: "Atualize a extensão SignLocal",
       body: "Reinicie o navegador para que ela se atualize.",
     },
     InsecureOrigin: {
       title: "Site sem ligação segura",
-      body: "Este site não usa https. Por segurança, o WebeSign não assina para ele.",
+      body: "Este site não usa https. Por segurança, o SignLocal não assina para ele.",
     },
     Internal: {
-      title: "Algo correu mal no WebeSign",
-      body: "Abra o diagnóstico do WebeSign para comunicar o problema.",
+      title: "Algo correu mal no SignLocal",
+      body: "Abra o diagnóstico do SignLocal para comunicar o problema.",
     },
     NoCertificates: {
       title: "Nenhum certificado encontrado",
@@ -232,16 +232,16 @@ export const MESSAGES: Readonly<Record<MessageLocale, LocaleMessages>> = {
       body: "La firma se interrumpió antes de terminar.",
     },
     AppMissing: {
-      title: "Instale la app WebeSign",
+      title: "Instale la app SignLocal",
       body: "La extensión necesita la app en su equipo para firmar.",
     },
     AppOutdated: {
-      title: "Actualice la app WebeSign",
+      title: "Actualice la app SignLocal",
       body: "Tiene la versión {installed}; se requiere la {required} o posterior.",
     },
     Busy: {
       title: "Hay solicitudes esperando confirmación",
-      body: "Termine las solicitudes abiertas en la ventana de WebeSign.",
+      body: "Termine las solicitudes abiertas en la ventana de SignLocal.",
     },
     CertificateNotValid: {
       title: "Certificado fuera de validez",
@@ -256,20 +256,20 @@ export const MESSAGES: Readonly<Record<MessageLocale, LocaleMessages>> = {
       body: "Inténtelo de nuevo; si continúa, vuelva a conectar el token.",
     },
     ExtensionMissing: {
-      title: "Instale la extensión de WebeSign",
+      title: "Instale la extensión de SignLocal",
       body: "Para firmar en este navegador, instale la extensión gratuita.",
     },
     ExtensionOutdated: {
-      title: "Actualice la extensión de WebeSign",
+      title: "Actualice la extensión de SignLocal",
       body: "Reinicie el navegador para que se actualice.",
     },
     InsecureOrigin: {
       title: "Sitio sin conexión segura",
-      body: "Este sitio no usa https. Por su seguridad, WebeSign no firma para él.",
+      body: "Este sitio no usa https. Por su seguridad, SignLocal no firma para él.",
     },
     Internal: {
-      title: "Algo salió mal en WebeSign",
-      body: "Abra el diagnóstico de WebeSign para informar del problema.",
+      title: "Algo salió mal en SignLocal",
+      body: "Abra el diagnóstico de SignLocal para informar del problema.",
     },
     NoCertificates: {
       title: "No se encontró ningún certificado",
@@ -302,16 +302,16 @@ export const MESSAGES: Readonly<Record<MessageLocale, LocaleMessages>> = {
       body: "La signature a été interrompue avant la fin.",
     },
     AppMissing: {
-      title: "Installez l’application WebeSign",
+      title: "Installez l’application SignLocal",
       body: "L’extension a besoin de l’application sur votre ordinateur pour signer.",
     },
     AppOutdated: {
-      title: "Mettez à jour l’application WebeSign",
+      title: "Mettez à jour l’application SignLocal",
       body: "Vous avez la version {installed} ; la version {required} ou ultérieure est requise.",
     },
     Busy: {
       title: "Des demandes attendent une confirmation",
-      body: "Terminez les demandes ouvertes dans la fenêtre WebeSign.",
+      body: "Terminez les demandes ouvertes dans la fenêtre SignLocal.",
     },
     CertificateNotValid: {
       title: "Certificat hors validité",
@@ -326,20 +326,20 @@ export const MESSAGES: Readonly<Record<MessageLocale, LocaleMessages>> = {
       body: "Réessayez ; si le problème persiste, rebranchez le jeton.",
     },
     ExtensionMissing: {
-      title: "Installez l’extension WebeSign",
+      title: "Installez l’extension SignLocal",
       body: "Pour signer dans ce navigateur, installez l’extension gratuite.",
     },
     ExtensionOutdated: {
-      title: "Mettez à jour l’extension WebeSign",
+      title: "Mettez à jour l’extension SignLocal",
       body: "Redémarrez votre navigateur pour la mettre à jour.",
     },
     InsecureOrigin: {
       title: "Site non sécurisé",
-      body: "Ce site n’utilise pas https. Pour votre sécurité, WebeSign ne signera pas pour lui.",
+      body: "Ce site n’utilise pas https. Pour votre sécurité, SignLocal ne signera pas pour lui.",
     },
     Internal: {
-      title: "Un problème est survenu dans WebeSign",
-      body: "Ouvrez le diagnostic WebeSign pour signaler le problème.",
+      title: "Un problème est survenu dans SignLocal",
+      body: "Ouvrez le diagnostic SignLocal pour signaler le problème.",
     },
     NoCertificates: {
       title: "Aucun certificat trouvé",
@@ -372,16 +372,16 @@ export const MESSAGES: Readonly<Record<MessageLocale, LocaleMessages>> = {
       body: "La firma è stata interrotta prima del completamento.",
     },
     AppMissing: {
-      title: "Installa l’app WebeSign",
+      title: "Installa l’app SignLocal",
       body: "Per firmare, l’estensione ha bisogno dell’app sul tuo computer.",
     },
     AppOutdated: {
-      title: "Aggiorna l’app WebeSign",
+      title: "Aggiorna l’app SignLocal",
       body: "Hai la versione {installed}; è richiesta la {required} o successiva.",
     },
     Busy: {
       title: "Ci sono richieste in attesa di conferma",
-      body: "Completa le richieste aperte nella finestra di WebeSign.",
+      body: "Completa le richieste aperte nella finestra di SignLocal.",
     },
     CertificateNotValid: {
       title: "Certificato non in corso di validità",
@@ -396,20 +396,20 @@ export const MESSAGES: Readonly<Record<MessageLocale, LocaleMessages>> = {
       body: "Riprova; se il problema persiste, ricollega il token.",
     },
     ExtensionMissing: {
-      title: "Installa l’estensione WebeSign",
+      title: "Installa l’estensione SignLocal",
       body: "Per firmare in questo browser, installa l’estensione gratuita.",
     },
     ExtensionOutdated: {
-      title: "Aggiorna l’estensione WebeSign",
+      title: "Aggiorna l’estensione SignLocal",
       body: "Riavvia il browser per aggiornarla.",
     },
     InsecureOrigin: {
       title: "Sito non sicuro",
-      body: "Questo sito non usa https. Per la tua sicurezza, WebeSign non firmerà per esso.",
+      body: "Questo sito non usa https. Per la tua sicurezza, SignLocal non firmerà per esso.",
     },
     Internal: {
-      title: "Si è verificato un problema in WebeSign",
-      body: "Apri la diagnostica di WebeSign per segnalare il problema.",
+      title: "Si è verificato un problema in SignLocal",
+      body: "Apri la diagnostica di SignLocal per segnalare il problema.",
     },
     NoCertificates: {
       title: "Nessun certificato trovato",
@@ -442,16 +442,16 @@ export const MESSAGES: Readonly<Record<MessageLocale, LocaleMessages>> = {
       body: "Die Signatur wurde vor dem Abschluss abgebrochen.",
     },
     AppMissing: {
-      title: "WebeSign-App installieren",
+      title: "SignLocal-App installieren",
       body: "Zum Signieren benötigt die Erweiterung die App auf Ihrem Computer.",
     },
     AppOutdated: {
-      title: "WebeSign-App aktualisieren",
+      title: "SignLocal-App aktualisieren",
       body: "Sie haben Version {installed}; erforderlich ist {required} oder neuer.",
     },
     Busy: {
       title: "Anfragen warten auf Bestätigung",
-      body: "Schließen Sie die offenen Anfragen im WebeSign-Fenster ab.",
+      body: "Schließen Sie die offenen Anfragen im SignLocal-Fenster ab.",
     },
     CertificateNotValid: {
       title: "Zertifikat außerhalb der Gültigkeit",
@@ -466,20 +466,20 @@ export const MESSAGES: Readonly<Record<MessageLocale, LocaleMessages>> = {
       body: "Versuchen Sie es erneut; wenn das Problem bestehen bleibt, stecken Sie den Token neu an.",
     },
     ExtensionMissing: {
-      title: "WebeSign-Erweiterung installieren",
+      title: "SignLocal-Erweiterung installieren",
       body: "Um in diesem Browser zu signieren, installieren Sie die kostenlose Erweiterung.",
     },
     ExtensionOutdated: {
-      title: "WebeSign-Erweiterung aktualisieren",
+      title: "SignLocal-Erweiterung aktualisieren",
       body: "Starten Sie Ihren Browser neu, damit er aktualisiert.",
     },
     InsecureOrigin: {
       title: "Unsichere Website",
-      body: "Diese Website verwendet kein https. Zu Ihrer Sicherheit signiert WebeSign nicht für sie.",
+      body: "Diese Website verwendet kein https. Zu Ihrer Sicherheit signiert SignLocal nicht für sie.",
     },
     Internal: {
-      title: "In WebeSign ist ein Fehler aufgetreten",
-      body: "Öffnen Sie die WebeSign-Diagnose, um das Problem zu melden.",
+      title: "In SignLocal ist ein Fehler aufgetreten",
+      body: "Öffnen Sie die SignLocal-Diagnose, um das Problem zu melden.",
     },
     NoCertificates: {
       title: "Keine Zertifikate gefunden",

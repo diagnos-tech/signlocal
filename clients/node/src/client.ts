@@ -81,7 +81,7 @@ export class WebSign {
    * @example
    * ```ts
    * const { app, remembered } = await websign.status();
-   * console.log(`WebeSign ${app.version}`, remembered ? "(remembered)" : "");
+   * console.log(`SignLocal ${app.version}`, remembered ? "(remembered)" : "");
    * ```
    */
   async status(): Promise<StatusReply> {

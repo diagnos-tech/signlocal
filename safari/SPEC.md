@@ -3,7 +3,7 @@
 Role: the native side of the Safari web extension. Safari starts no native
 messaging host and gives the extension no stdio connection; it delivers each
 `browser.runtime.sendNativeMessage()` of the extension's background to the
-app extension (`.appex`) inside `WebeSign.app`, one message in, one reply
+app extension (`.appex`) inside `SignLocal.app`, one message in, one reply
 out, and never lets the appex speak first. The relay here turns that into
 what every other browser gets: one `websign` host process per connection,
 speaking the unchanged protocol ([`protocol.md`](../docs/architecture/protocol.md))
@@ -78,8 +78,8 @@ the payload (§2.3 there); the appex adds nothing and trusts nothing.
 
 ## 4. Host launch
 
-The appex starts `<appex>/Contents/MacOS/<WebeSignHostExecutable>` with the
-arguments `[--safari-web-extension, <WebeSignHostExtensionID>]`, both keys
+The appex starts `<appex>/Contents/MacOS/<SignLocalHostExecutable>` with the
+arguments `[--safari-web-extension, <SignLocalHostExtensionID>]`, both keys
 read from the appex's `Info.plist` (rendered from `project.toml` by `cargo
 xtask package`; the ID is `[ids] safari_extension_bundle_id`). This is the
 host's Safari launch shape (`websign-host` `launch`, `BrowserFamily::Safari`):

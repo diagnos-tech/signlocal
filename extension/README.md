@@ -1,6 +1,6 @@
-# WebeSign extension
+# SignLocal extension
 
-The bridge between pages using `@websign/sdk` and the WebeSign app, over
+The bridge between pages using `@websign/sdk` and the SignLocal app, over
 native messaging. It announces itself to pages, validates every request,
 attaches the origin the browser reports, and keeps the connection to the app
 open while in use. Its only UI is the toolbar popup. Built with WXT (MV3) for

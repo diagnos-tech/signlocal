@@ -36,14 +36,14 @@ Layout: `certs/*.der` (143 certificates), `vectors/*.txt` (manifests),
 ## Authority and default certificate
 
 `ca.der` is the self-signed root (P-256, serial `01`, critical `CA:TRUE`, KeyUsage
-`keyCertSign,cRLSign`): `C=BR, O=WebeSign Test Authority, OU=Fixtures Root,
-CN=WebeSign Test Root CA`.
+`keyCertSign,cRLSign`): `C=BR, O=SignLocal Test Authority, OU=Fixtures Root,
+CN=SignLocal Test Root CA`.
 
 Every "ordinary" leaf (the generator's `leaf`/`variant` functions) has:
 
 | Field | Value |
 |---|---|
-| subject | `C=BR, O=WebeSign Test Fixtures, OU=Unit A, OU=Unit B, CN=Fixture <file name>` (all UTF8String, except C) |
+| subject | `C=BR, O=SignLocal Test Fixtures, OU=Unit A, OU=Unit B, CN=Fixture <file name>` (all UTF8String, except C) |
 | issuer | the root above |
 | validity | 2020-01-01T00:00:00Z = **1577836800** to 2040-01-01T00:00:00Z = **2208988800** |
 | BasicConstraints | `CA:FALSE` (empty SEQUENCE) |
@@ -129,7 +129,7 @@ Invented people. All use the `p256` key in a full regeneration.
 
 | File | Subject | Expected (`given_name`, `surname`, `serial_number`) |
 |---|---|---|
-| `dn-pii` | `C=PT, O=WebeSign Test Fixtures, GN=José Ângelo, SN=Conceição, serialNumber=IDCPT-12345123, CN=JOSÉ ÂNGELO CONCEIÇÃO` (UTF8String, serialNumber PrintableString) | `José Ângelo`, `Conceição`, `IDCPT-12345123` |
+| `dn-pii` | `C=PT, O=SignLocal Test Fixtures, GN=José Ângelo, SN=Conceição, serialNumber=IDCPT-12345123, CN=JOSÉ ÂNGELO CONCEIÇÃO` (UTF8String, serialNumber PrintableString) | `José Ângelo`, `Conceição`, `IDCPT-12345123` |
 | `dn-pii-only` | `C=PT, GN=MARIA, SN=SILVA, serialNumber=IDCPT-12345123` (no CN or O) | `MARIA`, `SILVA`, `IDCPT-12345123` |
 | `dn-pii-duplicates` | two of each: `First`/`Second`, `One`/`Two`, `IDCPT-1111111`/`IDCPT-2222222` | the first of each |
 | `dn-pii-unreadable-first` | as above with `First`, `Alpha` and `111` as NumericString (retagged) before `Second`, `Beta`, `IDCPT-2222222` | `Second`, `Beta`, `IDCPT-2222222` |
@@ -211,7 +211,7 @@ Text, `#` starts a comment, one record per line, fields separated by spaces.
 
 | File | Record |
 |---|---|
-| `digests.txt` | `hash hex(digest)` of the message `WebeSign probe-core fixture message` (`openssl dgst`) |
+| `digests.txt` | `hash hex(digest)` of the message `SignLocal probe-core fixture message` (`openssl dgst`) |
 | `digestinfo.txt` | `hash hex(DigestInfo)`, built by OpenSSL's ASN.1 generator from the hash OIDs and checked against a "raw" RSA signature (`rsautl -pkcs`) equal to what `pkeyutl -pkeyopt digest:` produces |
 | `signatures.txt` | `key algorithm hash hex(signature)` over the digest above; `key` is the certificate name. `pkcs1`, `pss` (salt = digest length, MGF1 with the same hash), `ecdsa` (raw `r‖s`). Keys: `rsa2048`, `rsa2048b`, `rsa3072`, `rsa4096`, `rsa2047` (pkcs1 and pss × 3 hashes), `rsapss2048` (pss × 3), `p256`, `p256b`, `p384`, `p521` (ecdsa × 3) = 45 valid. Plus 9 **deliberately invalid**, on `rsa2048`: `pss-salt-0`, `pss-salt-20`, `pss-mgf1-sha1` × 3 hashes |
 | `ecdsa.txt` | `curve shape hash hex(raw) hex(DER)`: the same signature in both formats; the raw form is read back by OpenSSL's `asn1parse`. `shape`: `plain` (no leading zero, no high bit), `high-r`, `high-s`, `high-both` (high bit: the DER gets a `00`), `short-r`, `short-s` (first byte zero: the DER is shorter than the field). One line per shape and curve; P-521 always uses the long length `81 xx` |

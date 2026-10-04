@@ -2,7 +2,7 @@
  * @websign/sdk — sign with the visitor's certificate (smart card, USB token or
  * a certificate installed on the computer) from a web page.
  *
- * The page never talks to the app: it posts messages to the WebeSign
+ * The page never talks to the app: it posts messages to the SignLocal
  * extension, which adds the page's origin as the browser reports it and
  * forwards them to the app over native messaging. The person confirms every
  * signature in the app's own window.

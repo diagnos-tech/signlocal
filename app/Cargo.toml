@@ -1,6 +1,6 @@
 [package]
 name = "websign-app"
-description = "The WebeSign desktop app: one binary that is the browsers' native messaging host, the desktop API (`websign connect`, `sign`, `choose`), the installer (`install`, `register`) and the confirmation and diagnostics windows."
+description = "The SignLocal desktop app: one binary that is the browsers' native messaging host, the desktop API (`websign connect`, `sign`, `choose`), the installer (`install`, `register`) and the confirmation and diagnostics windows."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

@@ -16,7 +16,7 @@ fn tabs_form_a_tab_list_with_their_lights() {
     let list = window.harness.get_by_role(Role::TabList);
     assert_eq!(
         list.accesskit_node().label().as_deref(),
-        Some("Diagnostics — WebeSign")
+        Some("Diagnostics — SignLocal")
     );
     let browsers = window
         .harness

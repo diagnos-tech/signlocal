@@ -57,7 +57,7 @@ mod tests {
     #[test]
     fn register_writes_the_protocol_keys_and_unregister_is_idempotent() {
         let registry = MemoryRegistry::new();
-        let exe = Path::new(r"C:\Programs\WebeSign\websign.exe");
+        let exe = Path::new(r"C:\Programs\SignLocal\websign.exe");
         assert_eq!(register(&registry, exe, false), Outcome::Written);
         let key = class_key();
         let read = |subkey: &str, name: &str| {
@@ -68,7 +68,7 @@ mod tests {
         assert_eq!(read(&key, "URL Protocol").as_deref(), Some(""));
         assert_eq!(
             read(&format!(r"{key}\shell\open\command"), "").as_deref(),
-            Some(r#""C:\Programs\WebeSign\websign.exe" "%1""#)
+            Some(r#""C:\Programs\SignLocal\websign.exe" "%1""#)
         );
 
         assert_eq!(unregister(&registry, true), Outcome::DryRun);

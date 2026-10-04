@@ -11,7 +11,7 @@ import { currentEnvironment, search } from "./candidates.js";
  *
  * @example
  * ```ts
- * if (findExecutable() === undefined) console.log("Install WebeSign first.");
+ * if (findExecutable() === undefined) console.log("Install SignLocal first.");
  * ```
  */
 export function findExecutable(): string | undefined {

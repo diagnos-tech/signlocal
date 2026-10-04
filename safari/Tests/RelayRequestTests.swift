@@ -2,7 +2,7 @@
 
 import Foundation
 import XCTest
-@testable import WebeSignRelay
+@testable import SignLocalRelay
 
 final class RelayRequestTests: XCTestCase {
     private let session = UUID().uuidString

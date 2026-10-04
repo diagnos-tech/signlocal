@@ -53,7 +53,7 @@ export interface FakeApp {
 }
 
 /**
- * A stand-in for the WebeSign app, so tests of your program need neither the
+ * A stand-in for the SignLocal app, so tests of your program need neither the
  * app nor a person. It is a real child process speaking the real protocol:
  * your code runs unchanged through `WebSign.connect`. It answers `hello`,
  * `status`, `choose`, `sign` and `diagnostics.open`, enforces the same

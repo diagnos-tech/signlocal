@@ -51,8 +51,8 @@ yesterday_at = "yesterday, {time}"
 [confirm]
 # Window title in the task bar. {site} is the host (app.example.com) or, for a
 # desktop program, its name.
-window_title = "Sign for {site} — WebeSign"
-window_title_select = "Choose certificate for {site} — WebeSign"
+window_title = "Sign for {site} — SignLocal"
+window_title_select = "Choose certificate for {site} — SignLocal"
 # Suffix added to the window title when several requests wait: " (1 of 3)".
 window_title_queue = "{title} ({current} of {total})"
 eyebrow = "Signature request"
@@ -81,7 +81,7 @@ shown_as = "Displays as {unicode}"
 warn_ip = "Numeric address with no site name"
 warn_ip_local = "Local network numeric address"
 warn_localhost = "Local development site"
-blocked_http = "This site doesn't use a secure connection (https). For your safety, WebeSign won't sign for it."
+blocked_http = "This site doesn't use a secure connection (https). For your safety, SignLocal won't sign for it."
 
 [caller]
 # Under a desktop program's name. {signer} is the company that signed it.
@@ -235,12 +235,12 @@ inline = "{device} connected with no certificates"
 inline_action = "How to fix"
 step = "{n}. {text}"
 step_install_driver = "Install {driver}"
-step_install_complement = "Install the WebeSign Add-on"
+step_install_complement = "Install the SignLocal Add-on"
 
 [complement]
-name = "WebeSign Add-on"
+name = "SignLocal Add-on"
 title_needed = "This token needs the Mac Add-on"
-body_needed = "App Store apps can't use some token drivers. The free WebeSign Add-on, from the same project, bridges that gap. It only runs when WebeSign asks for it."
+body_needed = "App Store apps can't use some token drivers. The free SignLocal Add-on, from the same project, bridges that gap. It only runs when SignLocal asks for it."
 download = "Download Add-on"
 ok = "Add-on active · version {version}"
 outdated = "Update the Add-on ({installed} installed, {required} required)"
@@ -249,7 +249,7 @@ not_responding = "The Add-on is installed but didn't respond."
 open = "Open Add-on"
 
 [diag]
-window_title = "Diagnostics — WebeSign"
+window_title = "Diagnostics — SignLocal"
 copy = "Copy diagnostics"
 copied = "Diagnostics copied. No names, ID numbers or sites included."
 
@@ -284,7 +284,7 @@ ready_title = "You're ready to sign"
 ready_body = "Try it once: the test page signs a sample message and shows the same verification code as this app."
 # Steps still to do: a title that says what to do, then why.
 todo_app = "Connect the app to your browsers"
-todo_app_body = "Your browsers can't find the WebeSign app yet."
+todo_app_body = "Your browsers can't find the SignLocal app yet."
 todo_extension = "Add the browser extension"
 # {browsers} is a comma-separated list of browser names.
 todo_extension_body = "Not connected yet in {browsers}."
@@ -313,13 +313,13 @@ install = "Install extension"
 external_prompt_hint = "If {browser} shows “New extension added”, click Enable."
 ext_outdated = "Extension {version} · needs {required} or newer"
 ext_outdated_hint = "Restart {browser} to update."
-host_missing = "{browser} can't find the WebeSign app"
+host_missing = "{browser} can't find the SignLocal app"
 repair = "Repair"
 repaired = "Repaired. Restart {browser}."
 safari_disabled = "Extension turned off in Safari"
 safari_open_settings = "Open Safari settings"
 snap_hint = "Firefox is installed as a Snap: on your first signature, allow access when the system asks."
-none = "No supported browser found. WebeSign works with Chrome, Edge, Firefox, Brave and Safari."
+none = "No supported browser found. SignLocal works with Chrome, Edge, Firefox, Brave and Safari."
 
 [sites]
 section = "Allowed sites"
@@ -332,7 +332,7 @@ empty = "No remembered sites. When you tick “Remember this site” while signi
 apps_empty = "No remembered programs."
 
 [devices]
-subtitle = "Tokens, cards and drivers WebeSign can see right now."
+subtitle = "Tokens, cards and drivers SignLocal can see right now."
 section_tokens = "Tokens and cards"
 section_readers = "Card readers"
 section_drivers = "Token drivers"
@@ -393,14 +393,14 @@ q_missing = "My certificate doesn't show up"
 a_missing = "Check: is the token plugged in? Is the vendor's driver installed (see Devices)? Has the certificate expired (see Certificates)? If it's a .pfx file, was it imported?"
 q_pin = "I got the PIN wrong / the token locked"
 a_pin = "After a few wrong attempts the token locks to protect you. To unlock it, use the PUK (the unlock code that came with the token) in the vendor's software. Without the PUK, contact your certificate authority."
-q_privacy = "What does WebeSign send to sites?"
+q_privacy = "What does SignLocal send to sites?"
 a_privacy = "Only the certificate you chose and the signature of the verification code. Never your PIN, never the document."
 q_shortcuts = "Keyboard shortcuts"
 report_title = "Report a problem"
 report_preview = "This is exactly what will be copied. It includes no names, ID numbers, sites or serial numbers."
 open_support = "Open support page"
 about_title = "About"
-about_line = "WebeSign {version} · protocol {protocol} · GPL-3.0-or-later"
+about_line = "SignLocal {version} · protocol {protocol} · GPL-3.0-or-later"
 source = "Source code"
 privacy = "Privacy"
 
@@ -419,16 +419,16 @@ close_window = "Close the window"
 [popup]
 checking = "Looking for the app…"
 ready_title = "Ready to sign"
-ready_body = "The WebeSign app {version} is connected to this browser."
+ready_body = "The SignLocal app {version} is connected to this browser."
 # Link to the site's test page; same words as the site's “Test your setup”.
 test = "Test your setup"
 open_diagnostics = "Open diagnostics"
-missing_title = "Install the WebeSign app"
+missing_title = "Install the SignLocal app"
 missing_body = "The extension needs the app on your computer to sign."
 download = "Download for {os}"
 # Link to the site's /activate/ page; same words as its link on the site.
 activate = "Already installed? Finish setting up"
-outdated_title = "Update the WebeSign app"
+outdated_title = "Update the SignLocal app"
 outdated_body = "You have version {installed}. This browser needs {required} or newer."
 # Opens the download page until the app is in the stores (then update_in is used).
 update = "Download the update"
@@ -440,7 +440,7 @@ error_body = "Try again. If it keeps happening, restart your computer."
 error_code = "Error code: {code}"
 retry = "Try again"
 redownload = "Download again"
-unsupported_title = "WebeSign doesn't work on this system yet"
+unsupported_title = "SignLocal doesn't work on this system yet"
 unsupported_body = "Use a computer running Windows, macOS, or Linux."
 footer_versions = "Extension {ext} · App {app}"
 # Footer when the app's version is unknown (not installed or not answering).
@@ -458,30 +458,30 @@ github = "the download page"
 # Store listing (Chrome Web Store, Edge Add-ons, addons.mozilla.org, Opera
 # add-ons), built from the product tagline. `listing_name` at most 45
 # characters, `listing_summary` at most 132; keep the product name.
-listing_name = "WebeSign: sign with your certificate"
+listing_name = "SignLocal: sign with your certificate"
 listing_summary = "Use your smart card, USB token, or OS certificate to sign on any website. Windows, macOS and Linux. Free and Open Source."
 listing_description = """
 Use your smart card, USB token, or OS certificate to sign on any website. Works with Chrome, Edge, Firefox, Opera, Brave and Safari on Windows, macOS, and Linux. Free and Open Source for everyone.
 
-When a website asks for a signature, the WebeSign app opens its own window on your computer: you see who is asking, choose your certificate, check the verification code and confirm. Your PIN is typed in the app or in the operating system's window, never in a web page.
+When a website asks for a signature, the SignLocal app opens its own window on your computer: you see who is asking, choose your certificate, check the verification code and confirm. Your PIN is typed in the app or in the operating system's window, never in a web page.
 
 • Works with the certificates you already have: USB tokens, smart cards and certificates installed on your computer.
 • The website sends only a fingerprint (hash) of the document; the document itself never leaves it.
 • Every signature asks you first, and each website needs your permission, which you can revoke at any time.
 • No account, no trackers, no background service and no open network port.
 
-The extension works together with the free WebeSign app for Windows, macOS and Linux, available on the project website. Source code: GPL-3.0-or-later; developer libraries: Apache-2.0."""
+The extension works together with the free SignLocal app for Windows, macOS and Linux, available on the project website. Source code: GPL-3.0-or-later; developer libraries: Apache-2.0."""
 
 [extension]
 # Extension name in browser stores; keep the product name.
-name = "WebeSign"
+name = "SignLocal"
 # One-line description in browser stores (at most 132 characters).
 description = "Use your smart card, USB token, or OS certificate to sign on any website. Free and Open Source for everyone."
 
 # Window texts for errors (docs/ux.md §15). `title` is bold, `body` below it.
 [errors.insecure_origin]
 title = "Insecure site"
-body = "This site doesn't use https. For your safety, WebeSign won't sign for it."
+body = "This site doesn't use https. For your safety, SignLocal won't sign for it."
 
 [errors.timeout]
 title = "The request expired"
@@ -524,29 +524,29 @@ title = "The token driver failed"
 body = "{driver} didn't respond as expected. Try again; if it keeps happening, reconnect the token."
 
 [errors.internal]
-title = "Something went wrong in WebeSign"
+title = "Something went wrong in SignLocal"
 body = "Copy the details and open diagnostics to report it."
 
 # Texts a website may show for SDK errors (exported by @websign/sdk/messages).
 [site.errors.extension_missing]
-title = "Install the WebeSign extension"
+title = "Install the SignLocal extension"
 body = "To sign in this browser, install the free extension."
 
 [site.errors.app_missing]
-title = "Install the WebeSign app"
+title = "Install the SignLocal app"
 body = "The extension needs the app on your computer to sign."
 
 [site.errors.app_outdated]
-title = "Update the WebeSign app"
+title = "Update the SignLocal app"
 body = "You have version {installed}; {required} or newer is required."
 
 [site.errors.extension_outdated]
-title = "Update the WebeSign extension"
+title = "Update the SignLocal extension"
 body = "Restart your browser so it updates."
 
 [site.errors.insecure_origin]
 title = "Insecure site"
-body = "This site doesn't use https. For your safety, WebeSign won't sign for it."
+body = "This site doesn't use https. For your safety, SignLocal won't sign for it."
 
 [site.errors.aborted]
 title = "Signature stopped"
@@ -590,8 +590,8 @@ body = "Try again; if it keeps happening, reconnect the token."
 
 [site.errors.busy]
 title = "Requests are waiting for confirmation"
-body = "Finish the open requests in the WebeSign window."
+body = "Finish the open requests in the SignLocal window."
 
 [site.errors.internal]
-title = "Something went wrong in WebeSign"
-body = "Open WebeSign diagnostics to report the problem."
+title = "Something went wrong in SignLocal"
+body = "Open SignLocal diagnostics to report the problem."

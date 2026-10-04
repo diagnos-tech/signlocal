@@ -16,10 +16,10 @@ pub(crate) fn hint(code: ErrorCode) -> &'static str {
             "This code is for web pages; desktop programs do not use the browser extension."
         }
         ErrorCode::AppMissing => {
-            "Install the WebeSign app, or point `ConnectOptions::executable` (or WEBSIGN_EXECUTABLE) at it. To test without the app, enable the `testing` feature and use `websign_client::testing::FakeApp`."
+            "Install the SignLocal app, or point `ConnectOptions::executable` (or WEBSIGN_EXECUTABLE) at it. To test without the app, enable the `testing` feature and use `websign_client::testing::FakeApp`."
         }
         ErrorCode::AppOutdated => {
-            "The installed app is too old for this request: ask the user to update WebeSign."
+            "The installed app is too old for this request: ask the user to update SignLocal."
         }
         ErrorCode::ExtensionOutdated => {
             "This code is for web pages; update the app and the browser extension together."

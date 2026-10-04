@@ -1,4 +1,4 @@
-//! Call the WebeSign app from a Rust program.
+//! Call the SignLocal app from a Rust program.
 //!
 //! The person picks a certificate in the app's window, your closure supplies
 //! the digest for it, and the app signs it with the key (PIN included). The

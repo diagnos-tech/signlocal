@@ -106,7 +106,7 @@ fn cli_invocations_are_never_mistaken_for_launches() {
 }
 
 const APPEX_EXE: &str =
-    "/Applications/WebeSign.app/Contents/PlugIns/WebeSign Extension.appex/Contents/MacOS/websign";
+    "/Applications/SignLocal.app/Contents/PlugIns/SignLocal Extension.appex/Contents/MacOS/websign";
 
 #[test]
 fn the_safari_app_extension_passes_its_flag_and_bundle_id() {
@@ -153,7 +153,7 @@ fn only_the_packaged_appex_layout_is_an_appex_executable() {
     use std::path::Path;
     assert!(is_appex_executable(Path::new(APPEX_EXE)));
     for other in [
-        "/Applications/WebeSign.app/Contents/MacOS/websign",
+        "/Applications/SignLocal.app/Contents/MacOS/websign",
         "/usr/local/bin/websign",
         "/tmp/x.appex/MacOS/websign",
         "/tmp/x.appex/Contents/Resources/websign",

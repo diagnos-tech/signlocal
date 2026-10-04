@@ -1,7 +1,7 @@
 {
   "name": "websign-workspace",
   "private": true,
-  "description": "TypeScript packages of WebeSign: the web SDK, the Node desktop client, the browser extension and the end-to-end tests.",
+  "description": "TypeScript packages of SignLocal: the web SDK, the Node desktop client, the browser extension and the end-to-end tests.",
   "license": "GPL-3.0-or-later",
   "type": "module",
   "workspaces": ["sdk", "clients/node", "extension", "e2e"],

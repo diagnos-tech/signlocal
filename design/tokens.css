@@ -1,5 +1,5 @@
 /*
- * WebeSign design tokens: the single source of docs/ux.md §11.
+ * SignLocal design tokens: the single source of docs/ux.md §11.
  *
  * Used as-is by the extension popup and the site. The app keeps the same
  * values as Rust constants in app/src/ui/theme/, and a test there reads this

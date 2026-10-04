@@ -6,7 +6,7 @@ Static website for GitHub Pages, deployed by `.github/workflows/pages.yml`. Page
 - `download.html` — app install per OS and extension steps per browser (tabs picked by detection), unsigned-build notices, checksum check
 - `privacy.html` — what stays local, what a site receives, no trackers
 - `developers.html` — SDK, Node and Rust client quickstarts
-- `activate/` — "Finish setting up WebeSign": button to `websign:activate`, fallback pointing to the download page
+- `activate/` — "Finish setting up SignLocal": button to `websign:activate`, fallback pointing to the download page
 - `test/` — test-signature page: detects extension and app, signs a sample text, verifies it in the browser (nothing is sent anywhere)
 - `README.md` — purpose, preview, deploy and the maintainer steps left
 - `build-sdk.sh` — rebuilds `assets/websign-sdk.js` from `sdk/` (`bun run build` + `bun build --minify`); committed, and rebuilt again at deploy

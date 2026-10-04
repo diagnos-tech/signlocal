@@ -1,5 +1,5 @@
 #!/bin/sh
-# WebeSign installer for Linux and macOS (POSIX sh).
+# SignLocal installer for Linux and macOS (POSIX sh).
 #
 #   sh install.sh --version <v> [--yes] [--prefix DIR] [--system]
 #                 [--no-register] [--dry-run]
@@ -13,7 +13,7 @@ set -eu
 
 # Identifiers come from project.toml; `cargo xtask check release` keeps them equal.
 SLUG=websign
-APP_NAME=WebeSign
+APP_NAME=SignLocal
 BUNDLE_ID=dev.websign.app
 REPO=${WEBSIGN_REPO:-diagnos-tech/signlocal}
 

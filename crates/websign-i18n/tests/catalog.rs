@@ -9,7 +9,7 @@ use websign_i18n::{Catalog, Locale, k};
 fn english_message_with_argument() {
     let c = Catalog::new(Locale::En);
     let s = c.tr(k::CONFIRM_WINDOW_TITLE).arg("site", "a.b").to_string();
-    assert_eq!(s, "Sign for a.b — WebeSign");
+    assert_eq!(s, "Sign for a.b — SignLocal");
 }
 
 #[test]

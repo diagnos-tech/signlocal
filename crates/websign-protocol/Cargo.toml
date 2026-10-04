@@ -1,6 +1,6 @@
 [package]
 name = "websign-protocol"
-description = "The WebeSign wire contract: message types for native messaging and `websign connect`, framing, error codes and the verification code. Apache-2.0 so client libraries can depend on it."
+description = "The SignLocal wire contract: message types for native messaging and `websign connect`, framing, error codes and the verification code. Apache-2.0 so client libraries can depend on it."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

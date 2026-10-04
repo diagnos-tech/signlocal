@@ -76,7 +76,7 @@ Decisions and reasons:
   `%LOCALAPPDATA%` would go to the package's private copy and no browser would see them);
   `uap5:AppExecutionAlias` with `desktop4:Subsystem="console"` (same pattern as the Microsoft
   Store Python, which works with stdin/stdout); `websign:` protocol that runs `register` (the store does not run an
-  install script). Identity separate from the future app (`WebeSign.Probe`) and a test publisher.
+  install script). Identity separate from the future app (`SignLocal.Probe`) and a test publisher.
 - `build-msix.ps1`: layout, generated PNGs, `makeappx pack` (validates the manifest), self-signed
   certificate with Subject = Publisher, `signtool`, trust in `LocalMachine\TrustedPeople`,
   `Add-AppxPackage`.
@@ -144,7 +144,7 @@ test package signed with a self-signed certificate and installed with `Add-AppxP
 | alias exists (`WindowsApps` root and family folder) and runs with stdout captured | ✅ `websign-probe 0.1.0` |
 | (a) keys in the **real** HKCU: Chrome, Edge, Firefox, Chromium, Brave, Vivaldi | ✅ all 6 |
 | (b) manifests at the real path (`%LOCALAPPDATA%\websign\NativeMessagingHosts\`) | ✅ Chromium and Firefox |
-| (c) `path` = family-folder alias (`WindowsApps\WebeSign.Probe_…\websign-probe.exe`), and it runs | ✅ |
+| (c) `path` = family-folder alias (`WindowsApps\SignLocal.Probe_…\websign-probe.exe`), and it runs | ✅ |
 | (d) Chromium starts the host **through the MSIX alias** and exchanges a message | ✅ `NM-E2E: PASS`: ping, list, digest validation; host log with `family=chromium` |
 
 Reading: **the Microsoft Store path works technically**. A packaged app with
@@ -259,9 +259,9 @@ Note the final table. Then, **without** administrator privileges:
    (developer mode) and as a temporary add-on in Firefox (`about:debugging`).
 2. From the extension's test page/action, ask for the version, the list, and a signature. Note in each
    browser: did it connect? did the message come back? **did the PIN dialog open in front of the browser?**
-3. In Settings → Apps → App execution aliases, **turn off** the WebeSign Probe alias and repeat: does the host still open (the manifest points to the copy in the package's
+3. In Settings → Apps → App execution aliases, **turn off** the SignLocal Probe alias and repeat: does the host still open (the manifest points to the copy in the package's
    family folder)?
-4. Uninstall (`Get-AppxPackage WebeSign.Probe | Remove-AppxPackage`) and note what is left in
+4. Uninstall (`Get-AppxPackage SignLocal.Probe | Remove-AppxPackage`) and note what is left in
    `HKCU\Software\Google\Chrome\NativeMessagingHosts` and in `%LOCALAPPDATA%\websign`.
 
 ### 8. egui over RDP

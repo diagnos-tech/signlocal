@@ -1,6 +1,6 @@
 /**
  * PAdES with @websign/sdk, end to end: the PDF library computes what to
- * sign, WebeSign signs its hash with the person's certificate, and the raw
+ * sign, SignLocal signs its hash with the person's certificate, and the raw
  * signature goes back into the CMS inside the PDF.
  */
 
@@ -22,7 +22,7 @@ export async function signPdf(input: Uint8Array, signal?: AbortSignal): Promise<
     await crypto.subtle.digest("SHA-256", signedContent(prepared) as BufferSource),
   );
 
-  // 2. WebeSign: the person chooses a certificate, then `prepare` builds the signed
+  // 2. SignLocal: the person chooses a certificate, then `prepare` builds the signed
   //    attributes for it (they name the certificate) and returns their hash. If the
   //    person switches certificate, `prepare` runs again: keep one set per certificate.
   const byCertificate = new Map<string, SignedAttributes>();

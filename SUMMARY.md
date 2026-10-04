@@ -1,6 +1,6 @@
 # signlocal
 
-WebeSign: sign with your own certificate from any website or desktop program. Start with README.md.
+SignLocal: sign with your own certificate from any website or desktop program. Start with README.md.
 
 - `.cargo/` — Cargo configuration shared by every build
 - `.gitattributes` — LF line endings everywhere and binary types
@@ -12,7 +12,7 @@ WebeSign: sign with your own certificate from any website or desktop program. St
 - `docs/` — documentation
 - `e2e/` — end-to-end tests (Playwright)
 - `examples/` — runnable examples for web (SDK) and desktop (Node, Rust) integrators
-- `extension/` — the WebeSign browser extension (WXT, MV3)
+- `extension/` — the SignLocal browser extension (WXT, MV3)
 - `i18n/` — translations: en (reference), pt-BR, pt-PT, es, fr, it, de
 - `packaging/` — release packaging definitions
 - `safari/` — the Safari web extension bridge (store channel)

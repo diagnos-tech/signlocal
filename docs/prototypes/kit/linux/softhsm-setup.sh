@@ -98,7 +98,7 @@ _softhsm_import() {
   # shellcheck disable=SC2086 # the options are a word list on purpose
   openssl genpkey $options -out "$work/key.pem" 2>/dev/null
   openssl req -new -x509 -key "$work/key.pem" -sha256 -days 3650 \
-    -subj "/C=BR/O=WebeSign Test/CN=WebeSign Test $name" \
+    -subj "/C=BR/O=SignLocal Test/CN=SignLocal Test $name" \
     -addext "basicConstraints=critical,CA:FALSE" \
     -addext "keyUsage=critical,digitalSignature,nonRepudiation" \
     -out "$work/cert.pem" 2>/dev/null

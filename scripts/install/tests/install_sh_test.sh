@@ -46,15 +46,15 @@ make_release() {
         "$ROOT/pkg/websign-$VERSION-linux-x64/share/applications" \
         "$ROOT/pkg/websign-$VERSION-linux-x64/share/doc/websign" \
         "$ROOT/pkg/websign-$VERSION-linux-x64/share/icons/hicolor/48x48/apps" \
-        "$ROOT/app/WebeSign.app/Contents/MacOS"
+        "$ROOT/app/SignLocal.app/Contents/MacOS"
     write_fake_binary "$ROOT/pkg/websign-$VERSION-linux-x64/bin/websign"
     printf '[Desktop Entry]\nExec=websign\n' >"$ROOT/pkg/websign-$VERSION-linux-x64/share/applications/websign.desktop"
     echo license >"$ROOT/pkg/websign-$VERSION-linux-x64/share/doc/websign/LICENSE"
     echo png >"$ROOT/pkg/websign-$VERSION-linux-x64/share/icons/hicolor/48x48/apps/websign.png"
     echo deb >"$rel/websign_${VERSION}_amd64.deb"
     tar -czf "$rel/websign-$VERSION-linux-x64.tar.gz" -C "$ROOT/pkg" "websign-$VERSION-linux-x64"
-    write_fake_binary "$ROOT/app/WebeSign.app/Contents/MacOS/websign"
-    (cd "$ROOT/app" && zip -q -r -y "$rel/websign-$VERSION-macos-universal.zip" WebeSign.app)
+    write_fake_binary "$ROOT/app/SignLocal.app/Contents/MacOS/websign"
+    (cd "$ROOT/app" && zip -q -r -y "$rel/websign-$VERSION-macos-universal.zip" SignLocal.app)
     : >"$rel/SHA256SUMS"
     for f in "$rel"/websign[-_]*; do
         printf '%s  %s\n' "$(sha256_of "$f")" "$(basename "$f")" >>"$rel/SHA256SUMS"
@@ -198,11 +198,11 @@ if command -v unzip >/dev/null 2>&1 || command -v ditto >/dev/null 2>&1; then
             HOME=$ROOT/machome FAKE_LOG=$ROOT/maclog sh "$SCRIPT" "$@"
     }
     check "macOS app install succeeds" run_mac --version "$VERSION" --yes --prefix "$ROOT/Applications"
-    check "app bundle installed" test -x "$ROOT/Applications/WebeSign.app/Contents/MacOS/websign"
+    check "app bundle installed" test -x "$ROOT/Applications/SignLocal.app/Contents/MacOS/websign"
     check "websign is linked into ~/.local/bin" test -L "$ROOT/machome/.local/bin/websign"
     check "websign install was run (macOS)" grep -q '^install$' "$ROOT/maclog"
     run_mac --uninstall --yes --prefix "$ROOT/Applications" >/dev/null 2>&1
-    check "macOS uninstall removes the app and the link" test ! -e "$ROOT/Applications/WebeSign.app" -a ! -L "$ROOT/machome/.local/bin/websign"
+    check "macOS uninstall removes the app and the link" test ! -e "$ROOT/Applications/SignLocal.app" -a ! -L "$ROOT/machome/.local/bin/websign"
 else
     echo "skip macOS install tests (no unzip)"
 fi

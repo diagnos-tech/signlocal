@@ -10,7 +10,7 @@
 # TODO(gustavo): final name, domain and IDs after the trademark search.
 
 [product]
-name = "WebeSign"
+name = "SignLocal"
 # Lowercase ASCII: binary names, folders, log files.
 slug = "websign"
 tagline = "Use your smart card, USB token, or OS certificate to sign on any website."
@@ -28,7 +28,7 @@ url_scheme = "websign"
 macos_bundle_id = "dev.websign.app"
 macos_app_group = "TEAMID.dev.websign"
 safari_extension_bundle_id = "dev.websign.app.extension"
-windows_package_name = "WebeSign"
+windows_package_name = "SignLocal"
 windows_publisher = "CN=TODO"
 
 [extension]

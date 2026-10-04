@@ -17,7 +17,7 @@ const OVERRIDE_VARIABLE: &str = "WEBSIGN_EXECUTABLE";
 ///
 /// ```
 /// if websign_client::find_executable().is_none() {
-///     println!("Install WebeSign first.");
+///     println!("Install SignLocal first.");
 /// }
 /// ```
 pub fn find_executable() -> Option<PathBuf> {

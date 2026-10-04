@@ -26,12 +26,12 @@ export function App() {
       <h1>Sign a text (React)</h1>
       <p className="muted" role="status">
         {!status
-          ? "Checking WebeSign…"
+          ? "Checking SignLocal…"
           : setup
             ? `${setup.title}. ${setup.body}`
-            : "WebeSign is ready."}
+            : "SignLocal is ready."}
       </p>
-      {status?.problem === "ExtensionMissing" && <a href={installUrl()}>Install WebeSign</a>}
+      {status?.problem === "ExtensionMissing" && <a href={installUrl()}>Install SignLocal</a>}
       <label htmlFor="text">Text to sign</label>
       <textarea
         id="text"
@@ -42,7 +42,7 @@ export function App() {
       />
       <p>
         <button type="button" disabled={!status?.ready || signing} onClick={onSign}>
-          {signing ? "Confirm in the WebeSign window…" : "Sign with my certificate"}
+          {signing ? "Confirm in the SignLocal window…" : "Sign with my certificate"}
         </button>
       </p>
       <div aria-live="polite">

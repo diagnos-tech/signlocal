@@ -8,7 +8,7 @@ version_schema: semver
 release: 1
 section: utils
 priority: optional
-maintainer: WebeSign maintainers <noreply@users.noreply.github.com>
+maintainer: SignLocal maintainers <noreply@users.noreply.github.com>
 description: |
   {{tagline}}
 homepage: {{homepage}}

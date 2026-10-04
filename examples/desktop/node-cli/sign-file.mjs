@@ -2,7 +2,7 @@
 // Signs the SHA-256 of a file with the person's certificate.
 //
 //   node sign-file.mjs <file>         uses the fake app: runs anywhere, e.g. in CI
-//   node sign-file.mjs <file> --app   uses the installed WebeSign app
+//   node sign-file.mjs <file> --app   uses the installed SignLocal app
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { WebSign, WebSignError } from "@websign/desktop";

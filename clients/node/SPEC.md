@@ -7,10 +7,10 @@ from a scenario file).
 ## 1. `findExecutable()`
 
 `WEBSIGN_EXECUTABLE` if it exists; else `websign`/`websign.exe` on `PATH`;
-else, in order: Windows `%LOCALAPPDATA%\Programs\WebeSign\websign.exe`,
+else, in order: Windows `%LOCALAPPDATA%\Programs\SignLocal\websign.exe`,
 `%LOCALAPPDATA%\Microsoft\WindowsApps\websign.exe`; macOS
-`/Applications/WebeSign.app/Contents/MacOS/websign`,
-`~/Applications/WebeSign.app/Contents/MacOS/websign`, `~/.local/bin/websign`
+`/Applications/SignLocal.app/Contents/MacOS/websign`,
+`~/Applications/SignLocal.app/Contents/MacOS/websign`, `~/.local/bin/websign`
 (the symlink the direct macOS install may create); Linux `/usr/bin/websign`,
 `~/.local/bin/websign`. `undefined` when none exists. "Exists" means a
 regular file with the execute bit; on Windows any non-directory, because the

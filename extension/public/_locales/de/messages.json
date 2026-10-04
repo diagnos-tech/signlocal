@@ -3,7 +3,7 @@
     "message": "Signieren Sie auf jeder Website mit Chipkarte, USB-Token oder Zertifikat des Betriebssystems. Kostenlos und Open Source für alle."
   },
   "extension_name": {
-    "message": "WebeSign"
+    "message": "SignLocal"
   },
   "popup_activate": {
     "message": "Schon installiert? Einrichtung abschließen"
@@ -56,7 +56,7 @@
     "message": "Zum Signieren benötigt die Erweiterung die App auf Ihrem Computer."
   },
   "popup_missing_title": {
-    "message": "WebeSign-App installieren"
+    "message": "SignLocal-App installieren"
   },
   "popup_new_tab": {
     "message": "Öffnet sich in einem neuen Tab"
@@ -76,13 +76,13 @@
     }
   },
   "popup_outdated_title": {
-    "message": "WebeSign-App aktualisieren"
+    "message": "SignLocal-App aktualisieren"
   },
   "popup_privacy": {
     "message": "Datenschutz"
   },
   "popup_ready_body": {
-    "message": "Die WebeSign-App $version$ ist mit diesem Browser verbunden.",
+    "message": "Die SignLocal-App $version$ ist mit diesem Browser verbunden.",
     "placeholders": {
       "version": {
         "content": "$1"
@@ -105,7 +105,7 @@
     "message": "Verwenden Sie einen Computer mit Windows, macOS oder Linux."
   },
   "popup_unsupported_title": {
-    "message": "WebeSign funktioniert auf diesem System noch nicht"
+    "message": "SignLocal funktioniert auf diesem System noch nicht"
   },
   "popup_update": {
     "message": "Update herunterladen"
@@ -128,10 +128,10 @@
     "message": "Download-Seite"
   },
   "store_listing_description": {
-    "message": "Signieren Sie auf jeder Website mit Ihrer Smartcard, Ihrem USB-Token oder einem Zertifikat Ihres Betriebssystems. Funktioniert mit Chrome, Edge, Firefox, Opera, Brave und Safari unter Windows, macOS und Linux. Frei und Open Source für alle.\n\nWenn eine Website eine Signatur anfordert, öffnet die WebeSign-App ein eigenes Fenster auf Ihrem Computer: Sie sehen, wer anfragt, wählen Ihr Zertifikat, prüfen den Prüfcode und bestätigen. Die PIN geben Sie in der App oder im Fenster des Betriebssystems ein, nie auf einer Webseite.\n\n• Funktioniert mit den Zertifikaten, die Sie schon haben: USB-Tokens, Smartcards und auf dem Computer installierte Zertifikate.\n• Die Website sendet nur einen Fingerabdruck (Hash) des Dokuments; das Dokument selbst verlässt sie nie.\n• Jede Signatur braucht Ihre Bestätigung, und jede Website Ihre Erlaubnis, die Sie jederzeit widerrufen können.\n• Kein Konto, keine Tracker, kein Hintergrunddienst und kein offener Netzwerkport.\n\nDie Erweiterung arbeitet mit der kostenlosen WebeSign-App für Windows, macOS und Linux zusammen, erhältlich auf der Projektwebsite. Quellcode: GPL-3.0-or-later; Entwicklerbibliotheken: Apache-2.0."
+    "message": "Signieren Sie auf jeder Website mit Ihrer Smartcard, Ihrem USB-Token oder einem Zertifikat Ihres Betriebssystems. Funktioniert mit Chrome, Edge, Firefox, Opera, Brave und Safari unter Windows, macOS und Linux. Frei und Open Source für alle.\n\nWenn eine Website eine Signatur anfordert, öffnet die SignLocal-App ein eigenes Fenster auf Ihrem Computer: Sie sehen, wer anfragt, wählen Ihr Zertifikat, prüfen den Prüfcode und bestätigen. Die PIN geben Sie in der App oder im Fenster des Betriebssystems ein, nie auf einer Webseite.\n\n• Funktioniert mit den Zertifikaten, die Sie schon haben: USB-Tokens, Smartcards und auf dem Computer installierte Zertifikate.\n• Die Website sendet nur einen Fingerabdruck (Hash) des Dokuments; das Dokument selbst verlässt sie nie.\n• Jede Signatur braucht Ihre Bestätigung, und jede Website Ihre Erlaubnis, die Sie jederzeit widerrufen können.\n• Kein Konto, keine Tracker, kein Hintergrunddienst und kein offener Netzwerkport.\n\nDie Erweiterung arbeitet mit der kostenlosen SignLocal-App für Windows, macOS und Linux zusammen, erhältlich auf der Projektwebsite. Quellcode: GPL-3.0-or-later; Entwicklerbibliotheken: Apache-2.0."
   },
   "store_listing_name": {
-    "message": "WebeSign: mit Ihrem Zertifikat signieren"
+    "message": "SignLocal: mit Ihrem Zertifikat signieren"
   },
   "store_listing_summary": {
     "message": "Signieren Sie auf jeder Website mit Smartcard, USB-Token oder Systemzertifikat. Windows, macOS und Linux. Frei und Open Source."

@@ -4,7 +4,7 @@
 import { errorText, fingerprint, installUrl, onChange, sign, status, WebSignError } from "./websign-sdk.js";
 import { digestOf, verifySignature } from "./test-crypto.js";
 
-const SAMPLE = "WebeSign test message. This is not a document.";
+const SAMPLE = "SignLocal test message. This is not a document.";
 const message = new TextEncoder().encode(SAMPLE);
 const $ = (id) => document.getElementById(id);
 const subtle = globalThis.crypto && globalThis.crypto.subtle;
@@ -51,7 +51,7 @@ function renderIdenticon(code) {
 }
 
 function summaryText() {
-  const lines = ["WebeSign test"];
+  const lines = ["SignLocal test"];
   lines.push(`setup: ${setupState(current)}`);
   if (current?.extension.version) lines.push(`extension: ${current.extension.version}`);
   if (current?.app.version) lines.push(`app: ${current.app.version}`);

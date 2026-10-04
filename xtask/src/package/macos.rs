@@ -9,7 +9,7 @@ use super::target::MACOS_SLICES;
 use super::tool::run;
 use super::{Context, archive, build, macos_sign, names, safari};
 
-/// Builds `WebeSign.app` into `websign-<v>-macos-universal.zip`, with the
+/// Builds `SignLocal.app` into `websign-<v>-macos-universal.zip`, with the
 /// Safari appex in `Contents/PlugIns` (`safari/SPEC.md`). Signatures are ad
 /// hoc for now (`macos_sign.rs`).
 pub fn app(context: &Context) -> Result<PathBuf, String> {

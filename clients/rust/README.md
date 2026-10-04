@@ -1,6 +1,6 @@
 # websign-client
 
-Call the WebeSign app from a Rust program: the person picks a certificate in
+Call the SignLocal app from a Rust program: the person picks a certificate in
 the app's window, your closure supplies the digest, the app signs it with the
 key (PIN included). Starts `websign connect` on demand; the window names
 your program. Same flow and options as the web SDK (`@websign/sdk`) and the

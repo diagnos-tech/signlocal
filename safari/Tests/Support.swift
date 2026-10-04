@@ -2,7 +2,7 @@
 
 import Foundation
 import XCTest
-@testable import WebeSignRelay
+@testable import SignLocalRelay
 
 /// Fake hosts: standard tools that behave like a host in one way each.
 enum FakeHost {

@@ -2,7 +2,7 @@
 
 import Foundation
 import XCTest
-@testable import WebeSignRelay
+@testable import SignLocalRelay
 
 /// The real host, from a packaged appex (`WEBSIGN_TEST_APPEX`), through the
 /// same relay the handler uses: the launch shape is accepted and `hello`

@@ -1,10 +1,10 @@
 <#
 .SYNOPSIS
-  WebeSign installer for Windows (PowerShell 5.1 and 7).
+  SignLocal installer for Windows (PowerShell 5.1 and 7).
 .DESCRIPTION
   Downloads the zip and SHA256SUMS of release v<Version>, verifies the hash
   (a mismatch aborts before anything is installed), installs to
-  %LOCALAPPDATA%\Programs\WebeSign, adds the folder to the user PATH, creates
+  %LOCALAPPDATA%\Programs\SignLocal, adds the folder to the user PATH, creates
   the Start menu shortcut and runs `websign install`. No administrator rights.
   Contract: docs/architecture/packaging-and-release.md, scripts/install/README.md.
 .EXAMPLE
@@ -18,7 +18,7 @@ param(
     [switch]$Uninstall,
     [switch]$NoRegister,
     [switch]$DryRun,
-    # Where to install; default %LOCALAPPDATA%\Programs\WebeSign.
+    # Where to install; default %LOCALAPPDATA%\Programs\SignLocal.
     [string]$InstallDir,
     # A folder that already holds the release files (tests, offline installs).
     [string]$ReleaseDir = $env:WEBSIGN_RELEASE_DIR,
@@ -34,7 +34,7 @@ $ProgressPreference = 'SilentlyContinue'
 
 # Identifiers come from project.toml; `cargo xtask check release` keeps them equal.
 $Script:Slug = 'websign'
-$Script:AppName = 'WebeSign'
+$Script:AppName = 'SignLocal'
 $Script:Repo = if ($env:WEBSIGN_REPO) { $env:WEBSIGN_REPO } else { 'diagnos-tech/signlocal' }
 
 function Say([string]$Message) { [Console]::Error.WriteLine($Message) }

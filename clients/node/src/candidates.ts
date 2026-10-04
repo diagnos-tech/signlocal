@@ -80,14 +80,14 @@ function installLocations({ env, platform, home }: Environment): string[] {
       const local = env.LOCALAPPDATA;
       if (!local) return [];
       return [
-        win32.join(local, "Programs", "WebeSign", "websign.exe"),
+        win32.join(local, "Programs", "SignLocal", "websign.exe"),
         win32.join(local, "Microsoft", "WindowsApps", "websign.exe"),
       ];
     }
     case "darwin":
       return [
-        "/Applications/WebeSign.app/Contents/MacOS/websign",
-        posix.join(home, "Applications", "WebeSign.app", "Contents", "MacOS", "websign"),
+        "/Applications/SignLocal.app/Contents/MacOS/websign",
+        posix.join(home, "Applications", "SignLocal.app", "Contents", "MacOS", "websign"),
         posix.join(home, ".local", "bin", "websign"),
       ];
     default:

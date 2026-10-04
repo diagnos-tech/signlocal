@@ -13,7 +13,7 @@ use websign_registration::Outcome;
 use crate::cli::report::{Kind, Step};
 
 /// Identifies the entries this command wrote.
-const MARK: &str = "X-WebeSign-Written-By=websign install";
+const MARK: &str = "X-SignLocal-Written-By=websign install";
 /// Where packages put theirs.
 const SYSTEM_APPLICATIONS: &str = "/usr/share/applications";
 

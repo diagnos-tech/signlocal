@@ -94,8 +94,8 @@ fn locations_match_the_documentation() {
     assert_eq!(
         install_locations(&inputs, Platform::MacOs),
         [
-            PathBuf::from("/Applications/WebeSign.app/Contents/MacOS/websign"),
-            PathBuf::from("/h/Applications/WebeSign.app/Contents/MacOS/websign"),
+            PathBuf::from("/Applications/SignLocal.app/Contents/MacOS/websign"),
+            PathBuf::from("/h/Applications/SignLocal.app/Contents/MacOS/websign"),
             PathBuf::from("/h/.local/bin/websign"),
         ]
     );
@@ -103,7 +103,7 @@ fn locations_match_the_documentation() {
     assert_eq!(
         install_locations(&inputs, Platform::Windows),
         [
-            base.join("Programs").join("WebeSign").join("websign.exe"),
+            base.join("Programs").join("SignLocal").join("websign.exe"),
             base.join("Microsoft")
                 .join("WindowsApps")
                 .join("websign.exe"),

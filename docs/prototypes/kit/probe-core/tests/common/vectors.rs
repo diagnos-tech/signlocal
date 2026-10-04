@@ -33,7 +33,7 @@ pub fn fixture_digest(hash: HashAlgorithm) -> Vec<u8> {
 }
 
 /// The message all fixture digests and signatures were made over.
-pub const FIXTURE_MESSAGE: &[u8] = b"WebeSign probe-core fixture message";
+pub const FIXTURE_MESSAGE: &[u8] = b"SignLocal probe-core fixture message";
 
 /// PKCS#1 `DigestInfo` of the fixture digest under `hash`, built by OpenSSL.
 pub fn fixture_digest_info(hash: HashAlgorithm) -> Vec<u8> {

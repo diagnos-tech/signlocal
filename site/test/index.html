@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<title>Test your setup - WebeSign</title>
-<meta name="description" content="Check that the WebeSign extension, the app and your certificate work together. Nothing is sent anywhere.">
+<title>Test your setup - SignLocal</title>
+<meta name="description" content="Check that the SignLocal extension, the app and your certificate work together. Nothing is sent anywhere.">
 <link rel="icon" href="../assets/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../assets/tokens.css">
 <link rel="stylesheet" href="../assets/site.css">
@@ -16,7 +16,7 @@
 <body>
 <a class="skip" href="#main" data-i18n="nav.skip">Skip to content</a>
 <header class="bar">
-<a class="brand" href="../index.html"><img src="../assets/icon.svg" alt="" width="24" height="24">WebeSign</a>
+<a class="brand" href="../index.html"><img src="../assets/icon.svg" alt="" width="24" height="24">SignLocal</a>
 <nav aria-label="Main"><a href="../index.html" data-i18n="nav.home">Home</a><a href="../download.html" data-i18n="nav.download">Download</a><a href="../privacy.html" data-i18n="nav.privacy">Privacy</a><a href="../developers.html" data-i18n="nav.developers">Developers</a></nav>
 <label class="lang"><span class="sr" data-i18n="nav.language">Language</span><select id="lang"><option value="en">English</option><option value="es">Español</option><option value="pt-PT">Português (Portugal)</option><option value="pt-BR">Português (Brasil)</option><option value="fr">Français</option><option value="it">Italiano</option><option value="de">Deutsch</option></select></label>
 </header>
@@ -29,9 +29,9 @@
 <h2 id="h-setup" data-i18n="test.setup_h">1. Your setup</h2>
 <div class="state" id="setup" role="status" aria-live="polite">
 <div data-state="checking"><p><span data-i18n="test.checking">Looking for the extension and the app…</span></p></div>
-<div data-state="extension-missing" hidden class="warn"><h3 data-i18n="test.ext_missing_h">The browser extension is not installed</h3><p data-i18n="test.ext_missing">Install the WebeSign extension for this browser, then check again.</p><p><a class="btn" id="install-ext" href="../download.html" data-i18n="test.install_ext">Install the extension</a></p></div>
-<div data-state="app-missing" hidden class="warn"><h3 data-i18n="test.app_missing_h">The app is not installed</h3><p data-i18n="test.app_missing">The extension is there, but the WebeSign app was not found on this computer. Install it and open it once, then check again.</p><p><a class="btn" href="../download.html" data-i18n="test.install_app">Install the app</a></p></div>
-<div data-state="outdated" hidden class="warn"><h3 data-i18n="test.outdated_h">The app needs an update</h3><p data-i18n="test.outdated">The WebeSign app is older than the extension needs. Install the latest version, then check again.</p><p><a class="btn" href="../download.html" data-i18n="test.update_app">Update the app</a></p></div>
+<div data-state="extension-missing" hidden class="warn"><h3 data-i18n="test.ext_missing_h">The browser extension is not installed</h3><p data-i18n="test.ext_missing">Install the SignLocal extension for this browser, then check again.</p><p><a class="btn" id="install-ext" href="../download.html" data-i18n="test.install_ext">Install the extension</a></p></div>
+<div data-state="app-missing" hidden class="warn"><h3 data-i18n="test.app_missing_h">The app is not installed</h3><p data-i18n="test.app_missing">The extension is there, but the SignLocal app was not found on this computer. Install it and open it once, then check again.</p><p><a class="btn" href="../download.html" data-i18n="test.install_app">Install the app</a></p></div>
+<div data-state="outdated" hidden class="warn"><h3 data-i18n="test.outdated_h">The app needs an update</h3><p data-i18n="test.outdated">The SignLocal app is older than the extension needs. Install the latest version, then check again.</p><p><a class="btn" href="../download.html" data-i18n="test.update_app">Update the app</a></p></div>
 <div data-state="ready" hidden class="ok"><h3><span aria-hidden="true">&#10003; </span><span data-i18n="test.ready_h">Everything is installed</span></h3><p data-i18n="test.ready">The extension and the app are installed and compatible. Continue with the test below.</p><p class="muted"><span data-i18n="test.ext_version">Extension</span>: <span id="v-ext">-</span> · <span data-i18n="test.app_version">App</span>: <span id="v-app">-</span></p></div>
 </div>
 <p><button type="button" class="btn ghost" id="recheck" data-i18n="test.recheck">Check again</button> <a href="../download.html" data-i18n="test.download">Go to the download page</a></p>

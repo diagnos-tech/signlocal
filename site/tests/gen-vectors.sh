@@ -5,7 +5,7 @@ set -eu
 here=$(cd "$(dirname "$0")" && pwd)
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
-printf 'WebeSign test message' > "$work/msg"
+printf 'SignLocal test message' > "$work/msg"
 
 mk() { # name, genpkey args...
   name=$1; shift
@@ -31,7 +31,7 @@ python3 - "$work" "$here/vectors.json" <<'PY'
 import base64, glob, json, os, sys
 work, out = sys.argv[1:]
 b64 = lambda p: base64.b64encode(open(p, "rb").read()).decode()
-data = {"message": "WebeSign test message", "certificates": {}, "signatures": []}
+data = {"message": "SignLocal test message", "certificates": {}, "signatures": []}
 for name in ("rsa", "p256", "p384", "p521"):
     data["certificates"][name] = b64(f"{work}/{name}.der")
 for path in sorted(glob.glob(f"{work}/*.sig")):

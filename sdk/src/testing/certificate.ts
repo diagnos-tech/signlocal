@@ -25,7 +25,7 @@ export interface FakeCertificateOptions {
   readonly key?: "EC" | "RSA";
   /** Holder name; default "Test Signer EC (fake)" or "Test Signer RSA (fake)". */
   readonly displayName?: string;
-  /** Default "WebeSign Testing CA (fake)". */
+  /** Default "SignLocal Testing CA (fake)". */
   readonly issuerName?: string;
   /** Default 2025-01-01. */
   readonly notBefore?: Date;
@@ -56,7 +56,7 @@ const SHA256_WITH_RSA = "1.2.840.113549.1.1.11";
 
 const name = (commonName: string) =>
   der.sequence(
-    der.set(der.sequence(der.oid("2.5.4.10"), der.utf8String("WebeSign testing (fake)"))),
+    der.set(der.sequence(der.oid("2.5.4.10"), der.utf8String("SignLocal testing (fake)"))),
     der.set(der.sequence(der.oid("2.5.4.3"), der.utf8String(commonName))),
   );
 
@@ -94,7 +94,7 @@ export async function createCredential(
       : signRsa(privateJwk, algorithm, hash, digest);
 
   const displayName = options.displayName ?? `Test Signer ${isEc ? "EC" : "RSA"} (fake)`;
-  const issuerName = options.issuerName ?? "WebeSign Testing CA (fake)";
+  const issuerName = options.issuerName ?? "SignLocal Testing CA (fake)";
   const notBefore = options.notBefore ?? new Date(Date.UTC(2025, 0, 1));
   const notAfter = options.notAfter ?? new Date(Date.UTC(2035, 0, 1));
   const seed = await sha256(new TextEncoder().encode(`${index}:${displayName}`));

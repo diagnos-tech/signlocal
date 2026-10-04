@@ -116,7 +116,7 @@ impl fmt::Display for ClientError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             ClientError::AppMissing(reason) => {
-                write!(f, "the WebeSign app is not installed: {reason}")
+                write!(f, "the SignLocal app is not installed: {reason}")
             }
             ClientError::App { code, message } => write!(f, "{code:?}: {message}"),
             ClientError::Prepare(why) => write!(f, "prepare failed: {why}"),

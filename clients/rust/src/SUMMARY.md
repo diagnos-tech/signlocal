@@ -4,7 +4,7 @@
 - `error.rs` — What can go wrong: stable codes, hints and source chains.
 - `handshake.rs` — Starting the app, `hello` and version negotiation.
 - `hint.rs` — What a developer can do about each error code, and the docs link.
-- `lib.rs` — Call the WebeSign app from a Rust program.
+- `lib.rs` — Call the SignLocal app from a Rust program.
 - `locate.rs` — Finding the `websign` executable.
 - `locate/` — unit tests of the executable search.
 - `options.rs` — What the caller asks for: connect options, sign options (algorithm set, preselection) and the `prepare` context.

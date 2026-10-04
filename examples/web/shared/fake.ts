@@ -1,6 +1,6 @@
 /**
  * Every example runs on the SDK's testing fake unless the URL has `?real`:
- * then it talks to the real WebeSign extension and app. The panel in the
+ * then it talks to the real SignLocal extension and app. The panel in the
  * corner scripts what the "person" does next, so each state of your UI can
  * be seen without a token.
  */
@@ -45,9 +45,9 @@ function select(label: string, placeholder: string, values: readonly string[]) {
 function mountPanel(fake: FakeWebSign): void {
   const panel = document.createElement("aside");
   panel.className = "fake-panel";
-  panel.setAttribute("aria-label", "Fake WebeSign controls");
+  panel.setAttribute("aria-label", "Fake SignLocal controls");
   const title = document.createElement("strong");
-  title.textContent = "FAKE WebeSign";
+  title.textContent = "FAKE SignLocal";
   const scenario = select("Computer:", "", SCENARIOS);
   scenario.element.addEventListener("change", () =>
     fake.setScenario(scenario.element.value as (typeof SCENARIOS)[number]),

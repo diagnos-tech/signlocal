@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "WebeSign (probe extension)",
+  "name": "SignLocal (probe extension)",
   "version": "0.1.0",
   "description": "Test extension for the native messaging proofs. Bridges pages on localhost to the native host.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA23qNhgRgdrtE1Zfv2sefK7ibzL7EUVCI74ebI41HhUKADp0GA+XN8PhM8P5Bd4xbVw1rlYRUub213UAswnhY9Q32Ou2lCyKWlIbYZnAah+GiT2RQrg0b5b25RPmMSoitbsm4tqTkc0Bv/pxD6lMi12fXWXeo4etAeDFxueMpus1M4OC0yuOjK9eLLuHL1b/dYfe43WjsQSsvfxNScu8faC2R/31UKYNhhcEZlLl/HCXiPB9pZNms81SPViDhMKtdSXj38uPFSmN0Tl0BlHdnsxd72RLaaS9qr1YTFPeoSXuNvrx8E5NvjJOe6E/HI+2BSkm1ncxsd3xx0F2g0ngHjwIDAQAB",

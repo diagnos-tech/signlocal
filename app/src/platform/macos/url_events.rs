@@ -89,7 +89,7 @@ fn new_receiver() -> Option<Id> {
     ];
     // SAFETY: both implementations below take `(Id, Sel, …)` exactly as
     // their encodings declare; `listen` runs this once (`HANDLER`).
-    let receiver_class = unsafe { define_class(c"WebeSignURLEventReceiver", &methods) }?;
+    let receiver_class = unsafe { define_class(c"SignLocalURLEventReceiver", &methods) }?;
     // SAFETY: `+alloc`/`-init` of an `NSObject` subclass return an object.
     let receiver: Id = unsafe { send0(send0::<Id>(receiver_class, c"alloc"), c"init") };
     (!receiver.is_null()).then_some(receiver)

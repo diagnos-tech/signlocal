@@ -13,7 +13,7 @@
 	<key>CFBundleExecutable</key>
 	<string>websign-probe</string>
 	<key>CFBundleName</key>
-	<string>WebeSign</string>
+	<string>SignLocal</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleInfoDictionaryVersion</key>

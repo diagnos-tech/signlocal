@@ -50,7 +50,7 @@ impl Config {
     }
 }
 
-/// A stand-in for the WebeSign app that lives inside your test process.
+/// A stand-in for the SignLocal app that lives inside your test process.
 ///
 /// [`FakeApp::connect`] returns a real [`Client`] wired to it over in-process
 /// pipes, speaking the real protocol: your code runs unchanged. It answers

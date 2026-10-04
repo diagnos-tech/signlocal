@@ -1,7 +1,7 @@
 //! Signs the SHA-256 of a file with the person's certificate.
 //!
 //! `cargo run -- <file>` uses the fake app (runs anywhere, CI included);
-//! `cargo run -- <file> --app` uses the installed WebeSign app.
+//! `cargo run -- <file> --app` uses the installed SignLocal app.
 
 use std::process::ExitCode;
 use std::{env, fs};

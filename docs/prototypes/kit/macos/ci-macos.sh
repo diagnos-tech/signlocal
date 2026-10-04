@@ -42,9 +42,9 @@ readonly TIMEOUT_SECONDS=120
 readonly ISOLATE=(--no-known-modules --no-p11-kit)
 # name, key type, signatures expected with --hash all --pss
 readonly IDENTITIES=(
-    "WebeSign CI RSA-2048|rsa2048|6"
-    "WebeSign CI P-256|p256|3"
-    "WebeSign CI P-384|p384|3"
+    "SignLocal CI RSA-2048|rsa2048|6"
+    "SignLocal CI P-256|p256|3"
+    "SignLocal CI P-384|p384|3"
 )
 
 work=$(mktemp -d)

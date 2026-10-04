@@ -11,4 +11,4 @@
 - `launch.rs` — Telling apart the ways this binary is started: browser or Safari appex (our extensions only), `websign:` URL, `connect`, no arguments, command line.
 - `logging/` — log folder, rotating file, privacy filter and its audit tests
 - `logging.rs` — The app's log: a size-capped, privacy-filtered file in the per-user log folder, because browsers discard a native host's stderr.
-- `main.rs` — `websign`: the WebeSign desktop app.
+- `main.rs` — `websign`: the SignLocal desktop app.

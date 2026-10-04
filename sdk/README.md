@@ -1,7 +1,7 @@
 # @websign/sdk
 
 Let people sign on your website with the certificate they already have: a smart card, a USB token or a
-certificate installed on their computer, through the WebeSign extension and app. Zero dependencies, ESM,
+certificate installed on their computer, through the SignLocal extension and app. Zero dependencies, ESM,
 fully typed, under 5 KB gzipped, framework-agnostic.
 
 ```sh
@@ -17,7 +17,7 @@ const { signature, certificate } = await sign({
 });
 ```
 
-That is the whole happy path. `prepare` runs once the person has chosen a certificate in the WebeSign window
+That is the whole happy path. `prepare` runs once the person has chosen a certificate in the SignLocal window
 (PAdES and CAdES put the certificate inside the signed data) and returns the hash to sign: 32, 48 or 64 bytes
 for SHA-256/384/512, as a `Uint8Array` or `ArrayBuffer`. It runs again if the person switches certificate;
 only the last hash is signed. `signature` is raw (ECDSA r‖s, or the RSA block); put it in your CMS with
@@ -28,7 +28,7 @@ Guide with the errors table: [developers page](https://diagnos-tech.github.io/si
 API reference: [`site/api/`](https://diagnos-tech.github.io/signlocal/api/). Examples (vanilla, React, Vue,
 PAdES with pdf-lib + PKI.js): [`examples/web/`](../examples/web/).
 
-## Is WebeSign ready?
+## Is SignLocal ready?
 
 ```ts
 import { installUrl, onChange, status } from "@websign/sdk";
@@ -41,7 +41,7 @@ function show({ ready, problem }: Status) {
   notice.textContent = errorText(problem)?.body ?? ""; // localized, empty when ready
 }
 show(await status()); // never rejects, never opens a window
-onChange(show); // the person installs or updates WebeSign while the page is open
+onChange(show); // the person installs or updates SignLocal while the page is open
 ```
 
 ## Errors

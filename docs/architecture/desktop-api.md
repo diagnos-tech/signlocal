@@ -20,8 +20,8 @@ no port.
 ## 2. Commands
 
 `websign` is on `PATH` after installation (Linux packages: `/usr/bin/websign`;
-Windows: the MSIX alias or `%LOCALAPPDATA%\Programs\WebeSign\websign.exe`;
-macOS: `/Applications/WebeSign.app/Contents/MacOS/websign` — see
+Windows: the MSIX alias or `%LOCALAPPDATA%\Programs\SignLocal\websign.exe`;
+macOS: `/Applications/SignLocal.app/Contents/MacOS/websign` — see
 [packaging-and-release.md §Install locations](packaging-and-release.md#install-locations)).
 
 | Command | Purpose | Output |
@@ -238,7 +238,7 @@ site, the same anchors as `@websign/sdk`. Both libraries branch on the protocol'
 | Code | What happened | What to do |
 |---|---|---|
 | `AppMissing` | The app is not installed, or exits at once | Install it, or pin the binary (`executable` / `WEBSIGN_EXECUTABLE`); test with the fake |
-| `AppOutdated` | The app is too old for the request | Ask the user to update WebeSign |
+| `AppOutdated` | The app is too old for the request | Ask the user to update SignLocal |
 | `ClientOutdated` | The app speaks a newer protocol than the library | Upgrade the library |
 | `Aborted` | Your code cancelled (`AbortSignal`, `prepare` failed) | Nothing; the cause is in `cause` (Node) or the message (Rust) |
 | `UserCancelled` | The person closed the window | Not a failure: offer to retry |

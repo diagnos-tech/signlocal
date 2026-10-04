@@ -3,13 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>WebeSign: vanilla example</title>
+    <title>SignLocal: vanilla example</title>
     <link rel="stylesheet" href="../shared/example.css" />
   </head>
   <body>
     <h1>Sign a text</h1>
-    <p id="setup" class="muted" role="status">Checking WebeSign…</p>
-    <p><a id="install" href="https://diagnos-tech.github.io/signlocal/download.html" hidden>Install WebeSign</a></p>
+    <p id="setup" class="muted" role="status">Checking SignLocal…</p>
+    <p><a id="install" href="https://diagnos-tech.github.io/signlocal/download.html" hidden>Install SignLocal</a></p>
 
     <label for="text">Text to sign</label>
     <textarea id="text" rows="3" style="width: 100%">I agree to the terms.</textarea>
@@ -32,18 +32,18 @@
         await installFakeWebSign({ latencyMs: 600 });
       }
 
-      // 1. Is WebeSign ready? status() never opens a window and never rejects.
+      // 1. Is SignLocal ready? status() never opens a window and never rejects.
       let ready = false;
       function showSetup(s) {
         ready = s.ready;
         $("sign").disabled = !ready;
         const text = errorText(s.problem); // undefined when ready
-        $("setup").textContent = text ? `${text.title}. ${text.body}` : "WebeSign is ready.";
+        $("setup").textContent = text ? `${text.title}. ${text.body}` : "SignLocal is ready.";
         $("install").hidden = s.problem !== "ExtensionMissing";
         $("install").href = installUrl(); // the extension store of this browser
       }
       showSetup(await status());
-      onChange(showSetup); // the person installs or updates WebeSign while the page is open
+      onChange(showSetup); // the person installs or updates SignLocal while the page is open
 
       // 2. Sign: prepare() returns the digest once the person has chosen a certificate.
       $("sign").addEventListener("click", async () => {

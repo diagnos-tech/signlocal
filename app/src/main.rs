@@ -1,4 +1,4 @@
-//! `websign`: the WebeSign desktop app.
+//! `websign`: the SignLocal desktop app.
 //!
 //! One binary, started four ways, told apart before any argument parsing
 //! ([`launch`]):

@@ -1,4 +1,4 @@
-# WebeSign: UX/UI Specification
+# SignLocal: UX/UI Specification
 
 > Reference document for whoever implements `app/` (egui), `extension/` (popup), `sdk/`, and `site/`.
 > Navigable mockups: [`docs/ux/mockups.html`](ux/mockups.html) (light and dark; the tokens there are
@@ -115,7 +115,7 @@ to any site.
 
 The SDK exports `fingerprint(digest): { text: string; colorIndex: number; cells: boolean[] }` with the same
 algorithm as [§4.4](#44-verification-code), so the site can show the same code and the same drawing near
-its "Sign" button. `TODO(gustavo)`: Diagnos shows the code next to "Waiting for confirmation in WebeSign".
+its "Sign" button. `TODO(gustavo)`: Diagnos shows the code next to "Waiting for confirmation in SignLocal".
 
 ### R4. The site does not put text in the window
 
@@ -175,7 +175,7 @@ equivalents live in the same table.
 | Small screen | If the usable area is under 640 px tall, the window uses `usable area − 40` as its height; header and footer stay fixed and the body scrolls | Never hide the buttons. |
 | Position | Centered on the monitor where the pointer is | That is where the user just clicked "Sign" on the site; centering (rather than opening under the pointer) keeps the button from appearing under the cursor. |
 | Foreground | Always on top while it waits for a decision; opaque; no minimize or maximize; close (X) = Cancel | A signature request must not get lost behind the browser. |
-| Window title (OS) | "Sign for {site} — WebeSign" (`confirm.window_title`) | A screen reader announces the site on focus; the taskbar shows who asked. |
+| Window title (OS) | "Sign for {site} — SignLocal" (`confirm.window_title`) | A screen reader announces the site on focus; the taskbar shows who asked. |
 | Browser name | Short name: Chrome, Edge, Firefox, Brave, Safari, Chromium ("via Chrome") | Fits in the eyebrow next to the chip; the full name goes in the accessible name. |
 | Theme | Follows the system (light/dark) | Consistency with the OS. |
 | Source of truth for the site | Origin sent by the extension ([R5](#r5-the-extension-reports-origin-frame-and-browser)) | P1. |
@@ -199,7 +199,7 @@ only starts once the window has focus (the first click only focuses, it triggers
 
 ```
  480 px ──────────────────────────────────────────────────────────────
-┌────────────────────────────────────────────────────────────────────┐ OS bar: "Sign for app.diagnos.health — WebeSign"
+┌────────────────────────────────────────────────────────────────────┐ OS bar: "Sign for app.diagnos.health — SignLocal"
 │ HEADER · bg-surface · padding 20/24/16 · bottom border border        │
 │  [signature 16] Signature request · via Chrome   [✓ Allowed site]    │ text-caption fg-muted · permission chip on the right (22 px)
 │  https://app.diagnos.health                                         │ text-headline: scheme+subdomain fg-subtle 400, domain fg 600
@@ -301,7 +301,7 @@ A desktop program (`websign connect`, `@websign/desktop`, `websign-client`) repl
 | Line under the name | "Signed by {signer}" when the executable's signature verifies; otherwise a `warning` line "Unverified program. Only continue if you started it yourself." | `caller.signed_by`, `caller.unverified` |
 | Chip | success "Allowed program" or neutral "New program" (accessible name: "First time this program asks for anything on this computer") | `confirm.app_remembered`, `confirm.app_new`, `confirm.app_new_a11y` |
 | Remember checkbox | "Remember this program on this computer"; same help text and default (unchecked) as for sites. Disabled for an interpreter or shell: "Programs that run scripts can't be remembered: it would allow every script they run." | `consent.remember_app`, `consent.remember_help`, `consent.remember_disabled_script` |
-| Window title (OS) | "Sign for {site} — WebeSign" with the program name in `{site}` | `confirm.window_title` |
+| Window title (OS) | "Sign for {site} — SignLocal" with the program name in `{site}` | `confirm.window_title` |
 | Revoke | Diagnostics › Browsers › "Allowed programs"; empty: "No remembered programs." | `sites.apps_section`, `sites.apps_empty` |
 
 **Why:** the program name is self-declared, so the signature check and the "Unverified program" warning are the only
@@ -553,7 +553,7 @@ A **new** site (no remembered permission) always sees the checkbox:
 
 **Choose mode** (`certificates()` from an unremembered site, R2): same window, with these differences:
 
-- Window title: "Choose certificate for {site} — WebeSign"; eyebrow "Certificate request";
+- Window title: "Choose certificate for {site} — SignLocal"; eyebrow "Certificate request";
   sentence "wants to know which certificate you will sign with." (`confirm.asks_select`).
 - In place of the code card: neutral `info` notice "The site will receive the name, type, issuer and validity of the
   chosen certificate. Nothing is signed now." (`consent.select_shares`).
@@ -786,7 +786,7 @@ uncertain, the hint does **not** appear in the Confirmation (avoids a false alar
 - Unknown card in a reader: "There's a card in Identiv uTrust 2700 R, but we don't recognize it. If it holds a
   certificate, install the card vendor's software." + [Open diagnostics].
 - On Mac, if the device needs the Add-on ([§7](#7-add-on-macos)), the card becomes two steps:
-  "1. Install SafeNet Authentication Client" and "2. Install the WebeSign Add-on".
+  "1. Install SafeNet Authentication Client" and "2. Install the SignLocal Add-on".
 - With no device detected: only the empty state "No certificates found / Plug in your token or insert your card.
   The list updates by itself." + "Open diagnostics" link.
 
@@ -806,7 +806,7 @@ Devices tab, on the device's row, with the same text and button ([§8.4](#84-dev
 It only exists if proof 3 shows that the App Store sandbox blocks PKCS#11. Everything below applies only to the
 Mac App Store build.
 
-**On-screen name:** "WebeSign Add-on" (pt-BR: "Complemento WebeSign"). Icon `puzzle-piece`.
+**On-screen name:** "SignLocal Add-on" (pt-BR: "Complemento SignLocal"). Icon `puzzle-piece`.
 Never use "sandbox", "Mach service", "helper", "background", or "daemon" in the interface.
 
 When to suggest it (any of):
@@ -815,8 +815,8 @@ When to suggest it (any of):
 2. The user added a driver manually in Diagnostics.
 3. A known device connected, with no certificates, with the vendor driver installed (the `pkcs11.macos` file exists).
 
-Base text (`complement.body_needed`): "App Store apps can't use some token drivers. The free WebeSign Add-on, from the
-same project, bridges that gap. It only runs when WebeSign asks for it."
+Base text (`complement.body_needed`): "App Store apps can't use some token drivers. The free SignLocal Add-on, from the
+same project, bridges that gap. It only runs when SignLocal asks for it."
 **Why this text:** it explains the cause without blaming anyone, says it is from the same project (trust), and answers
 in advance the fear of a "program running hidden".
 
@@ -843,7 +843,7 @@ in advance the fear of a "program running hidden".
 
 Sidebar, from top to bottom:
 
-1. Brand (`seal-check` fill in a 24 px `accent` square, `radius-md`) + "WebeSign" (`text-title`) + version (`text-small`, `fg-subtle`).
+1. Brand (`seal-check` fill in a 24 px `accent` square, `radius-md`) + "SignLocal" (`text-title`) + version (`text-small`, `fg-subtle`).
 2. **Overall traffic light** (chip): green "Ready to sign", yellow "Needs attention", red "Can't sign yet".
 3. Tabs: icon + label + status icon on the right. Height 36, `radius-md`, selected in `accent-soft` with `accent-fg` text.
 4. Footer: wide secondary button [copy Copy diagnostics].
@@ -883,7 +883,7 @@ to do, in this order, each with a title that says what to do, the reason, and **
 
 | Step | Shown when | Row (title · status) | Fix |
 |------|-----------|----------------------|-----|
-| App | every browser's registration is missing and no extension connected | "Connect the app to your browsers" · "Your browsers can't find the WebeSign app yet." | [Repair] |
+| App | every browser's registration is missing and no extension connected | "Connect the app to your browsers" · "Your browsers can't find the SignLocal app yet." | [Repair] |
 | Extension | no browser connected | "Add the browser extension" · "Not connected yet in Google Chrome, Firefox." (per browser) | [Install extension ↗]; [Repair] when a registration is missing |
 | Card service (Linux) | `pcscd` stopped | "Start the card service" · "Tokens and cards need it. Run in a terminal: `sudo systemctl enable --now pcscd.socket`" | [Copy command] |
 | Driver | a connected token or card waits for its driver | "Install the token driver" · "SafeNet eToken 5110 needs SafeNet Authentication Client to show its certificates." | [Download for {os} ↗] (`devices.json`) |
@@ -916,12 +916,12 @@ Chromium, Safari; detected by installation path/registry/LaunchServices, never b
 | Connected | `check-circle` "Extension 1.4.2 connected · 3 min ago" | n/a |
 | Extension not detected | `warning` "Extension not detected" + hint "If Chrome shows “New extension added”, click Enable." (Chrome/Edge) | [Install extension ↗] opens the right store **in that** browser |
 | Extension outdated | `warning` "Extension 1.2.0 · needs 1.3.0 or newer" + "Restart Chrome to update." | n/a |
-| App registration missing | `x-circle` "Chrome can't find the WebeSign app" | [Repair] rewrites the manifest; afterwards "Repaired. Restart Chrome." |
+| App registration missing | `x-circle` "Chrome can't find the SignLocal app" | [Repair] rewrites the manifest; afterwards "Repaired. Restart Chrome." |
 | Safari with the extension off | `warning` "Extension turned off in Safari" | [Open Safari settings] (`SFSafariApplication.showPreferencesForExtension`) |
 | Firefox Snap (Linux) | `info` "Firefox is installed as a Snap: on your first signature, allow access when the system asks." | n/a |
 
 "Connected" uses the recorded pings (decision 8 of the project brief) with relative time ("3 min ago", "yesterday, 17:40").
-Empty: "No supported browser found. WebeSign works with Chrome, Edge, Firefox, Brave and Safari."
+Empty: "No supported browser found. SignLocal works with Chrome, Edge, Firefox, Brave and Safari."
 
 **"Allowed sites" section**: origin with the registrable domain highlighted, "Remembered on 12 Sep 2026 · last
 used today, 14:02", [Revoke] button (secondary). Revoking asks for inline confirmation (the button becomes "Confirm
@@ -930,7 +930,7 @@ here."
 
 ### 8.4 Devices tab
 
-Subtitle: "Tokens, cards and drivers WebeSign can see right now." The list updates live (PC/SC).
+Subtitle: "Tokens, cards and drivers SignLocal can see right now." The list updates live (PC/SC).
 
 1. **(Mac App Store only)** Add-on card at the top, when relevant ([§7](#7-add-on-macos)).
 2. **(Linux only)** "Card service (pcscd)" row: `check-circle` "Running" or `x-circle` "Stopped" with the
@@ -976,20 +976,20 @@ Subtitle: "Quick answers and how to report a problem." (`help.subtitle`), as in 
    - "My certificate doesn't show up" → checklist: token plugged in? driver installed (link to Devices)?
      certificate expired (link to Certificates)? A1 imported?
    - "I got the PIN wrong / the token locked" → explains the PUK, where to unlock, contacting the CA.
-   - "What does WebeSign send to sites?" → only the signature of the verification code and the chosen
+   - "What does SignLocal send to sites?" → only the signature of the verification code and the chosen
      certificate; never the PIN; never the document.
    - "Keyboard shortcuts" → table from §4.9 and §8.8.
 2. **Report a problem**: exact preview of the diagnostics (`bg-sunken` box, `text-mono`, 8 lines,
    scrolling) + [copy Copy diagnostics] + [arrow-square-out Open support page ↗] (the project's issues).
    Text: "This is exactly what will be copied. It includes no names, ID numbers, sites or serial numbers."
-3. **About**: "WebeSign 1.4.0 · protocol 1 · GPL-3.0-or-later" + [Source code ↗] [Privacy ↗].
+3. **About**: "SignLocal 1.4.0 · protocol 1 · GPL-3.0-or-later" + [Source code ↗] [Privacy ↗].
 
 ### 8.7 "Copy diagnostics": exact content
 
 Plain text, in English (it is for support and public issues), generated by a pure, testable function.
 
 ```text
-WebeSign diagnostics v1
+SignLocal diagnostics v1
 app: 1.4.0 (msix, x86_64) · protocol 1 · locale pt-BR · scale 125%
 os: Windows 11 23H2 (10.0.22631)
 render: wgpu/dx12
@@ -1045,7 +1045,7 @@ Screenshots of every state, light and dark and in each locale: [`docs/screenshot
 (`bun scripts/screenshots.ts` in `extension/`).
 
 Anatomy, on `bg-surface` with 16 px padding and 16 px gaps (like [the mockup](ux/mockups.html#popup)):
-header (20 px brand mark in `accent-fg` + "WebeSign", `text-body-strong`) → status (40 px circle in the
+header (20 px brand mark in `accent-fg` + "SignLocal", `text-body-strong`) → status (40 px circle in the
 tone's `*-soft` with a 22 px icon + `text-title` title + `text-body` `fg-muted` text) → wide primary button
 (`control-lg`) → secondary ghost button → footer above a `border` line (`text-small` `fg-subtle`):
 "Extension 1.4.2 · App 1.4.0" (only "Extension 1.4.2" while the app's version is unknown) and a "Privacy" link.
@@ -1055,11 +1055,11 @@ floats off); buttons that act in place lead with their icon.
 | State | Detection | Icon | Title | Text | Primary | Secondary |
 |--------|----------|-------|--------|-------|----------|------------|
 | `checking` | connection in progress (shown only after 150 ms) | spinner | "Looking for the app…" | n/a | n/a | n/a |
-| `ready` | host answered with version ≥ `MIN_APP_VERSION` | `check-circle` success | "Ready to sign" | "The WebeSign app 1.4.0 is connected to this browser." | Test your setup ↗ (site `/test/`) | Open diagnostics |
-| `missing` | `connectNative` failed ("host not found") | `download-simple` accent | "Install the WebeSign app" | "The extension needs the app on your computer to sign." | Download for Windows ↗ | "Already installed? Finish setting up" (site `/activate/`) |
-| `outdated` | version < `MIN_APP_VERSION` or old protocol | `warning` warning | "Update the WebeSign app" | "You have version 1.1.0. This browser needs 1.3.0 or newer." | Download the update ↗ | n/a |
+| `ready` | host answered with version ≥ `MIN_APP_VERSION` | `check-circle` success | "Ready to sign" | "The SignLocal app 1.4.0 is connected to this browser." | Test your setup ↗ (site `/test/`) | Open diagnostics |
+| `missing` | `connectNative` failed ("host not found") | `download-simple` accent | "Install the SignLocal app" | "The extension needs the app on your computer to sign." | Download for Windows ↗ | "Already installed? Finish setting up" (site `/activate/`) |
+| `outdated` | version < `MIN_APP_VERSION` or old protocol | `warning` warning | "Update the SignLocal app" | "You have version 1.1.0. This browser needs 1.3.0 or newer." | Download the update ↗ | n/a |
 | `error` | host started but did not answer within 3 s / closed | `x-circle` danger | "The app didn't respond" | "Try again. If it keeps happening, restart your computer." + "Error code: Timeout" in `text-mono` | Try again | Download again |
-| `unsupported` | `runtime.getPlatformInfo().os` ∉ {win, mac, linux} | `info` neutral | "WebeSign doesn't work on this system yet" | "Use a computer running Windows, macOS, or Linux." | n/a | n/a |
+| `unsupported` | `runtime.getPlatformInfo().os` ∉ {win, mac, linux} | `info` neutral | "SignLocal doesn't work on this system yet" | "Use a computer running Windows, macOS, or Linux." | n/a | n/a |
 
 **Why "Test your setup" leads in `ready`:** people who open a popup that works want to see a signature work;
 Diagnostics is for trouble and stays one step away. **Why "Download the update" and not "Update in Microsoft
@@ -1072,7 +1072,7 @@ Store":** the app is not in the stores yet; the label names the store (`popup.up
 1. The package registers the `websign:` URL scheme **at installation** (MSIX `windows.protocol`, `CFBundleURLTypes`
    on Mac, `.desktop` with `x-scheme-handler/websign` on Linux). This does not require opening the app.
 2. "Already installed? Finish setting up" opens `https://<site>/activate/` in a tab. That page calls
-   `websign:activate` (the browser asks "Open WebeSign?"), the app writes the manifests of all browsers and shows
+   `websign:activate` (the browser asks "Open SignLocal?"), the app writes the manifests of all browsers and shows
    the Diagnostics window with "Getting started".
 3. The `/activate/` page uses the extension's announcement on the page to show live "Looking for the app… → Ready".
 
@@ -1350,7 +1350,7 @@ generic icon looks uneven, and the browser name already identifies it.
 # i18n/pt-BR.toml
 [confirm]
 # Window title in the OS. {site} is the host, e.g. app.diagnos.health
-window_title = "Assinar para {site} — WebeSign"
+window_title = "Assinar para {site} — SignLocal"
 
 [cert.expires_in]
 one = "Vence em {count} dia"
@@ -1401,8 +1401,8 @@ the translations for es, fr, it, de, and pt-PT follow the same keys.
 
 | Key | pt-BR | en |
 |-------|-------|----|
-| `confirm.window_title` | Assinar para {site} — WebeSign | Sign for {site} — WebeSign |
-| `confirm.window_title_select` | Escolher certificado para {site} — WebeSign | Choose certificate for {site} — WebeSign |
+| `confirm.window_title` | Assinar para {site} — SignLocal | Sign for {site} — SignLocal |
+| `confirm.window_title_select` | Escolher certificado para {site} — SignLocal | Choose certificate for {site} — SignLocal |
 | `confirm.eyebrow` | Pedido de assinatura | Signature request |
 | `confirm.eyebrow_select` | Pedido de certificado | Certificate request |
 | `confirm.via_browser` | pelo {browser} | via {browser} |
@@ -1425,7 +1425,7 @@ the translations for es, fr, it, de, and pt-PT follow the same keys.
 | `origin.warn_ip` | Endereço numérico, sem nome de site | Numeric address with no site name |
 | `origin.warn_ip_local` | Endereço numérico da rede local | Local network numeric address |
 | `origin.warn_localhost` | Site local de desenvolvimento | Local development site |
-| `origin.blocked_http` | Este site não usa conexão segura (https). Por segurança, o WebeSign não assina para ele. | This site doesn't use a secure connection (https). For your safety, WebeSign won't sign for it. |
+| `origin.blocked_http` | Este site não usa conexão segura (https). Por segurança, o SignLocal não assina para ele. | This site doesn't use a secure connection (https). For your safety, SignLocal won't sign for it. |
 
 #### Confirmation: code, list, and certificate
 
@@ -1539,10 +1539,10 @@ the translations for es, fr, it, de, and pt-PT follow the same keys.
 | `possible.inline_action` | Como resolver | How to fix |
 | `possible.step` | {n}. {text} | {n}. {text} |
 | `possible.step_install_driver` | Instale o {driver} | Install {driver} |
-| `possible.step_install_complement` | Instale o Complemento WebeSign | Install the WebeSign Add-on |
-| `complement.name` | Complemento WebeSign | WebeSign Add-on |
+| `possible.step_install_complement` | Instale o Complemento SignLocal | Install the SignLocal Add-on |
+| `complement.name` | Complemento SignLocal | SignLocal Add-on |
 | `complement.title_needed` | Este token precisa do Complemento para Mac | This token needs the Mac Add-on |
-| `complement.body_needed` | Apps da App Store não podem usar alguns drivers de token. O Complemento WebeSign, gratuito e do mesmo projeto, faz essa ponte. Ele só funciona quando o WebeSign pede. | App Store apps can't use some token drivers. The free WebeSign Add-on, from the same project, bridges that gap. It only runs when WebeSign asks for it. |
+| `complement.body_needed` | Apps da App Store não podem usar alguns drivers de token. O Complemento SignLocal, gratuito e do mesmo projeto, faz essa ponte. Ele só funciona quando o SignLocal pede. | App Store apps can't use some token drivers. The free SignLocal Add-on, from the same project, bridges that gap. It only runs when SignLocal asks for it. |
 | `complement.download` | Baixar Complemento | Download Add-on |
 | `complement.ok` | Complemento ativo · versão {version} | Add-on active · version {version} |
 | `complement.outdated` | Atualize o Complemento ({installed} instalado, precisa da {required}) | Update the Add-on ({installed} installed, {required} required) |
@@ -1554,7 +1554,7 @@ the translations for es, fr, it, de, and pt-PT follow the same keys.
 
 | Key | pt-BR | en |
 |-------|-------|----|
-| `diag.window_title` | Diagnóstico — WebeSign | Diagnostics — WebeSign |
+| `diag.window_title` | Diagnóstico — SignLocal | Diagnostics — SignLocal |
 | `diag.status.ok` | Pronto para assinar | Ready to sign |
 | `diag.status.attention` | Precisa de atenção | Needs attention |
 | `diag.status.blocked` | Ainda não dá para assinar | Can't sign yet |
@@ -1588,13 +1588,13 @@ the translations for es, fr, it, de, and pt-PT follow the same keys.
 | `browsers.external_prompt_hint` | Se o {browser} mostrar “Nova extensão adicionada”, clique em Ativar. | If {browser} shows “New extension added”, click Enable. |
 | `browsers.ext_outdated` | Extensão {version} · precisa da {required} ou mais nova | Extension {version} · needs {required} or newer |
 | `browsers.ext_outdated_hint` | Reinicie o {browser} para atualizar. | Restart {browser} to update. |
-| `browsers.host_missing` | O {browser} não encontra o app WebeSign | {browser} can't find the WebeSign app |
+| `browsers.host_missing` | O {browser} não encontra o app SignLocal | {browser} can't find the SignLocal app |
 | `browsers.repair` | Reparar | Repair |
 | `browsers.repaired` | Reparado. Reinicie o {browser}. | Repaired. Restart {browser}. |
 | `browsers.safari_disabled` | Extensão desativada no Safari | Extension turned off in Safari |
 | `browsers.safari_open_settings` | Abrir ajustes do Safari | Open Safari settings |
 | `browsers.snap_hint` | Firefox instalado como Snap: na primeira assinatura, permita o acesso quando o sistema perguntar. | Firefox is installed as a Snap: on your first signature, allow access when the system asks. |
-| `browsers.none` | Nenhum navegador compatível encontrado. O WebeSign funciona com Chrome, Edge, Firefox, Brave e Safari. | No supported browser found. WebeSign works with Chrome, Edge, Firefox, Brave and Safari. |
+| `browsers.none` | Nenhum navegador compatível encontrado. O SignLocal funciona com Chrome, Edge, Firefox, Brave e Safari. | No supported browser found. SignLocal works with Chrome, Edge, Firefox, Brave and Safari. |
 | `sites.section` | Sites com permissão | Allowed sites |
 | `sites.apps_section` | Programas com permissão | Allowed programs |
 | `sites.apps_empty` | Nenhum programa lembrado. | No remembered programs. |
@@ -1603,7 +1603,7 @@ the translations for es, fr, it, de, and pt-PT follow the same keys.
 | `sites.revoke_confirm` | Confirmar revogação | Confirm revoke |
 | `sites.revoked` | Permissão de {site} revogada. | {site} is no longer allowed. |
 | `sites.empty` | Nenhum site lembrado. Quando você marcar “Lembrar este site” numa assinatura, ele aparece aqui. | No remembered sites. When you tick “Remember this site” while signing, it shows up here. |
-| `devices.subtitle` | Tokens, cartões e drivers que o WebeSign enxerga agora. | Tokens, cards and drivers WebeSign can see right now. |
+| `devices.subtitle` | Tokens, cartões e drivers que o SignLocal enxerga agora. | Tokens, cards and drivers SignLocal can see right now. |
 | `devices.section_tokens` | Tokens e cartões | Tokens and cards |
 | `devices.section_readers` | Leitores de cartão | Card readers |
 | `devices.section_drivers` | Drivers de token | Token drivers |
@@ -1641,14 +1641,14 @@ the translations for es, fr, it, de, and pt-PT follow the same keys.
 | `help.a_missing` | Confira: o token está conectado? O driver do fabricante está instalado (veja Dispositivos)? O certificado venceu (veja Certificados)? Se é um arquivo .pfx, ele foi importado? | Check: is the token plugged in? Is the vendor's driver installed (see Devices)? Has the certificate expired (see Certificates)? If it's a .pfx file, was it imported? |
 | `help.q_pin` | Errei o PIN / o token bloqueou | I got the PIN wrong / the token locked |
 | `help.a_pin` | Depois de algumas tentativas erradas, o token bloqueia para proteger você. Para desbloquear, use o PUK (código de desbloqueio que veio com o token) no programa do fabricante. Sem o PUK, procure a autoridade certificadora. | After a few wrong attempts the token locks to protect you. To unlock it, use the PUK (the unlock code that came with the token) in the vendor's software. Without the PUK, contact your certificate authority. |
-| `help.q_privacy` | O que o WebeSign envia para os sites? | What does WebeSign send to sites? |
+| `help.q_privacy` | O que o SignLocal envia para os sites? | What does SignLocal send to sites? |
 | `help.a_privacy` | Só o certificado que você escolheu e a assinatura do código de conferência. Nunca o PIN, nunca o documento. | Only the certificate you chose and the signature of the verification code. Never your PIN, never the document. |
 | `help.q_shortcuts` | Atalhos de teclado | Keyboard shortcuts |
 | `help.report_title` | Relatar um problema | Report a problem |
 | `help.report_preview` | Isto é exatamente o que será copiado. Não inclui nomes, CPF, sites nem números de série. | This is exactly what will be copied. It includes no names, ID numbers, sites or serial numbers. |
 | `help.open_support` | Abrir página de suporte | Open support page |
 | `help.about_title` | Sobre | About |
-| `help.about_line` | WebeSign {version} · protocolo {protocol} · GPL-3.0-or-later | WebeSign {version} · protocol {protocol} · GPL-3.0-or-later |
+| `help.about_line` | SignLocal {version} · protocolo {protocol} · GPL-3.0-or-later | SignLocal {version} · protocol {protocol} · GPL-3.0-or-later |
 | `help.source` | Código-fonte | Source code |
 | `help.privacy` | Privacidade | Privacy |
 
@@ -1658,14 +1658,14 @@ the translations for es, fr, it, de, and pt-PT follow the same keys.
 |-------|-------|----|
 | `popup.checking` | Procurando o app… | Looking for the app… |
 | `popup.ready_title` | Tudo pronto para assinar | Ready to sign |
-| `popup.ready_body` | O app WebeSign {version} está conectado a este navegador. | The WebeSign app {version} is connected to this browser. |
+| `popup.ready_body` | O app SignLocal {version} está conectado a este navegador. | The SignLocal app {version} is connected to this browser. |
 | `popup.test` | Teste sua configuração | Test your setup |
 | `popup.open_diagnostics` | Abrir diagnóstico | Open diagnostics |
-| `popup.missing_title` | Instale o app WebeSign | Install the WebeSign app |
+| `popup.missing_title` | Instale o app SignLocal | Install the SignLocal app |
 | `popup.missing_body` | A extensão precisa do app no computador para assinar. | The extension needs the app on your computer to sign. |
 | `popup.download` | Baixar para {os} | Download for {os} |
 | `popup.activate` | Já instalou? Conclua a configuração | Already installed? Finish setting up |
-| `popup.outdated_title` | Atualize o app WebeSign | Update the WebeSign app |
+| `popup.outdated_title` | Atualize o app SignLocal | Update the SignLocal app |
 | `popup.outdated_body` | Você tem a versão {installed}. Este navegador precisa da {required} ou mais nova. | You have version {installed}. This browser needs {required} or newer. |
 | `popup.update` | Baixar a atualização | Download the update |
 | `popup.update_in` | Atualizar na {store} | Update in {store} |
@@ -1674,7 +1674,7 @@ the translations for es, fr, it, de, and pt-PT follow the same keys.
 | `popup.error_code` | Código de erro: {code} | Error code: {code} |
 | `popup.retry` | Tentar de novo | Try again |
 | `popup.redownload` | Baixar de novo | Download again |
-| `popup.unsupported_title` | O WebeSign ainda não funciona neste sistema | WebeSign doesn't work on this system yet |
+| `popup.unsupported_title` | O SignLocal ainda não funciona neste sistema | SignLocal doesn't work on this system yet |
 | `popup.unsupported_body` | Use um computador com Windows, macOS ou Linux. | Use a computer running Windows, macOS, or Linux. |
 | `popup.footer_versions` | Extensão {ext} · App {app} | Extension {ext} · App {app} |
 | `popup.footer_extension` | Extensão {ext} | Extension {ext} |
@@ -1722,11 +1722,11 @@ The pt-BR and en columns are product copy (title — text) and are kept as data.
 
 | Code | When | Where | pt-BR (title — text) | en (title — text) | Action |
 |--------|--------|------|------------------------|---------------------|------|
-| `ExtensionMissing` | The page did not receive the extension's announcement | S | Instale a extensão WebeSign — Para assinar neste navegador, instale a extensão gratuita. | Install the WebeSign extension — To sign in this browser, install the free extension. | Button with `installUrl()` |
-| `AppMissing` | `connectNative` failed | S, P | Instale o app WebeSign — A extensão precisa do app no computador para assinar. | Install the WebeSign app — The extension needs the app on your computer to sign. | Download · "Already installed? Activate the app" |
-| `AppOutdated` | App < `MIN_APP_VERSION` or old protocol | S, P | Atualize o app WebeSign — Você tem a versão {installed}; é preciso a {required} ou mais nova. | Update the WebeSign app — You have version {installed}; {required} or newer is required. | Update in the store |
-| `ExtensionOutdated` | App requires a newer protocol than the extension's | S | Atualize a extensão WebeSign — Reinicie o navegador para ela se atualizar. | Update the WebeSign extension — Restart your browser so it updates. | n/a |
-| `InsecureOrigin` | Non-local `http` origin, `file:`, etc. | S, D (J only through a bug) | Site sem conexão segura — Este site não usa https. Por segurança, o WebeSign não assina para ele. | Insecure site — This site doesn't use https. For your safety, WebeSign won't sign for it. | n/a (D: "Call the SDK from an https origin or localhost.") |
+| `ExtensionMissing` | The page did not receive the extension's announcement | S | Instale a extensão SignLocal — Para assinar neste navegador, instale a extensão gratuita. | Install the SignLocal extension — To sign in this browser, install the free extension. | Button with `installUrl()` |
+| `AppMissing` | `connectNative` failed | S, P | Instale o app SignLocal — A extensão precisa do app no computador para assinar. | Install the SignLocal app — The extension needs the app on your computer to sign. | Download · "Already installed? Activate the app" |
+| `AppOutdated` | App < `MIN_APP_VERSION` or old protocol | S, P | Atualize o app SignLocal — Você tem a versão {installed}; é preciso a {required} ou mais nova. | Update the SignLocal app — You have version {installed}; {required} or newer is required. | Update in the store |
+| `ExtensionOutdated` | App requires a newer protocol than the extension's | S | Atualize a extensão SignLocal — Reinicie o navegador para ela se atualizar. | Update the SignLocal extension — Restart your browser so it updates. | n/a |
+| `InsecureOrigin` | Non-local `http` origin, `file:`, etc. | S, D (J only through a bug) | Site sem conexão segura — Este site não usa https. Por segurança, o SignLocal não assina para ele. | Insecure site — This site doesn't use https. For your safety, SignLocal won't sign for it. | n/a (D: "Call the SDK from an https origin or localhost.") |
 | `UserCancelled` | Cancel, Esc, or X with no visible blocker | S | Assinatura cancelada. | Signature cancelled. | The site decides |
 | `Timeout` | 5 min without a decision | J, S | O pedido expirou — Ninguém respondeu em 5 minutos. Volte ao site e tente de novo. | The request expired — Nobody answered for 5 minutes. Go back to the site and try again. | n/a |
 | `Timeout` (digest) | The site did not send the document within 60 s | J | O site não respondeu — {site} não preparou o documento em 60 segundos. Volte ao site e tente de novo. | The site didn't respond — {site} didn't prepare the document within 60 seconds. Go back to the site and try again. | n/a |
@@ -1739,8 +1739,8 @@ The pt-BR and en columns are product copy (title — text) and are kept as data.
 | `PinLocked` | PIN locked | J, S | PIN bloqueado — see `pin.locked_body`. Site: "O PIN do seu token está bloqueado. Desbloqueie com o PUK e tente de novo." | PIN locked — see `pin.locked_body`. Site: "Your token PIN is locked. Unlock it with the PUK and try again." | Choose another certificate |
 | `TokenRemoved` | Token left during signing | J, S | O token foi removido — Conecte o token de novo e clique em Tentar de novo. | The token was removed — Plug the token back in and click Try again. | Try again (enables when the token returns) |
 | `DriverFailure` | CNG/CAPI/PKCS#11/Keychain error that is neither PIN nor cancellation | J, S | O driver do token falhou — O {driver} não respondeu como esperado. Tente de novo; se continuar, reconecte o token. | The token driver failed — {driver} didn't respond as expected. Try again; if it keeps happening, reconnect the token. | Try again · "Try through the token driver" (if there is an alternative path, §5.11) · Open diagnostics · Technical details: `CKR_DEVICE_ERROR (0x00000030)`, `NTE_BAD_KEYSET (0x80090016)` |
-| `Busy` | Queue with 10 requests | S | Há pedidos esperando confirmação — Conclua os pedidos abertos na janela do WebeSign. | Requests are waiting for confirmation — Finish the open requests in the WebeSign window. | n/a |
-| `Internal` | Any unexpected app failure | J, S | Algo deu errado no WebeSign — Copie os detalhes e abra o diagnóstico para relatar. | Something went wrong in WebeSign — Copy the details and open diagnostics to report it. | Copy details · Open diagnostics |
+| `Busy` | Queue with 10 requests | S | Há pedidos esperando confirmação — Conclua os pedidos abertos na janela do SignLocal. | Requests are waiting for confirmation — Finish the open requests in the SignLocal window. | n/a |
+| `Internal` | Any unexpected app failure | J, S | Algo deu errado no SignLocal — Copie os detalhes e abra o diagnóstico para relatar. | Something went wrong in SignLocal — Copy the details and open diagnostics to report it. | Copy details · Open diagnostics |
 
 Keys: `errors.<snake_code>.title` and `errors.<snake_code>.body` for the window; `site.errors.<snake_code>.title`
 and `.body` for the site; actions use the common keys.

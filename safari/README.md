@@ -1,7 +1,7 @@
 # safari — Safari web extension bridge
 
 The app extension (`.appex`) Apple requires for a Safari web extension,
-embedded in `WebeSign.app` by `cargo xtask package --target
+embedded in `SignLocal.app` by `cargo xtask package --target
 universal-apple-darwin`. Safari hands it one message at a time; the relay
 turns those into sessions with a `websign` host process bundled inside the
 appex, which then works exactly as it does for Chrome or Firefox (window,

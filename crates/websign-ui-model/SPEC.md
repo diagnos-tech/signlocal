@@ -306,7 +306,7 @@ test done).
 Exact text, lines joined with `\n`, trailing newline, English:
 
 ```
-WebeSign diagnostics v1
+SignLocal diagnostics v1
 app: {app_version} ({packaging}, {arch}) · protocol {protocol} · locale {locale} · scale {scale_percent}%
 os: {os}
 render: {render}

@@ -3,7 +3,7 @@
     "message": "Use su tarjeta inteligente, token USB o certificado del sistema para firmar en cualquier sitio web. Gratis y de código abierto."
   },
   "extension_name": {
-    "message": "WebeSign"
+    "message": "SignLocal"
   },
   "popup_activate": {
     "message": "¿Ya la instaló? Termine la configuración"
@@ -56,7 +56,7 @@
     "message": "La extensión necesita la app en su equipo para firmar."
   },
   "popup_missing_title": {
-    "message": "Instale la app WebeSign"
+    "message": "Instale la app SignLocal"
   },
   "popup_new_tab": {
     "message": "Se abre en una pestaña nueva"
@@ -76,13 +76,13 @@
     }
   },
   "popup_outdated_title": {
-    "message": "Actualice la app WebeSign"
+    "message": "Actualice la app SignLocal"
   },
   "popup_privacy": {
     "message": "Privacidad"
   },
   "popup_ready_body": {
-    "message": "La app WebeSign $version$ está conectada a este navegador.",
+    "message": "La app SignLocal $version$ está conectada a este navegador.",
     "placeholders": {
       "version": {
         "content": "$1"
@@ -105,7 +105,7 @@
     "message": "Use un equipo con Windows, macOS o Linux."
   },
   "popup_unsupported_title": {
-    "message": "WebeSign aún no funciona en este sistema"
+    "message": "SignLocal aún no funciona en este sistema"
   },
   "popup_update": {
     "message": "Descargar la actualización"
@@ -128,10 +128,10 @@
     "message": "página de descarga"
   },
   "store_listing_description": {
-    "message": "Use su tarjeta inteligente, token USB o certificado del sistema para firmar en cualquier sitio web. Funciona con Chrome, Edge, Firefox, Opera, Brave y Safari en Windows, macOS y Linux. Software libre y de código abierto para todos.\n\nCuando un sitio web pide una firma, la aplicación WebeSign abre su propia ventana en su ordenador: usted ve quién la pide, elige el certificado, comprueba el código de verificación y confirma. El PIN se escribe en la aplicación o en la ventana del sistema operativo, nunca en una página web.\n\n• Funciona con los certificados que ya tiene: tokens USB, tarjetas inteligentes (como el DNIe) y certificados instalados en el ordenador.\n• El sitio envía solo una huella (hash) del documento; el documento nunca sale de él.\n• Cada firma le pide confirmación, y cada sitio necesita su permiso, que puede retirar cuando quiera.\n• Sin cuenta, sin rastreadores, sin servicio en segundo plano y sin puertos de red abiertos.\n\nLa extensión funciona junto con la aplicación WebeSign, gratuita, para Windows, macOS y Linux, disponible en el sitio web del proyecto. Código fuente: GPL-3.0-or-later; bibliotecas para desarrolladores: Apache-2.0."
+    "message": "Use su tarjeta inteligente, token USB o certificado del sistema para firmar en cualquier sitio web. Funciona con Chrome, Edge, Firefox, Opera, Brave y Safari en Windows, macOS y Linux. Software libre y de código abierto para todos.\n\nCuando un sitio web pide una firma, la aplicación SignLocal abre su propia ventana en su ordenador: usted ve quién la pide, elige el certificado, comprueba el código de verificación y confirma. El PIN se escribe en la aplicación o en la ventana del sistema operativo, nunca en una página web.\n\n• Funciona con los certificados que ya tiene: tokens USB, tarjetas inteligentes (como el DNIe) y certificados instalados en el ordenador.\n• El sitio envía solo una huella (hash) del documento; el documento nunca sale de él.\n• Cada firma le pide confirmación, y cada sitio necesita su permiso, que puede retirar cuando quiera.\n• Sin cuenta, sin rastreadores, sin servicio en segundo plano y sin puertos de red abiertos.\n\nLa extensión funciona junto con la aplicación SignLocal, gratuita, para Windows, macOS y Linux, disponible en el sitio web del proyecto. Código fuente: GPL-3.0-or-later; bibliotecas para desarrolladores: Apache-2.0."
   },
   "store_listing_name": {
-    "message": "WebeSign: firme con su certificado"
+    "message": "SignLocal: firme con su certificado"
   },
   "store_listing_summary": {
     "message": "Firme en cualquier web con su tarjeta inteligente, token USB o certificado del sistema. Windows, macOS y Linux. Libre y abierto."

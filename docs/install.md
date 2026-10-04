@@ -1,7 +1,7 @@
-# Install WebeSign
+# Install SignLocal
 
 Use your smart card, USB token, or OS certificate to sign on any website, in Chrome, Edge, Firefox, Opera,
-Brave or Safari on Windows, macOS or Linux. WebeSign has two parts: the **app** (`websign`, on your
+Brave or Safari on Windows, macOS or Linux. SignLocal has two parts: the **app** (`websign`, on your
 computer) and the **browser extension**. Install both, in three steps:
 
 1. Install the app for your system: [Windows](#windows-x64-arm64), [macOS](#macos-universal-apple-silicon-and-intel)
@@ -56,7 +56,7 @@ A mismatch means the download is corrupt or altered: delete it and do not run it
 ## Windows (x64, arm64)
 
 **Installer script** (recommended). It downloads the zip, verifies the hash, installs to
-`%LOCALAPPDATA%\Programs\WebeSign`, adds it to your user `PATH` and registers the app with your browsers. No
+`%LOCALAPPDATA%\Programs\SignLocal`, adds it to your user `PATH` and registers the app with your browsers. No
 administrator rights are needed.
 
 ```powershell
@@ -79,7 +79,7 @@ Invoke-WebRequest -UseBasicParsing -Uri "$base/SHA256SUMS" -OutFile SHA256SUMS
 The first line enables TLS 1.2, which Windows PowerShell 5.1 may not use by default.
 
 **Manual.** Download `websign-<v>-windows-x64.zip` (or `websign-<v>-windows-arm64.zip`) and `SHA256SUMS`, verify
-the hash, unzip to `%LOCALAPPDATA%\Programs\WebeSign`, then run `.\websign.exe install` in that folder.
+the hash, unzip to `%LOCALAPPDATA%\Programs\SignLocal`, then run `.\websign.exe install` in that folder.
 
 > **SmartScreen.** Running a `websign.exe` unzipped from a browser download shows "Windows protected your PC".
 > Click **More info**, then **Run anyway**. The install script avoids this prompt.
@@ -87,7 +87,7 @@ the hash, unzip to `%LOCALAPPDATA%\Programs\WebeSign`, then run `.\websign.exe i
 **Uninstall.** `powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Uninstall` runs
 `websign uninstall` (removes the browser registrations, the `websign:` link handler and the Start menu entry) and
 deletes the files and the `PATH` entry. By hand: run `websign uninstall` (add `--purge` to also delete settings and
-remembered sites), delete `%LOCALAPPDATA%\Programs\WebeSign`, and remove that folder from your user `PATH`
+remembered sites), delete `%LOCALAPPDATA%\Programs\SignLocal`, and remove that folder from your user `PATH`
 (Settings, "Edit environment variables for your account").
 
 ## macOS (universal: Apple silicon and Intel)
@@ -103,19 +103,19 @@ curl -fsSLO https://github.com/diagnos-tech/signlocal/releases/download/v<v>/SHA
 shasum -a 256 --ignore-missing -c SHA256SUMS && sh install.sh --version <v>
 ```
 
-Read `install.sh` before running it if you like; it never needs `sudo`. It installs `WebeSign.app` (from
+Read `install.sh` before running it if you like; it never needs `sudo`. It installs `SignLocal.app` (from
 `websign-<v>-macos-universal.zip`) to `/Applications`, or `~/Applications` without admin rights, links
 `~/.local/bin/websign` and registers the app with your browsers.
 
 > **Gatekeeper.** The app is ad-hoc signed and **not notarized yet**. The script removes the quarantine flag from
-> `WebeSign.app` only. If you installed by hand and macOS says the app cannot be opened or the developer cannot
+> `SignLocal.app` only. If you installed by hand and macOS says the app cannot be opened or the developer cannot
 > be verified, open System Settings, Privacy & Security, and click **Open Anyway** (on macOS 14 and earlier,
 > right-clicking the app and choosing **Open** also works), or remove the flag from our app only:
-> `xattr -dr com.apple.quarantine /Applications/WebeSign.app`.
+> `xattr -dr com.apple.quarantine /Applications/SignLocal.app`.
 
 **Uninstall.** `sh install.sh --uninstall` runs `websign uninstall` (removes the browser registrations) and deletes
 the app and the link. By hand: `websign uninstall` (add `--purge` to also delete settings and remembered sites), then
-`rm ~/.local/bin/websign` and move `WebeSign.app` to the Trash.
+`rm ~/.local/bin/websign` and move `SignLocal.app` to the Trash.
 
 ## Linux (amd64, arm64)
 
@@ -185,7 +185,7 @@ The extension is not in the stores yet. Download `websign-extension-<v>-chromium
 | Chrome, Edge, Brave, Vivaldi | Open `chrome://extensions` (`edge://extensions`, `brave://extensions`, `vivaldi://extensions`), turn on **Developer mode**, click **Load unpacked** and pick the unzipped `websign-extension-<v>-chromium` folder. Keep the folder: the browser loads it from there. Its fixed development key gives the ID the app allows. |
 | Opera, Opera GX | Open `opera://extensions`, turn on **Developer mode** (top right), click **Load unpacked** and pick the same unzipped `websign-extension-<v>-chromium` folder. Once the extension is in the Chrome Web Store, Opera installs it from there after you add Opera's **Install Chrome Extensions** add-on (from `addons.opera.com`). |
 | Firefox | Open `about:debugging`, **This Firefox**, **Load Temporary Add-on**, and pick `manifest.json` in the unzipped folder. It lasts until Firefox restarts. To keep it, use Firefox Developer Edition, Nightly or ESR: set `xpinstall.signatures.required` to `false` in `about:config`, then in `about:addons` choose **Install Add-on From File** and pick the zip. |
-| Safari | Comes inside `WebeSign.app`; nothing to download. See [Safari](#safari) below. |
+| Safari | Comes inside `SignLocal.app`; nothing to download. See [Safari](#safari) below. |
 
 **About the development key.** The Chromium zip pins its ID with a public development key from `project.toml`, so the
 app can allow it before the extension is in a store. Anyone can reuse that key: an unpacked extension built with it gets
@@ -202,31 +202,31 @@ Chrome is not installed. Which browser and OS combinations are tested, and how, 
 
 ## Safari
 
-The Safari extension ships inside `WebeSign.app` (macOS 13 or later, Safari 17 or later), so installing the app
+The Safari extension ships inside `SignLocal.app` (macOS 13 or later, Safari 17 or later), so installing the app
 on macOS is the whole download. The build is not signed by Apple yet, so Safari only loads it with
 **Allow Unsigned Extensions**, a developer setting Safari turns off again every time it quits.
 
-1. Install the app (see [macOS](#macos-universal-apple-silicon-and-intel)) and open **WebeSign** once from
+1. Install the app (see [macOS](#macos-universal-apple-silicon-and-intel)) and open **SignLocal** once from
    Applications, so macOS registers the extension it contains. Close the window.
 2. In Safari, open **Settings → Advanced** and turn on **Show features for web developers**.
 3. Open **Settings → Developer** and turn on **Allow unsigned extensions**. Safari asks for your Mac password.
-4. Open **Settings → Extensions**, tick **WebeSign**, and allow it on the websites where you sign (**Edit
+4. Open **Settings → Extensions**, tick **SignLocal**, and allow it on the websites where you sign (**Edit
    Websites…**, or **Always Allow on This Website** the first time a site asks).
-5. Check it: open the test page of the website (`/test/`) and sign once. The WebeSign window says
+5. Check it: open the test page of the website (`/test/`) and sign once. The SignLocal window says
    "via Safari".
 
-**After every Safari restart**, repeat step 3; the extension stays ticked. If WebeSign is missing from
+**After every Safari restart**, repeat step 3; the extension stays ticked. If SignLocal is missing from
 **Settings → Extensions**, open the app once more, or run
-`pluginkit -a /Applications/WebeSign.app/Contents/PlugIns/WebeSignExtension.appex` and restart Safari.
+`pluginkit -a /Applications/SignLocal.app/Contents/PlugIns/SignLocalExtension.appex` and restart Safari.
 
-**What is different in Safari.** Safari runs the extension's native part in a sandbox, and the WebeSign window it
+**What is different in Safari.** Safari runs the extension's native part in a sandbox, and the SignLocal window it
 opens runs in that sandbox too. Certificates in the Keychain and tokens that work with macOS (CryptoTokenKit)
 behave as in other browsers. Sites you choose to remember, and the diagnostics of Safari connections, are kept
 separately from the other browsers'. Token drivers that are only PKCS#11 modules may not work in Safari: the sandbox limits which driver files can be
 loaded (`/Applications`, `/Library`, `/usr/local/lib` and `/opt/homebrew/lib` are tried), and this has not been
 verified with a real token yet. If your token does not show up in Safari, use another browser.
 
-**Uninstall.** Untick WebeSign in **Settings → Extensions**; deleting the app removes the extension.
+**Uninstall.** Untick SignLocal in **Settings → Extensions**; deleting the app removes the extension.
 
 `TODO(gustavo)`: Apple Developer ID signing and notarization (Safari then loads the extension without the developer
 setting), and later the Mac App Store.

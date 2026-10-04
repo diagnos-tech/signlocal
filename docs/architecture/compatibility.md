@@ -68,7 +68,7 @@ The app never talks to a chip. Hardware detection only helps:
 |---|---|---|---|
 | Chrome, Edge, Brave, Chromium, Vivaldi, Opera | HKCU keys (proof 1) | per-user manifests (proof 2) | per-user and system manifests (proof 4); Chromium Snap/Flatpak folders |
 | Firefox ≥ 121 | HKCU key | per-user manifest | per-user and system manifests; Snap via the WebExtensions portal (system manifest) |
-| Safari 17+ | — | macOS 13+: the app extension inside `WebeSign.app` relays to a bundled host (`safari/SPEC.md`); nothing to register. Unsigned builds need **Allow Unsigned Extensions**; PKCS#11-only tokens may not work (below). TODO(gustavo): Developer ID signing, notarization, Mac App Store | — |
+| Safari 17+ | — | macOS 13+: the app extension inside `SignLocal.app` relays to a bundled host (`safari/SPEC.md`); nothing to register. Unsigned builds need **Allow Unsigned Extensions**; PKCS#11-only tokens may not work (below). TODO(gustavo): Developer ID signing, notarization, Mac App Store | — |
 
 **Safari and PKCS#11.** Safari starts no native host: the host runs as the
 app extension's copy, inside its sandbox (`safari/SPEC.md` §4). Keychain

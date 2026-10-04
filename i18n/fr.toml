@@ -41,8 +41,8 @@ yesterday_at = "hier, {time}"
 [confirm]
 # Window title in the task bar. {site} is the host (app.example.com) or, for a
 # desktop program, its name.
-window_title = "Signer pour {site} — WebeSign"
-window_title_select = "Choisir un certificat pour {site} — WebeSign"
+window_title = "Signer pour {site} — SignLocal"
+window_title_select = "Choisir un certificat pour {site} — SignLocal"
 # Suffix added to the window title when several requests wait: " (1 of 3)".
 window_title_queue = "{title} ({current} sur {total})"
 eyebrow = "Demande de signature"
@@ -71,7 +71,7 @@ shown_as = "S’affiche comme {unicode}"
 warn_ip = "Adresse numérique sans nom de site"
 warn_ip_local = "Adresse numérique du réseau local"
 warn_localhost = "Site de développement local"
-blocked_http = "Ce site n’utilise pas de connexion sécurisée (https). Pour votre sécurité, WebeSign ne signera pas pour lui."
+blocked_http = "Ce site n’utilise pas de connexion sécurisée (https). Pour votre sécurité, SignLocal ne signera pas pour lui."
 
 [caller]
 # Under a desktop program's name. {signer} is the company that signed it.
@@ -225,12 +225,12 @@ inline = "{device} connecté sans certificat"
 inline_action = "Comment résoudre"
 step = "{n}. {text}"
 step_install_driver = "Installer {driver}"
-step_install_complement = "Installer le module complémentaire WebeSign"
+step_install_complement = "Installer le module complémentaire SignLocal"
 
 [complement]
-name = "Module complémentaire WebeSign"
+name = "Module complémentaire SignLocal"
 title_needed = "Ce jeton nécessite le module complémentaire Mac"
-body_needed = "Les applications de l’App Store ne peuvent pas utiliser certains pilotes de jeton. Le module complémentaire WebeSign, gratuit et issu du même projet, comble cette lacune. Il ne s’exécute que lorsque WebeSign le demande."
+body_needed = "Les applications de l’App Store ne peuvent pas utiliser certains pilotes de jeton. Le module complémentaire SignLocal, gratuit et issu du même projet, comble cette lacune. Il ne s’exécute que lorsque SignLocal le demande."
 download = "Télécharger le module"
 ok = "Module actif · version {version}"
 outdated = "Mettez à jour le module ({installed} installée, {required} requise)"
@@ -239,7 +239,7 @@ not_responding = "Le module est installé mais n’a pas répondu."
 open = "Ouvrir le module"
 
 [diag]
-window_title = "Diagnostic — WebeSign"
+window_title = "Diagnostic — SignLocal"
 copy = "Copier le diagnostic"
 copied = "Diagnostic copié. Il ne contient ni noms, ni numéros d’identité, ni sites."
 
@@ -268,7 +268,7 @@ dismiss = "Masquer"
 ready_title = "Tout est prêt pour signer"
 ready_body = "Essayez une fois : la page de test signe un message d’exemple et affiche le même code de vérification que cette application."
 todo_app = "Reliez l’application à vos navigateurs"
-todo_app_body = "Vos navigateurs ne trouvent pas encore l’application WebeSign."
+todo_app_body = "Vos navigateurs ne trouvent pas encore l’application SignLocal."
 todo_extension = "Ajoutez l’extension au navigateur"
 todo_extension_body = "Pas encore connectée dans : {browsers}."
 activate = "Déjà installée ? Terminez la configuration"
@@ -292,13 +292,13 @@ install = "Installer l’extension"
 external_prompt_hint = "Si {browser} affiche « Nouvelle extension ajoutée », cliquez sur Activer."
 ext_outdated = "Extension {version} · version {required} ou ultérieure requise"
 ext_outdated_hint = "Redémarrez {browser} pour la mettre à jour."
-host_missing = "{browser} ne trouve pas l’application WebeSign"
+host_missing = "{browser} ne trouve pas l’application SignLocal"
 repair = "Réparer"
 repaired = "Réparé. Redémarrez {browser}."
 safari_disabled = "Extension désactivée dans Safari"
 safari_open_settings = "Ouvrir les réglages de Safari"
 snap_hint = "Firefox est installé en Snap : lors de votre première signature, autorisez l’accès quand le système vous le demande."
-none = "Aucun navigateur pris en charge trouvé. WebeSign fonctionne avec Chrome, Edge, Firefox, Brave et Safari."
+none = "Aucun navigateur pris en charge trouvé. SignLocal fonctionne avec Chrome, Edge, Firefox, Brave et Safari."
 
 [sites]
 section = "Sites autorisés"
@@ -311,7 +311,7 @@ empty = "Aucun site mémorisé. Lorsque vous cochez « Mémoriser ce site » pen
 apps_empty = "Aucun programme mémorisé."
 
 [devices]
-subtitle = "Jetons, cartes à puce et pilotes que WebeSign voit en ce moment."
+subtitle = "Jetons, cartes à puce et pilotes que SignLocal voit en ce moment."
 section_tokens = "Jetons et cartes à puce"
 section_readers = "Lecteurs de cartes à puce"
 section_drivers = "Pilotes de jeton"
@@ -372,14 +372,14 @@ q_missing = "Mon certificat n’apparaît pas"
 a_missing = "Vérifiez : le jeton est-il branché ? Le pilote du fabricant est-il installé (voir Appareils) ? Le certificat a-t-il expiré (voir Certificats) ? S’il s’agit d’un fichier .pfx, a-t-il été importé ?"
 q_pin = "Je me suis trompé de PIN / le jeton est bloqué"
 a_pin = "Après quelques essais erronés, le jeton se bloque pour vous protéger. Pour le débloquer, utilisez le PUK (le code de déblocage fourni avec le jeton) dans le logiciel du fabricant. Sans PUK, contactez votre autorité de certification."
-q_privacy = "Que transmet WebeSign aux sites ?"
+q_privacy = "Que transmet SignLocal aux sites ?"
 a_privacy = "Uniquement le certificat que vous avez choisi et la signature du code de vérification. Jamais votre PIN, jamais le document."
 q_shortcuts = "Raccourcis clavier"
 report_title = "Signaler un problème"
 report_preview = "Voici exactement ce qui sera copié. Il ne contient ni noms, ni numéros d’identité, ni sites, ni numéros de série."
 open_support = "Ouvrir la page d’assistance"
 about_title = "À propos"
-about_line = "WebeSign {version} · protocole {protocol} · GPL-3.0-or-later"
+about_line = "SignLocal {version} · protocole {protocol} · GPL-3.0-or-later"
 source = "Code source"
 privacy = "Confidentialité"
 
@@ -398,16 +398,16 @@ close_window = "Fermer la fenêtre"
 [popup]
 checking = "Recherche de l’application…"
 ready_title = "Prêt à signer"
-ready_body = "L’application WebeSign {version} est connectée à ce navigateur."
+ready_body = "L’application SignLocal {version} est connectée à ce navigateur."
 # Link to the site's test page; same words as the site's “Test your setup”.
 test = "Testez votre installation"
 open_diagnostics = "Ouvrir le diagnostic"
-missing_title = "Installez l’application WebeSign"
+missing_title = "Installez l’application SignLocal"
 missing_body = "L’extension a besoin de l’application sur votre ordinateur pour signer."
 download = "Télécharger pour {os}"
 # Link to the site's /activate/ page; same words as its link on the site.
 activate = "Déjà installée ? Terminez la configuration"
-outdated_title = "Mettez à jour l’application WebeSign"
+outdated_title = "Mettez à jour l’application SignLocal"
 outdated_body = "Vous avez la version {installed}. Ce navigateur requiert la version {required} ou ultérieure."
 # Opens the download page until the app is in the stores (then update_in is used).
 update = "Télécharger la mise à jour"
@@ -419,7 +419,7 @@ error_body = "Réessayez. Si le problème persiste, redémarrez votre ordinateur
 error_code = "Code d’erreur : {code}"
 retry = "Réessayer"
 redownload = "Télécharger à nouveau"
-unsupported_title = "WebeSign ne fonctionne pas encore sur ce système"
+unsupported_title = "SignLocal ne fonctionne pas encore sur ce système"
 unsupported_body = "Utilisez un ordinateur sous Windows, macOS ou Linux."
 footer_versions = "Extension {ext} · Application {app}"
 # Footer when the app's version is unknown (not installed or not answering).
@@ -435,30 +435,30 @@ linux = "page de téléchargement"
 # Direct (unsigned) builds are updated from the GitHub Releases page.
 github = "la page de téléchargement"
 # Store listing (Chrome Web Store, Edge Add-ons, AMO, Opera add-ons).
-listing_name = "WebeSign : signez avec votre certificat"
+listing_name = "SignLocal : signez avec votre certificat"
 listing_summary = "Signez sur n'importe quel site avec votre carte à puce, votre jeton USB ou un certificat du système. Windows, macOS, Linux. Libre."
 listing_description = """
 Utilisez votre carte à puce, votre jeton USB ou un certificat du système pour signer sur n'importe quel site web. Fonctionne avec Chrome, Edge, Firefox, Opera, Brave et Safari sous Windows, macOS et Linux. Libre et open source, pour tous.
 
-Quand un site demande une signature, l'application WebeSign ouvre sa propre fenêtre sur votre ordinateur : vous voyez qui la demande, choisissez votre certificat, vérifiez le code de vérification et confirmez. Le code PIN se saisit dans l'application ou dans la fenêtre du système, jamais dans une page web.
+Quand un site demande une signature, l'application SignLocal ouvre sa propre fenêtre sur votre ordinateur : vous voyez qui la demande, choisissez votre certificat, vérifiez le code de vérification et confirmez. Le code PIN se saisit dans l'application ou dans la fenêtre du système, jamais dans une page web.
 
 • Fonctionne avec les certificats que vous avez déjà : jetons USB, cartes à puce et certificats installés sur l'ordinateur.
 • Le site n'envoie qu'une empreinte (hash) du document ; le document lui-même ne le quitte jamais.
 • Chaque signature vous demande confirmation, et chaque site a besoin de votre autorisation, révocable à tout moment.
 • Aucun compte, aucun traceur, aucun service en arrière-plan et aucun port réseau ouvert.
 
-L'extension fonctionne avec l'application WebeSign, gratuite, pour Windows, macOS et Linux, disponible sur le site du projet. Code source : GPL-3.0-or-later ; bibliothèques pour développeurs : Apache-2.0."""
+L'extension fonctionne avec l'application SignLocal, gratuite, pour Windows, macOS et Linux, disponible sur le site du projet. Code source : GPL-3.0-or-later ; bibliothèques pour développeurs : Apache-2.0."""
 
 [extension]
 # Extension name in browser stores; keep the product name.
-name = "WebeSign"
+name = "SignLocal"
 # One-line description in browser stores (at most 132 characters).
 description = "Utilisez votre carte à puce, jeton USB ou certificat du système pour signer sur tout site web. Gratuit et open source pour tous."
 
 # Window texts for errors (docs/ux.md §15). `title` is bold, `body` below it.
 [errors.insecure_origin]
 title = "Site non sécurisé"
-body = "Ce site n’utilise pas https. Pour votre sécurité, WebeSign ne signera pas pour lui."
+body = "Ce site n’utilise pas https. Pour votre sécurité, SignLocal ne signera pas pour lui."
 
 [errors.timeout]
 title = "La demande a expiré"
@@ -501,29 +501,29 @@ title = "Le pilote du jeton a échoué"
 body = "{driver} n’a pas répondu comme prévu. Réessayez ; si le problème persiste, rebranchez le jeton."
 
 [errors.internal]
-title = "Un problème est survenu dans WebeSign"
+title = "Un problème est survenu dans SignLocal"
 body = "Copiez les détails et ouvrez le diagnostic pour le signaler."
 
 # Texts a website may show for SDK errors (exported by @websign/sdk/messages).
 [site.errors.extension_missing]
-title = "Installez l’extension WebeSign"
+title = "Installez l’extension SignLocal"
 body = "Pour signer dans ce navigateur, installez l’extension gratuite."
 
 [site.errors.app_missing]
-title = "Installez l’application WebeSign"
+title = "Installez l’application SignLocal"
 body = "L’extension a besoin de l’application sur votre ordinateur pour signer."
 
 [site.errors.app_outdated]
-title = "Mettez à jour l’application WebeSign"
+title = "Mettez à jour l’application SignLocal"
 body = "Vous avez la version {installed} ; la version {required} ou ultérieure est requise."
 
 [site.errors.extension_outdated]
-title = "Mettez à jour l’extension WebeSign"
+title = "Mettez à jour l’extension SignLocal"
 body = "Redémarrez votre navigateur pour la mettre à jour."
 
 [site.errors.insecure_origin]
 title = "Site non sécurisé"
-body = "Ce site n’utilise pas https. Pour votre sécurité, WebeSign ne signera pas pour lui."
+body = "Ce site n’utilise pas https. Pour votre sécurité, SignLocal ne signera pas pour lui."
 
 [site.errors.aborted]
 title = "Signature interrompue"
@@ -567,8 +567,8 @@ body = "Réessayez ; si le problème persiste, rebranchez le jeton."
 
 [site.errors.busy]
 title = "Des demandes attendent une confirmation"
-body = "Terminez les demandes ouvertes dans la fenêtre WebeSign."
+body = "Terminez les demandes ouvertes dans la fenêtre SignLocal."
 
 [site.errors.internal]
-title = "Un problème est survenu dans WebeSign"
-body = "Ouvrez le diagnostic WebeSign pour signaler le problème."
+title = "Un problème est survenu dans SignLocal"
+body = "Ouvrez le diagnostic SignLocal pour signaler le problème."

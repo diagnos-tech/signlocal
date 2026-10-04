@@ -2,7 +2,7 @@
 
 <img src="site/assets/icon.svg" alt="" width="72" height="72">
 
-# WebeSign
+# SignLocal
 
 **Use your smart card, USB token, or OS certificate to sign on any website.**<br>
 Works with Chrome, Edge, Firefox, Opera, Brave and Safari on Windows, macOS, and Linux.<br>
@@ -20,7 +20,7 @@ Free and Open Source for everyone.
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/macos/confirm-ready-dark.png">
-    <img src="docs/screenshots/macos/confirm-ready-light.png" alt="The WebeSign confirmation window: the requesting site, the verification code, the certificate to sign with, and the Sign button" width="300">
+    <img src="docs/screenshots/macos/confirm-ready-light.png" alt="The SignLocal confirmation window: the requesting site, the verification code, the certificate to sign with, and the Sign button" width="300">
   </picture>
   <img src="docs/screenshots/windows/diagnostics-certificates-light.png" alt="The diagnostics window on Windows, listing the certificates this computer offers" width="380">
   <img src="docs/screenshots/ubuntu-24.04/diagnostics-devices-dark.png" alt="The diagnostics window on Ubuntu in dark mode, showing the smart card service, tokens and token drivers" width="380">
@@ -33,13 +33,13 @@ Free and Open Source for everyone.
 ## How it works
 
 ```
-website ──hash──▶ extension ──▶ WebeSign app ──▶ OS key store or token driver
+website ──hash──▶ extension ──▶ SignLocal app ──▶ OS key store or token driver
    ▲                           (you confirm)     (signs; the PIN is typed here)
    └──────────── raw signature + certificate ◀──────────────┘
 ```
 
 1. The **website** prepares the document and sends only its **hash** (a short fingerprint).
-2. The **browser extension** passes the request to the **WebeSign app** on your computer.
+2. The **browser extension** passes the request to the **SignLocal app** on your computer.
 3. The app opens its own window: who is asking, a **verification code** to compare with the site, and
    the certificate. You choose and confirm.
 4. **Windows, macOS or the token driver (PKCS#11) signs.** The raw signature (RSA, or ECDSA r‖s) and your
@@ -64,7 +64,7 @@ Fedora 42, Rocky Linux 9 and Arch Linux; browsers CI cannot drive are checked by
 browsers, tokens and smart cards, including what is still untested, are in
 [`docs/compatibility.md`](docs/compatibility.md).
 
-**Safari** needs no separate download: its extension ships inside `WebeSign.app`. Until the app is signed by
+**Safari** needs no separate download: its extension ships inside `SignLocal.app`. Until the app is signed by
 Apple, Safari loads it only with **Allow unsigned extensions** (a developer setting it turns off on every
 quit; [steps](docs/install.md#safari)). Keychain certificates and tokens that work with macOS behave as in
 other browsers; tokens with only a PKCS#11 driver may not work from Safari's sandbox.

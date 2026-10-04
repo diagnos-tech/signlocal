@@ -57,16 +57,16 @@ libccid 1.5.5, pcscd 2.0.3 (no readers), Chromium 141 (Playwright 1194), Node 22
 ## 3. Evidence
 
 Output of `linux/ci-linux.sh` (the provider text was shortened with `…` on some lines; the rest is literal;
-there is no PIN or person's name: the test certificate is `WebeSign Test …`).
+there is no PIN or person's name: the test certificate is `SignLocal Test …`).
 
 ### 3.1 `list`
 
 ```text
 > websign-probe list --no-known-modules --no-p11-kit --module /usr/lib/softhsm/libsofthsm2.so
- 1. WebeSign Test ec-p384 | certificate | EC P-384 | until 2036-09-26 | pkcs11:libsofthsm2.so (SoftHSM v2; …; key hidden until login, software; PIN by app) | 256adb9aabc7534b
- 2. WebeSign Test ec-p521 | certificate | EC P-521 | until 2036-09-26 | pkcs11:libsofthsm2.so (SoftHSM v2; …; key hidden until login, software; PIN by app) | 3e1a37449c5cdd7d
- 3. WebeSign Test rsa-2048 | certificate | RSA-2048 | until 2036-09-26 | pkcs11:libsofthsm2.so (SoftHSM v2; …; key hidden until login, software; PIN by app) | 6f0071f15c22c1de
- 4. WebeSign Test ec-p256 | certificate | EC P-256 | until 2036-09-26 | pkcs11:libsofthsm2.so (SoftHSM v2; …; key hidden until login, software; PIN by app) | d2e5ac9b7e671211
+ 1. SignLocal Test ec-p384 | certificate | EC P-384 | until 2036-09-26 | pkcs11:libsofthsm2.so (SoftHSM v2; …; key hidden until login, software; PIN by app) | 256adb9aabc7534b
+ 2. SignLocal Test ec-p521 | certificate | EC P-521 | until 2036-09-26 | pkcs11:libsofthsm2.so (SoftHSM v2; …; key hidden until login, software; PIN by app) | 3e1a37449c5cdd7d
+ 3. SignLocal Test rsa-2048 | certificate | RSA-2048 | until 2036-09-26 | pkcs11:libsofthsm2.so (SoftHSM v2; …; key hidden until login, software; PIN by app) | 6f0071f15c22c1de
+ 4. SignLocal Test ec-p256 | certificate | EC P-256 | until 2036-09-26 | pkcs11:libsofthsm2.so (SoftHSM v2; …; key hidden until login, software; PIN by app) | d2e5ac9b7e671211
 ```
 
 The full provider text is `SoftHSM v2 (SoftHSM project); slot "SoftHSM slot ID 0x…"; libsofthsm2.so; key hidden
@@ -76,14 +76,14 @@ until login`: token model and manufacturer, slot description, module file, and w
 ### 3.2 `sign --all --hash all --pss` (the module directly)
 
 ```text
-WebeSign Test rsa-2048 | certificate | RSA-2048 | … | 6f0071f15c22c1de
+SignLocal Test rsa-2048 | certificate | RSA-2048 | … | 6f0071f15c22c1de
    OK    SHA-256 RSASSA-PKCS1-v1_5 via C_Sign in 3 ms
    OK    SHA-256 RSASSA-PSS via C_Sign in 7 ms
    OK    SHA-384 RSASSA-PKCS1-v1_5 via C_Sign in 3 ms
    OK    SHA-384 RSASSA-PSS via C_Sign in 3 ms
    OK    SHA-512 RSASSA-PKCS1-v1_5 via C_Sign in 3 ms
    OK    SHA-512 RSASSA-PSS via C_Sign in 3 ms
-WebeSign Test ec-p256 | … | d2e5ac9b7e671211
+SignLocal Test ec-p256 | … | d2e5ac9b7e671211
    OK    SHA-256 ECDSA via C_Sign in 2 ms
    OK    SHA-384 ECDSA via C_Sign in 2 ms
    OK    SHA-512 ECDSA via C_Sign in 2 ms
@@ -115,7 +115,7 @@ file that does not exist:
 ```text
 > websign-probe list --every-path --no-known-modules
 warning: pkcs11:libsofthsm2-missing.so: module file not found: /tmp/websign-ci-linux.…/lib/libsofthsm2-missing.so
- 1. WebeSign Test ec-p384 | … | pkcs11:libsofthsm2.so (SoftHSM v2; …) | 256adb9aabc7534b
+ 1. SignLocal Test ec-p384 | … | pkcs11:libsofthsm2.so (SoftHSM v2; …) | 256adb9aabc7534b
     also via pkcs11:libsofthsm2-registered.so (SoftHSM v2; …)
 ```
 
@@ -123,7 +123,7 @@ warning: pkcs11:libsofthsm2-missing.so: module file not found: /tmp/websign-ci-l
 
 ```text
 > websign-probe list --no-known-modules --no-p11-kit --module /usr/lib/softhsm/libsofthsm2.so --module /usr/lib/x86_64-linux-gnu/p11-kit-proxy.so
- 1. WebeSign Test ec-p384 | certificate | EC P-384 | … | pkcs11:libsofthsm2.so (SoftHSM v2; …) | 256adb9aabc7534b
+ 1. SignLocal Test ec-p384 | certificate | EC P-384 | … | pkcs11:libsofthsm2.so (SoftHSM v2; …) | 256adb9aabc7534b
     (+1 other path(s); --every-path to show)
 ```
 

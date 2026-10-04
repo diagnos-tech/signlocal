@@ -1,7 +1,7 @@
 {
   "name": "@websign/sdk",
   "version": "0.1.0",
-  "description": "Sign with the visitor's certificate (smart card, USB token or OS certificate) from any web page, through the WebeSign extension and app. Zero dependencies, typed, under 5 KB, with a fake extension for your tests.",
+  "description": "Sign with the visitor's certificate (smart card, USB token or OS certificate) from any web page, through the SignLocal extension and app. Zero dependencies, typed, under 5 KB, with a fake extension for your tests.",
   "license": "Apache-2.0",
   "type": "module",
   "sideEffects": false,

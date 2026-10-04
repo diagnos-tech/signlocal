@@ -28,14 +28,14 @@ async function onSign() {
   <main>
     <h1>Sign a text (Vue)</h1>
     <p class="muted" role="status">
-      {{ !status ? "Checking WebeSign…" : setup ? `${setup.title}. ${setup.body}` : "WebeSign is ready." }}
+      {{ !status ? "Checking SignLocal…" : setup ? `${setup.title}. ${setup.body}` : "SignLocal is ready." }}
     </p>
-    <a v-if="status?.problem === 'ExtensionMissing'" :href="installUrl()">Install WebeSign</a>
+    <a v-if="status?.problem === 'ExtensionMissing'" :href="installUrl()">Install SignLocal</a>
     <label for="text">Text to sign</label>
     <textarea id="text" v-model="text" rows="3" style="width: 100%" />
     <p>
       <button type="button" :disabled="!status?.ready || signing" @click="onSign">
-        {{ signing ? "Confirm in the WebeSign window…" : "Sign with my certificate" }}
+        {{ signing ? "Confirm in the SignLocal window…" : "Sign with my certificate" }}
       </button>
     </p>
     <div aria-live="polite">

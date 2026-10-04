@@ -37,7 +37,7 @@ describe("@websign/sdk/testing cannot ship by accident", () => {
     await testing.installFakeWebSign();
     await testing.installFakeWebSign();
     expect(warn).toHaveBeenCalledTimes(2);
-    expect(String(warn.mock.calls[0]?.[0])).toMatch(/FAKE WebeSign.*Never ship/s);
+    expect(String(warn.mock.calls[0]?.[0])).toMatch(/FAKE SignLocal.*Never ship/s);
   });
 
   it("warns once when a real extension answers on the same page", async () => {
@@ -48,7 +48,7 @@ describe("@websign/sdk/testing cannot ship by accident", () => {
     win.postMessage(real, win.location.origin);
     await vi.waitFor(() => expect(warn).toHaveBeenCalledTimes(2));
     await new Promise((resolve) => setTimeout(resolve, 10));
-    expect(String(warn.mock.calls[1]?.[0])).toMatch(/real WebeSign extension/);
+    expect(String(warn.mock.calls[1]?.[0])).toMatch(/real SignLocal extension/);
     expect(warn).toHaveBeenCalledTimes(2);
   });
 

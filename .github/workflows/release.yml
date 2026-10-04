@@ -311,6 +311,6 @@ jobs:
             gh release edit "$TAG" --prerelease --notes-file notes.md
           else
             gh release create "$TAG" dist/* --draft --prerelease --verify-tag \
-              --title "WebeSign $VERSION" --notes-file notes.md
+              --title "SignLocal $VERSION" --notes-file notes.md
             gh release edit "$TAG" --draft=false
           fi

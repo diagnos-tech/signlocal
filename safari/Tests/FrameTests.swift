@@ -2,7 +2,7 @@
 
 import Foundation
 import XCTest
-@testable import WebeSignRelay
+@testable import SignLocalRelay
 
 final class FrameTests: XCTestCase {
     func testTheLengthIsLittleEndian() {

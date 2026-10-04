@@ -31,14 +31,14 @@ export function assertTestOrigin(win: Window, allowAnyOrigin: boolean): void {
 // a fake that slipped into a build is noticed at once.
 export function warnInstalled(): void {
   console.warn(
-    "[@websign/sdk/testing] A FAKE WebeSign extension is active on this page. Its signatures use " +
+    "[@websign/sdk/testing] A FAKE SignLocal extension is active on this page. Its signatures use " +
       "public test keys and prove nothing. Never ship @websign/sdk/testing to production.",
   );
 }
 
 export function warnRealExtension(): void {
   console.warn(
-    "[@websign/sdk/testing] The real WebeSign extension also answers on this page; answers will mix. " +
+    "[@websign/sdk/testing] The real SignLocal extension also answers on this page; answers will mix. " +
       "Disable the extension for this site, or do not install the fake.",
   );
 }

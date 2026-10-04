@@ -2,7 +2,7 @@
 
 Signs the SHA-256 of a file with `@websign/desktop`. By default it talks to the
 fake app from `@websign/desktop/testing`, so it runs anywhere (CI included);
-`--app` uses the installed WebeSign app and opens its window.
+`--app` uses the installed SignLocal app and opens its window.
 
 ```sh
 # from the repository root, once

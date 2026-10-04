@@ -43,7 +43,7 @@ export function errorReply(code: ErrorCode, details?: ErrorDetails): PageReply {
   return {
     type: "error",
     code,
-    message: `Fake WebeSign: ${code}.`,
+    message: `Fake SignLocal: ${code}.`,
     ...(details && { details }),
   };
 }

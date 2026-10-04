@@ -2,7 +2,7 @@
   "name": "websign-extension",
   "version": "0.1.0",
   "private": true,
-  "description": "WebeSign browser extension: the bridge between pages using @websign/sdk and the WebeSign app (native messaging). No UI besides the toolbar popup.",
+  "description": "SignLocal browser extension: the bridge between pages using @websign/sdk and the SignLocal app (native messaging). No UI besides the toolbar popup.",
   "license": "GPL-3.0-or-later",
   "type": "module",
   "scripts": {

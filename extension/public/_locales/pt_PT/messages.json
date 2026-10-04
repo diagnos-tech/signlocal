@@ -3,7 +3,7 @@
     "message": "Utilize o seu cartão inteligente, token USB ou certificado do sistema para assinar em qualquer site. Gratuito e de código aberto."
   },
   "extension_name": {
-    "message": "WebeSign"
+    "message": "SignLocal"
   },
   "popup_activate": {
     "message": "Já instalou? Conclua a configuração"
@@ -56,7 +56,7 @@
     "message": "A extensão precisa da aplicação no computador para assinar."
   },
   "popup_missing_title": {
-    "message": "Instale a aplicação WebeSign"
+    "message": "Instale a aplicação SignLocal"
   },
   "popup_new_tab": {
     "message": "Abre num novo separador"
@@ -76,13 +76,13 @@
     }
   },
   "popup_outdated_title": {
-    "message": "Atualize a aplicação WebeSign"
+    "message": "Atualize a aplicação SignLocal"
   },
   "popup_privacy": {
     "message": "Privacidade"
   },
   "popup_ready_body": {
-    "message": "A aplicação WebeSign $version$ está ligada a este navegador.",
+    "message": "A aplicação SignLocal $version$ está ligada a este navegador.",
     "placeholders": {
       "version": {
         "content": "$1"
@@ -105,7 +105,7 @@
     "message": "Utilize um computador com Windows, macOS ou Linux."
   },
   "popup_unsupported_title": {
-    "message": "O WebeSign ainda não funciona neste sistema"
+    "message": "O SignLocal ainda não funciona neste sistema"
   },
   "popup_update": {
     "message": "Transferir a atualização"
@@ -128,10 +128,10 @@
     "message": "página de transferência"
   },
   "store_listing_description": {
-    "message": "Use o seu cartão inteligente, token USB ou certificado do sistema para assinar em qualquer site. Funciona com Chrome, Edge, Firefox, Opera, Brave e Safari no Windows, macOS e Linux. Software livre e de código aberto para todos.\n\nQuando um site pede uma assinatura, a aplicação WebeSign abre a sua própria janela no computador: vê quem está a pedir, escolhe o certificado, confere o código de verificação e confirma. O PIN é introduzido na aplicação ou na janela do sistema operativo, nunca numa página web.\n\n• Funciona com os certificados que já tem: tokens USB, cartões inteligentes (como o Cartão de Cidadão) e certificados instalados no computador.\n• O site envia apenas uma impressão digital (hash) do documento; o documento nunca sai dele.\n• Cada assinatura pede a sua confirmação, e cada site precisa da sua autorização, que pode revogar a qualquer momento.\n• Sem conta, sem rastreadores, sem serviço em segundo plano e sem porta de rede aberta.\n\nA extensão funciona em conjunto com a aplicação WebeSign, gratuita, para Windows, macOS e Linux, disponível no site do projeto. Código-fonte: GPL-3.0-or-later; bibliotecas para programadores: Apache-2.0."
+    "message": "Use o seu cartão inteligente, token USB ou certificado do sistema para assinar em qualquer site. Funciona com Chrome, Edge, Firefox, Opera, Brave e Safari no Windows, macOS e Linux. Software livre e de código aberto para todos.\n\nQuando um site pede uma assinatura, a aplicação SignLocal abre a sua própria janela no computador: vê quem está a pedir, escolhe o certificado, confere o código de verificação e confirma. O PIN é introduzido na aplicação ou na janela do sistema operativo, nunca numa página web.\n\n• Funciona com os certificados que já tem: tokens USB, cartões inteligentes (como o Cartão de Cidadão) e certificados instalados no computador.\n• O site envia apenas uma impressão digital (hash) do documento; o documento nunca sai dele.\n• Cada assinatura pede a sua confirmação, e cada site precisa da sua autorização, que pode revogar a qualquer momento.\n• Sem conta, sem rastreadores, sem serviço em segundo plano e sem porta de rede aberta.\n\nA extensão funciona em conjunto com a aplicação SignLocal, gratuita, para Windows, macOS e Linux, disponível no site do projeto. Código-fonte: GPL-3.0-or-later; bibliotecas para programadores: Apache-2.0."
   },
   "store_listing_name": {
-    "message": "WebeSign: assine com o seu certificado"
+    "message": "SignLocal: assine com o seu certificado"
   },
   "store_listing_summary": {
     "message": "Assine em qualquer site com o seu cartão inteligente, token USB ou certificado do sistema. Windows, macOS e Linux. Livre."

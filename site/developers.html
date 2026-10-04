@@ -4,23 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<title>For developers: WebeSign</title>
+<title>For developers: SignLocal</title>
 <meta name="description" content="Add signing with the visitor's smart card, USB token or OS certificate to your website: @websign/sdk quickstart, errors, testing utilities and API reference.">
 <link rel="canonical" href="https://diagnos-tech.github.io/signlocal/developers.html">
 <meta name="theme-color" content="#F5F6F9" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="WebeSign">
-<meta property="og:title" content="For developers: WebeSign">
+<meta property="og:site_name" content="SignLocal">
+<meta property="og:title" content="For developers: SignLocal">
 <meta property="og:description" content="Add signing with the visitor's smart card, USB token or OS certificate to your website: @websign/sdk quickstart, errors, testing utilities and API reference.">
 <meta property="og:url" content="https://diagnos-tech.github.io/signlocal/developers.html">
 <meta property="og:image" content="https://diagnos-tech.github.io/signlocal/assets/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="WebeSign: use your smart card, USB token, or OS certificate to sign on any website.">
+<meta property="og:image:alt" content="SignLocal: use your smart card, USB token, or OS certificate to sign on any website.">
 <meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="For developers: WebeSign">
+<meta name="twitter:title" content="For developers: SignLocal">
 <meta name="twitter:description" content="Add signing with the visitor's smart card, USB token or OS certificate to your website: @websign/sdk quickstart, errors, testing utilities and API reference.">
 <meta name="twitter:image" content="https://diagnos-tech.github.io/signlocal/assets/og.png">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
@@ -43,17 +43,17 @@
 <body>
 <a class="skip" href="#main" data-i18n="nav.skip">Skip to content</a>
 <header class="bar">
-<a class="brand" href="index.html"><img src="assets/icon.svg" alt="" width="24" height="24">WebeSign</a>
+<a class="brand" href="index.html"><img src="assets/icon.svg" alt="" width="24" height="24">SignLocal</a>
 <nav aria-label="Main"><a href="index.html" data-i18n="nav.home">Home</a><a href="download.html" data-i18n="nav.download">Download</a><a href="privacy.html" data-i18n="nav.privacy">Privacy</a><a href="developers.html" aria-current="page" data-i18n="nav.developers">Developers</a></nav>
 <label class="lang"><span class="sr" data-i18n="nav.language">Language</span><select id="lang"><option value="en">English</option><option value="es">Español</option><option value="pt-PT">Português (Portugal)</option><option value="pt-BR">Português (Brasil)</option><option value="fr">Français</option><option value="it">Italiano</option><option value="de">Deutsch</option></select></label>
 </header>
 <main id="main">
 <h1 data-i18n="dev.title">For developers</h1>
-<p class="lead" data-i18n="dev.lead">Let people sign on your website with the certificate they already have. You build the document and its hash; WebeSign returns the signature and the certificate.</p>
+<p class="lead" data-i18n="dev.lead">Let people sign on your website with the certificate they already have. You build the document and its hash; SignLocal returns the signature and the certificate.</p>
 <nav aria-labelledby="toc-label"><span id="toc-label" class="sr" data-i18n="dev.toc">On this page</span><ul class="toc">
 <li><a href="#quickstart" data-i18n="dev.nav_quick">Quickstart</a></li>
 <li><a href="#prepare" data-i18n="dev.nav_prepare">How prepare works</a></li>
-<li><a href="#status" data-i18n="dev.nav_status">Detect WebeSign</a></li>
+<li><a href="#status" data-i18n="dev.nav_status">Detect SignLocal</a></li>
 <li><a href="#errors" data-i18n="dev.nav_errors">Errors</a></li>
 <li><a href="#testing" data-i18n="dev.nav_testing">Testing</a></li>
 <li><a href="#frameworks" data-i18n="dev.nav_frameworks">React and Vue</a></li>
@@ -79,7 +79,7 @@ const { signature, certificate } = await sign({
 <section id="prepare" aria-labelledby="prepare-h">
 <h2 id="prepare-h" data-i18n="dev.prepare_h">How prepare works</h2>
 <ol class="flow">
-<li data-i18n="dev.prepare1">Your page calls sign(). The WebeSign window opens and the person chooses a certificate.</li>
+<li data-i18n="dev.prepare1">Your page calls sign(). The SignLocal window opens and the person chooses a certificate.</li>
 <li data-i18n="dev.prepare2">prepare(certificate) runs in your page. PAdES and CAdES put the certificate inside the signed data, so this is where you build the signed attributes and return their hash (32, 48 or 64 bytes).</li>
 <li data-i18n="dev.prepare3">The person compares the verification code and confirms, typing the PIN in the app if needed. The document never leaves your page.</li>
 <li data-i18n="dev.prepare4">sign() resolves with the signature. If the person switches certificate, prepare runs again and only the last hash is signed.</li>
@@ -88,7 +88,7 @@ const { signature, certificate } = await sign({
 </section>
 
 <section id="status" aria-labelledby="status-h">
-<h2 id="status-h" data-i18n="dev.status_h">Show the Sign button only when WebeSign is ready</h2>
+<h2 id="status-h" data-i18n="dev.status_h">Show the Sign button only when SignLocal is ready</h2>
 <p data-i18n="dev.status">status() never opens a window and never fails. problem says what is missing; onChange tells you when the person installs or updates something while your page is open.</p>
 <pre><code>import { installUrl, onChange, status } from &quot;@websign/sdk&quot;;
 import { errorText } from &quot;@websign/sdk/messages&quot;;
@@ -121,8 +121,8 @@ try {
 <table class="errors">
 <thead><tr><th scope="col" data-i18n="dev.col_code">Code</th><th scope="col" data-i18n="dev.col_meaning">What happened and what to do</th></tr></thead>
 <tbody>
-<tr id="error-ExtensionMissing"><td><a href="#error-ExtensionMissing"><code>ExtensionMissing</code></a></td><td data-i18n="dev.err.ExtensionMissing">The WebeSign extension did not answer: it is not installed, or it is disabled for this site. Show a link to installUrl().</td></tr>
-<tr id="error-AppMissing"><td><a href="#error-AppMissing"><code>AppMissing</code></a></td><td data-i18n="dev.err.AppMissing">The extension is there but the WebeSign app is not. The person installs the app; the extension guides them.</td></tr>
+<tr id="error-ExtensionMissing"><td><a href="#error-ExtensionMissing"><code>ExtensionMissing</code></a></td><td data-i18n="dev.err.ExtensionMissing">The SignLocal extension did not answer: it is not installed, or it is disabled for this site. Show a link to installUrl().</td></tr>
+<tr id="error-AppMissing"><td><a href="#error-AppMissing"><code>AppMissing</code></a></td><td data-i18n="dev.err.AppMissing">The extension is there but the SignLocal app is not. The person installs the app; the extension guides them.</td></tr>
 <tr id="error-AppOutdated"><td><a href="#error-AppOutdated"><code>AppOutdated</code></a></td><td data-i18n="dev.err.AppOutdated">The app is older than the extension needs (details has both versions). The person updates the app.</td></tr>
 <tr id="error-ExtensionOutdated"><td><a href="#error-ExtensionOutdated"><code>ExtensionOutdated</code></a></td><td data-i18n="dev.err.ExtensionOutdated">The extension is older than the app needs. The person restarts the browser so it updates.</td></tr>
 <tr id="error-ClientOutdated"><td><a href="#error-ClientOutdated"><code>ClientOutdated</code></a></td><td data-i18n="dev.err.ClientOutdated">The extension only speaks a newer protocol than your copy of @websign/sdk. Update the package in your site.</td></tr>
@@ -139,8 +139,8 @@ try {
 <tr id="error-PinLocked"><td><a href="#error-PinLocked"><code>PinLocked</code></a></td><td data-i18n="dev.err.PinLocked">The PIN is blocked. The person unlocks it with the PUK, using the issuer's tools.</td></tr>
 <tr id="error-TokenRemoved"><td><a href="#error-TokenRemoved"><code>TokenRemoved</code></a></td><td data-i18n="dev.err.TokenRemoved">The token was removed while signing. The person plugs it back in and tries again.</td></tr>
 <tr id="error-DriverFailure"><td><a href="#error-DriverFailure"><code>DriverFailure</code></a></td><td data-i18n="dev.err.DriverFailure">The token driver failed; details.native has its status. Try again; if it keeps failing, the person reconnects the token.</td></tr>
-<tr id="error-Busy"><td><a href="#error-Busy"><code>Busy</code></a></td><td data-i18n="dev.err.Busy">Other requests are waiting in the WebeSign window. Try again once they are done.</td></tr>
-<tr id="error-Internal"><td><a href="#error-Internal"><code>Internal</code></a></td><td data-i18n="dev.err.Internal">A bug in WebeSign. Please report it with the diagnostics from the app.</td></tr>
+<tr id="error-Busy"><td><a href="#error-Busy"><code>Busy</code></a></td><td data-i18n="dev.err.Busy">Other requests are waiting in the SignLocal window. Try again once they are done.</td></tr>
+<tr id="error-Internal"><td><a href="#error-Internal"><code>Internal</code></a></td><td data-i18n="dev.err.Internal">A bug in SignLocal. Please report it with the diagnostics from the app.</td></tr>
 </tbody>
 </table>
 </section>
@@ -219,7 +219,7 @@ try {
 </section>
 </main>
 <footer class="foot wide">
-<p><strong>WebeSign</strong> · <span data-i18n="foot.license">Free software (GPL-3.0-or-later; SDK and clients Apache-2.0)</span></p>
+<p><strong>SignLocal</strong> · <span data-i18n="foot.license">Free software (GPL-3.0-or-later; SDK and clients Apache-2.0)</span></p>
 <nav aria-label="Footer"><a href="https://github.com/diagnos-tech/signlocal" data-i18n="foot.source">Source code</a><a href="https://github.com/diagnos-tech/signlocal/blob/main/LICENSE" data-i18n="foot.license_link">License</a><a href="https://github.com/diagnos-tech/signlocal/blob/main/SECURITY.md" data-i18n="foot.security">Security</a><a href="privacy.html" data-i18n="nav.privacy">Privacy</a></nav>
 </footer>
 </body>

@@ -53,7 +53,7 @@ async function relay(
     reply({
       type: "error",
       code: "InsecureOrigin",
-      message: "WebeSign only works on https sites and on localhost",
+      message: "SignLocal only works on https sites and on localhost",
     });
     return;
   }

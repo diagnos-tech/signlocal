@@ -14,5 +14,5 @@ other = "Expires in {count} days"
 ready_title = "Ready"
 
 [extension]
-name = "WebeSign"
+name = "SignLocal"
 description = "Sign documents with your certificate."

@@ -43,11 +43,11 @@ fn the_appex_info_plist_names_the_extension_point_and_the_host() {
         format!("<string>{}</string>", project.safari_bundle_id),
         format!("<string>{executable}</string>"),
         format!(
-            "<key>WebeSignHostExecutable</key>\n\t<string>{}</string>",
+            "<key>SignLocalHostExecutable</key>\n\t<string>{}</string>",
             project.slug
         ),
         format!(
-            "<key>WebeSignHostExtensionID</key>\n\t<string>{}</string>",
+            "<key>SignLocalHostExtensionID</key>\n\t<string>{}</string>",
             project.safari_bundle_id
         ),
     ] {

@@ -1,7 +1,7 @@
 # @websign/sdk API reference
 
 Sign with the visitor's certificate (smart card, USB token or a certificate installed on the computer) from
-any web page, through the WebeSign extension and app. Zero dependencies, typed, under 5 KB gzipped.
+any web page, through the SignLocal extension and app. Zero dependencies, typed, under 5 KB gzipped.
 
 New here? Start with the Quickstart (top menu). Three entry points:
 

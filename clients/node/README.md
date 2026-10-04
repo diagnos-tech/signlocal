@@ -1,6 +1,6 @@
 # @websign/desktop
 
-Call the WebeSign app from Node.js, Bun or Electron: the person picks a
+Call the SignLocal app from Node.js, Bun or Electron: the person picks a
 certificate in the app's window, you supply the digest, the app signs it with
 the key (PIN included). Zero runtime dependencies. Node ≥ 20.19 (ESM; `require()`
 works too).
@@ -11,7 +11,7 @@ npm install @websign/desktop
 
 ## Quickstart
 
-Save as `sign.mjs` and run `node sign.mjs` (the WebeSign app must be installed):
+Save as `sign.mjs` and run `node sign.mjs` (the SignLocal app must be installed):
 
 ```ts
 import { createHash } from "node:crypto";

@@ -95,8 +95,8 @@ mod tests {
     #[test]
     fn vectors() {
         assert_eq!(
-            render("Sign for {site} — WebeSign", &[("site", "a.b")]),
-            "Sign for a.b — WebeSign"
+            render("Sign for {site} — SignLocal", &[("site", "a.b")]),
+            "Sign for a.b — SignLocal"
         );
         assert_eq!(render("{a}{a}", &[("a", "x")]), "xx");
         assert_eq!(render("{missing}", &[]), "{missing}");

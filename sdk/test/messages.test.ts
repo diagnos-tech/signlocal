@@ -8,7 +8,7 @@ const SILENT = ["InvalidRequest", "PinIncorrect", "ClientOutdated"];
 describe("errorText()", () => {
   it("returns the English title and body", () => {
     expect(errorText("ExtensionMissing", "en")).toEqual({
-      title: "Install the WebeSign extension",
+      title: "Install the SignLocal extension",
       body: "To sign in this browser, install the free extension.",
     });
   });
@@ -31,7 +31,7 @@ describe("errorText()", () => {
   }
 
   it("pt-BR is Portuguese", () => {
-    expect(errorText("ExtensionMissing", "pt-BR")?.title).toBe("Instale a extensão WebeSign");
+    expect(errorText("ExtensionMissing", "pt-BR")?.title).toBe("Instale a extensão SignLocal");
   });
 
   const closest: [string, string][] = [

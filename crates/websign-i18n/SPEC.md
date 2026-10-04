@@ -62,8 +62,8 @@ Rules and vectors for the localization engine. Format and workflow:
   verbatim and never scanned for placeholders (`"{a} {b}"` + a=`{b}`, b=`x`
   → `"{b} x"`), so user-controlled values cannot inject other arguments.
   Values are not escaped; the UI layer escapes for its medium.
-- Vectors: `"Sign for {site} — WebeSign"` + site=`a.b` → `"Sign for a.b —
-  WebeSign"`; `"{a}{a}"` + a=`x` → `"xx"`; `"{missing}"` → `"{missing}"`;
+- Vectors: `"Sign for {site} — SignLocal"` + site=`a.b` → `"Sign for a.b —
+  SignLocal"`; `"{a}{a}"` + a=`x` → `"xx"`; `"{missing}"` → `"{missing}"`;
   `"{{x}}"` + x=`1` → `"{1}"`.
 
 ## 5. Plural rules (CLDR cardinal, integers only)

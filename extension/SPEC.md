@@ -1,4 +1,4 @@
-# WebeSign extension — specification
+# SignLocal extension — specification
 
 Role: the only bridge between pages and the app. No UI but the toolbar popup
 (`docs/ux.md` §9). Wire: [`protocol.md`](../docs/architecture/protocol.md);

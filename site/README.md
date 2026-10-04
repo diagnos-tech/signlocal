@@ -1,6 +1,6 @@
-# WebeSign website
+# SignLocal website
 
-The public site at the `homepage` in [`project.toml`](../project.toml): what WebeSign is, downloads, privacy,
+The public site at the `homepage` in [`project.toml`](../project.toml): what SignLocal is, downloads, privacy,
 developer quickstarts, the `/activate` page the app opens after install, and the `/test` page that signs a
 sample text in the browser. The SDK, the extension popup and the app link to these pages, so they must stay
 at the same paths.

@@ -1,6 +1,6 @@
 # docs/architecture
 
-The contracts of WebeSign and the reasons behind them; implementation tracks work from these pages and the `SPEC.md` of each component.
+The contracts of SignLocal and the reasons behind them; implementation tracks work from these pages and the `SPEC.md` of each component.
 
 - `README.md` — index of the pages and what to read each one for
 - `compatibility.md` — algorithms × key stores × devices × browsers × OSes; brainpool; why EdDSA is out

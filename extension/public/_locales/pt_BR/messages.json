@@ -3,7 +3,7 @@
     "message": "Use seu cartão inteligente, token USB ou certificado do sistema para assinar em qualquer site. Gratuito e de código aberto."
   },
   "extension_name": {
-    "message": "WebeSign"
+    "message": "SignLocal"
   },
   "popup_activate": {
     "message": "Já instalou? Conclua a configuração"
@@ -56,7 +56,7 @@
     "message": "A extensão precisa do app no computador para assinar."
   },
   "popup_missing_title": {
-    "message": "Instale o app WebeSign"
+    "message": "Instale o app SignLocal"
   },
   "popup_new_tab": {
     "message": "Abre em uma nova aba"
@@ -76,13 +76,13 @@
     }
   },
   "popup_outdated_title": {
-    "message": "Atualize o app WebeSign"
+    "message": "Atualize o app SignLocal"
   },
   "popup_privacy": {
     "message": "Privacidade"
   },
   "popup_ready_body": {
-    "message": "O app WebeSign $version$ está conectado a este navegador.",
+    "message": "O app SignLocal $version$ está conectado a este navegador.",
     "placeholders": {
       "version": {
         "content": "$1"
@@ -105,7 +105,7 @@
     "message": "Use um computador com Windows, macOS ou Linux."
   },
   "popup_unsupported_title": {
-    "message": "O WebeSign ainda não funciona neste sistema"
+    "message": "O SignLocal ainda não funciona neste sistema"
   },
   "popup_update": {
     "message": "Baixar a atualização"
@@ -128,10 +128,10 @@
     "message": "página de download"
   },
   "store_listing_description": {
-    "message": "Use seu cartão inteligente, token USB ou certificado do sistema para assinar em qualquer site. Funciona com Chrome, Edge, Firefox, Opera, Brave e Safari no Windows, macOS e Linux. Software livre e de código aberto para todos.\n\nQuando um site pede uma assinatura, o aplicativo WebeSign abre a própria janela no seu computador: você vê quem está pedindo, escolhe o certificado, confere o código de conferência e confirma. O PIN é digitado no aplicativo ou na janela do sistema operacional, nunca numa página da web.\n\n• Funciona com os certificados que você já tem: tokens USB, cartões inteligentes e certificados instalados no computador.\n• O site envia apenas uma impressão digital (hash) do documento; o documento nunca sai dele.\n• Toda assinatura pede a sua confirmação, e cada site precisa da sua permissão, que você pode revogar quando quiser.\n• Sem conta, sem rastreadores, sem serviço em segundo plano e sem porta de rede aberta.\n\nA extensão funciona junto com o aplicativo WebeSign, gratuito, para Windows, macOS e Linux, disponível no site do projeto. Código-fonte: GPL-3.0-or-later; bibliotecas para desenvolvedores: Apache-2.0."
+    "message": "Use seu cartão inteligente, token USB ou certificado do sistema para assinar em qualquer site. Funciona com Chrome, Edge, Firefox, Opera, Brave e Safari no Windows, macOS e Linux. Software livre e de código aberto para todos.\n\nQuando um site pede uma assinatura, o aplicativo SignLocal abre a própria janela no seu computador: você vê quem está pedindo, escolhe o certificado, confere o código de conferência e confirma. O PIN é digitado no aplicativo ou na janela do sistema operacional, nunca numa página da web.\n\n• Funciona com os certificados que você já tem: tokens USB, cartões inteligentes e certificados instalados no computador.\n• O site envia apenas uma impressão digital (hash) do documento; o documento nunca sai dele.\n• Toda assinatura pede a sua confirmação, e cada site precisa da sua permissão, que você pode revogar quando quiser.\n• Sem conta, sem rastreadores, sem serviço em segundo plano e sem porta de rede aberta.\n\nA extensão funciona junto com o aplicativo SignLocal, gratuito, para Windows, macOS e Linux, disponível no site do projeto. Código-fonte: GPL-3.0-or-later; bibliotecas para desenvolvedores: Apache-2.0."
   },
   "store_listing_name": {
-    "message": "WebeSign: assine com seu certificado"
+    "message": "SignLocal: assine com seu certificado"
   },
   "store_listing_summary": {
     "message": "Assine em qualquer site com seu cartão inteligente, token USB ou certificado do sistema. Windows, macOS e Linux. Livre e aberto."

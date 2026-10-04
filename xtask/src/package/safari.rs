@@ -1,4 +1,4 @@
-//! The Safari web extension inside `WebeSign.app` (`safari/SPEC.md`): the
+//! The Safari web extension inside `SignLocal.app` (`safari/SPEC.md`): the
 //! appex compiled from `safari/`, the WXT safari build as its resources, and
 //! a copy of the host binary it starts, each signed inside out.
 
@@ -115,7 +115,7 @@ fn swiftc_args(target: &str, out: &Path, sources: &[PathBuf]) -> Vec<OsString> {
         "-target",
         target,
         "-module-name",
-        "WebeSignExtension",
+        "SignLocalExtension",
         "-swift-version",
         "5",
         "-O",

@@ -1,6 +1,6 @@
 # Architecture
 
-The contracts of WebeSign: what each part does, how the parts talk, and why.
+The contracts of SignLocal: what each part does, how the parts talk, and why.
 Implementation tracks work from these pages and from the `SPEC.md` next to
 each component. The UX specification is [`docs/ux.md`](../ux.md); the plan and
 the decisions are in [`docs/plan.md`](../plan.md).

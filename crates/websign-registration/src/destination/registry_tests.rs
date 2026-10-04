@@ -10,7 +10,7 @@ use crate::windows;
 use websign_project::NATIVE_HOST;
 
 fn apply_all(targets: &[Target], action: Action, registry: &MemoryRegistry) -> Vec<Outcome> {
-    let host = PathBuf::from(r"C:\Programs\WebeSign\websign.exe");
+    let host = PathBuf::from(r"C:\Programs\SignLocal\websign.exe");
     let context = Context {
         host: &host,
         origins: &[],

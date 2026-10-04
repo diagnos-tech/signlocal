@@ -24,7 +24,7 @@ use crate::timing::Timing;
 /// use websign_client::Client;
 ///
 /// let mut client = Client::connect()?;
-/// println!("WebeSign {}", client.status()?.app.version);
+/// println!("SignLocal {}", client.status()?.app.version);
 /// # Ok::<(), websign_client::ClientError>(())
 /// ```
 #[derive(Debug)]
@@ -101,7 +101,7 @@ impl Client {
     /// ```no_run
     /// # let mut client = websign_client::Client::connect()?;
     /// let status = client.status()?;
-    /// println!("WebeSign {} (remembered: {})", status.app.version, status.remembered);
+    /// println!("SignLocal {} (remembered: {})", status.app.version, status.remembered);
     /// # Ok::<(), websign_client::ClientError>(())
     /// ```
     pub fn status(&mut self) -> Result<StatusReply, ClientError> {

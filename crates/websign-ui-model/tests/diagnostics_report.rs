@@ -6,7 +6,7 @@ use common::*;
 use websign_ui_model::diagnostics::report::{ReportInput, render};
 
 const GOLDEN: &str = "\
-WebeSign diagnostics v1
+SignLocal diagnostics v1
 app: 1.4.0 (msix, x86_64) · protocol 1 · locale pt-BR · scale 125%
 os: Windows 11 23H2 (10.0.22631)
 render: wgpu/dx12
@@ -50,7 +50,7 @@ fn rendering_is_deterministic() {
 fn empty_sections_print_none() {
     let text = render(&empty_sections());
     let expected = "\
-WebeSign diagnostics v1
+SignLocal diagnostics v1
 app: 1.4.0 (msix, x86_64) · protocol 1 · locale pt-BR · scale 125%
 os: Windows 11 23H2 (10.0.22631)
 render: wgpu/dx12

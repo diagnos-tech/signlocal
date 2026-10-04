@@ -34,7 +34,7 @@ other = "Läuft in {count} Tagen ab"
 [popup]
 ready_title = "Bereit"
 [extension]
-name = "WebeSign"
+name = "SignLocal"
 description = "Dokumente signieren."
 "#;
     assert_eq!(check(c), vec![]);

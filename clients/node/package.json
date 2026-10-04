@@ -1,7 +1,7 @@
 {
   "name": "@websign/desktop",
   "version": "0.1.0",
-  "description": "Call the WebeSign app from Node.js, Bun or Electron: choose a certificate and sign a digest through `websign connect`. Zero runtime dependencies.",
+  "description": "Call the SignLocal app from Node.js, Bun or Electron: choose a certificate and sign a digest through `websign connect`. Zero runtime dependencies.",
   "license": "Apache-2.0",
   "type": "module",
   "types": "./dist/index.d.ts",

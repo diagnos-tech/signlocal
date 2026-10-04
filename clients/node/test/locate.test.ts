@@ -45,14 +45,14 @@ describe("search order", () => {
   });
 
   it("falls back to the system then the user app bundle on macOS", () => {
-    const system = "/Applications/WebeSign.app/Contents/MacOS/websign";
-    const user = "/Users/ana/Applications/WebeSign.app/Contents/MacOS/websign";
+    const system = "/Applications/SignLocal.app/Contents/MacOS/websign";
+    const user = "/Users/ana/Applications/SignLocal.app/Contents/MacOS/websign";
     expect(search(environment("darwin", {}, [system, user], "/Users/ana"))).toBe(system);
     expect(search(environment("darwin", {}, [user], "/Users/ana"))).toBe(user);
   });
 
   it("falls back to the ~/.local/bin symlink last on macOS", () => {
-    const user = "/Users/ana/Applications/WebeSign.app/Contents/MacOS/websign";
+    const user = "/Users/ana/Applications/SignLocal.app/Contents/MacOS/websign";
     const link = "/Users/ana/.local/bin/websign";
     expect(search(environment("darwin", {}, [link, user], "/Users/ana"))).toBe(user);
     expect(search(environment("darwin", {}, [link], "/Users/ana"))).toBe(link);
@@ -60,7 +60,7 @@ describe("search order", () => {
 
   it("searches PATH then both Windows locations, with backslashes", () => {
     const local = "C:\\Users\\Ana\\AppData\\Local";
-    const programs = `${local}\\Programs\\WebeSign\\websign.exe`;
+    const programs = `${local}\\Programs\\SignLocal\\websign.exe`;
     const alias = `${local}\\Microsoft\\WindowsApps\\websign.exe`;
     const env = { LOCALAPPDATA: local };
     expect(search(environment("win32", env, [programs, alias]))).toBe(programs);

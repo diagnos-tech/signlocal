@@ -116,7 +116,7 @@ That is why the kit's `nm/register`, on macOS, takes the home from the user data
 
 ## 3. The sandbox experiment (`sandbox-test.sh`)
 
-It builds `WebeSign.app` with `websign-probe` inside, signs it **ad hoc** with the entitlements above
+It builds `SignLocal.app` with `websign-probe` inside, signs it **ad hoc** with the entitlements above
 (except those that require a provisioning profile) and, from inside the sandbox:
 
 | ID | Experiment | YES means |
@@ -195,7 +195,7 @@ page ──SDK──▶ content script ──▶ extension service worker (Safar
                                    │ Unix socket in ~/Library/Group Containers/TEAMID.dev.websign/
                                    │ (same framing as native messaging: 4 bytes + JSON)
                                    ▼
-                   WebeSign.app (Rust) — same handler as the Chrome host
+                   SignLocal.app (Rust) — same handler as the Chrome host
                      confirmation window (egui) → SecKeyCreateSignature → system PIN
 ```
 
@@ -409,7 +409,7 @@ Homebrew, Chrome and Firefox installed **and opened once** (so they create their
    Note whether the permission dialog appears and what it says.
 6. **Chrome starting the sandboxed host:**
    `bash macos/sandbox/run-sandboxed.sh register --browser chrome` (the bundle lives in
-   `~/Library/Caches/dev.websign.sandbox-test/WebeSign.app`); check
+   `~/Library/Caches/dev.websign.sandbox-test/SignLocal.app`); check
    `cat ~/Library/Application\ Support/Google/Chrome/NativeMessagingHosts/dev.websign.host.json`.
    Load the development extension (`kit/extension/`, fixed ID `nhnkdpljdgjflbflkhnkmfmcmodboeii`)
    in `chrome://extensions` (developer mode → "Load unpacked") and trigger `ping` and

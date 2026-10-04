@@ -1,5 +1,5 @@
 /**
- * @websign/sdk/testing — a FAKE WebeSign extension and app for your unit and
+ * @websign/sdk/testing — a FAKE SignLocal extension and app for your unit and
  * end-to-end tests, and for demos without the real thing installed.
  *
  * Install it on `window` and the real `@websign/sdk` talks to it unchanged:

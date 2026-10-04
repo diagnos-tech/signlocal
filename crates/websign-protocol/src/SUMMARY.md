@@ -10,7 +10,7 @@
 - `error.rs` — Stable error codes and the error message.
 - `framing.rs` — Native messaging wire format: a `u32` length in the machine's own byte order, followed by that many bytes of UTF-8 JSON.
 - `id.rs` — Request identifiers.
-- `lib.rs` — The WebeSign wire contract, shared by every party that talks to the app.
+- `lib.rs` — The SignLocal wire contract, shared by every party that talks to the app.
 - `limits.rs` — Every size and time limit of the protocol, in one place.
 - `page.rs` — Page ↔ extension messages (`window.postMessage`).
 - `strict.rs` — Serde glue that makes the derived impls as strict as the protocol: objects only, no `null`.

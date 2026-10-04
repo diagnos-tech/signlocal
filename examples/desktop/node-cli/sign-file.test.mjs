@@ -25,7 +25,7 @@ test("a missing app explains itself", async () => {
   const env = { ...process.env, PATH: "", WEBSIGN_EXECUTABLE: "" };
   await assert.rejects(run(process.execPath, [script, script, "--app"], { env }), (error) => {
     assert.match(error.stderr, /^AppMissing: /);
-    assert.match(error.stderr, /Install the WebeSign app/);
+    assert.match(error.stderr, /Install the SignLocal app/);
     return error.code === 1;
   });
 });

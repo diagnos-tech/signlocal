@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<title>WebeSign: sign on any website with your smart card, USB token or OS certificate</title>
+<title>SignLocal: sign on any website with your smart card, USB token or OS certificate</title>
 <meta name="description" content="Use your smart card, USB token, or OS certificate to sign on any website. Works with Chrome, Edge, Firefox, Opera, Brave and Safari on Windows, macOS, and Linux. Free and Open Source for everyone.">
 <!-- SEO and social cards. The absolute URLs use the homepage declared in
      project.toml; keep them in sync if the product is renamed. -->
@@ -13,15 +13,15 @@
 <meta name="theme-color" content="#F5F6F9" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="WebeSign">
-<meta property="og:title" content="WebeSign: sign on any website with your smart card, USB token or OS certificate">
+<meta property="og:site_name" content="SignLocal">
+<meta property="og:title" content="SignLocal: sign on any website with your smart card, USB token or OS certificate">
 <meta property="og:description" content="Use your smart card, USB token, or OS certificate to sign on any website. Works with Chrome, Edge, Firefox, Opera, Brave and Safari on Windows, macOS, and Linux. Free and Open Source for everyone.">
 <meta property="og:url" content="https://diagnos-tech.github.io/signlocal/">
 <meta property="og:image" content="https://diagnos-tech.github.io/signlocal/assets/og.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="WebeSign: use your smart card, USB token, or OS certificate to sign on any website.">
+<meta property="og:image:alt" content="SignLocal: use your smart card, USB token, or OS certificate to sign on any website.">
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="pt_BR">
 <meta property="og:locale:alternate" content="pt_PT">
@@ -30,10 +30,10 @@
 <meta property="og:locale:alternate" content="it_IT">
 <meta property="og:locale:alternate" content="de_DE">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="WebeSign: sign on any website with your smart card, USB token or OS certificate">
+<meta name="twitter:title" content="SignLocal: sign on any website with your smart card, USB token or OS certificate">
 <meta name="twitter:description" content="Sign on any website with your smart card, USB token or OS certificate. Chrome, Edge, Firefox, Opera, Brave and Safari on Windows, macOS and Linux. Free and Open Source.">
 <meta name="twitter:image" content="https://diagnos-tech.github.io/signlocal/assets/og.png">
-<meta name="twitter:image:alt" content="WebeSign: use your smart card, USB token, or OS certificate to sign on any website.">
+<meta name="twitter:image:alt" content="SignLocal: use your smart card, USB token, or OS certificate to sign on any website.">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/tokens.css">
 <link rel="stylesheet" href="assets/site.css">
@@ -47,7 +47,7 @@
   "@graph": [
     {
       "@type": "SoftwareApplication",
-      "name": "WebeSign",
+      "name": "SignLocal",
       "applicationCategory": "SecurityApplication",
       "operatingSystem": "Windows, macOS, Linux",
       "description": "Use your smart card, USB token, or OS certificate to sign on any website. Works with Chrome, Edge, Firefox, Opera, Brave and Safari on Windows, macOS, and Linux.",
@@ -58,7 +58,7 @@
       "isAccessibleForFree": true,
       "license": "https://www.gnu.org/licenses/gpl-3.0.html",
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-      "author": { "@type": "Organization", "name": "WebeSign", "url": "https://diagnos-tech.github.io/signlocal/" },
+      "author": { "@type": "Organization", "name": "SignLocal", "url": "https://diagnos-tech.github.io/signlocal/" },
       "sameAs": ["https://github.com/diagnos-tech/signlocal"]
     },
     {
@@ -68,8 +68,8 @@
         { "@type": "Question", "name": "Which certificates work?", "acceptedAnswer": { "@type": "Answer", "text": "Any certificate your operating system or your token's driver can use: USB tokens, smart cards and certificates installed on the computer (for example from a .pfx file). There is no list of approved models." } },
         { "@type": "Question", "name": "Can a website see my PIN, my keys or my other certificates?", "acceptedAnswer": { "@type": "Answer", "text": "No. The PIN is typed in the app or the system window, and the private key never leaves your computer or your token. A website only receives the certificate you choose and the signature you confirm." } },
         { "@type": "Question", "name": "Why do Windows and macOS warn when I install it?", "acceptedAnswer": { "@type": "Answer", "text": "Prerelease builds are not code-signed yet. The download page says what to click, and how to check each file against the published SHA256SUMS." } },
-        { "@type": "Question", "name": "Which signature formats does it support?", "acceptedAnswer": { "@type": "Answer", "text": "WebeSign returns a raw signature and the certificate; the website builds the format it needs (PAdES, CAdES, XAdES or JAdES), for any country's rules." } },
-        { "@type": "Question", "name": "Does it work on phones?", "acceptedAnswer": { "@type": "Answer", "text": "No. WebeSign runs on computers with Windows, macOS or Linux, where tokens and smart cards are plugged in." } },
+        { "@type": "Question", "name": "Which signature formats does it support?", "acceptedAnswer": { "@type": "Answer", "text": "SignLocal returns a raw signature and the certificate; the website builds the format it needs (PAdES, CAdES, XAdES or JAdES), for any country's rules." } },
+        { "@type": "Question", "name": "Does it work on phones?", "acceptedAnswer": { "@type": "Answer", "text": "No. SignLocal runs on computers with Windows, macOS or Linux, where tokens and smart cards are plugged in." } },
         { "@type": "Question", "name": "Is something always running in the background?", "acceptedAnswer": { "@type": "Answer", "text": "No. The browser starts the app only when a website asks for a signature, and the app opens no network port." } }
       ]
     }
@@ -80,7 +80,7 @@
 <body class="home">
 <a class="skip" href="#main" data-i18n="nav.skip">Skip to content</a>
 <header class="bar">
-<a class="brand" href="index.html"><img src="assets/icon.svg" alt="" width="24" height="24">WebeSign</a>
+<a class="brand" href="index.html"><img src="assets/icon.svg" alt="" width="24" height="24">SignLocal</a>
 <nav aria-label="Main"><a href="index.html" aria-current="page" data-i18n="nav.home">Home</a><a href="download.html" data-i18n="nav.download">Download</a><a href="privacy.html" data-i18n="nav.privacy">Privacy</a><a href="developers.html" data-i18n="nav.developers">Developers</a></nav>
 <label class="lang"><span class="sr" data-i18n="nav.language">Language</span><select id="lang"><option value="en">English</option><option value="es">Español</option><option value="pt-PT">Português (Portugal)</option><option value="pt-BR">Português (Brasil)</option><option value="fr">Français</option><option value="it">Italiano</option><option value="de">Deutsch</option></select></label>
 </header>
@@ -94,7 +94,7 @@
 <a class="btn ghost" href="developers.html" data-i18n="home.cta_dev">For developers</a>
 </div>
 <p class="cta-note" data-i18n="home.unsigned_note">Prerelease builds are not code-signed yet, so Windows and macOS warn once. Every file has a published checksum.</p>
-<p class="cta-note" data-when-os="mobile" hidden data-i18n="home.mobile">WebeSign runs on computers with Windows, macOS or Linux. Open this page on your computer to install it.</p>
+<p class="cta-note" data-when-os="mobile" hidden data-i18n="home.mobile">SignLocal runs on computers with Windows, macOS or Linux. Open this page on your computer to install it.</p>
 </section>
 
 <section aria-labelledby="how-h">
@@ -105,9 +105,9 @@
 <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M6 14l6 6 6-6"/></svg>
 <div class="local" role="group" aria-labelledby="local-l">
 <p class="local-label" id="local-l"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span data-i18n="home.how_local">On your computer: the PIN never leaves it</span></p>
-<div class="step"><span class="num">2</span><h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4h6v3a2 2 0 1 0 0 4v0h3v9H6v-5a2 2 0 1 0 0-4V7h3z"/></svg><span data-i18n="home.how2_h">The extension</span></h3><p data-i18n="home.how2">Passes the request from the browser to the WebeSign app. It never sees your PIN or your keys.</p></div>
+<div class="step"><span class="num">2</span><h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4h6v3a2 2 0 1 0 0 4v0h3v9H6v-5a2 2 0 1 0 0-4V7h3z"/></svg><span data-i18n="home.how2_h">The extension</span></h3><p data-i18n="home.how2">Passes the request from the browser to the SignLocal app. It never sees your PIN or your keys.</p></div>
 <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M6 14l6 6 6-6"/></svg>
-<div class="step"><span class="num">3</span><h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18M8 14l3 3 5-5"/></svg><span data-i18n="home.how3_h">The WebeSign app</span></h3><p data-i18n="home.how3">Shows who is asking and a verification code. You choose the certificate and confirm.</p></div>
+<div class="step"><span class="num">3</span><h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18M8 14l3 3 5-5"/></svg><span data-i18n="home.how3_h">The SignLocal app</span></h3><p data-i18n="home.how3">Shows who is asking and a verification code. You choose the certificate and confirm.</p></div>
 <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M6 14l6 6 6-6"/></svg>
 <div class="step"><span class="num">4</span><h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="7" rx="1"/><rect x="5" y="9" width="14" height="13" rx="2"/><path d="M10 5h.01M14 5h.01M12 13v3M10.5 16h3"/></svg><span data-i18n="home.how4_h">Your system or token</span></h3><p data-i18n="home.how4">Windows, macOS or the token driver signs the hash. If a PIN is needed, you type it there.</p></div>
 </div>
@@ -118,7 +118,7 @@
 
 <section aria-labelledby="works-h">
 <h2 id="works-h" data-i18n="home.works_h">Works where you do</h2>
-<p class="section-lead" data-i18n="home.works_lead">No list of approved models: if your operating system or your token's driver can use a certificate, WebeSign can sign with it.</p>
+<p class="section-lead" data-i18n="home.works_lead">No list of approved models: if your operating system or your token's driver can use a certificate, SignLocal can sign with it.</p>
 <div class="works">
 <div><h3 data-i18n="home.browsers_h">Browsers</h3><ul class="badges"><li>Chrome</li><li>Edge</li><li>Firefox</li><li>Opera</li><li>Brave</li><li>Safari</li></ul></div>
 <div><h3 data-i18n="home.os_h">Operating systems</h3><ul class="badges"><li>Windows</li><li>macOS</li><li>Linux</li></ul></div>
@@ -144,13 +144,13 @@
 <details><summary data-i18n="home.faq_q2">Which certificates work?</summary><p data-i18n="home.faq_a2">Any certificate your operating system or your token's driver can use: USB tokens, smart cards and certificates installed on the computer (for example from a .pfx file). There is no list of approved models.</p></details>
 <details><summary data-i18n="home.faq_q3">Can a website see my PIN, my keys or my other certificates?</summary><p data-i18n="home.faq_a3">No. The PIN is typed in the app or the system window, and the private key never leaves your computer or your token. A website only receives the certificate you choose and the signature you confirm.</p></details>
 <details><summary data-i18n="home.faq_q4">Why do Windows and macOS warn when I install it?</summary><p data-i18n="home.faq_a4">Prerelease builds are not code-signed yet. The download page says what to click, and how to check each file against the published SHA256SUMS.</p></details>
-<details><summary data-i18n="home.faq_q5">Which signature formats does it support?</summary><p data-i18n="home.faq_a5">WebeSign returns a raw signature and the certificate; the website builds the format it needs (PAdES, CAdES, XAdES or JAdES), for any country's rules.</p></details>
-<details><summary data-i18n="home.faq_q6">Does it work on phones?</summary><p data-i18n="home.faq_a6">No. WebeSign runs on computers with Windows, macOS or Linux, where tokens and smart cards are plugged in.</p></details>
+<details><summary data-i18n="home.faq_q5">Which signature formats does it support?</summary><p data-i18n="home.faq_a5">SignLocal returns a raw signature and the certificate; the website builds the format it needs (PAdES, CAdES, XAdES or JAdES), for any country's rules.</p></details>
+<details><summary data-i18n="home.faq_q6">Does it work on phones?</summary><p data-i18n="home.faq_a6">No. SignLocal runs on computers with Windows, macOS or Linux, where tokens and smart cards are plugged in.</p></details>
 <details><summary data-i18n="home.faq_q7">Is something always running in the background?</summary><p data-i18n="home.faq_a7">No. The browser starts the app only when a website asks for a signature, and the app opens no network port.</p></details>
 </section>
 </main>
 <footer class="foot wide">
-<p><strong>WebeSign</strong> · <span data-i18n="foot.license">Free software (GPL-3.0-or-later; SDK and clients Apache-2.0)</span></p>
+<p><strong>SignLocal</strong> · <span data-i18n="foot.license">Free software (GPL-3.0-or-later; SDK and clients Apache-2.0)</span></p>
 <nav aria-label="Footer"><a href="https://github.com/diagnos-tech/signlocal" data-i18n="foot.source">Source code</a><a href="https://github.com/diagnos-tech/signlocal/blob/main/LICENSE" data-i18n="foot.license_link">License</a><a href="https://github.com/diagnos-tech/signlocal/blob/main/SECURITY.md" data-i18n="foot.security">Security</a><a href="privacy.html" data-i18n="nav.privacy">Privacy</a></nav>
 </footer>
 </body>

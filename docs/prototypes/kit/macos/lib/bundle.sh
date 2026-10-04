@@ -1,5 +1,5 @@
 # shellcheck shell=bash
-# Wraps websign-probe in WebeSign.app, signed ad hoc with the Mac App Store
+# Wraps websign-probe in SignLocal.app, signed ad hoc with the Mac App Store
 # entitlements, so the probe runs inside the App Sandbox exactly as the store
 # app would (same bundle identifier, same container). Source it after
 # common.sh.
@@ -15,7 +15,7 @@ readonly PROFILE_ONLY_KEYS=(
     keychain-access-groups
 )
 
-# Builds DIR/WebeSign.app around PROBE and sets bundle_id, container (the
+# Builds DIR/SignLocal.app around PROBE and sets bundle_id, container (the
 # sandbox's Data folder), app, exe and entitlements. Extra arguments go to
 # codesign, e.g. --options runtime. Returns non-zero if codesign fails.
 build_sandboxed_app() { # PROBE DIR [CODESIGN_FLAGS...]
@@ -38,7 +38,7 @@ build_sandboxed_app() { # PROBE DIR [CODESIGN_FLAGS...]
             echo "entitlement removed for the ad hoc build: $key"
     done
 
-    app=$dir/WebeSign.app
+    app=$dir/SignLocal.app
     exe=$app/Contents/MacOS/websign-probe
     rm -rf "$app"
     mkdir -p "$app/Contents/MacOS"

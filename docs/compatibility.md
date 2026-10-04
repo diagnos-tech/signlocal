@@ -87,7 +87,7 @@ published yet). Where each browser reads its registration, and how that was esta
 | Windows 11 | Firefox | MSIX (alias) | | | | |
 | Windows 10 22H2 | Chrome | MSIX (alias) | | | | |
 | macOS 15 | Chrome | sandboxed app | | | | |
-| macOS 15 | Safari | `WebeSign.app` (direct, unsigned) with its appex; see [Safari](#safari-macos) | | | | |
+| macOS 15 | Safari | `SignLocal.app` (direct, unsigned) with its appex; see [Safari](#safari-macos) | | | | |
 | Ubuntu 24.04 | Chrome (deb) | .deb | | | | |
 | Ubuntu 24.04 | Firefox (Snap, portal) | .deb | | | | |
 | Fedora | Firefox (rpm) | .rpm | | | | |
@@ -103,8 +103,8 @@ What CI proves on every push (`.github/workflows/safari.yml`):
 - The relay (`safari/Relay`) with fake hosts on macOS and Linux: framing, strict message shapes, sessions,
   polling, profiles, host exit, broken framing, backlog and session limits, idle reaping, a host that
   ignores SIGTERM being killed, and the client message types equal to the generated protocol.
-- `cargo xtask package --target universal-apple-darwin` builds `WebeSign.app` with
-  `Contents/PlugIns/WebeSignExtension.appex`: both CPU slices of the app, the appex and its host copy;
+- `cargo xtask package --target universal-apple-darwin` builds `SignLocal.app` with
+  `Contents/PlugIns/SignLocalExtension.appex`: both CPU slices of the app, the appex and its host copy;
   the Safari extension point, principal class and host keys in the appex's `Info.plist`; the WXT safari
   build as its resources (MV3, `nativeMessaging`, no Chromium key); a strict signature check of the
   whole bundle; the appex sandboxed with the smart-card entitlement, its host copy inheriting it, the
@@ -115,11 +115,11 @@ What CI proves on every push (`.github/workflows/safari.yml`):
 Manual script (a Mac with Safari 17 or later; takes about five minutes):
 
 1. Install the build under test with [`install.md`](install.md) (macOS), then follow its
-   [Safari](install.md#safari) steps 1–4. Record: WebeSign listed in **Settings → Extensions** after
+   [Safari](install.md#safari) steps 1–4. Record: SignLocal listed in **Settings → Extensions** after
    opening the app once.
 2. Open the site's test page (`/test/`) in Safari. The page reports the extension and the app as
    ready. Record "Host starts".
-3. Sign with a Keychain certificate (a `.p12` imported into the login keychain): the WebeSign window
+3. Sign with a Keychain certificate (a `.p12` imported into the login keychain): the SignLocal window
    opens in front, says "via Safari", shows the site and the verification code the page shows. Sign.
    The page verifies the signature. Record "Signs (Keychain)".
 4. Repeat with a token that macOS sees through CryptoTokenKit, then with a PKCS#11-only driver if you

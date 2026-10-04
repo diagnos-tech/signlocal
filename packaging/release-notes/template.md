@@ -2,7 +2,7 @@
 > below get past them. Verify every download against `SHA256SUMS` first. Full guide:
 > [docs/install.md](https://github.com/{{repo}}/blob/{{tag}}/docs/install.md).
 
-WebeSign has two parts: the **app** (`websign`) and the **browser extension**. Install both. This is a
+SignLocal has two parts: the **app** (`websign`) and the **browser extension**. Install both. This is a
 prerelease, so GitHub's "latest release" skips it: every command names the tag `{{tag}}`.
 
 ## Download
@@ -78,9 +78,9 @@ against `SHA256SUMS`, and unzip it.
 - **Firefox:** `about:debugging` → **This Firefox** → **Load Temporary Add-on** → `manifest.json` in the unzipped
   folder (lasts until Firefox restarts). Firefox Developer Edition, Nightly or ESR with
   `xpinstall.signatures.required` set to `false` can keep it: `about:addons` → **Install Add-on From File**.
-- **Safari (macOS 13+, Safari 17+):** nothing to download: the extension is inside `WebeSign.app`. Open the app
+- **Safari (macOS 13+, Safari 17+):** nothing to download: the extension is inside `SignLocal.app`. Open the app
   once, then in Safari **Settings → Advanced** → **Show features for web developers**, **Settings → Developer** →
-  **Allow unsigned extensions** (again after every Safari restart while builds are unsigned), and tick WebeSign in
+  **Allow unsigned extensions** (again after every Safari restart while builds are unsigned), and tick SignLocal in
   **Settings → Extensions**. Keychain and CryptoTokenKit certificates work; a token reachable only
   through a PKCS#11 driver may not, because the host runs inside the extension's sandbox: use Chrome, Edge,
   Brave, Opera or Firefox for it.
@@ -90,7 +90,7 @@ against `SHA256SUMS`, and unzip it.
 | Where | What happens | What to do |
 |---|---|---|
 | Windows | SmartScreen "Windows protected your PC" when running a downloaded `websign.exe` by hand | The install script avoids it. Manual download: **More info → Run anyway**. |
-| macOS | Gatekeeper "cannot be opened because the developer cannot be verified" | The install script removes the quarantine flag from `WebeSign.app` only. Manual: System Settings → Privacy & Security → **Open Anyway** (macOS 14 and earlier: right-click the app → **Open**), or `xattr -dr com.apple.quarantine /Applications/WebeSign.app`. |
+| macOS | Gatekeeper "cannot be opened because the developer cannot be verified" | The install script removes the quarantine flag from `SignLocal.app` only. Manual: System Settings → Privacy & Security → **Open Anyway** (macOS 14 and earlier: right-click the app → **Open**), or `xattr -dr com.apple.quarantine /Applications/SignLocal.app`. |
 | Linux | nothing (packages are unsigned) | — |
 | Chrome / Edge / Brave | not in the stores yet | **Load unpacked** (above). |
 | Firefox | release Firefox refuses unsigned add-ons | **Load Temporary Add-on** (above). |

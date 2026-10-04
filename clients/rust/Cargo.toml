@@ -1,6 +1,6 @@
 [package]
 name = "websign-client"
-description = "Call the WebeSign app from any Rust program: choose a certificate and sign a digest through `websign connect`, with the same flow as the web SDK."
+description = "Call the SignLocal app from any Rust program: choose a certificate and sign a digest through `websign connect`, with the same flow as the web SDK."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

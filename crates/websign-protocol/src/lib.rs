@@ -1,4 +1,4 @@
-//! The WebeSign wire contract, shared by every party that talks to the app.
+//! The SignLocal wire contract, shared by every party that talks to the app.
 //!
 //! One message catalog travels over three framings:
 //!

@@ -1,6 +1,6 @@
 # Overview
 
-WebeSign returns a signature, made by the user's own certificate, over a hash
+SignLocal returns a signature, made by the user's own certificate, over a hash
 the caller prepared. It never sees the document, never builds a signature
 format, and never talks to a chip directly: it asks the operating system (or
 a PKCS#11 driver) to sign. That is why it works with any certificate the
@@ -41,7 +41,7 @@ tokens — and with any format the caller builds (PAdES, CAdES, XAdES, JAdES…)
 | Project IDs | `crates/websign-project` | Rust | Apache-2.0 | `project.toml` as constants |
 | Node client | `clients/node` | TypeScript | Apache-2.0 | `@websign/desktop` |
 | Rust client | `clients/rust` | Rust | Apache-2.0 | `websign-client` |
-| Safari bridge | `safari/` | Swift | GPL-3.0-or-later | app extension inside `WebeSign.app` (direct builds, macOS 13+); starts its own sandboxed host and relays to it |
+| Safari bridge | `safari/` | Swift | GPL-3.0-or-later | app extension inside `SignLocal.app` (direct builds, macOS 13+); starts its own sandboxed host and relays to it |
 | Device hints | `devices.json` | JSON | CC0-1.0 | VID:PID/ATR → model → driver per OS |
 | Packaging | `packaging/`, `scripts/install/` | shell, PowerShell, manifests | GPL-3.0-or-later | artifacts and one-line installers |
 | E2E | `e2e/` | TypeScript (Playwright) | GPL-3.0-or-later | page → extension → app → software key, with screenshots |

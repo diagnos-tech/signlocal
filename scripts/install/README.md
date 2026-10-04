@@ -23,7 +23,7 @@ Linux installs the tarball per user by default (no root). On a deb or rpm
 distribution it asks whether to use the system package instead; the default is
 no, and `--yes` never implies it, so an unattended run cannot escalate. macOS never needs `sudo`: `/Applications` when
 writable, else `~/Applications`; the quarantine flag is removed from
-`WebeSign.app` only. Windows needs no administrator rights; the Mark of the Web
+`SignLocal.app` only. Windows needs no administrator rights; the Mark of the Web
 is removed from the installed files only, and a non-empty `-InstallDir` without
 `websign.exe` is never emptied or deleted.
 

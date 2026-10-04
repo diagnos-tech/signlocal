@@ -17,8 +17,8 @@ export const HINTS: Readonly<Record<ErrorCode, string>> = {
   ExtensionMissing:
     "This code is for web pages; desktop programs do not use the browser extension.",
   AppMissing:
-    "Install the WebeSign app, or pass its path with `WebSign.connect({ executable })` or WEBSIGN_EXECUTABLE. To test without the app, use `@websign/desktop/testing`.",
-  AppOutdated: "The installed app is too old for this request: ask the user to update WebeSign.",
+    "Install the SignLocal app, or pass its path with `WebSign.connect({ executable })` or WEBSIGN_EXECUTABLE. To test without the app, use `@websign/desktop/testing`.",
+  AppOutdated: "The installed app is too old for this request: ask the user to update SignLocal.",
   ExtensionOutdated:
     "This code is for web pages; update the app and the browser extension together.",
   ClientOutdated: "The app speaks a newer protocol than this library: upgrade `@websign/desktop`.",

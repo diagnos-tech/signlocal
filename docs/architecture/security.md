@@ -1,6 +1,6 @@
 # Security
 
-What WebeSign protects, from whom, and where each defense lives. Every row
+What SignLocal protects, from whom, and where each defense lives. Every row
 names the file or crate that must enforce it and the test that proves it.
 
 ## Assets

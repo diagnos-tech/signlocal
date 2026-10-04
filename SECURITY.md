@@ -1,6 +1,6 @@
 # Security policy
 
-WebeSign sits between websites or programs and the keys that make legally binding signatures, so we treat
+SignLocal sits between websites or programs and the keys that make legally binding signatures, so we treat
 every report seriously. The threat model is [`docs/architecture/security.md`](docs/architecture/security.md).
 
 ## Reporting a vulnerability

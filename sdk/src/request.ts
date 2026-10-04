@@ -29,7 +29,7 @@ export async function connect(signal?: AbortSignal): Promise<Announcement> {
   if (announcement === null) {
     throw new WebSignError(
       "ExtensionMissing",
-      "The WebeSign extension did not answer: it is not installed, or disabled for this site.",
+      "The SignLocal extension did not answer: it is not installed, or disabled for this site.",
     );
   }
   const { min, max } = announcement.protocols;

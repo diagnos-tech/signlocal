@@ -10,7 +10,7 @@ const MAX_ERRORS: usize = 20;
 
 pub(super) fn header(input: &ReportInput) -> [String; 4] {
     [
-        "WebeSign diagnostics v1".to_owned(),
+        "SignLocal diagnostics v1".to_owned(),
         format!(
             "app: {} ({}, {}) · protocol {} · locale {} · scale {}%",
             input.app_version,
