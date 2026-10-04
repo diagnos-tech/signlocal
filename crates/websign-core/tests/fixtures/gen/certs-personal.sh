@@ -6,7 +6,7 @@ gen_personal_name_certs() {
   log "personal name certificates"
   local given=060355042a surname=0603550404 serial=0603550405
 
-  variant dn-pii "/C=PT/O=SignLocal Test Fixtures/GN=José Ângelo/SN=Conceição/serialNumber=IDCPT-12345123/CN=JOSÉ ÂNGELO CONCEIÇÃO" < <(std_ext)
+  variant dn-pii "/C=PT/O=WebeSign Test Fixtures/GN=José Ângelo/SN=Conceição/serialNumber=IDCPT-12345123/CN=JOSÉ ÂNGELO CONCEIÇÃO" < <(std_ext)
   variant dn-pii-only "/C=PT/GN=MARIA/SN=SILVA/serialNumber=IDCPT-12345123" < <(std_ext)
   variant dn-pii-duplicates \
     "/C=PT/GN=First/GN=Second/SN=One/SN=Two/serialNumber=IDCPT-1111111/serialNumber=IDCPT-2222222/CN=Dup" < <(std_ext)

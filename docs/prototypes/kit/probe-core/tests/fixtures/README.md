@@ -29,14 +29,14 @@ Layout: `certs/*.der` (133 certificados), `vectors/*.txt` (manifestos),
 ## Autoridade e certificado padrão
 
 `ca.der` é a raiz autoassinada (P-256, série `01`, `CA:TRUE` crítico, KeyUsage
-`keyCertSign,cRLSign`): `C=BR, O=SignLocal Test Authority, OU=Fixtures Root,
-CN=SignLocal Test Root CA`.
+`keyCertSign,cRLSign`): `C=BR, O=WebeSign Test Authority, OU=Fixtures Root,
+CN=WebeSign Test Root CA`.
 
 Toda folha "comum" (função `leaf`/`variant` do gerador) tem:
 
 | Campo | Valor |
 |---|---|
-| subject | `C=BR, O=SignLocal Test Fixtures, OU=Unit A, OU=Unit B, CN=Fixture <nome do arquivo>` (todos UTF8String, exceto C) |
+| subject | `C=BR, O=WebeSign Test Fixtures, OU=Unit A, OU=Unit B, CN=Fixture <nome do arquivo>` (todos UTF8String, exceto C) |
 | issuer | o da raiz acima |
 | validade | 2020-01-01T00:00:00Z = **1577836800** até 2040-01-01T00:00:00Z = **2208988800** |
 | BasicConstraints | `CA:FALSE` (SEQUENCE vazia) |
@@ -191,7 +191,7 @@ Texto, `#` comenta, um registro por linha, campos separados por espaço.
 
 | Arquivo | Registro |
 |---|---|
-| `digests.txt` | `hash hex(digest)` da mensagem `SignLocal probe-core fixture message` (`openssl dgst`) |
+| `digests.txt` | `hash hex(digest)` da mensagem `WebeSign probe-core fixture message` (`openssl dgst`) |
 | `digestinfo.txt` | `hash hex(DigestInfo)`, montado pelo gerador de ASN.1 do OpenSSL a partir dos OIDs dos hashes e conferido contra uma assinatura RSA "crua" (`rsautl -pkcs`) igual à que `pkeyutl -pkeyopt digest:` produz |
 | `signatures.txt` | `chave algoritmo hash hex(assinatura)` sobre o digest acima; `chave` é o nome do certificado. `pkcs1`, `pss` (sal = tamanho do digest, MGF1 com o mesmo hash), `ecdsa` (crua `r‖s`). Chaves: `rsa2048`, `rsa2048b`, `rsa3072`, `rsa4096`, `rsa2047` (pkcs1 e pss × 3 hashes), `rsapss2048` (pss × 3), `p256`, `p256b`, `p384`, `p521` (ecdsa × 3) = 45 válidas. Mais 9 **inválidas de propósito**, em `rsa2048`: `pss-salt-0`, `pss-salt-20`, `pss-mgf1-sha1` × 3 hashes |
 | `ecdsa.txt` | `curva forma hash hex(cru) hex(DER)`: a mesma assinatura nos dois formatos; o cru é lido de volta pelo `asn1parse` do OpenSSL. `forma`: `plain` (nenhum zero à esquerda nem bit alto), `high-r`, `high-s`, `high-both` (bit alto: o DER leva `00`), `short-r`, `short-s` (primeiro byte zero: o DER é mais curto que o campo). Uma linha por forma e curva; a P-521 sempre usa o comprimento longo `81 xx` |

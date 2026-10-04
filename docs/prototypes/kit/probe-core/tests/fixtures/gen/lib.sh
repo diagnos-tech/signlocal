@@ -5,7 +5,7 @@
 # Default validity: 2020-01-01T00:00:00Z .. 2040-01-01T00:00:00Z.
 V_START=20200101000000Z
 V_END=20400101000000Z
-ROOT_SUBJECT="/C=BR/O=SignLocal Test Authority/OU=Fixtures Root/CN=SignLocal Test Root CA"
+ROOT_SUBJECT="/C=BR/O=WebeSign Test Authority/OU=Fixtures Root/CN=WebeSign Test Root CA"
 
 log() { printf '  %s\n' "$*" >&2; }
 
@@ -133,7 +133,7 @@ next_serial() {
 
 # leaf_subject NAME [CN] -- the subject every ordinary fixture certificate uses.
 leaf_subject() {
-  printf '/C=BR/O=SignLocal Test Fixtures/OU=Unit A/OU=Unit B/CN=%s' "${2:-Fixture $1}"
+  printf '/C=BR/O=WebeSign Test Fixtures/OU=Unit A/OU=Unit B/CN=%s' "${2:-Fixture $1}"
 }
 
 # Extensions of an ordinary end-entity certificate: digitalSignature +

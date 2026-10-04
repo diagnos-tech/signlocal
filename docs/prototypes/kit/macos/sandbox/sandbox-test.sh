@@ -174,7 +174,7 @@ test_register() {
         manifest="$support/$dir/NativeMessagingHosts/$name"
         if [[ -f $manifest ]]; then
             # The path may start with /private/var or /var: compare the end.
-            if grep -qF "/SignLocal.app/Contents/MacOS/websign-probe\"" "$manifest"; then
+            if grep -qF "/WebeSign.app/Contents/MacOS/websign-probe\"" "$manifest"; then
                 result "register:$label" SIM "$manifest points to the sandboxed binary"
             else
                 result "register:$label" NÃO "$manifest exists but does not point to $exe"
@@ -223,14 +223,14 @@ test_host() {
 test_keychain() {
     section "(b) keychain from inside the sandbox"
     keychain_create "$KEYCHAIN_NAME" "$P12_PASSWORD"
-    make_identity "$work" "SignLocal Sandbox RSA" rsa2048
-    make_identity "$work" "SignLocal Sandbox P-256" p256
-    keychain_import "$work/SignLocal Sandbox RSA.p12"
-    keychain_import "$work/SignLocal Sandbox P-256.p12"
+    make_identity "$work" "WebeSign Sandbox RSA" rsa2048
+    make_identity "$work" "WebeSign Sandbox P-256" p256
+    keychain_import "$work/WebeSign Sandbox RSA.p12"
+    keychain_import "$work/WebeSign Sandbox P-256.p12"
     keychain_allow "$app" "$PROBE_EXE"
     local rsa ec
-    rsa=$(cert_fingerprint "$work/SignLocal Sandbox RSA.cert.pem")
-    ec=$(cert_fingerprint "$work/SignLocal Sandbox P-256.cert.pem")
+    rsa=$(cert_fingerprint "$work/WebeSign Sandbox RSA.cert.pem")
+    ec=$(cert_fingerprint "$work/WebeSign Sandbox P-256.cert.pem")
 
     run "$PROBE_EXE" list "${ISOLATE[@]}"
     local outside=NÃO
@@ -272,9 +272,9 @@ make_softhsm_token() { # DIR
         "$dir/tokens" >"$dir/softhsm2.conf" || return 1
     export SOFTHSM2_CONF=$dir/softhsm2.conf
     softhsm2-util --init-token --free --label websign-sandbox --so-pin 5678 --pin "$TOKEN_PIN" >/dev/null &&
-        make_identity "$work" "SignLocal Sandbox PKCS11" rsa2048 &&
-        "$OPENSSL" pkcs8 -topk8 -nocrypt -in "$work/SignLocal Sandbox PKCS11.key.pem" -out "$work/p11.key" &&
-        "$OPENSSL" x509 -in "$work/SignLocal Sandbox PKCS11.cert.pem" -outform DER -out "$work/p11.der" &&
+        make_identity "$work" "WebeSign Sandbox PKCS11" rsa2048 &&
+        "$OPENSSL" pkcs8 -topk8 -nocrypt -in "$work/WebeSign Sandbox PKCS11.key.pem" -out "$work/p11.key" &&
+        "$OPENSSL" x509 -in "$work/WebeSign Sandbox PKCS11.cert.pem" -outform DER -out "$work/p11.der" &&
         softhsm2-util --import "$work/p11.key" --token websign-sandbox --label websign-p11 --id 01 \
             --pin "$TOKEN_PIN" >/dev/null &&
         pkcs11-tool --module "$MODULE" --token-label websign-sandbox --login --pin "$TOKEN_PIN" \
@@ -285,7 +285,7 @@ make_softhsm_token() { # DIR
 # signing variant in the result IDs.
 test_pkcs11() { # SUFFIX
     local fingerprint
-    fingerprint=$(cert_fingerprint "$work/SignLocal Sandbox PKCS11.cert.pem")
+    fingerprint=$(cert_fingerprint "$work/WebeSign Sandbox PKCS11.cert.pem")
     run "$exe" list --module "$MODULE" "${ISOLATE[@]}"
     if grep -qF "$fingerprint" <<<"$OUT"; then
         result "pkcs11-load:$1" SIM "dlopen and C_Initialize worked; the token's certificate is listed"

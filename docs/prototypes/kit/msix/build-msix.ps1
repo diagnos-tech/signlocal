@@ -15,7 +15,7 @@
     Needs an elevated prompt (trusting the certificate) and the Windows SDK.
     The signing certificate never stays in CurrentUser\My, so it does not show
     up in `websign-probe list`. Remove the package afterwards with:
-        Get-AppxPackage SignLocal.Probe | Remove-AppxPackage
+        Get-AppxPackage WebeSign.Probe | Remove-AppxPackage
 
 .PARAMETER ProbeExe
     The websign-probe.exe to package. Default: $env:PROBE_EXE.

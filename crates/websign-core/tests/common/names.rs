@@ -23,7 +23,7 @@ pub fn dn(
 pub fn leaf_dn(name: &str) -> DistinguishedName {
     dn(
         Some(&format!("Fixture {name}")),
-        Some("SignLocal Test Fixtures"),
+        Some("WebeSign Test Fixtures"),
         &["Unit A", "Unit B"],
         Some("BR"),
     )
@@ -31,8 +31,8 @@ pub fn leaf_dn(name: &str) -> DistinguishedName {
 
 pub fn root_dn() -> DistinguishedName {
     dn(
-        Some("SignLocal Test Root CA"),
-        Some("SignLocal Test Authority"),
+        Some("WebeSign Test Root CA"),
+        Some("WebeSign Test Authority"),
         &["Fixtures Root"],
         Some("BR"),
     )

@@ -78,7 +78,7 @@ distinguished_name = dn
 prompt = no
 [dn]
 CN = $name
-O = SignLocal CI
+O = WebeSign CI
 [ext]
 basicConstraints = critical, CA:FALSE
 keyUsage = critical, digitalSignature, nonRepudiation

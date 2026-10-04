@@ -1,7 +1,7 @@
 //! A self-signed ECDSA P-256 certificate and a signature made with its key,
 //! for testing the signing path without any token.
 //!
-//! Generated once with OpenSSL (`CN=SignLocal Test Holder`, key usage
+//! Generated once with OpenSSL (`CN=WebeSign Test Holder`, key usage
 //! digitalSignature + nonRepudiation, valid for 100 years). `SIGNATURE` is the
 //! raw `r || s` over the digest `0x00..=0x1f`, taken as an already-hashed
 //! SHA-256 value; ECDSA verification does not depend on the signing nonce, so

@@ -2,7 +2,7 @@
 # Reference vectors, all produced by OpenSSL: digests, PKCS#1 DigestInfo,
 # signatures for every hash x algorithm x key kind and ECDSA DER/raw pairs.
 
-MESSAGE="SignLocal probe-core fixture message"
+MESSAGE="WebeSign probe-core fixture message"
 HASHES="sha256 sha384 sha512"
 
 digest_file() { echo "$WORK/digest-$1.bin"; }

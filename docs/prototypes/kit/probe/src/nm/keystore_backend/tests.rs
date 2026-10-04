@@ -124,7 +124,7 @@ fn lists_a_certificate_with_what_the_extension_needs() {
     let cert = &list.certificates[0];
     assert_eq!(list.certificates.len(), 1);
     assert_eq!(cert.fingerprint, fingerprint().to_hex());
-    assert_eq!(cert.display_name, "SignLocal Test Holder");
+    assert_eq!(cert.display_name, "WebeSign Test Holder");
     assert_eq!(cert.kind, "certificate");
     assert_eq!(cert.key, "EC P-256");
     assert_eq!(cert.origin, "pkcs11:fake");
