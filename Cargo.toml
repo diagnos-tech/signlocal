@@ -29,7 +29,7 @@ websign-ui-model = { path = "crates/websign-ui-model", version = "0.1.0" }
 thiserror = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-toml = "0.9"
+toml = "1"
 clap = { version = "4", features = ["derive"] }
 log = "0.4"
 jiff = "0.2"
@@ -72,7 +72,7 @@ egui = "0.36"
 egui-phosphor = "0.14"
 egui_kittest = { version = "0.36", features = ["wgpu", "snapshot"] }
 sys-locale = "0.3"
-dirs = "6"
+dirs = "7"
 
 # Code generation and tests.
 ts-rs = "12"
