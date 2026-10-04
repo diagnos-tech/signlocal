@@ -146,7 +146,7 @@ jobs:
         run: |
           pluginkit -a "dist/unpacked/WebeSign.app/Contents/PlugIns/WebeSignExtension.appex"
           pluginkit -m -v -p com.apple.Safari.web-extension
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: websign-macos-with-safari
           path: dist/websign-*-macos-universal.zip
