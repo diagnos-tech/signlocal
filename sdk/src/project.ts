@@ -10,4 +10,4 @@ export const EDGE_ADDONS_ID = "";
 export const FIREFOX_AMO_SLUG = "";
 
 /** The project's site; its download page lists every way to install. */
-export const HOMEPAGE = "https://diagnos-tech.github.io/web-esign/";
+export const HOMEPAGE = "https://diagnos-tech.github.io/signlocal/";

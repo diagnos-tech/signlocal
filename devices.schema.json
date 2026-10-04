@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/diagnos-tech/web-esign/devices.schema.json",
+  "$id": "https://github.com/diagnos-tech/signlocal/devices.schema.json",
   "title": "WebeSign device hints",
   "description": "Known tokens, cards and readers, and the driver each needs per OS. Hints only: a device missing here still works when its driver is installed. CC0-1.0.",
   "type": "object",

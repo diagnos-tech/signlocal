@@ -1,7 +1,7 @@
 import type { ErrorCode } from "./generated/index.js";
 
 /** The project site; the same base as `@websign/sdk`'s `docsUrl`. */
-const HOMEPAGE = "https://diagnos-tech.github.io/web-esign/";
+const HOMEPAGE = "https://diagnos-tech.github.io/signlocal/";
 
 /** The code's section on the project site (a stable anchor, shared with the web SDK). */
 export function docsUrlFor(code: ErrorCode): string {

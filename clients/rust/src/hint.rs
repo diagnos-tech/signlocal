@@ -5,7 +5,7 @@ use websign_protocol::ErrorCode;
 /// The code's section on the project site (a stable anchor, shared with the
 /// web SDK and `@websign/desktop`).
 pub(crate) fn docs_url(code: ErrorCode) -> String {
-    format!("https://diagnos-tech.github.io/web-esign/developers.html#error-{code:?}")
+    format!("https://diagnos-tech.github.io/signlocal/developers.html#error-{code:?}")
 }
 
 /// Advice for `code`. A `match` without a wildcard: the compiler fails when

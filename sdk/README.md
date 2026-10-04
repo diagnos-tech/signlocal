@@ -24,8 +24,8 @@ only the last hash is signed. `signature` is raw (ECDSA r‖s, or the RSA block)
 `certificate.der` and `certificate.chain`. The types follow your options: with `hash: "SHA-384"` and
 `algorithm: "ECDSA"`, `prepare`'s context and the result are typed with exactly those values.
 
-Guide with the errors table: [developers page](https://diagnos-tech.github.io/web-esign/developers.html).
-API reference: [`site/api/`](https://diagnos-tech.github.io/web-esign/api/). Examples (vanilla, React, Vue,
+Guide with the errors table: [developers page](https://diagnos-tech.github.io/signlocal/developers.html).
+API reference: [`site/api/`](https://diagnos-tech.github.io/signlocal/api/). Examples (vanilla, React, Vue,
 PAdES with pdf-lib + PKI.js): [`examples/web/`](../examples/web/).
 
 ## Is WebeSign ready?

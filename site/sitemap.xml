@@ -3,32 +3,32 @@
      project.toml; regenerate or edit if the product is renamed. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://diagnos-tech.github.io/web-esign/</loc>
+    <loc>https://diagnos-tech.github.io/signlocal/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://diagnos-tech.github.io/web-esign/download.html</loc>
+    <loc>https://diagnos-tech.github.io/signlocal/download.html</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://diagnos-tech.github.io/web-esign/developers.html</loc>
+    <loc>https://diagnos-tech.github.io/signlocal/developers.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://diagnos-tech.github.io/web-esign/test/</loc>
+    <loc>https://diagnos-tech.github.io/signlocal/test/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://diagnos-tech.github.io/web-esign/activate/</loc>
+    <loc>https://diagnos-tech.github.io/signlocal/activate/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://diagnos-tech.github.io/web-esign/privacy.html</loc>
+    <loc>https://diagnos-tech.github.io/signlocal/privacy.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>

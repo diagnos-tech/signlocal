@@ -1,6 +1,6 @@
 <!DOCTYPE html><html class="default" lang="en" data-base="../"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>FakeWebSign | @websign/sdk - v0.1.0</title><meta name="description" content="Documentation for @websign/sdk"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><link rel="stylesheet" href="../assets/custom.css"/><script defer src="../assets/main.js"></script><script async src="../assets/icons.js" id="tsd-icons-script"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar">
 <div class="tsd-toolbar-contents container"><a href="../index.html" class="title">@websign/sdk - v0.1.0</a>
-<div id="tsd-toolbar-links"><a href="../developers.html">Quickstart</a><a href="https://github.com/diagnos-tech/web-esign/tree/main/examples/web">Examples</a><a href="https://github.com/diagnos-tech/web-esign/tree/main/sdk">Source</a></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/>
+<div id="tsd-toolbar-links"><a href="../developers.html">Quickstart</a><a href="https://github.com/diagnos-tech/signlocal/tree/main/examples/web">Examples</a><a href="https://github.com/diagnos-tech/signlocal/tree/main/sdk">Source</a></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/>
 <ul role="listbox" id="tsd-search-results"></ul>
 <div id="tsd-search-status" aria-live="polite" aria-atomic="true">
 <div>Preparing search index...</div></div></dialog><a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-menu"></use></svg></a></div></header>
@@ -23,7 +23,7 @@ your page asked.</p>
 </div></div></section>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">FakeWebSign</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#certificates">certificates</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span> <a href="_websign_sdk.Certificate.html" class="tsd-signature-type tsd-kind-interface">Certificate</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#requests">requests</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span> <a href="_websign_sdk_testing.FakeRequest.html" class="tsd-signature-type tsd-kind-interface">FakeRequest</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#setscenario-1">setScenario</a><span class="tsd-signature-symbol">(</span><br/>        <span class="tsd-kind-parameter">scenario</span><span class="tsd-signature-symbol">:</span><br/>            <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">&quot;ready&quot;</span><br/>            <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">&quot;app-missing&quot;</span><br/>            <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">&quot;app-outdated&quot;</span><br/>            <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">&quot;extension-outdated&quot;</span><br/>            <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">&quot;sdk-outdated&quot;</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#failnext-1">failNext</a><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">code</span><span class="tsd-signature-symbol">:</span> <a href="../types/_websign_sdk.ErrorCode.html" class="tsd-signature-type tsd-kind-type-alias">ErrorCode</a><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">details</span><span class="tsd-signature-symbol">?:</span> <a href="../types/_websign_sdk.ErrorDetails.html" class="tsd-signature-type tsd-kind-type-alias">ErrorDetails</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#choose-1">choose</a><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">certificate</span><span class="tsd-signature-symbol">:</span> <a href="../types/_websign_sdk_testing.CertificatePick.html" class="tsd-signature-type tsd-kind-type-alias">CertificatePick</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#switchduringnextsign-1">switchDuringNextSign</a><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">certificate</span><span class="tsd-signature-symbol">:</span> <a href="../types/_websign_sdk_testing.CertificatePick.html" class="tsd-signature-type tsd-kind-type-alias">CertificatePick</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#verify-1">verify</a><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">result</span><span class="tsd-signature-symbol">:</span> <a href="_websign_sdk.SignResult.html" class="tsd-signature-type tsd-kind-interface">SignResult</a><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">data</span><span class="tsd-signature-symbol">:</span> <a href="../types/_websign_sdk.Bytes.html" class="tsd-signature-type tsd-kind-type-alias">Bytes</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#uninstall-1">uninstall</a><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/diagnos-tech/web-esign/blob/main/testing/index.ts#L70">sdk/src/testing/index.ts:70</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/diagnos-tech/signlocal/blob/main/testing/index.ts#L70">sdk/src/testing/index.ts:70</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -52,14 +52,14 @@ your page asked.</p>
 <div class="tsd-comment tsd-typography"><p>The certificates, as <code>sign()</code> and <code>certificates()</code> return them.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/diagnos-tech/web-esign/blob/main/testing/index.ts#L72">sdk/src/testing/index.ts:72</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/diagnos-tech/signlocal/blob/main/testing/index.ts#L72">sdk/src/testing/index.ts:72</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="requests"><code class="tsd-tag">Readonly</code><span>requests</span><a href="#requests" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">requests</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span> <a href="_websign_sdk_testing.FakeRequest.html" class="tsd-signature-type tsd-kind-interface">FakeRequest</a><span class="tsd-signature-symbol">[]</span></div>
 <div class="tsd-comment tsd-typography"><p>Every request your page made, oldest first.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/diagnos-tech/web-esign/blob/main/testing/index.ts#L74">sdk/src/testing/index.ts:74</a></li></ul></aside></section></section></details>
+<li>Defined in <a href="https://github.com/diagnos-tech/signlocal/blob/main/testing/index.ts#L74">sdk/src/testing/index.ts:74</a></li></ul></aside></section></section></details>
 <details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Methods"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
 <h2 class="tsd-anchor-link" id="methods-1">Methods<a href="#methods-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2></summary>
 <section>
@@ -85,7 +85,7 @@ your page asked.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/diagnos-tech/web-esign/blob/main/testing/index.ts#L83">sdk/src/testing/index.ts:83</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/diagnos-tech/signlocal/blob/main/testing/index.ts#L83">sdk/src/testing/index.ts:83</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="failnext"><span>fail<wbr/>Next</span><a href="#failnext" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -108,7 +108,7 @@ or the person ended it. Status checks are not affected.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/diagnos-tech/web-esign/blob/main/testing/index.ts#L92">sdk/src/testing/index.ts:92</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/diagnos-tech/signlocal/blob/main/testing/index.ts#L92">sdk/src/testing/index.ts:92</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="choose"><span>choose</span><a href="#choose" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -124,7 +124,7 @@ Default: the first one the request can use.</p>
 <li><span><span class="tsd-kind-parameter">certificate</span>: <a href="../types/_websign_sdk_testing.CertificatePick.html" class="tsd-signature-type tsd-kind-type-alias">CertificatePick</a></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/diagnos-tech/web-esign/blob/main/testing/index.ts#L97">sdk/src/testing/index.ts:97</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/diagnos-tech/signlocal/blob/main/testing/index.ts#L97">sdk/src/testing/index.ts:97</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="switchduringnextsign"><span>switch<wbr/>During<wbr/>Next<wbr/>Sign</span><a href="#switchduringnextsign" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -146,7 +146,7 @@ first digest, so <code>prepare</code> runs twice and the second certificate sign
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/diagnos-tech/web-esign/blob/main/testing/index.ts#L105">sdk/src/testing/index.ts:105</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/diagnos-tech/signlocal/blob/main/testing/index.ts#L105">sdk/src/testing/index.ts:105</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="verify"><span>verify</span><a href="#verify" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -162,7 +162,7 @@ first digest, so <code>prepare</code> runs twice and the second certificate sign
 <li><span><span class="tsd-kind-parameter">data</span>: <a href="../types/_websign_sdk.Bytes.html" class="tsd-signature-type tsd-kind-type-alias">Bytes</a></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/diagnos-tech/web-esign/blob/main/testing/index.ts#L107">sdk/src/testing/index.ts:107</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/diagnos-tech/signlocal/blob/main/testing/index.ts#L107">sdk/src/testing/index.ts:107</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="uninstall"><span>uninstall</span><a href="#uninstall" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -173,7 +173,7 @@ first digest, so <code>prepare</code> runs twice and the second certificate sign
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/diagnos-tech/web-esign/blob/main/testing/index.ts#L109">sdk/src/testing/index.ts:109</a></li></ul></aside></div></li></ul></section></section></details></div>
+<li>Defined in <a href="https://github.com/diagnos-tech/signlocal/blob/main/testing/index.ts#L109">sdk/src/testing/index.ts:109</a></li></ul></aside></div></li></ul></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
@@ -194,7 +194,7 @@ first digest, so <code>prepare</code> runs twice and the second certificate sign
 <details open class="tsd-accordion tsd-page-navigation-section"><summary class="tsd-accordion-summary" data-key="section-Methods"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>Methods</summary>
 <div><a href="#setscenario"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>set<wbr/>Scenario</span></a><a href="#failnext"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>fail<wbr/>Next</span></a><a href="#choose"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>choose</span></a><a href="#switchduringnextsign"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>switch<wbr/>During<wbr/>Next<wbr/>Sign</span></a><a href="#verify"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>verify</span></a><a href="#uninstall"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>uninstall</span></a></div></details></div></details></div>
 <div class="site-menu">
-<nav id="tsd-sidebar-links" class="tsd-navigation"><a href="../developers.html" class="tsd-nav-link">Quickstart</a><a href="https://github.com/diagnos-tech/web-esign/tree/main/examples/web" class="tsd-nav-link">Examples</a><a href="https://github.com/diagnos-tech/web-esign/tree/main/sdk" class="tsd-nav-link">Source</a></nav>
+<nav id="tsd-sidebar-links" class="tsd-navigation"><a href="../developers.html" class="tsd-nav-link">Quickstart</a><a href="https://github.com/diagnos-tech/signlocal/tree/main/examples/web" class="tsd-nav-link">Examples</a><a href="https://github.com/diagnos-tech/signlocal/tree/main/sdk" class="tsd-nav-link">Source</a></nav>
 <nav class="tsd-navigation"><a href="../modules.html">@websign/sdk - v0.1.0</a>
 <ul class="tsd-small-nested-navigation" id="tsd-nav-container">
 <li>Loading...</li></ul></nav></div></div></div><footer></footer>

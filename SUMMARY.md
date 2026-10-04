@@ -1,4 +1,4 @@
-# web-esign
+# signlocal
 
 WebeSign: sign with your own certificate from any website or desktop program. Start with README.md.
 

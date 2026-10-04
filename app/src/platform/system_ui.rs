@@ -61,7 +61,7 @@ mod tests {
 
     #[test]
     fn only_https_links_open() {
-        assert!(is_web_link("https://diagnos-tech.github.io/web-esign/"));
+        assert!(is_web_link("https://diagnos-tech.github.io/signlocal/"));
         assert!(is_web_link("HTTPS://example.com"));
         assert!(!is_web_link("https://"));
         assert!(!is_web_link("http://example.com"));

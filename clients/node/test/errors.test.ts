@@ -8,7 +8,7 @@ describe("WebSignError", () => {
       const error = new WebSignError(code, "m");
       expect(error.hint.length).toBeGreaterThan(20);
       expect(error.docsUrl).toBe(
-        `https://diagnos-tech.github.io/web-esign/developers.html#error-${code}`,
+        `https://diagnos-tech.github.io/signlocal/developers.html#error-${code}`,
       );
       expect(error.code).toBe(code);
     }

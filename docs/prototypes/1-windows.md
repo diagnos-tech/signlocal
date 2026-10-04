@@ -91,7 +91,7 @@ Decisions and reasons:
 ## CI evidence (software keys)
 
 Workflow: `.github/workflows/prototypes.yml`, job `windows` (`windows-latest`).
-Run: [36635313691](https://github.com/diagnos-tech/web-esign/actions/runs/36635313691) · Commit: `bdfa98f` · Runner: Windows Server 2025 Datacenter 10.0.26100, PowerShell 7.6.6
+Run: [36635313691](https://github.com/diagnos-tech/signlocal/actions/runs/36635313691) · Commit: `bdfa98f` · Runner: Windows Server 2025 Datacenter 10.0.26100, PowerShell 7.6.6
 
 ### Cases and expectations (`windows/ci-windows.ps1`)
 
@@ -134,7 +134,7 @@ Probe report: `report-windows` artifact of the same run (no names or serial numb
 
 The step is `continue-on-error`: the result is evidence in both directions.
 
-Run [36637051578](https://github.com/diagnos-tech/web-esign/actions/runs/36637051578) (Windows Server 2025),
+Run [36637051578](https://github.com/diagnos-tech/signlocal/actions/runs/36637051578) (Windows Server 2025),
 test package signed with a self-signed certificate and installed with `Add-AppxPackage`:
 
 | Check | Result |

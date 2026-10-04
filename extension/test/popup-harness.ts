@@ -7,7 +7,7 @@ import { vi } from "vitest";
 import type { ProbeResult } from "../src/shared/runtime-messages";
 import { fakeBrowser } from "./fakes/browser";
 
-export const HOME = "https://diagnos-tech.github.io/web-esign/";
+export const HOME = "https://diagnos-tech.github.io/signlocal/";
 
 /** `tabs.create`, which the shared fake lacks; the popup opens links with it. */
 export const createTab = vi.fn(async (_properties: { url: string }) => ({}));

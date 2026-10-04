@@ -6,15 +6,15 @@
 <meta name="color-scheme" content="light dark">
 <title>Download WebeSign</title>
 <meta name="description" content="Install the WebeSign app for Windows, macOS or Linux and the extension for Chrome, Edge, Brave, Opera or Firefox.">
-<link rel="canonical" href="https://diagnos-tech.github.io/web-esign/download.html">
+<link rel="canonical" href="https://diagnos-tech.github.io/signlocal/download.html">
 <meta name="theme-color" content="#F5F6F9" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="WebeSign">
 <meta property="og:title" content="Download WebeSign">
 <meta property="og:description" content="Install the WebeSign app for Windows, macOS or Linux and the extension for Chrome, Edge, Brave, Opera or Firefox.">
-<meta property="og:url" content="https://diagnos-tech.github.io/web-esign/download.html">
-<meta property="og:image" content="https://diagnos-tech.github.io/web-esign/assets/og.png">
+<meta property="og:url" content="https://diagnos-tech.github.io/signlocal/download.html">
+<meta property="og:image" content="https://diagnos-tech.github.io/signlocal/assets/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="WebeSign: use your smart card, USB token, or OS certificate to sign on any website.">
@@ -22,7 +22,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Download WebeSign">
 <meta name="twitter:description" content="Install the WebeSign app for Windows, macOS or Linux and the extension for Chrome, Edge, Brave, Opera or Firefox.">
-<meta name="twitter:image" content="https://diagnos-tech.github.io/web-esign/assets/og.png">
+<meta name="twitter:image" content="https://diagnos-tech.github.io/signlocal/assets/og.png">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/tokens.css">
 <link rel="stylesheet" href="assets/site.css">
@@ -54,11 +54,11 @@
 <h3 class="panel-h">Windows</h3>
 <p><span data-i18n="dl.win">The installer script checks the download, installs WebeSign for your user (no administrator rights) and connects it to your browsers.</span> <span data-i18n="dl.win_arch">For x64 and arm64 PCs.</span></p>
 <p class="muted" data-i18n="dl.private_h">While the repository is private</p>
-<pre><code>gh release download v&lt;v&gt; --repo diagnos-tech/web-esign --pattern install.ps1 --pattern SHA256SUMS
+<pre><code>gh release download v&lt;v&gt; --repo diagnos-tech/signlocal --pattern install.ps1 --pattern SHA256SUMS
 # check install.ps1 against SHA256SUMS (see "Check every download"), then:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Version &lt;v&gt;</code></pre>
 <p class="muted" data-i18n="dl.public_h">Once the repository is public</p>
-<pre><code>$base = 'https://github.com/diagnos-tech/web-esign/releases/download/v&lt;v&gt;'
+<pre><code>$base = 'https://github.com/diagnos-tech/signlocal/releases/download/v&lt;v&gt;'
 Invoke-WebRequest -UseBasicParsing -Uri "$base/install.ps1" -OutFile install.ps1
 Invoke-WebRequest -UseBasicParsing -Uri "$base/SHA256SUMS" -OutFile SHA256SUMS</code></pre>
 <p class="tip" data-i18n="dl.win_warn">If you unzip and run websign.exe by hand, SmartScreen says “Windows protected your PC”: click More info, then Run anyway. The script avoids this prompt.</p>
@@ -68,11 +68,11 @@ Invoke-WebRequest -UseBasicParsing -Uri "$base/SHA256SUMS" -OutFile SHA256SUMS</
 <h3 class="panel-h">macOS</h3>
 <p><span data-i18n="dl.mac">The installer script checks the download, installs WebeSign.app without sudo and connects it to your browsers.</span> <span data-i18n="dl.mac_arch">One app for Apple silicon and Intel Macs.</span></p>
 <p class="muted" data-i18n="dl.private_h">While the repository is private</p>
-<pre><code>gh release download v&lt;v&gt; --repo diagnos-tech/web-esign --pattern install.sh --pattern SHA256SUMS
+<pre><code>gh release download v&lt;v&gt; --repo diagnos-tech/signlocal --pattern install.sh --pattern SHA256SUMS
 shasum -a 256 --ignore-missing -c SHA256SUMS &amp;&amp; sh install.sh --version &lt;v&gt;</code></pre>
 <p class="muted" data-i18n="dl.public_h">Once the repository is public</p>
-<pre><code>curl -fsSLO https://github.com/diagnos-tech/web-esign/releases/download/v&lt;v&gt;/install.sh
-curl -fsSLO https://github.com/diagnos-tech/web-esign/releases/download/v&lt;v&gt;/SHA256SUMS
+<pre><code>curl -fsSLO https://github.com/diagnos-tech/signlocal/releases/download/v&lt;v&gt;/install.sh
+curl -fsSLO https://github.com/diagnos-tech/signlocal/releases/download/v&lt;v&gt;/SHA256SUMS
 shasum -a 256 --ignore-missing -c SHA256SUMS &amp;&amp; sh install.sh --version &lt;v&gt;</code></pre>
 <p class="tip" data-i18n="dl.mac_warn">The app is not notarized yet. If you installed it by hand and macOS says it cannot be opened, open System Settings, Privacy &amp; Security, and click Open Anyway, or run: xattr -dr com.apple.quarantine /Applications/WebeSign.app</p>
 </div>
@@ -81,11 +81,11 @@ shasum -a 256 --ignore-missing -c SHA256SUMS &amp;&amp; sh install.sh --version 
 <h3 class="panel-h">Linux</h3>
 <p><span data-i18n="dl.linux">The installer script works on any distribution and installs for your user, without root. On Debian, Ubuntu, Fedora and Rocky Linux it can install the system package instead.</span> <span data-i18n="dl.linux_arch">For amd64 and arm64.</span></p>
 <p class="muted" data-i18n="dl.private_h">While the repository is private</p>
-<pre><code>gh release download v&lt;v&gt; --repo diagnos-tech/web-esign --pattern install.sh --pattern SHA256SUMS
+<pre><code>gh release download v&lt;v&gt; --repo diagnos-tech/signlocal --pattern install.sh --pattern SHA256SUMS
 sha256sum --ignore-missing -c SHA256SUMS &amp;&amp; sh install.sh --version &lt;v&gt;</code></pre>
 <p class="muted" data-i18n="dl.public_h">Once the repository is public</p>
-<pre><code>curl -fsSLO https://github.com/diagnos-tech/web-esign/releases/download/v&lt;v&gt;/install.sh
-curl -fsSLO https://github.com/diagnos-tech/web-esign/releases/download/v&lt;v&gt;/SHA256SUMS
+<pre><code>curl -fsSLO https://github.com/diagnos-tech/signlocal/releases/download/v&lt;v&gt;/install.sh
+curl -fsSLO https://github.com/diagnos-tech/signlocal/releases/download/v&lt;v&gt;/SHA256SUMS
 sha256sum --ignore-missing -c SHA256SUMS &amp;&amp; sh install.sh --version &lt;v&gt;</code></pre>
 <h4 data-i18n="dl.pkgs_h">System packages</h4>
 <div class="table-wrap"><table>
@@ -136,9 +136,9 @@ if ((Get-FileHash -Algorithm SHA256 -LiteralPath $file).Hash -ne $m.Matches[0].G
 }
 "${file}: OK"</code></pre>
 <p data-i18n="dl.mismatch">A mismatch means the file is damaged or was altered: delete it and do not run it.</p>
-<p><a href="https://github.com/diagnos-tech/web-esign/blob/main/docs/install.md" data-i18n="dl.guide">Full guide, file names and uninstall steps: docs/install.md</a> · <a href="https://github.com/diagnos-tech/web-esign/releases" data-i18n="dl.releases">All releases</a></p>
+<p><a href="https://github.com/diagnos-tech/signlocal/blob/main/docs/install.md" data-i18n="dl.guide">Full guide, file names and uninstall steps: docs/install.md</a> · <a href="https://github.com/diagnos-tech/signlocal/releases" data-i18n="dl.releases">All releases</a></p>
 </section>
 </main>
-<footer class="foot"><span data-i18n="foot.license">Free software (GPL-3.0-or-later; SDK and clients Apache-2.0)</span> · <a href="https://github.com/diagnos-tech/web-esign" data-i18n="foot.source">Source code</a> · <a href="https://github.com/diagnos-tech/web-esign/blob/main/SECURITY.md" data-i18n="foot.security">Security</a></footer>
+<footer class="foot"><span data-i18n="foot.license">Free software (GPL-3.0-or-later; SDK and clients Apache-2.0)</span> · <a href="https://github.com/diagnos-tech/signlocal" data-i18n="foot.source">Source code</a> · <a href="https://github.com/diagnos-tech/signlocal/blob/main/SECURITY.md" data-i18n="foot.security">Security</a></footer>
 </body>
 </html>

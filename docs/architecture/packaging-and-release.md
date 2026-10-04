@@ -84,19 +84,19 @@ per-OS steps; the shape is:
 
 ```sh
 # macOS and Linux (private repository: authenticated with gh)
-gh release download v<version> --repo diagnos-tech/web-esign --pattern install.sh --pattern SHA256SUMS
+gh release download v<version> --repo diagnos-tech/signlocal --pattern install.sh --pattern SHA256SUMS
 sha256sum --ignore-missing -c SHA256SUMS && sh install.sh --version <version>   # macOS: shasum -a 256
 ```
 
 ```powershell
 # Windows (private repository: authenticated with gh)
-gh release download v<version> --repo diagnos-tech/web-esign --pattern install.ps1 --pattern SHA256SUMS
+gh release download v<version> --repo diagnos-tech/signlocal --pattern install.ps1 --pattern SHA256SUMS
 # verify install.ps1 against SHA256SUMS (docs/install.md), then:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Version <version>
 ```
 
 Once the repository is public, the same files come from
-`https://github.com/diagnos-tech/web-esign/releases/download/v<version>/`.
+`https://github.com/diagnos-tech/signlocal/releases/download/v<version>/`.
 
 The scripts use `gh` when it is installed and logged in, else
 `WEBSIGN_GITHUB_TOKEN` as a bearer token, else anonymous HTTPS. They:

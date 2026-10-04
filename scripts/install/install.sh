@@ -15,7 +15,7 @@ set -eu
 SLUG=websign
 APP_NAME=WebeSign
 BUNDLE_ID=dev.websign.app
-REPO=${WEBSIGN_REPO:-diagnos-tech/web-esign}
+REPO=${WEBSIGN_REPO:-diagnos-tech/signlocal}
 
 VERSION=${WEBSIGN_VERSION:-}
 YES=0

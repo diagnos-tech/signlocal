@@ -12,7 +12,7 @@ Free and Open Source for everyone.
 [![License: Apache-2.0](https://img.shields.io/badge/SDK%20%26%20clients-Apache--2.0-green)](sdk/LICENSE)
 [![License: CC0-1.0](https://img.shields.io/badge/device%20data-CC0--1.0-lightgrey)](LICENSE-CC0)
 
-[Install](docs/install.md) · [Website](https://diagnos-tech.github.io/web-esign/) ·
+[Install](docs/install.md) · [Website](https://diagnos-tech.github.io/signlocal/) ·
 [For developers](#for-developers) · [Compatibility](docs/compatibility.md) · [Security](SECURITY.md)
 
 </div>
@@ -72,7 +72,7 @@ other browsers; tokens with only a PKCS#11 driver may not work from Safari's san
 ## Install
 
 Two parts: the **app** and the **browser extension**. Pick your system in
-[`docs/install.md`](docs/install.md) or on the [download page](https://diagnos-tech.github.io/web-esign/download.html):
+[`docs/install.md`](docs/install.md) or on the [download page](https://diagnos-tech.github.io/signlocal/download.html):
 
 - **Windows** (x64, arm64): PowerShell installer script, or the zip.
 - **macOS** (Apple silicon and Intel): installer script, or the universal zip.

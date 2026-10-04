@@ -9,7 +9,7 @@ computer) and the **browser extension**. Install both, in three steps:
 2. Add the [browser extension](#browser-extension).
 3. Sign a harmless sample on the website's `/test` page to check that everything works.
 
-The [download page](https://diagnos-tech.github.io/web-esign/download.html) shows the same steps for your
+The [download page](https://diagnos-tech.github.io/signlocal/download.html) shows the same steps for your
 system and browser. Prerelease builds are **not code-signed yet** (see [Why unsigned?](#why-unsigned)), so each OS shows a
 warning once. File names below are those of [`docs/architecture/packaging-and-release.md`](architecture/packaging-and-release.md);
 replace `<v>` with the release version (for example `0.1.0`).
@@ -22,11 +22,11 @@ prereleases, so every command below names the tag (`v<v>`) instead of relying on
 The repository is **private for now**, so downloads need an authenticated GitHub CLI (`gh auth login`):
 
 ```sh
-gh release download v<v> --repo diagnos-tech/web-esign --pattern install.sh --pattern SHA256SUMS
+gh release download v<v> --repo diagnos-tech/signlocal --pattern install.sh --pattern SHA256SUMS
 ```
 
 Once the repository is public, the same files are at
-`https://github.com/diagnos-tech/web-esign/releases/download/v<v>/<file>` and `gh` is no longer needed.
+`https://github.com/diagnos-tech/signlocal/releases/download/v<v>/<file>` and `gh` is no longer needed.
 
 ### Verify every download
 
@@ -61,7 +61,7 @@ administrator rights are needed.
 
 ```powershell
 # Private repository (now)
-gh release download v<v> --repo diagnos-tech/web-esign --pattern install.ps1 --pattern SHA256SUMS
+gh release download v<v> --repo diagnos-tech/signlocal --pattern install.ps1 --pattern SHA256SUMS
 # verify install.ps1 with the checksum block above ($file = 'install.ps1'), optionally read it, then:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Version <v>
 ```
@@ -71,7 +71,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Version <v>
 ```powershell
 # Once the repository is public: download, verify as above, then run
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
-$base = 'https://github.com/diagnos-tech/web-esign/releases/download/v<v>'
+$base = 'https://github.com/diagnos-tech/signlocal/releases/download/v<v>'
 Invoke-WebRequest -UseBasicParsing -Uri "$base/install.ps1" -OutFile install.ps1
 Invoke-WebRequest -UseBasicParsing -Uri "$base/SHA256SUMS" -OutFile SHA256SUMS
 ```
@@ -94,12 +94,12 @@ remembered sites), delete `%LOCALAPPDATA%\Programs\WebeSign`, and remove that fo
 
 ```sh
 # Private repository (now)
-gh release download v<v> --repo diagnos-tech/web-esign --pattern install.sh --pattern SHA256SUMS
+gh release download v<v> --repo diagnos-tech/signlocal --pattern install.sh --pattern SHA256SUMS
 shasum -a 256 --ignore-missing -c SHA256SUMS && sh install.sh --version <v>
 
 # Once the repository is public: same steps, downloading with curl
-curl -fsSLO https://github.com/diagnos-tech/web-esign/releases/download/v<v>/install.sh
-curl -fsSLO https://github.com/diagnos-tech/web-esign/releases/download/v<v>/SHA256SUMS
+curl -fsSLO https://github.com/diagnos-tech/signlocal/releases/download/v<v>/install.sh
+curl -fsSLO https://github.com/diagnos-tech/signlocal/releases/download/v<v>/SHA256SUMS
 shasum -a 256 --ignore-missing -c SHA256SUMS && sh install.sh --version <v>
 ```
 
@@ -123,12 +123,12 @@ the app and the link. By hand: `websign uninstall` (add `--purge` to also delete
 
 ```sh
 # Private repository (now)
-gh release download v<v> --repo diagnos-tech/web-esign --pattern install.sh --pattern SHA256SUMS
+gh release download v<v> --repo diagnos-tech/signlocal --pattern install.sh --pattern SHA256SUMS
 sha256sum --ignore-missing -c SHA256SUMS && sh install.sh --version <v>
 
 # Once the repository is public: same steps, downloading with curl
-curl -fsSLO https://github.com/diagnos-tech/web-esign/releases/download/v<v>/install.sh
-curl -fsSLO https://github.com/diagnos-tech/web-esign/releases/download/v<v>/SHA256SUMS
+curl -fsSLO https://github.com/diagnos-tech/signlocal/releases/download/v<v>/install.sh
+curl -fsSLO https://github.com/diagnos-tech/signlocal/releases/download/v<v>/SHA256SUMS
 sha256sum --ignore-missing -c SHA256SUMS && sh install.sh --version <v>
 ```
 
@@ -144,11 +144,11 @@ architecture and `SHA256SUMS`, verify, then install:
 
 ```sh
 # Ubuntu 22.04 / 24.04, Debian 12 (arm64: websign_<v>_arm64.deb)
-gh release download v<v> --repo diagnos-tech/web-esign --pattern 'websign_<v>_amd64.deb' --pattern SHA256SUMS
+gh release download v<v> --repo diagnos-tech/signlocal --pattern 'websign_<v>_amd64.deb' --pattern SHA256SUMS
 sha256sum --ignore-missing -c SHA256SUMS && sudo apt install ./websign_<v>_amd64.deb
 
 # Fedora 42, Rocky Linux 9 (arm64: websign-<v>-1.aarch64.rpm)
-gh release download v<v> --repo diagnos-tech/web-esign --pattern 'websign-<v>-1.x86_64.rpm' --pattern SHA256SUMS
+gh release download v<v> --repo diagnos-tech/signlocal --pattern 'websign-<v>-1.x86_64.rpm' --pattern SHA256SUMS
 sha256sum --ignore-missing -c SHA256SUMS && sudo dnf install ./websign-<v>-1.x86_64.rpm
 ```
 

@@ -25,7 +25,7 @@ export const FIREFOX_AMO_SLUG = "";
 export const MIN_APP_VERSION = "0.1.0";
 
 /** The project's site; its download page lists every way to install. */
-export const HOMEPAGE = "https://diagnos-tech.github.io/web-esign/";
+export const HOMEPAGE = "https://diagnos-tech.github.io/signlocal/";
 
 /** Public key that pins the development extension ID. */
 export const DEV_KEY =

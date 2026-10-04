@@ -92,7 +92,7 @@ SoftHSM proves the sandbox rules for files and code, but not PC/SC: a real token
 still talks to the reader (through `com.apple.security.smartcard`), writes logs, and reads configuration in
 its own places. Only script §4 with the real token settles the question.
 
-Result in CI (run [36629289998](https://github.com/diagnos-tech/web-esign/actions/runs/36629289998),
+Result in CI (run [36629289998](https://github.com/diagnos-tech/signlocal/actions/runs/36629289998),
 macOS 26.6.2 arm64):
 
 | ID | Result | Evidence |

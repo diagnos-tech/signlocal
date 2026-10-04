@@ -144,7 +144,7 @@ container if it created it.
 
 ## 4. What was proven in CI
 
-Run [36629289998](https://github.com/diagnos-tech/web-esign/actions/runs/36629289998), job `macos`,
+Run [36629289998](https://github.com/diagnos-tech/signlocal/actions/runs/36629289998), job `macos`,
 on 2026-09-29: **macOS 26.6.2 (25G83), arm64**, ad hoc signed binary.
 
 **Keychain** (`ci-macos.sh`, disposable keychain with 3 test identities; all signatures

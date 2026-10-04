@@ -10,7 +10,7 @@ version = "0.1.0"
 edition = "2024"
 rust-version = "1.90"
 license = "GPL-3.0-or-later"
-repository = "https://github.com/diagnos-tech/web-esign"
+repository = "https://github.com/diagnos-tech/signlocal"
 publish = false
 
 [workspace.dependencies]

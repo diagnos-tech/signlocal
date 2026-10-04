@@ -11,10 +11,10 @@ pub const TAGLINE: &str =
     "Use your smart card, USB token, or OS certificate to sign on any website.";
 
 /// Source repository URL.
-pub const REPOSITORY: &str = "https://github.com/diagnos-tech/web-esign";
+pub const REPOSITORY: &str = "https://github.com/diagnos-tech/signlocal";
 
 /// Website (download, privacy, `/activate`, `/test`).
-pub const HOMEPAGE: &str = "https://diagnos-tech.github.io/web-esign/";
+pub const HOMEPAGE: &str = "https://diagnos-tech.github.io/signlocal/";
 
 /// Native messaging host name (`[a-z0-9_.]` only).
 pub const NATIVE_HOST: &str = "dev.websign.host";

@@ -35,7 +35,7 @@ $ProgressPreference = 'SilentlyContinue'
 # Identifiers come from project.toml; `cargo xtask check release` keeps them equal.
 $Script:Slug = 'websign'
 $Script:AppName = 'WebeSign'
-$Script:Repo = if ($env:WEBSIGN_REPO) { $env:WEBSIGN_REPO } else { 'diagnos-tech/web-esign' }
+$Script:Repo = if ($env:WEBSIGN_REPO) { $env:WEBSIGN_REPO } else { 'diagnos-tech/signlocal' }
 
 function Say([string]$Message) { [Console]::Error.WriteLine($Message) }
 

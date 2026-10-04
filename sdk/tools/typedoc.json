@@ -12,13 +12,13 @@
   "hideGenerator": true,
   "githubPages": false,
   "cleanOutputDir": true,
-  "sourceLinkTemplate": "https://github.com/diagnos-tech/web-esign/blob/main/{path}#L{line}",
+  "sourceLinkTemplate": "https://github.com/diagnos-tech/signlocal/blob/main/{path}#L{line}",
   "disableGit": true,
   "basePath": "../..",
   "navigationLinks": {
     "Quickstart": "../developers.html",
-    "Examples": "https://github.com/diagnos-tech/web-esign/tree/main/examples/web",
-    "Source": "https://github.com/diagnos-tech/web-esign/tree/main/sdk"
+    "Examples": "https://github.com/diagnos-tech/signlocal/tree/main/examples/web",
+    "Source": "https://github.com/diagnos-tech/signlocal/tree/main/sdk"
   },
   "sort": ["kind", "instance-first", "source-order"],
   "treatWarningsAsErrors": true
