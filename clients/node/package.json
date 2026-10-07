@@ -32,9 +32,9 @@
     "smoke": "node scripts/smoke.mjs && node scripts/smoke.cjs"
   },
   "devDependencies": {
-    "@types/node": "26.6.3",
+    "@types/node": "26.6.4",
     "typescript": "7.0.2",
-    "vitest": "5.0.2"
+    "vitest": "5.0.3"
   },
   "sideEffects": false,
   "main": "./dist/index.js",
