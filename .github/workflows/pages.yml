@@ -1,14 +1,12 @@
 # Publishes site/ to GitHub Pages: the SDK, the extension popup and the app
-# link to /download, /test and /activate, so the site must follow main.
+# link to /download, /test and /activate, so the site must follow develop.
 # The SDK bundle is rebuilt here so the deployed test page always matches
 # sdk/src, even if a commit forgot to run site/build-sdk.sh.
-# TODO(gustavo): enable Pages with "Source: GitHub Actions" in the repository
-# settings; until then the deploy job fails with "Pages not enabled".
 name: pages
 
 on:
   push:
-    branches: [main]
+    branches: [develop]
     paths:
       - "site/**"
       - "sdk/**"
