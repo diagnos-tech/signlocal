@@ -1,0 +1,82 @@
+/*
+ * Web-only design tokens, layered on design/tokens.css. Prefix --web-: the
+ * app's token test (app/src/ui/theme/css_tests.rs) reads only --ws-* from
+ * tokens.css, so nothing here needs a Rust counterpart. Light only.
+ */
+:root {
+  /* Ink ramp around --ws-accent (#3346D1). 100, 600, 700, 800 equal the shared tokens. */
+  --web-ink-50: #F5F6FE;
+  --web-ink-100: #EEF0FD;
+  --web-ink-200: #DADFFA;
+  --web-ink-300: #B9C1F5;
+  --web-ink-400: #8B97EC;
+  --web-ink-500: #5B6BE0;
+  --web-ink-600: #3346D1;
+  --web-ink-700: #2A3BB8;
+  --web-ink-800: #2332A0;
+  --web-ink-900: #1A2470;
+
+  /* Surfaces */
+  --web-page: #FFFFFF;
+  --web-band: #F7F8FB;
+  --web-hero: radial-gradient(1100px 520px at 88% -8%, #E3E7FC 0%, #E3E7FC00 62%),
+    linear-gradient(180deg, #F8F9FF 0%, #FFFFFF 72%);
+  --web-tile-hover-border: #B9C1F5;
+  --web-tile-hover-bg: #F5F6FE;
+
+  /* Command blocks: a dark "terminal" surface inside the light page */
+  --web-code-bg: #141722;
+  --web-code-fg: #E7E9EF;
+  --web-code-muted: #A3AAB9;
+  --web-code-accent: #9DA8FF;
+
+  /* Operating-system marks (single-colour marks; browser logos keep their own colours) */
+  --web-brand-windows: #0078D4;
+  --web-brand-apple: #1D1D1F;
+  --web-brand-linux: #1D1D1F;
+
+  /* Type */
+  --web-font-sans: "Inter", "Inter Fallback", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --web-font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Consolas, monospace;
+  --web-text-display: 700 clamp(2.5rem, 1.75rem + 3.2vw, 4rem) / 1.04 var(--web-font-sans);
+  --web-text-h1: 700 clamp(2rem, 1.6rem + 1.8vw, 2.75rem) / 1.1 var(--web-font-sans);
+  --web-text-h2: 650 clamp(1.5rem, 1.3rem + 0.9vw, 2rem) / 1.2 var(--web-font-sans);
+  --web-text-h3: 600 1.25rem / 1.35 var(--web-font-sans);
+  --web-text-lead: 400 clamp(1.125rem, 1.05rem + 0.35vw, 1.25rem) / 1.55 var(--web-font-sans);
+  --web-text-body: 400 1rem / 1.6 var(--web-font-sans);
+  --web-text-small: 400 0.875rem / 1.5 var(--web-font-sans);
+  --web-text-label: 600 0.8125rem / 1.4 var(--web-font-sans);
+  --web-text-code: 400 0.875rem / 1.65 var(--web-font-mono);
+  --web-tracking-display: -0.03em;
+  --web-tracking-h1: -0.025em;
+  --web-tracking-h2: -0.02em;
+  --web-tracking-h3: -0.01em;
+  --web-measure: 68ch;
+
+  /* Space: extends --ws-space-1…8 (4…32 px) */
+  --web-space-10: 40px;
+  --web-space-12: 48px;
+  --web-space-16: 64px;
+  --web-space-20: 80px;
+  --web-space-24: 96px;
+  --web-space-32: 128px;
+  --web-gutter: clamp(16px, 4vw, 32px);
+  --web-content: 1120px;
+  --web-content-narrow: 760px;
+  --web-wizard: 960px;
+
+  /* Shape */
+  --web-radius-xl: 16px;
+  --web-radius-2xl: 24px;
+  --web-radius-full: 999px;
+  --web-control-lg: 48px;
+  --web-control-md: 40px;
+  --web-touch: 44px;
+
+  /* Elevation */
+  --web-shadow-xs: 0 1px 2px #1417220D;
+  --web-shadow-sm: 0 1px 2px #1417220D, 0 2px 8px #1417220F;
+  --web-shadow-md: 0 2px 4px #1417220A, 0 12px 32px #14172214;
+  --web-shadow-lg: 0 4px 8px #1417220A, 0 24px 64px -12px #1417222E;
+  --web-shadow-ink: 0 8px 24px -8px #3346D166;
+}
