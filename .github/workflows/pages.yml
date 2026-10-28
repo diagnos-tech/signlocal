@@ -78,7 +78,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
       # Informative: the CDN may serve the old build for a minute, so this retries and,
       # if it still does, says so without failing a deploy that already succeeded.
       - name: The new build is live
