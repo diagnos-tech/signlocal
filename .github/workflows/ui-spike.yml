@@ -35,7 +35,7 @@ jobs:
       - name: Run approaches
         timeout-minutes: 10
         run: bash "$KIT/ui-probe/ci/run-spike.sh" windows
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: ui-spike-windows
@@ -57,7 +57,7 @@ jobs:
       - name: Run approaches
         timeout-minutes: 10
         run: bash "$KIT/ui-probe/ci/run-spike.sh" macos
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: ui-spike-macos
@@ -85,7 +85,7 @@ jobs:
       - name: Run approaches
         timeout-minutes: 10
         run: xvfb-run -a -s "-screen 0 1280x800x24" bash "$KIT/ui-probe/ci/run-spike.sh" ubuntu-24.04
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: ui-spike-ubuntu-24.04
@@ -150,7 +150,7 @@ jobs:
         if: always()
         shell: sh
         run: echo "name=$(echo '${{ matrix.image }}' | tr ':' '-' | sed 's/-latest//')" >> "$GITHUB_OUTPUT"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: ui-spike-${{ steps.art.outputs.name }}
