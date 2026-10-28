@@ -1,5 +1,5 @@
-import { expect, test } from "@playwright/test";
 import { allPaths } from "./helpers.ts";
+import { expect, test } from "./test.ts";
 
 test.describe("every page of every language", () => {
   for (const path of allPaths()) {

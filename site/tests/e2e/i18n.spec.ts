@@ -1,5 +1,5 @@
-import { expect, test } from "@playwright/test";
 import { USER_AGENTS, wizardUrl } from "./helpers.ts";
+import { expect, test } from "./test.ts";
 
 test.describe("a visitor whose browser prefers Brazilian Portuguese", () => {
   test.use({ locale: "pt-BR", userAgent: USER_AGENTS.macSafari });

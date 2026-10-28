@@ -1,5 +1,5 @@
-import { expect, test } from "@playwright/test";
 import { USER_AGENTS, wizardUrl } from "./helpers.ts";
+import { expect, test } from "./test.ts";
 
 // Runs against a build made with SIGNLOCAL_SITE_RELEASE=none (CI does a second build for it)
 // and skips itself against one that has a release.

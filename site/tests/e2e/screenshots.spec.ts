@@ -1,5 +1,5 @@
-import { test } from "@playwright/test";
 import { RESULTS, USER_AGENTS, wizardUrl } from "./helpers.ts";
+import { test } from "./test.ts";
 
 // Full-page pictures for the visual review (spec §9.5): saved, not compared. CI uploads
 // test-results/screenshots as the `site-screenshots` artifact.

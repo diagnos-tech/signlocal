@@ -1,6 +1,6 @@
-import { expect, test } from "@playwright/test";
 import { recipe } from "../../src/wizard/recipe.ts";
 import { RESULTS, USER_AGENTS, visibleCards, wizardUrl } from "./helpers.ts";
+import { expect, test } from "./test.ts";
 
 test.describe("on Windows with Chrome", () => {
   test.use({ userAgent: USER_AGENTS.windowsChrome });

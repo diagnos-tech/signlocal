@@ -1,5 +1,5 @@
-import { devices, expect, test } from "@playwright/test";
 import { USER_AGENTS, wizardUrl } from "./helpers.ts";
+import { devices, expect, test } from "./test.ts";
 
 for (const [name, device] of [
   ["iPhone", devices["iPhone 14"]],

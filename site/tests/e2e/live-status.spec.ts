@@ -1,5 +1,5 @@
-import { expect, test } from "@playwright/test";
 import { USER_AGENTS, wizardUrl } from "./helpers.ts";
+import { expect, test } from "./test.ts";
 
 // Needs a build made with PUBLIC_SIGNLOCAL_TEST_HOOKS=1: the fake extension and app are not
 // in the published site.
