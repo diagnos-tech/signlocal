@@ -1,0 +1,30 @@
+---
+// Shown on every page when the release data is the local sample: a build like that must never
+// be deployed (the Pages workflow fails when it finds this ribbon in the built HTML).
+import { RELEASE } from "../../lib/site.ts";
+---
+
+{
+  RELEASE.source === "fixture" && (
+    <p class="ribbon" role="note">
+      Sample release data — not a real release
+    </p>
+  )
+}
+
+<style>
+  .ribbon {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    padding: 6px var(--web-gutter);
+    background: var(--ws-warning-soft);
+    border-top: 1px solid var(--ws-warning-border);
+    color: var(--ws-warning);
+    font: var(--web-text-label);
+    text-align: center;
+    pointer-events: none;
+  }
+</style>

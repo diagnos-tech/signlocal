@@ -1,0 +1,43 @@
+---
+// "Get your token / card / certificate ready", written for the kind the person chose; "I'm not
+// sure" shows all three, each folded away.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { text } from "../../lib/translate.ts";
+import Disclosure from "../ui/Disclosure.astro";
+import CertificateFile from "./CertificateFile.astro";
+import CertificateHolder from "./CertificateHolder.astro";
+import StepCard from "./StepCard.astro";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { locale } = Astro.props;
+const { t } = text(locale);
+---
+
+<StepCard card="certificate" id="certificate">
+  <Fragment slot="title">
+    <h3 class="js-only" data-cert="token">{t("certstep.title_token")}</h3>
+    <h3 class="js-only" data-cert="card">{t("certstep.title_card")}</h3>
+    <h3 class="js-only" data-cert="file">{t("certstep.title_file")}</h3>
+    <h3 data-cert="unsure">{t("certstep.title_unsure")}</h3>
+  </Fragment>
+  <div class="kind" data-cert="token"><CertificateHolder kind="token" scope="main" locale={locale} /></div>
+  <div class="kind" data-cert="card"><CertificateHolder kind="card" scope="main" locale={locale} /></div>
+  <div class="kind" data-cert="file"><CertificateFile locale={locale} /></div>
+  <div class="kind js-only" data-cert="unsure">
+    <Disclosure title={t("certstep.unsure_token")}><CertificateHolder kind="token" scope="unsure" locale={locale} /></Disclosure>
+    <Disclosure title={t("certstep.unsure_card")}><CertificateHolder kind="card" scope="unsure" locale={locale} /></Disclosure>
+    <Disclosure title={t("certstep.unsure_file")}><CertificateFile locale={locale} /></Disclosure>
+    <p>{t("certstep.unsure_help")}</p>
+  </div>
+</StepCard>
+
+<style>
+  .kind {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ws-space-3);
+    min-width: 0;
+  }
+</style>

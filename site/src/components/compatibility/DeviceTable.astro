@@ -1,0 +1,229 @@
+---
+// The tokens and cards signlocal knows (devices.json), with the driver each needs and where to
+// download it per system. A filter narrows the list when JavaScript runs; without it the whole
+// table shows. Card readers are listed on their own below.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { ALL_DEVICES } from "../../lib/devices.ts";
+import { text } from "../../lib/translate.ts";
+import { OS_NAMES } from "../../platform/catalog.ts";
+import { OS_IDS } from "../../platform/types.ts";
+import Chip from "../ui/Chip.astro";
+import Icon from "../ui/Icon.astro";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { locale } = Astro.props;
+const { t } = text(locale);
+const holders = ALL_DEVICES.filter((device) => device.kind !== "reader");
+const readers = ALL_DEVICES.filter((device) => device.kind === "reader");
+const kindName = {
+  token: t("compat.kind_token"),
+  card: t("compat.kind_card"),
+  reader: t("compat.kind_reader"),
+} as const;
+---
+
+<div class="devices">
+  <div class="devices__filter js-only">
+    <label for="device-filter">{t("compat.filter_label")}</label>
+    <div class="devices__input">
+      <Icon name="magnifying-glass" size={20} />
+      <input id="device-filter" type="search" placeholder={t("compat.filter_placeholder")} autocomplete="off" />
+    </div>
+  </div>
+  <table data-device-table>
+    <thead>
+      <tr>
+        <th scope="col">{t("compat.col_device")}</th>
+        <th scope="col">{t("compat.col_kind")}</th>
+        <th scope="col">{t("compat.col_driver")}</th>
+        <th scope="col">{t("compat.col_download")}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        holders.map((device) => (
+          <tr data-device-row data-search={`${device.name} ${device.driver?.name ?? ""}`.toLowerCase()}>
+            <th scope="row">{device.name}</th>
+            <td data-label={t("compat.col_kind")}><Chip>{kindName[device.kind]}</Chip></td>
+            <td data-label={t("compat.col_driver")}>{device.driver?.name ?? "—"}</td>
+            <td data-label={t("compat.col_download")}>
+              <div class="links">
+                {
+                  OS_IDS.map((os) => {
+                    const url = device.driver?.download?.[os];
+                    return url ? <a href={url} target="_blank" rel="noopener noreferrer">{OS_NAMES[os]}<span class="sr-only">{t("common.new_tab")}</span></a> : null;
+                  })
+                }
+              </div>
+            </td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+  <p class="devices__none" data-no-match hidden>{t("compat.no_match")}</p>
+</div>
+<div class="readers" id="readers">
+  <h3>{t("compat.readers_title")}</h3>
+  <p>{t("compat.readers_body")}</p>
+  <ul>
+    {readers.map((device) => <li>{device.name}</li>)}
+  </ul>
+</div>
+
+<style>
+  .devices__filter {
+    display: grid;
+    gap: 6px;
+    margin-bottom: var(--ws-space-4);
+    max-width: 420px;
+  }
+
+  label {
+    font: var(--web-text-label);
+    color: var(--ws-fg-muted);
+  }
+
+  .devices__input {
+    display: flex;
+    align-items: center;
+    gap: var(--ws-space-2);
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--ws-border-strong);
+    border-radius: var(--ws-radius-lg);
+    background: var(--ws-bg-surface);
+  }
+
+  .devices__input input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: none;
+    font: 500 0.9375rem / 1 var(--web-font-sans);
+    color: var(--ws-fg);
+  }
+
+  .devices__input input:focus-visible {
+    outline: none;
+  }
+
+  .devices__input:has(:focus-visible) {
+    outline: var(--ws-focus-width) solid var(--ws-focus);
+    outline-offset: var(--ws-focus-offset);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    border: 1px solid var(--ws-border);
+    border-radius: var(--web-radius-xl);
+    background: var(--ws-bg-surface);
+    font-size: 0.9375rem;
+  }
+
+  th,
+  td {
+    padding: 12px 16px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--ws-border);
+  }
+
+  thead th {
+    background: var(--web-band);
+    font-size: 0.8125rem;
+    color: var(--ws-fg-muted);
+  }
+
+  tbody tr:last-child > * {
+    border-bottom: 0;
+  }
+
+  tbody th {
+    font-weight: 600;
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ws-space-3);
+  }
+
+  .devices__none {
+    margin-top: var(--ws-space-3);
+    color: var(--ws-fg-muted);
+  }
+
+  .readers {
+    display: grid;
+    gap: var(--ws-space-3);
+    margin-top: var(--web-space-10);
+  }
+
+  .readers h3 {
+    font: var(--web-text-h3);
+  }
+
+  .readers ul {
+    columns: 2 260px;
+    margin: 0;
+    padding-left: var(--ws-space-5);
+    color: var(--ws-fg-muted);
+  }
+
+  @media (max-width: 899px) {
+    thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+
+    table,
+    tbody,
+    tr,
+    th,
+    td {
+      display: block;
+    }
+
+    table {
+      border: 0;
+      background: none;
+    }
+
+    tr {
+      margin-bottom: var(--ws-space-3);
+      border: 1px solid var(--ws-border);
+      border-radius: var(--web-radius-xl);
+      background: var(--ws-bg-surface);
+      overflow: hidden;
+    }
+
+    td {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--ws-space-4);
+    }
+
+    td::before {
+      content: attr(data-label);
+      color: var(--ws-fg-muted);
+    }
+
+    .links {
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    td:last-child {
+      border-bottom: 0;
+    }
+  }
+</style>

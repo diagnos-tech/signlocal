@@ -1,21 +1,23 @@
 #!/usr/bin/env sh
-# Generates the API reference into site/api/ (committed), or with --check
-# regenerates it into a temporary folder and fails when site/api/ differs,
-# so CI can catch a source change whose docs were not rebuilt.
+# Generates the API reference with TypeDoc. Nothing generated is committed: the site's build
+# (`bun run build` in site/) runs this into dist/api, and so does CI.
+#
+#   sh docs.sh                 writes site/dist/api
+#   sh docs.sh --out <dir>     writes <dir> (relative to the current folder)
+#
+# Source links point at the commit being built (GITHUB_SHA in CI), else at `develop`.
 set -eu
 tools=$(cd "$(dirname "$0")" && pwd)
+out="$tools/../../site/dist/api"
+if [ "${1:-}" = "--out" ]; then
+  [ -n "${2:-}" ] || { echo "usage: docs.sh [--out <dir>]" >&2; exit 2; }
+  case $2 in
+    /*) out=$2 ;;
+    *) out="$(pwd)/$2" ;;
+  esac
+fi
 cd "$tools"
 bun install --frozen-lockfile --silent
-if [ "${1:-}" = "--check" ]; then
-  tmp=$(mktemp -d)
-  trap 'rm -rf "$tmp"' EXIT
-  ./node_modules/.bin/typedoc --logLevel Warn --out "$tmp"
-  if ! diff -r "$tmp" "$tools/../../site/api" > /dev/null; then
-    echo "site/api/ is out of date: run 'bun run docs' in sdk/ and commit the result." >&2
-    exit 1
-  fi
-  echo "site/api/ is up to date."
-else
-  ./node_modules/.bin/typedoc --logLevel Warn
-  echo "wrote site/api/"
-fi
+./node_modules/.bin/typedoc --logLevel Warn --out "$out" \
+  --sourceLinkTemplate "https://github.com/diagnos-tech/signlocal/blob/${GITHUB_SHA:-develop}/{path}#L{line}"
+echo "wrote $out"

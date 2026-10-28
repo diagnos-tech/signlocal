@@ -1,0 +1,29 @@
+---
+// A certificate file (.pfx, .p12): installed into the system, where signlocal finds it. Not on
+// Linux yet, which the page says instead of pretending.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { text } from "../../lib/translate.ts";
+import Callout from "../ui/Callout.astro";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { locale } = Astro.props;
+const { t, html } = text(locale);
+---
+
+<h4 class="variant-heading nojs-only">{t("cert.file")}</h4>
+<ol data-os="windows">
+  <li set:html={html("certstep.file_win_1")} />
+  <li set:html={html("certstep.file_win_2")} />
+  <li set:html={html("certstep.file_win_3")} />
+</ol>
+<ol data-os="macos">
+  <li set:html={html("certstep.file_mac_1")} />
+  <li set:html={html("certstep.file_mac_2")} />
+</ol>
+<p data-os="windows macos">{t("certstep.file_safe")}</p>
+<Callout variant="warning" data-os="linux">
+  <strong>{t("certstep.file_linux_title")}</strong>
+  <span>{t("certstep.file_linux_body")}</span>
+</Callout>

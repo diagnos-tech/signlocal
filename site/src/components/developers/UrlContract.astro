@@ -1,0 +1,104 @@
+---
+// "Send your users to the right steps": the install page's URL parameters, which are a stable
+// contract (wizard/url.ts parses exactly these).
+const rows = [
+  ["os", "windows, macos, linux", ""],
+  ["arch", "x64, arm64", "Ignored unless os is windows or linux."],
+  ["distro", "deb, rpm, other", "Ignored unless os is linux."],
+  [
+    "browser",
+    "chrome, edge, firefox, opera, brave, safari, chromium",
+    "Dropped if it does not exist for os (Safari is macOS only).",
+  ],
+  ["cert", "token, card, file, unsure", ""],
+  ["device", "an id from devices.json", "Dropped unless its kind matches cert."],
+  [
+    "step",
+    "system, browser, certificate, result",
+    "Clamped to the first step that is not complete.",
+  ],
+] as const;
+---
+
+<div class="contract">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Parameter</th>
+        <th scope="col">Values</th>
+        <th scope="col">Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map(([name, values, note]) => (
+          <tr>
+            <th scope="row"><code>{name}</code></th>
+            <td data-label="Values">{values}</td>
+            <td data-label="Notes">{note}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+
+<style>
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    border: 1px solid var(--ws-border);
+    border-radius: var(--web-radius-xl);
+    background: var(--ws-bg-surface);
+    font-size: 0.9375rem;
+  }
+
+  th,
+  td {
+    padding: 10px 16px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--ws-border);
+  }
+
+  thead th {
+    background: var(--web-band);
+    font-size: 0.8125rem;
+    color: var(--ws-fg-muted);
+  }
+
+  tbody tr:last-child > * {
+    border-bottom: 0;
+  }
+
+  @media (max-width: 639px) {
+    thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+
+    table,
+    tbody,
+    tr,
+    th,
+    td {
+      display: block;
+    }
+
+    td::before {
+      display: block;
+      content: attr(data-label);
+      font-size: 0.8125rem;
+      color: var(--ws-fg-muted);
+    }
+
+    td:empty {
+      display: none;
+    }
+  }
+</style>

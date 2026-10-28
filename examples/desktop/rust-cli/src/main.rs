@@ -33,6 +33,7 @@ fn main() -> ExitCode {
     }
 }
 
+// #region site:rust
 fn sign(document: &[u8], real_app: bool) -> Result<(), ClientError> {
     // Keep the fake alive as long as the client; the real app needs neither.
     let fake = FakeApp::new();
@@ -61,6 +62,7 @@ fn sign(document: &[u8], real_app: bool) -> Result<(), ClientError> {
     println!("{hex}");
     Ok(())
 }
+// #endregion site:rust
 
 /// Code, message, hint and docs link; a cancelled signature exits with 3.
 fn report(error: &ClientError) -> ExitCode {

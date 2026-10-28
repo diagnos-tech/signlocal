@@ -1,0 +1,122 @@
+---
+// One component for every call to action: a link when it has an href, else a button.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { text } from "../../lib/translate.ts";
+import Icon from "./Icon.astro";
+
+interface Props {
+  href?: string;
+  variant?: "primary" | "secondary" | "link";
+  size?: "lg" | "md" | "sm";
+  icon?: string;
+  iconEnd?: string;
+  /** Opens in a new tab (driver downloads, store pages, GitHub): needs `locale` for the hidden note. */
+  external?: boolean;
+  locale?: LocaleCode;
+  class?: string;
+  [attribute: string]: unknown;
+}
+const {
+  href,
+  variant = "primary",
+  size = "lg",
+  icon,
+  iconEnd,
+  external = false,
+  locale = "en",
+  class: extra,
+  ...attributes
+} = Astro.props;
+const classes = ["btn", `btn--${variant}`, `btn--${size}`, extra];
+---
+
+{
+  href ? (
+    <a href={href} class:list={classes} {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})} {...attributes}>
+      {icon && <Icon name={icon} size={20} />}
+      <slot />
+      {iconEnd && <Icon name={iconEnd} size={20} />}
+      {external && <span class="sr-only">{text(locale).t("common.new_tab")}</span>}
+    </a>
+  ) : (
+    <button type="button" class:list={classes} {...attributes}>
+      {icon && <Icon name={icon} size={20} />}
+      <slot />
+      {iconEnd && <Icon name={iconEnd} size={20} />}
+    </button>
+  )
+}
+
+<style>
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--ws-space-2);
+    border: 1px solid transparent;
+    border-radius: var(--ws-radius-lg);
+    font: 600 1rem / 1.2 var(--web-font-sans);
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background-color var(--ws-motion-fast) var(--ws-easing),
+      box-shadow var(--ws-motion-fast) var(--ws-easing),
+      border-color var(--ws-motion-fast) var(--ws-easing);
+  }
+
+  .btn--lg {
+    min-height: var(--web-control-lg);
+    padding: 0 24px;
+  }
+
+  .btn--md {
+    min-height: var(--web-control-md);
+    padding: 0 20px;
+  }
+
+  .btn--sm {
+    min-height: 32px;
+    padding: 0 12px;
+    font-size: 0.875rem;
+    border-radius: 8px;
+  }
+
+  .btn--primary {
+    background: var(--ws-accent);
+    color: var(--ws-on-accent);
+  }
+
+  .btn--primary:hover {
+    background: var(--ws-accent-hover);
+    color: var(--ws-on-accent);
+    box-shadow: var(--web-shadow-ink);
+  }
+
+  .btn--primary:active {
+    background: var(--ws-accent-pressed);
+  }
+
+  .btn--secondary {
+    background: var(--ws-bg-surface);
+    border-color: var(--ws-border);
+    color: var(--ws-fg);
+  }
+
+  .btn--secondary:hover {
+    background: var(--ws-bg-hover);
+    color: var(--ws-fg);
+  }
+
+  .btn--link {
+    min-height: auto;
+    padding: 0;
+    background: none;
+    color: var(--ws-accent-fg);
+  }
+
+  .btn[disabled] {
+    opacity: 0.55;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+</style>

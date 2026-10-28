@@ -1,0 +1,98 @@
+---
+import { STRINGS as TEST_STRINGS } from "../client/test-page/main.ts";
+import TestResult from "../components/test/TestResult.astro";
+import TestSetup from "../components/test/TestSetup.astro";
+import TestSign from "../components/test/TestSign.astro";
+import Callout from "../components/ui/Callout.astro";
+// The test page: signs a harmless sample to prove the extension, the app and the certificate
+// work together. Nothing leaves this computer. Its element ids are the ones the end-to-end
+// suite (e2e/) clicks, so they stay.
+import ClientStrings from "../components/ui/ClientStrings.astro";
+import type { LocaleCode } from "../i18n/codes.ts";
+import Base from "../layouts/Base.astro";
+import { PAGE_META } from "../lib/meta.ts";
+import { text } from "../lib/translate.ts";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { locale } = Astro.props;
+const { t } = text(locale);
+const meta = PAGE_META.test;
+if (!meta) throw new Error("No meta for the test page");
+---
+
+<Base locale={locale} page="test" title={t(meta.title)} description={t(meta.description)}>
+  <div class="container container--narrow test">
+    <h1>{t("test.title")}</h1>
+    <p class="lead">{t("test.lead")}</p>
+    <Callout variant="info" role="note">
+      <strong>{t("test.local_title")}</strong>
+      <span>{t("test.local")}</span>
+    </Callout>
+    <div class="test__cards">
+      <TestSetup locale={locale} />
+      <TestSign locale={locale} />
+      <TestResult locale={locale} />
+    </div>
+  </div>
+  <ClientStrings module="test" keys={TEST_STRINGS} locale={locale} />
+  <script>
+    import { initTestPage } from "../client/test-page/main.ts";
+
+    initTestPage();
+  </script>
+</Base>
+
+<style>
+  .test {
+    display: grid;
+    gap: var(--ws-space-4);
+    padding-block: var(--web-space-10) var(--web-space-16);
+  }
+
+  .test__cards {
+    display: grid;
+    gap: var(--ws-space-4);
+    margin-top: var(--ws-space-2);
+    counter-reset: card;
+  }
+
+  .test :global(.test-card) {
+    display: grid;
+    gap: var(--ws-space-3);
+    padding: 24px;
+    counter-increment: card;
+  }
+
+  .test :global(.test-card__head) {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .test :global(.test-card__head h2) {
+    font: 650 1.25rem / 1.3 var(--web-font-sans);
+    letter-spacing: var(--web-tracking-h3);
+  }
+
+  .test :global(.test-card__number) {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--web-ink-100);
+    color: var(--ws-accent-fg);
+    font: 700 0.9375rem / 1 var(--web-font-sans);
+  }
+
+  .test :global(.test-card__number)::before {
+    content: counter(card);
+  }
+
+  .test :global(.test-card p) {
+    margin: 0;
+  }
+</style>

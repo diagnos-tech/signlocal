@@ -1,0 +1,176 @@
+---
+// The progress indicator: four numbered steps joined by lines (done, current, future), and a
+// compact "Step 2 of 4 · Browser" with a segmented bar below 640 px. wizard/view.ts sets the
+// state of each item; the first visit starts with step 1 current.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { text } from "../../lib/translate.ts";
+import { STEPS } from "../../platform/types.ts";
+import Icon from "../ui/Icon.astro";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { locale } = Astro.props;
+const { t } = text(locale);
+const names = {
+  system: t("wizard.step_system"),
+  browser: t("wizard.step_browser"),
+  certificate: t("wizard.step_certificate"),
+  result: t("wizard.step_result"),
+} as const;
+---
+
+<nav class="stepper" aria-label={t("wizard.progress_label")} data-stepper>
+  <ol class="stepper__list">
+    {
+      STEPS.map((step, index) => (
+        <li class="stepper__item" data-step-item={step} data-state={index === 0 ? "current" : "future"}>
+          <span class="stepper__dot">
+            <span class="stepper__number">{index + 1}</span>
+            <span class="stepper__done"><Icon name="check" size={16} /></span>
+          </span>
+          <a class="stepper__label" href={`?step=${step}`} data-step-link={step}>{names[step]}</a>
+        </li>
+      ))
+    }
+  </ol>
+  <div class="stepper__compact" aria-hidden="true">
+    <p class="stepper__counter" data-counter>{t("wizard.counter", { current: 1, total: 4 })} · {names.system}</p>
+    <div class="stepper__bars">{STEPS.map((step) => <i data-bar={step}></i>)}</div>
+  </div>
+</nav>
+
+<style>
+  .stepper__list {
+    display: none;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .stepper__item {
+    position: relative;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--ws-space-2);
+    color: var(--ws-fg-subtle);
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .stepper__item:last-child {
+    flex: none;
+    align-items: flex-end;
+  }
+
+  .stepper__item::after {
+    content: "";
+    position: absolute;
+    top: 11px;
+    left: 32px;
+    right: 8px;
+    height: 2px;
+    background: var(--ws-border);
+  }
+
+  .stepper__item:last-child::after {
+    display: none;
+  }
+
+  .stepper__item[data-state="done"]::after {
+    background: var(--ws-accent);
+  }
+
+  .stepper__dot {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border: 1px solid var(--ws-border-strong);
+    border-radius: 50%;
+    background: var(--ws-bg-surface);
+    font: 700 0.75rem / 1 var(--web-font-sans);
+    color: var(--ws-fg-subtle);
+  }
+
+  .stepper__done {
+    display: none;
+  }
+
+  .stepper__item[data-state="done"] .stepper__dot {
+    border-color: var(--ws-accent);
+    background: var(--ws-accent);
+    color: var(--ws-on-accent);
+  }
+
+  .stepper__item[data-state="done"] .stepper__number {
+    display: none;
+  }
+
+  .stepper__item[data-state="done"] .stepper__done {
+    display: inline-flex;
+  }
+
+  .stepper__item[data-state="current"] {
+    color: var(--ws-fg);
+    font-weight: 650;
+  }
+
+  .stepper__item[data-state="current"] .stepper__dot {
+    border: 2px solid var(--ws-accent);
+    color: var(--ws-accent-fg);
+  }
+
+  .stepper__item[data-state="done"] {
+    color: var(--ws-fg);
+  }
+
+  .stepper__label {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* Only finished steps are links; the others are plain text. */
+  .stepper__item:not([data-state="done"]) .stepper__label {
+    pointer-events: none;
+  }
+
+  .stepper__item[data-state="done"] .stepper__label:hover {
+    text-decoration: underline;
+  }
+
+  .stepper__counter {
+    font-size: 0.875rem;
+    color: var(--ws-fg-muted);
+  }
+
+  .stepper__bars {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    margin-top: var(--ws-space-2);
+  }
+
+  .stepper__bars i {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--ws-border);
+  }
+
+  .stepper__bars i[data-on="true"] {
+    background: var(--ws-accent);
+  }
+
+  @media (min-width: 640px) {
+    .stepper__list {
+      display: flex;
+    }
+
+    .stepper__compact {
+      display: none;
+    }
+  }
+</style>

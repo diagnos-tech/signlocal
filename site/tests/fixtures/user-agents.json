@@ -1,0 +1,350 @@
+[
+  {
+    "name": "Chrome on Windows x64",
+    "input": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+      "maxTouchPoints": 0
+    },
+    "expect": {
+      "platform": "windows",
+      "browser": "chrome",
+      "arch": "x64",
+      "distro": null
+    }
+  },
+  {
+    "name": "Edge on Windows x64",
+    "input": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0",
+      "maxTouchPoints": 0
+    },
+    "expect": {
+      "platform": "windows",
+      "browser": "edge",
+      "arch": "x64",
+      "distro": null
+    }
+  },
+  {
+    "name": "Firefox on Windows x64",
+    "input": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:131.0) Gecko/20100101 Firefox/131.0",
+      "maxTouchPoints": 0
+    },
+    "expect": {
+      "platform": "windows",
+      "browser": "firefox",
+      "arch": "x64",
+      "distro": null
+    }
+  },
+  {
+    "name": "Opera on Windows x64",
+    "input": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 OPR/115.0.0.0",
+      "maxTouchPoints": 0
+    },
+    "expect": {
+      "platform": "windows",
+      "browser": "opera",
+      "arch": "x64",
+      "distro": null
+    }
+  },
+  {
+    "name": "Brave on Windows x64",
+    "input": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+      "maxTouchPoints": 0,
+      "isBrave": true
+    },
+    "expect": {
+      "platform": "windows",
+      "browser": "brave",
+      "arch": "x64",
+      "distro": null
+    }
+  },
+  {
+    "name": "Edge on Windows ARM64 (client hints)",
+    "input": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0",
+      "maxTouchPoints": 0,
+      "uaDataPlatform": "Windows",
+      "uaDataMobile": false,
+      "uaBrands": ["Chromium", "Microsoft Edge", "Not?A_Brand"]
+    },
+    "expect": {
+      "platform": "windows",
+      "browser": "edge",
+      "arch": "x64",
+      "distro": null
+    }
+  },
+  {
+    "name": "Chrome on Windows ARM64 (user agent says ARM64)",
+    "input": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; ARM64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+      "maxTouchPoints": 0
+    },
+    "expect": {
+      "platform": "windows",
+      "browser": "chrome",
+      "arch": "arm64",
+      "distro": null
+    }
+  },
+  {
+    "name": "Chrome on macOS",
+    "input": {
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+      "maxTouchPoints": 0
+    },
+    "expect": {
+      "platform": "macos",
+      "browser": "chrome",
+      "arch": null,
+      "distro": null
+    }
+  },
+  {
+    "name": "Firefox on macOS",
+    "input": {
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:131.0) Gecko/20100101 Firefox/131.0",
+      "maxTouchPoints": 0
+    },
+    "expect": {
+      "platform": "macos",
+      "browser": "firefox",
+      "arch": null,
+      "distro": null
+    }
+  },
+  {
+    "name": "Safari on macOS",
+    "input": {
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15",
+      "maxTouchPoints": 0
+    },
+    "expect": {
+      "platform": "macos",
+      "browser": "safari",
+      "arch": null,
+      "distro": null
+    }
+  },
+  {
+    "name": "Edge on macOS",
+    "input": {
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0",
+      "maxTouchPoints": 0
+    },
+    "expect": {
+      "platform": "macos",
+      "browser": "edge",
+      "arch": null,
+      "distro": null
+    }
+  },
+  {
+    "name": "Brave on macOS",
+    "input": {
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+      "maxTouchPoints": 0,
+      "isBrave": true
+    },
+    "expect": {
+      "platform": "macos",
+      "browser": "brave",
+      "arch": null,
+      "distro": null
+    }
+  },
+  {
+    "name": "Opera on macOS",
+    "input": {
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 OPR/115.0.0.0",
+      "maxTouchPoints": 0
+    },
+    "expect": {
+      "platform": "macos",
+      "browser": "opera",
+      "arch": null,
+      "distro": null
+    }
+  },
+  {
+    "name": "Chrome on Ubuntu x64",
+    "input": {
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+      "maxTouchPoints": 0
+    },
+    "expect": {
+      "platform": "linux",
+      "browser": "chrome",
+      "arch": "x64",
+      "distro": null
+    }
+  },
+  {
+    "name": "Firefox on Ubuntu x64",
+    "input": {
+      "userAgent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:131.0) Gecko/20100101 Firefox/131.0",
+      "maxTouchPoints": 0
+    },
+    "expect": {
+      "platform": "linux",
+      "browser": "firefox",
+      "arch": "x64",
+      "distro": "deb"
+    }
+  },
+  {
+    "name": "Firefox on Linux aarch64",
+    "input": {
+      "userAgent": "Mozilla/5.0 (X11; Linux aarch64; rv:131.0) Gecko/20100101 Firefox/131.0",
+      "maxTouchPoints": 0
+    },
+    "expect": {
+      "platform": "linux",
+      "browser": "firefox",
+      "arch": "arm64",
+      "distro": null
+    }
+  },
+  {
+    "name": "Firefox on Fedora",
+    "input": {
+      "userAgent": "Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:131.0) Gecko/20100101 Firefox/131.0",
+      "maxTouchPoints": 0
+    },
+    "expect": {
+      "platform": "linux",
+      "browser": "firefox",
+      "arch": "x64",
+      "distro": "rpm"
+    }
+  },
+  {
+    "name": "Vivaldi on Linux",
+    "input": {
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Vivaldi/7.0.3495.18",
+      "maxTouchPoints": 0
+    },
+    "expect": {
+      "platform": "linux",
+      "browser": "chromium",
+      "arch": "x64",
+      "distro": null
+    }
+  },
+  {
+    "name": "Chromium on Linux (brands without Google Chrome)",
+    "input": {
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+      "maxTouchPoints": 0,
+      "uaDataPlatform": "Linux",
+      "uaBrands": ["Chromium", "Not?A_Brand"]
+    },
+    "expect": {
+      "platform": "linux",
+      "browser": "chromium",
+      "arch": "x64",
+      "distro": null
+    }
+  },
+  {
+    "name": "Chrome on Linux (brands with Google Chrome)",
+    "input": {
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+      "maxTouchPoints": 0,
+      "uaDataPlatform": "Linux",
+      "uaBrands": ["Chromium", "Google Chrome", "Not?A_Brand"]
+    },
+    "expect": {
+      "platform": "linux",
+      "browser": "chrome",
+      "arch": "x64",
+      "distro": null
+    }
+  },
+  {
+    "name": "Safari on iPhone",
+    "input": {
+      "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Mobile/15E148 Safari/604.1",
+      "maxTouchPoints": 0
+    },
+    "expect": {
+      "platform": "mobile",
+      "browser": "safari",
+      "arch": null,
+      "distro": null
+    }
+  },
+  {
+    "name": "Chrome on Android",
+    "input": {
+      "userAgent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
+      "maxTouchPoints": 0
+    },
+    "expect": {
+      "platform": "mobile",
+      "browser": "chrome",
+      "arch": null,
+      "distro": null
+    }
+  },
+  {
+    "name": "Safari on iPad asking for the desktop site",
+    "input": {
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15",
+      "maxTouchPoints": 5
+    },
+    "expect": {
+      "platform": "mobile",
+      "browser": "safari",
+      "arch": null,
+      "distro": null
+    }
+  },
+  {
+    "name": "Chrome with the mobile client hint",
+    "input": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+      "maxTouchPoints": 0,
+      "uaDataMobile": true
+    },
+    "expect": {
+      "platform": "mobile",
+      "browser": "chrome",
+      "arch": "x64",
+      "distro": null
+    }
+  },
+  {
+    "name": "Chrome on ChromeOS",
+    "input": {
+      "userAgent": "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+      "maxTouchPoints": 0
+    },
+    "expect": {
+      "platform": "chromeos",
+      "browser": "chrome",
+      "arch": "x64",
+      "distro": null
+    }
+  },
+  {
+    "name": "An unknown program",
+    "input": {
+      "userAgent": "curl/8.4.0",
+      "maxTouchPoints": 0
+    },
+    "expect": {
+      "platform": null,
+      "browser": null,
+      "arch": null,
+      "distro": null
+    }
+  }
+]

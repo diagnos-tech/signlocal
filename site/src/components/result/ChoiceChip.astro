@@ -1,0 +1,67 @@
+---
+// One of the three summary chips of the result ("Windows · x64", "Chrome", "USB token"): the
+// choice, and a pencil that goes back to the step where it was made. The wizard shows the chip
+// that matches (data-os, data-browser …); the others stay hidden.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { text } from "../../lib/translate.ts";
+import Icon from "../ui/Icon.astro";
+
+interface Props {
+  locale: LocaleCode;
+  goto: "system" | "browser" | "certificate";
+  label: string;
+  /** The accessible name of the button: "Change the system: Windows · x64". */
+  action: string;
+  [condition: string]: unknown;
+}
+const { locale, goto, label, action, ...conditions } = Astro.props;
+const { t } = text(locale);
+---
+
+<span class="choice" {...conditions}>
+  <button type="button" class="choice__button" data-goto={goto} aria-label={action} title={t("common.change")}>
+    <span class="choice__icon"><slot /></span>
+    <span class="choice__label">{label}</span>
+    <Icon name="pencil-simple" size={16} />
+  </button>
+</span>
+
+<style>
+  .choice__button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--ws-border);
+    border-radius: var(--web-radius-full);
+    background: var(--ws-bg-surface);
+    color: var(--ws-fg);
+    font: 600 0.875rem / 1 var(--web-font-sans);
+    cursor: pointer;
+    transition: background-color var(--ws-motion-fast) var(--ws-easing);
+  }
+
+  .choice__button:hover {
+    background: var(--ws-bg-hover);
+  }
+
+  .choice__icon {
+    display: inline-flex;
+  }
+
+  .choice__icon :global(.icon--48),
+  .choice__icon :global(.icon--32) {
+    width: 18px;
+    height: 18px;
+  }
+
+  .choice__icon :global(img) {
+    width: 18px;
+    height: 18px;
+  }
+
+  .choice__button > :global(.icon) {
+    color: var(--ws-fg-subtle);
+  }
+</style>

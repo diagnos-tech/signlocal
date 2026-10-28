@@ -1,0 +1,11 @@
+---
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { text } from "../../lib/translate.ts";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { t } = text(Astro.props.locale);
+---
+
+<a class="skip-link" href="#main">{t("nav.skip")}</a>

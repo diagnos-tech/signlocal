@@ -1,0 +1,190 @@
+---
+// The sticky header of the end-user pages. From 900 px: the wordmark, four links, "For
+// developers" and the language menu. Below: the wordmark, the language button and a Menu
+// button, which is a <details> disclosure and so works without JavaScript.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { type PageId, pagePath } from "../../lib/routes.ts";
+import { text } from "../../lib/translate.ts";
+import Mark from "../brand/Mark.astro";
+import Wordmark from "../brand/Wordmark.astro";
+import Icon from "../ui/Icon.astro";
+import LanguageMenu from "./LanguageMenu.astro";
+
+interface Props {
+  locale: LocaleCode;
+  page: PageId;
+}
+const { locale, page } = Astro.props;
+const { t } = text(locale);
+const links: readonly { id: PageId; label: string }[] = [
+  { id: "install", label: t("nav.install") },
+  { id: "compatibility", label: t("nav.compatibility") },
+  { id: "help", label: t("nav.help") },
+  { id: "privacy", label: t("nav.privacy") },
+];
+const developers =
+  locale === "en" ? t("nav.developers") : `${t("nav.developers")} ${t("nav.developers_english")}`;
+---
+
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="brand" href={pagePath("home", locale)}>
+      <Mark size={28} /><Wordmark />
+    </a>
+    <nav class="site-nav" aria-label={t("nav.main_label")}>
+      {
+        links.map((link) => (
+          <a href={pagePath(link.id, locale)} aria-current={link.id === page ? "page" : undefined}>
+            {link.label}
+          </a>
+        ))
+      }
+    </nav>
+    <div class="site-header__end">
+      <a class="site-header__developers" href={pagePath("developers", locale)} lang={locale === "en" ? undefined : "en"}>
+        {developers}
+      </a>
+      <LanguageMenu locale={locale} page={page} />
+      <details class="menu" data-menu>
+        <summary class="menu__button">
+          <Icon name="list" size={20} />
+          <span class="sr-only">{t("nav.menu")}</span>
+        </summary>
+        <nav class="menu__panel" aria-label={t("nav.main_label")}>
+          <a href={pagePath("home", locale)} aria-current={page === "home" ? "page" : undefined}>{t("nav.home")}</a>
+          {
+            links.map((link) => (
+              <a href={pagePath(link.id, locale)} aria-current={link.id === page ? "page" : undefined}>
+                {link.label}
+              </a>
+            ))
+          }
+          <a href={pagePath("developers", locale)} lang={locale === "en" ? undefined : "en"}>{developers}</a>
+        </nav>
+      </details>
+    </div>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    height: 64px;
+    background: var(--web-page);
+    border-bottom: 1px solid var(--ws-border);
+  }
+
+  .site-header__inner {
+    display: flex;
+    align-items: center;
+    gap: var(--ws-space-8);
+    height: 100%;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+
+  .brand img {
+    border-radius: 8px;
+  }
+
+  .site-nav {
+    display: none;
+    gap: var(--ws-space-6);
+    font-size: 0.9375rem;
+    font-weight: 500;
+  }
+
+  .site-nav a,
+  .site-header__developers {
+    color: var(--ws-fg-muted);
+    text-decoration: none;
+  }
+
+  .site-nav a:hover,
+  .site-header__developers:hover {
+    color: var(--ws-fg);
+  }
+
+  .site-nav a[aria-current="page"] {
+    color: var(--ws-fg);
+  }
+
+  .site-header__end {
+    display: flex;
+    align-items: center;
+    gap: var(--ws-space-3);
+    margin-left: auto;
+  }
+
+  .site-header__developers {
+    display: none;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    margin-right: var(--ws-space-2);
+  }
+
+  .menu {
+    position: relative;
+  }
+
+  .menu__button {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--ws-border);
+    border-radius: var(--ws-radius-lg);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .menu__button::-webkit-details-marker {
+    display: none;
+  }
+
+  .menu__panel {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    z-index: 5;
+    display: grid;
+    min-width: 240px;
+    margin-top: 10px;
+    padding: 6px;
+    border: 1px solid var(--ws-border);
+    border-radius: 12px;
+    background: var(--ws-bg-surface);
+    box-shadow: var(--web-shadow-md);
+  }
+
+  .menu__panel a {
+    padding: 12px;
+    border-radius: 8px;
+    color: var(--ws-fg);
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .menu__panel a:hover,
+  .menu__panel a[aria-current="page"] {
+    background: var(--ws-bg-hover);
+  }
+
+  @media (min-width: 900px) {
+    .site-nav,
+    .site-header__developers {
+      display: flex;
+    }
+
+    .menu {
+      display: none;
+    }
+  }
+</style>

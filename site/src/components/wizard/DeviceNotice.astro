@@ -1,0 +1,70 @@
+---
+// For a phone, a tablet or a Chromebook: signlocal runs on computers, so the page says so and
+// offers to send the link to the computer. The e-mail link works without JavaScript; Share
+// and Copy appear when the browser can do them (client/device-notice.ts).
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { pageUrl } from "../../lib/routes.ts";
+import { PROJECT } from "../../lib/site.ts";
+import { text } from "../../lib/translate.ts";
+import Button from "../ui/Button.astro";
+import Callout from "../ui/Callout.astro";
+
+interface Props {
+  kind: "phone" | "chromeos";
+  locale: LocaleCode;
+  /** Shown only after detection says so; the page decides when to reveal it. */
+  hidden?: boolean;
+  /** The wizard adds "Already on your computer? Choose its system below." */
+  withContinue?: boolean;
+}
+const { kind, locale, hidden = true, withContinue = false } = Astro.props;
+const { t } = text(locale);
+const url = pageUrl("install", locale, PROJECT.homepage);
+const mailto = `mailto:?subject=${encodeURIComponent(t("device.email_subject"))}&body=${encodeURIComponent(t("device.email_body", { url }))}`;
+---
+
+<div class="device-notice" data-device-notice={kind} data-url={url} hidden={hidden}>
+  <Callout variant="warning" icon="device-mobile">
+    <h3>{kind === "phone" ? t("device.phone_title") : t("device.chromeos_title")}</h3>
+    <p>{kind === "phone" ? t("device.phone_body") : t("device.chromeos_body")}</p>
+    {
+      kind === "phone" && (
+        <div class="device-notice__actions">
+          <Button variant="secondary" size="md" icon="share-network" class="js-only" data-share hidden>
+            {t("device.share")}
+          </Button>
+          <Button variant="secondary" size="md" icon="link" class="js-only" data-copy-link>
+            <span data-copy-link-label>{t("device.copy_link")}</span>
+          </Button>
+          <Button variant="secondary" size="md" icon="envelope-simple" href={mailto} data-email-link>
+            {t("device.email")}
+          </Button>
+        </div>
+      )
+    }
+  </Callout>
+  {withContinue && <p class="device-notice__continue">{t("device.continue")}</p>}
+</div>
+
+<style>
+  .device-notice {
+    display: grid;
+    gap: var(--ws-space-3);
+    margin-bottom: var(--ws-space-5);
+  }
+
+  h3 {
+    font: 600 1.0625rem / 1.3 var(--web-font-sans);
+    letter-spacing: 0;
+  }
+
+  .device-notice__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ws-space-2);
+  }
+
+  .device-notice__continue {
+    color: var(--ws-fg-muted);
+  }
+</style>

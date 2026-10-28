@@ -1,0 +1,143 @@
+---
+// A downloadable file: its name, size and SHA-256, a Download button, and the optional check.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { text } from "../../lib/translate.ts";
+import { verifyCommand } from "../../platform/commands.ts";
+import { OS_IDS, type Os } from "../../platform/types.ts";
+import Button from "./Button.astro";
+import CommandBlock from "./CommandBlock.astro";
+import CopyButton from "./CopyButton.astro";
+import Disclosure from "./Disclosure.astro";
+import Icon from "./Icon.astro";
+
+interface Props {
+  /** Unique on the page. */
+  id: string;
+  name: string;
+  /** Already formatted for the language: "6.2 MB". */
+  size: string;
+  url: string;
+  sha256: string;
+  /** The system whose verify command is shown; "all" shows the three, one per system. */
+  os: Os | "all";
+  locale: LocaleCode;
+}
+const { id, name, size, url, sha256, os, locale } = Astro.props;
+const { t, html } = text(locale);
+const shortHash = `${sha256.slice(0, 4)}…${sha256.slice(-4)}`;
+const isPackage = /\.(deb|rpm)$/.test(name);
+const systems: readonly Os[] = os === "all" ? OS_IDS : [os];
+---
+
+<div class="file">
+  <span class="file__icon"><Icon name={isPackage ? "package" : "file-zip"} size={24} /></span>
+  <div class="file__info">
+    <p class="file__name">{name}</p>
+    <p class="file__meta">
+      <span>{size}</span>
+      <span aria-hidden="true">·</span>
+      <span>SHA-256 <code id={`${id}-hash-short`} title={sha256}>{shortHash}</code></span>
+      <code class="sr-only" id={`${id}-hash`}>{sha256}</code>
+      <CopyButton from={`${id}-hash`} locale={locale} iconOnly label={`${t("common.copy")} SHA-256`} />
+    </p>
+  </div>
+  <div class="file__action">
+    <Button href={url} icon="download-simple" size="md">{t("common.download")}</Button>
+  </div>
+  <div class="file__check">
+    <Disclosure title={t("install.verify_title")} variant="plain">
+      {
+        systems.map((system) => (
+          <div class="file__verify" data-os={os === "all" ? system : undefined}>
+            <p set:html={html(system === "windows" ? "install.verify_windows" : "install.verify_unix")} />
+            <CommandBlock
+              id={`${id}-verify-${system}`}
+              command={verifyCommand(system, name, sha256)}
+              label={system === "windows" ? t("install.command_powershell") : t("install.command_terminal")}
+              locale={locale}
+            />
+          </div>
+        ))
+      }
+      <p>{t("install.verify_mismatch")}</p>
+    </Disclosure>
+  </div>
+</div>
+
+<style>
+  .file {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    gap: var(--ws-space-3) var(--ws-space-4);
+    align-items: center;
+    margin-block: var(--ws-space-2);
+    padding: 14px 16px;
+    border: 1px solid var(--ws-border);
+    border-radius: 14px;
+    background: var(--ws-bg-surface);
+  }
+
+  .file__icon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--web-ink-100);
+    color: var(--ws-accent-fg);
+  }
+
+  .file__info {
+    min-width: 0;
+  }
+
+  .file__name {
+    font: 500 0.875rem / 1.4 var(--web-font-mono);
+    overflow-wrap: anywhere;
+  }
+
+  .file__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8125rem;
+    color: var(--ws-fg-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .file__meta code {
+    padding: 0;
+    background: none;
+    font-size: 0.78rem;
+  }
+
+  .file__check {
+    grid-column: 2 / -1;
+    min-width: 0;
+  }
+
+  .file__verify {
+    display: grid;
+    gap: var(--ws-space-2);
+    min-width: 0;
+  }
+
+  @media (max-width: 639px) {
+    .file {
+      grid-template-columns: 48px minmax(0, 1fr);
+    }
+
+    .file__action {
+      grid-column: 1 / -1;
+    }
+
+    .file__action :global(.btn) {
+      width: 100%;
+    }
+
+    .file__check {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

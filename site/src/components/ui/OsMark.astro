@@ -1,0 +1,37 @@
+---
+import type { IconSize } from "../../lib/svg.ts";
+// Windows, macOS and Linux marks, each in its own colour (single-colour marks).
+import type { Os } from "../../platform/types.ts";
+import Icon from "./Icon.astro";
+
+interface Props {
+  os: Os;
+  size?: IconSize;
+}
+const { os, size = 48 } = Astro.props;
+const names = {
+  windows: "windows-logo-fill",
+  macos: "apple-logo-fill",
+  linux: "linux-logo-fill",
+} as const;
+---
+
+<span class={`os-mark os-mark--${os}`}><Icon name={names[os]} size={size} /></span>
+
+<style>
+  .os-mark {
+    display: inline-flex;
+  }
+
+  .os-mark--windows {
+    color: var(--web-brand-windows);
+  }
+
+  .os-mark--macos {
+    color: var(--web-brand-apple);
+  }
+
+  .os-mark--linux {
+    color: var(--web-brand-linux);
+  }
+</style>

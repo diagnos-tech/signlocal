@@ -6,7 +6,6 @@
 - `channel.test.ts` — channel.send/discover: ids, framing, final replies, abort
 - `convert.test.ts` — strict Base64, wire-to-public certificate
 - `detection.test.ts` — discovery timeouts, caching, status() mapping
-- `developers-page.test.ts` — site/developers.html has an anchor per error code and every text in 7 locales
 - `errors.test.ts` — SignlocalError hint and docsUrl per code, isSignlocalError()
 - `filtering.test.ts` — foreign sources/origins and malformed frames are ignored
 - `fingerprint.test.ts` — verification code vectors of the protocol SPEC, byte inputs
@@ -23,6 +22,5 @@
 - `ssr.test.ts` — importing and calling without a window (server-side rendering)
 - `status-problem.test.ts` — status().problem for every setup
 - `types.test.ts` — compile-time checks of the public types (literal narrowing, byte types)
-- `raw.d.ts` — typing of `?raw` imports
 - `helpers/` — fake window, fake content script, fixtures and SDK loader
 - `testing/` — tests of `@signlocal/sdk/testing` against the real SDK

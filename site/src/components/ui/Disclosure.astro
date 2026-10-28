@@ -1,0 +1,80 @@
+---
+// A native <details>/<summary>: works without JavaScript. `card` gives the FAQ look;
+// `plain` is the quiet link-style variant ("Check the file").
+import Icon from "./Icon.astro";
+
+interface Props {
+  title: string;
+  variant?: "card" | "plain";
+  id?: string;
+  open?: boolean;
+  class?: string;
+}
+const { title, variant = "card", id, open = false, class: extra } = Astro.props;
+---
+
+<details class:list={["disclosure", `disclosure--${variant}`, extra]} id={id} open={open}>
+  <summary>
+    <span class="disclosure__caret"><Icon name="caret-right" size={variant === "card" ? 20 : 16} /></span>
+    <span class="disclosure__title">{title}</span>
+  </summary>
+  <div class="disclosure__body">
+    <slot />
+  </div>
+</details>
+
+<style>
+  .disclosure--card {
+    background: var(--ws-bg-surface);
+    border: 1px solid var(--ws-border);
+    border-radius: var(--web-radius-xl);
+    box-shadow: var(--web-shadow-xs);
+  }
+
+  summary {
+    display: flex;
+    align-items: center;
+    gap: var(--ws-space-3);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .disclosure--card summary {
+    padding: 20px;
+    font: 600 1.0625rem / 1.35 var(--web-font-sans);
+  }
+
+  .disclosure--plain summary {
+    padding: 4px 0;
+    font: var(--web-text-label);
+    color: var(--ws-accent-fg);
+  }
+
+  .disclosure__caret {
+    display: inline-flex;
+    color: var(--ws-accent-fg);
+    transition: transform var(--ws-motion-base) var(--ws-easing);
+  }
+
+  details[open] > summary .disclosure__caret {
+    transform: rotate(90deg);
+  }
+
+  .disclosure__body {
+    display: grid;
+    gap: var(--ws-space-3);
+  }
+
+  .disclosure--card .disclosure__body {
+    padding: 0 20px 20px 52px;
+    color: var(--ws-fg-muted);
+  }
+
+  .disclosure--plain .disclosure__body {
+    padding: var(--ws-space-2) 0 var(--ws-space-2) var(--ws-space-5);
+  }
+</style>

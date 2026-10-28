@@ -1,0 +1,55 @@
+---
+import { STRINGS as DEVICE_STRINGS } from "../client/device-notice.ts";
+import { STRINGS as HOME_STRINGS } from "../client/home.ts";
+import Faq from "../components/home/Faq.astro";
+import FinalCta from "../components/home/FinalCta.astro";
+import Hero from "../components/home/Hero.astro";
+import HowItWorks from "../components/home/HowItWorks.astro";
+import Promises from "../components/home/Promises.astro";
+import WorksWith from "../components/home/WorksWith.astro";
+// The home page of one language: hero with the start card, what it works with, how it works,
+// the promises, the questions, the final call to action.
+import ClientStrings from "../components/ui/ClientStrings.astro";
+import type { LocaleCode } from "../i18n/codes.ts";
+import Base from "../layouts/Base.astro";
+import { PAGE_META } from "../lib/meta.ts";
+import { text } from "../lib/translate.ts";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { locale } = Astro.props;
+const { t, html } = text(locale);
+const meta = PAGE_META.home;
+if (!meta) throw new Error("No meta for the home page");
+---
+
+<Base locale={locale} page="home" title={t(meta.title)} description={t(meta.description)}>
+  <Hero locale={locale} />
+  <WorksWith locale={locale} />
+  <HowItWorks locale={locale} />
+  <Promises locale={locale} />
+  <section class="section section--band" aria-labelledby="faq-title">
+    <div class="container container--narrow">
+      <div class="section__head">
+        <h2 id="faq-title">{t("home.faq_title")}</h2>
+      </div>
+      <Faq locale={locale} homeOnly />
+      <p class="faq-more" set:html={html("home.faq_more")} />
+    </div>
+  </section>
+  <FinalCta locale={locale} />
+  <ClientStrings module="home" keys={HOME_STRINGS} locale={locale} />
+  <ClientStrings module="device" keys={DEVICE_STRINGS} locale={locale} />
+  <script>
+    import { initHome } from "../client/home.ts";
+
+    initHome();
+  </script>
+</Base>
+
+<style>
+  .faq-more {
+    margin-top: var(--ws-space-5);
+  }
+</style>

@@ -1,0 +1,78 @@
+---
+// Copies the text of another element (client/copy.ts). Without JavaScript there is no
+// clipboard script, so the button is not shown: the text stays selectable.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { text } from "../../lib/translate.ts";
+import Icon from "./Icon.astro";
+
+interface Props {
+  /** id of the element whose text is copied. */
+  from: string;
+  locale: LocaleCode;
+  /** Light-on-dark variant for command blocks. */
+  dark?: boolean;
+  /** Only the icon is shown; the label stays for assistive technology. */
+  iconOnly?: boolean;
+  /** Accessible name when icon-only, e.g. "Copy SHA-256". */
+  label?: string;
+}
+const { from, locale, dark = false, iconOnly = false, label } = Astro.props;
+const { t } = text(locale);
+---
+
+<button
+  type="button"
+  class:list={["copy js-only", { "copy--dark": dark, "copy--icon": iconOnly }]}
+  data-copy-from={from}
+  aria-label={iconOnly ? (label ?? t("common.copy")) : undefined}
+>
+  <span class="copy__icon copy__icon--copy"><Icon name="copy" size={16} /></span>
+  <span class="copy__icon copy__icon--done"><Icon name="check" size={16} /></span>
+  {!iconOnly && <span class="copy__label" data-copy-label>{t("common.copy")}</span>}
+</button>
+
+<style>
+  .copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 30px;
+    padding: 0 10px;
+    border: 1px solid var(--ws-border);
+    border-radius: 8px;
+    background: var(--ws-bg-surface);
+    color: var(--ws-accent-fg);
+    font: var(--web-text-label);
+    cursor: pointer;
+  }
+
+  .copy:hover {
+    background: var(--ws-bg-hover);
+  }
+
+  .copy--dark {
+    background: #2a2f3c;
+    border-color: #3a4050;
+    color: var(--web-code-fg);
+  }
+
+  .copy--dark:hover {
+    background: #343a4a;
+  }
+
+  .copy--icon {
+    min-height: 24px;
+    padding: 0 4px;
+    border-color: transparent;
+    background: none;
+  }
+
+  .copy__icon--done,
+  .copy[data-state="done"] .copy__icon--copy {
+    display: none;
+  }
+
+  .copy[data-state="done"] .copy__icon--done {
+    display: inline-flex;
+  }
+</style>

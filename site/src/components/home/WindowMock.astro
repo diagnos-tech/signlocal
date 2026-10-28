@@ -1,0 +1,194 @@
+---
+// An illustration of the signlocal confirmation window, built from the site's own tokens and
+// the real copy. Fictional data only (docs.example is reserved by RFC 2606). The whole thing
+// is one image for assistive technology; its parts are hidden from it.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { text } from "../../lib/translate.ts";
+import Icon from "../ui/Icon.astro";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { locale } = Astro.props;
+const { t } = text(locale);
+// The identicon of the verification code: 5 × 5 cells, drawn in the identicon palette.
+const cells = [1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1];
+---
+
+<div class="mock" role="img" aria-label={t("home.mock_label")}>
+  <div aria-hidden="true">
+    <div class="mock__top">
+      <p class="mock__eyebrow"><Icon name="signature" size={16} />{t("home.mock_request", { browser: "Chrome" })}</p>
+      <p class="mock__site"><strong>docs</strong>.example</p>
+      <p class="mock__wants">{t("home.mock_wants")}</p>
+    </div>
+    <div class="mock__body">
+      <div class="mock__code">
+        <span class="mock__identicon">{cells.map((on) => <i class:list={{ on }}></i>)}</span>
+        <div>
+          <small>{t("home.mock_code")}</small>
+          <b>7F3A 91C2 0B6E D4A8</b>
+          <em>{t("home.mock_code_hint")}</em>
+        </div>
+      </div>
+      <p class="mock__with">{t("home.mock_sign_with")}</p>
+      <div class="mock__cert">
+        <b>{t("home.mock_holder")}</b>
+        <span>{t("home.mock_cert_meta")}</span>
+      </div>
+    </div>
+    <div class="mock__foot">
+      <span class="mock__pin"><Icon name="lock-simple" size={16} />{t("home.mock_pin")}</span>
+      <span class="mock__button mock__button--secondary">{t("home.mock_cancel")}</span>
+      <span class="mock__button">{t("home.mock_sign")}</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .mock {
+    overflow: hidden;
+    border-radius: var(--web-radius-2xl);
+    background: var(--ws-bg-canvas);
+    box-shadow: var(--web-shadow-lg);
+  }
+
+  .mock__top {
+    padding: 20px 22px 16px;
+    border-bottom: 1px solid var(--ws-border);
+    background: var(--ws-bg-surface);
+  }
+
+  .mock__eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8125rem;
+    color: var(--ws-fg-muted);
+  }
+
+  .mock__site {
+    margin: 6px 0 2px;
+    font: 500 1.5rem / 1.25 var(--web-font-sans);
+    overflow-wrap: anywhere;
+  }
+
+  .mock__site strong {
+    font-weight: 700;
+  }
+
+  .mock__wants {
+    font-size: 0.9375rem;
+    color: var(--ws-fg-muted);
+  }
+
+  .mock__body {
+    display: grid;
+    gap: 14px;
+    padding: 18px 22px;
+  }
+
+  .mock__code {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px;
+    border: 1px solid var(--ws-border);
+    border-radius: 12px;
+    background: var(--ws-bg-surface);
+  }
+
+  .mock__identicon {
+    display: grid;
+    flex: none;
+    grid-template-columns: repeat(5, 7px);
+    gap: 2px;
+    padding: 5px;
+    border-radius: 6px;
+    background: var(--ws-bg-sunken);
+  }
+
+  .mock__identicon i {
+    width: 7px;
+    height: 7px;
+  }
+
+  .mock__identicon i.on {
+    background: var(--ws-id-5);
+  }
+
+  .mock__code small,
+  .mock__code em {
+    display: block;
+    font-size: 0.75rem;
+    font-style: normal;
+    color: var(--ws-fg-muted);
+  }
+
+  .mock__code b {
+    font: 500 1.1875rem / 1.3 var(--web-font-mono);
+    letter-spacing: var(--ws-code-letter-spacing);
+  }
+
+  .mock__with {
+    margin-bottom: -6px;
+    font-size: 0.75rem;
+    color: var(--ws-fg-muted);
+  }
+
+  .mock__cert {
+    padding: 12px 14px;
+    border: 1px solid var(--web-ink-200);
+    border-radius: 12px;
+    background: var(--web-ink-50);
+  }
+
+  .mock__cert b {
+    display: block;
+    font-weight: 600;
+  }
+
+  .mock__cert span {
+    font-size: 0.8125rem;
+    color: var(--ws-fg-muted);
+  }
+
+  .mock__foot {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 22px;
+    border-top: 1px solid var(--ws-border);
+    background: var(--ws-bg-surface);
+    font-size: 0.75rem;
+    color: var(--ws-fg-muted);
+  }
+
+  .mock__pin {
+    display: inline-flex;
+    flex: 1;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .mock__pin :global(.icon) {
+    color: var(--ws-success);
+  }
+
+  .mock__button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    padding: 0 16px;
+    border-radius: var(--ws-radius-lg);
+    background: var(--ws-accent);
+    color: var(--ws-on-accent);
+    font: 600 0.875rem / 1 var(--web-font-sans);
+  }
+
+  .mock__button--secondary {
+    border: 1px solid var(--ws-border);
+    background: var(--ws-bg-surface);
+    color: var(--ws-fg);
+  }
+</style>

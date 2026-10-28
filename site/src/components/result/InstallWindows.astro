@@ -1,0 +1,80 @@
+---
+// Windows: the PowerShell command (automatic), or the zip for the processor and the steps to
+// unpack and register it (manual).
+import type { LocaleCode } from "../../i18n/codes.ts";
+import type { ReleaseInfo } from "../../lib/data-types.ts";
+import { formatBytes } from "../../lib/format.ts";
+import { assetOf } from "../../lib/release-files.ts";
+import { text } from "../../lib/translate.ts";
+import type { ArtifactNames } from "../../platform/artifacts.ts";
+import { WINDOWS_REGISTER, windowsAutomatic } from "../../platform/commands.ts";
+import { ARCH_IDS } from "../../platform/types.ts";
+import Callout from "../ui/Callout.astro";
+import CommandBlock from "../ui/CommandBlock.astro";
+import FileCard from "../ui/FileCard.astro";
+import Icon from "../ui/Icon.astro";
+
+interface Props {
+  mode: "auto" | "manual";
+  locale: LocaleCode;
+  release: ReleaseInfo;
+  names: ArtifactNames;
+}
+const { mode, locale, release, names } = Astro.props;
+const { t, html } = text(locale);
+const installer = assetOf(release, names.installPs1);
+const command = windowsAutomatic({ url: installer.url, sha256: installer.sha256 }, release.version);
+---
+
+<div data-os="windows">
+  <h4 class="variant-heading nojs-only">Windows</h4>
+  {
+    mode === "auto" ? (
+      <>
+        <ol>
+          <li set:html={html("install.win_open")} />
+          <li>
+            <span set:html={html("install.paste")} />
+            <CommandBlock id="cmd-windows-auto" command={command} label={t("install.command_powershell")} locale={locale} />
+          </li>
+          <li>{t("install.wait_windows")}</li>
+        </ol>
+        <p class="what"><Icon name="info-fill" size={16} />{t("install.what_it_does")}</p>
+      </>
+    ) : (
+      <>
+        {ARCH_IDS.map((arch) => {
+          const file = assetOf(release, names.windows[arch]);
+          return (
+            <div data-arch={arch}>
+              <FileCard id={`file-windows-${arch}`} name={file.name} size={formatBytes(file.size, locale)} url={file.url} sha256={file.sha256} os="windows" locale={locale} />
+            </div>
+          );
+        })}
+        <ol>
+          <li set:html={html("install.win_manual_extract")} />
+          <li set:html={html("install.win_manual_terminal")} />
+          <li>
+            {t("install.win_manual_register")}
+            <CommandBlock id="cmd-windows-register" command={WINDOWS_REGISTER} label={t("install.command_powershell")} locale={locale} />
+          </li>
+        </ol>
+        <Callout variant="warning"><span set:html={html("install.win_smartscreen")} /></Callout>
+      </>
+    )
+  }
+</div>
+
+<style>
+  .what {
+    display: flex;
+    gap: var(--ws-space-2);
+    font-size: 0.875rem;
+    color: var(--ws-fg-muted);
+  }
+
+  .what :global(.icon) {
+    margin-top: 3px;
+    color: var(--ws-accent-fg);
+  }
+</style>

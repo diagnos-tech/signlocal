@@ -1,0 +1,32 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "types": ["bun"],
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "useUnknownInCatchVariables": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "paths": {
+      "@signlocal/sdk": ["../sdk/src/index.ts"],
+      "@signlocal/sdk/messages": ["../sdk/src/messages.ts"],
+      "@signlocal/sdk/testing": ["../sdk/src/testing/index.ts"]
+    }
+  },
+  "include": [
+    ".astro/types.d.ts",
+    "src",
+    "scripts",
+    "tests",
+    "astro.config.ts",
+    "playwright.config.ts"
+  ],
+  "exclude": ["dist", "node_modules"]
+}

@@ -1,0 +1,115 @@
+---
+// Step 2: which browser. Safari appears for macOS only; "another Chromium-based browser" is a
+// quieter option under the tiles.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { text } from "../../lib/translate.ts";
+import { BROWSER_NAMES, OS_NAMES } from "../../platform/catalog.ts";
+import { SAFARI_MIN } from "../../platform/facts.ts";
+import BrowserLogo from "../ui/BrowserLogo.astro";
+import Callout from "../ui/Callout.astro";
+import Icon from "../ui/Icon.astro";
+import Tile from "./Tile.astro";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { locale } = Astro.props;
+const { t } = text(locale);
+const browsers = Object.keys(BROWSER_NAMES) as (keyof typeof BROWSER_NAMES)[];
+---
+
+<form class="wizard__step" data-step="browser" novalidate>
+  <fieldset class="step__fieldset">
+    <legend class="step__legend">
+      <h2 class="step__title" tabindex="-1" data-step-title>{t("browser.question")}</h2>
+    </legend>
+    <p class="step__hint">{t("browser.hint")}</p>
+    <p class="step__error" role="alert" data-error="browser" hidden>{t("browser.required")}</p>
+    <Callout data-notice="browser-reset" data-os="windows" hidden>
+      {t("browser.reset_notice", { browser: BROWSER_NAMES.safari, os: OS_NAMES.windows })}
+    </Callout>
+    <Callout data-notice="browser-reset" data-os="linux" hidden>
+      {t("browser.reset_notice", { browser: BROWSER_NAMES.safari, os: OS_NAMES.linux })}
+    </Callout>
+    <div class="step__tiles step__tiles--browser">
+      {
+        browsers.map((id) => (
+          <Tile
+            field="browser"
+            value={id}
+            label={BROWSER_NAMES[id]}
+            caption={id === "safari" ? t("browser.safari_caption", { version: SAFARI_MIN }) : undefined}
+            variant="browser"
+            locale={locale}
+            data-os={id === "safari" ? "macos" : undefined}
+          >
+            <BrowserLogo browser={id} size={44} />
+          </Tile>
+        ))
+      }
+    </div>
+    <label class="other">
+      <input type="radio" name="browser" value="chromium" data-field="browser" />
+      <span class="other__icon"><Icon name="browsers" size={24} /></span>
+      <span>
+        <span class="other__label">{t("browser.other")}</span>
+        <span class="other__caption">{t("browser.other_caption")}</span>
+      </span>
+    </label>
+  </fieldset>
+</form>
+
+<style>
+  .other {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--ws-space-3);
+    margin-top: var(--ws-space-4);
+    padding: var(--ws-space-3) var(--ws-space-4);
+    border: 1px solid transparent;
+    border-radius: var(--web-radius-xl);
+    cursor: pointer;
+  }
+
+  .other input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .other__icon {
+    display: inline-flex;
+    color: var(--ws-fg-muted);
+  }
+
+  .other__label {
+    display: block;
+    font-weight: 600;
+    color: var(--ws-accent-fg);
+  }
+
+  .other__caption {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--ws-fg-muted);
+  }
+
+  .other:hover {
+    background: var(--web-tile-hover-bg);
+  }
+
+  .other:has(:checked) {
+    border-color: var(--ws-accent);
+    background: var(--ws-accent-soft);
+  }
+
+  .other:has(:focus-visible) {
+    outline: var(--ws-focus-width) solid var(--ws-focus);
+    outline-offset: 3px;
+  }
+</style>

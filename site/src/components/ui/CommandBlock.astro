@@ -1,0 +1,94 @@
+---
+// A command to paste: a dark "terminal" block inside the light page, scrolling inside itself,
+// with its Copy button. Commands are never translated.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import CopyButton from "./CopyButton.astro";
+import Icon from "./Icon.astro";
+
+interface Props {
+  /** Unique on the page: the Copy button reads this element. */
+  id: string;
+  command: string;
+  /** "PowerShell" or "Terminal" (translated by the caller). */
+  label: string;
+  locale: LocaleCode;
+  /** Phosphor icon beside the label: a terminal for commands, `code` for code samples. */
+  icon?: string;
+}
+const { id, command, label, locale, icon = "terminal-window" } = Astro.props;
+---
+
+<div class="command">
+  <p class="command__label"><Icon name={icon} size={16} />{label}</p>
+  <div class="command__box">
+    <pre class="command__code" role="group" tabindex="0" aria-label={label}><code id={id}>{command}</code></pre>
+    <div class="command__copy"><CopyButton from={id} locale={locale} dark /></div>
+  </div>
+</div>
+
+<style>
+  .command {
+    min-width: 0;
+    margin-block: var(--ws-space-2);
+  }
+
+  .command__label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: var(--ws-space-2);
+    font: var(--web-text-label);
+    color: var(--ws-fg-muted);
+  }
+
+  /* The button sits beside the scrolling code, never over it. */
+  .command__box {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    border-radius: 12px;
+    background: var(--web-code-bg);
+  }
+
+  .command__code {
+    margin: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 16px;
+    font: var(--web-text-code);
+    font-size: 0.84375rem;
+    color: var(--web-code-fg);
+    white-space: pre;
+    border-radius: 12px;
+  }
+
+  .command__code code {
+    padding: 0;
+    background: none;
+    font: inherit;
+    font-weight: 400;
+    color: inherit;
+    overflow-wrap: normal;
+  }
+
+  .command__copy {
+    padding: 10px 10px 0 0;
+  }
+
+  @media (max-width: 639px) {
+    .command__box {
+      display: flex;
+      flex-direction: column-reverse;
+    }
+
+    .command__copy {
+      display: flex;
+      justify-content: flex-end;
+      padding: 10px 10px 0;
+    }
+
+    .command__code {
+      padding-top: 10px;
+    }
+  }
+</style>

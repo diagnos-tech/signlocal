@@ -1,0 +1,171 @@
+---
+// Card 3: what came back — the certificate, the verification code, the algorithm, and the
+// browser's own check of the signature — or the error in the person's language, plus a summary
+// with no personal data to paste into a support request.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { text } from "../../lib/translate.ts";
+import Button from "../ui/Button.astro";
+import Callout from "../ui/Callout.astro";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { locale } = Astro.props;
+const { t } = text(locale);
+const cells = Array.from({ length: 25 }, (_, index) => index);
+---
+
+<section class="card test-card" id="result" aria-labelledby="result-title" hidden>
+  <header class="test-card__head">
+    <span class="test-card__number" aria-hidden="true"></span>
+    <h2 id="result-title">{t("test.result_title")}</h2>
+  </header>
+  <div role="status" aria-live="polite">
+    <Callout variant="success" id="result-ok" hidden>
+      <h3 id="ok-title">{t("test.ok_title")}</h3>
+      <h3 id="bad-title" hidden>{t("test.bad_title")}</h3>
+      <dl class="facts">
+        <dt>{t("test.cert")}</dt>
+        <dd id="r-name"></dd>
+        <dt>{t("test.code")}</dt>
+        <dd>
+          <span class="code">
+            <span class="identicon" id="r-icon" aria-hidden="true">{cells.map(() => <i></i>)}</span>
+            <code id="r-code"></code>
+          </span>
+          <span class="muted">{t("test.code_hint")}</span>
+        </dd>
+        <dt>{t("test.algorithm")}</dt>
+        <dd id="r-alg"></dd>
+        <dt>{t("test.key")}</dt>
+        <dd id="r-key"></dd>
+        <dt>{t("test.browser_check")}</dt>
+        <dd>
+          <span id="v-verified" hidden>{t("test.verified")}</span>
+          <span id="v-invalid" hidden>{t("test.invalid")}</span>
+          <span id="v-unsupported" hidden>{t("test.unsupported")}</span>
+        </dd>
+      </dl>
+    </Callout>
+    <Callout variant="warning" id="result-error" hidden>
+      <h3 id="e-title"></h3>
+      <p id="e-body"></p>
+      <p class="muted">{t("test.error_code")}: <code id="e-code"></code></p>
+    </Callout>
+  </div>
+  <h3 class="support">{t("test.support_title")}</h3>
+  <p class="muted">{t("test.support_body")}</p>
+  <pre class="summary" tabindex="0"><code id="summary"></code></pre>
+  <div class="copy-row">
+    <Button id="copy" variant="secondary" size="md" icon="copy">{t("test.copy")}</Button>
+    <span id="copied" role="status" class="muted"></span>
+  </div>
+</section>
+
+<style>
+  h3 {
+    font: 600 1rem / 1.3 var(--web-font-sans);
+    letter-spacing: 0;
+  }
+
+  .facts {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 10px 20px;
+    margin: var(--ws-space-2) 0 0;
+  }
+
+  .facts dt {
+    font-weight: 600;
+  }
+
+  .facts dd {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .code {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ws-space-3);
+  }
+
+  .code code {
+    padding: 0;
+    background: none;
+    font: 500 1.1875rem / 1.3 var(--web-font-mono);
+    letter-spacing: var(--ws-code-letter-spacing);
+  }
+
+  .identicon {
+    display: grid;
+    grid-template-columns: repeat(5, 7px);
+    gap: 2px;
+    padding: 5px;
+    border-radius: 6px;
+    background: var(--ws-bg-sunken);
+  }
+
+  .identicon i {
+    width: 7px;
+    height: 7px;
+  }
+
+  .identicon i.on {
+    background: var(--ws-id-5);
+  }
+
+  .identicon.id-0 i.on { background: var(--ws-id-0); }
+  .identicon.id-1 i.on { background: var(--ws-id-1); }
+  .identicon.id-2 i.on { background: var(--ws-id-2); }
+  .identicon.id-3 i.on { background: var(--ws-id-3); }
+  .identicon.id-4 i.on { background: var(--ws-id-4); }
+  .identicon.id-6 i.on { background: var(--ws-id-6); }
+  .identicon.id-7 i.on { background: var(--ws-id-7); }
+
+  .muted {
+    color: var(--ws-fg-muted);
+    font-size: 0.875rem;
+  }
+
+  .support {
+    margin-top: var(--ws-space-6);
+  }
+
+  .summary {
+    margin: var(--ws-space-3) 0;
+    padding: var(--ws-space-4);
+    overflow-x: auto;
+    border-radius: 12px;
+    background: var(--web-code-bg);
+    color: var(--web-code-fg);
+    font: var(--web-text-code);
+  }
+
+  .summary code {
+    padding: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+  }
+
+  .copy-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ws-space-3);
+  }
+
+  @media (max-width: 639px) {
+    .facts {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 2px;
+    }
+
+    .facts dd {
+      margin-bottom: var(--ws-space-3);
+    }
+  }
+</style>

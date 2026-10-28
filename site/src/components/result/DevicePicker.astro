@@ -1,0 +1,118 @@
+---
+// "Which one do you have?": a list of the models signlocal knows and, for the one chosen, its
+// driver and where to download it for this system. Every model's block is rendered; the wizard
+// shows the chosen one (and, without JavaScript, they all show, as a list).
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { devicesOfKind } from "../../lib/devices.ts";
+import { text } from "../../lib/translate.ts";
+import { OS_IDS } from "../../platform/types.ts";
+import Button from "../ui/Button.astro";
+
+interface Props {
+  kind: "token" | "card";
+  /** Unique on the page: the select's id. */
+  id: string;
+  locale: LocaleCode;
+}
+const { kind, id, locale } = Astro.props;
+const { t, html } = text(locale);
+const devices = devicesOfKind(kind);
+---
+
+<div class="picker" data-device-picker={kind}>
+  <div class="picker__field js-only">
+    <label for={id}>{t("certstep.device_label")}</label>
+    <select {id} data-field="device">
+      <option value="">{t("certstep.device_placeholder")}</option>
+      <optgroup label={kind === "token" ? t("certstep.group_tokens") : t("certstep.group_cards")}>
+        {devices.map((device) => <option value={device.id}>{device.name}</option>)}
+      </optgroup>
+    </select>
+  </div>
+  <div class="picker__devices">
+    {
+      devices.map((device) => (
+        <div class="device" data-device-id={device.id}>
+          {device.driver && (
+            <>
+              <p set:html={html("certstep.device_driver", { device: device.name, driver: device.driver.name })} />
+              {OS_IDS.map((os) => {
+                const url = device.driver?.download?.[os];
+                return url ? (
+                  <div data-os={os}>
+                    <Button href={url} variant="secondary" size="md" external locale={locale} iconEnd="arrow-square-out">
+                      {t("certstep.device_download", { driver: device.driver?.name ?? "" })}
+                    </Button>
+                  </div>
+                ) : (
+                  <p class="device__none" data-os={os}>{t("certstep.device_no_link")}</p>
+                );
+              })}
+              {device.macos?.cryptotokenkit === true && <p data-os="macos">{t("certstep.device_macos_native")}</p>}
+            </>
+          )}
+        </div>
+      ))
+    }
+  </div>
+  <p class="picker__note">{t("certstep.not_listed")}</p>
+</div>
+
+<style>
+  .picker {
+    display: grid;
+    gap: var(--ws-space-3);
+    min-width: 0;
+  }
+
+  .picker__field {
+    display: grid;
+    gap: 6px;
+    justify-items: start;
+  }
+
+  label {
+    font-weight: 600;
+  }
+
+  select {
+    width: 100%;
+    max-width: 420px;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--ws-border-strong);
+    border-radius: var(--ws-radius-lg);
+    background: var(--ws-bg-surface);
+    color: var(--ws-fg);
+    font: 500 0.9375rem / 1 var(--web-font-sans);
+  }
+
+  .picker__devices {
+    display: grid;
+    gap: var(--ws-space-3);
+  }
+
+  .device {
+    display: grid;
+    gap: var(--ws-space-3);
+    justify-items: start;
+    padding: 14px 16px;
+    border: 1px solid var(--ws-border);
+    border-radius: 12px;
+    background: var(--web-band);
+  }
+
+  .device:empty {
+    display: none;
+  }
+
+  .device__none,
+  .picker__note {
+    font-size: 0.9375rem;
+    color: var(--ws-fg-muted);
+  }
+
+  .picker__note {
+    font-size: 0.875rem;
+  }
+</style>

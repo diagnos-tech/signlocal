@@ -1,0 +1,77 @@
+---
+// "On this page": a sticky list beside the text on a wide screen, a disclosure under the title
+// on a phone.
+interface Props {
+  items: readonly { id: string; label: string }[];
+}
+const { items } = Astro.props;
+---
+
+<nav class="toc" aria-label="On this page">
+  <details class="toc__mobile">
+    <summary>On this page</summary>
+    <ul>{items.map((item) => <li><a href={`#${item.id}`}>{item.label}</a></li>)}</ul>
+  </details>
+  <div class="toc__wide">
+    <p class="toc__title">On this page</p>
+    <ul>{items.map((item) => <li><a href={`#${item.id}`}>{item.label}</a></li>)}</ul>
+  </div>
+</nav>
+
+<style>
+  ul {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  a {
+    display: block;
+    padding: 5px 0;
+    color: var(--ws-fg-muted);
+    font-size: 0.9375rem;
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--ws-accent-fg);
+  }
+
+  summary {
+    padding: var(--ws-space-3) var(--ws-space-4);
+    border: 1px solid var(--ws-border);
+    border-radius: var(--ws-radius-lg);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .toc__mobile ul {
+    padding: var(--ws-space-3) var(--ws-space-4);
+  }
+
+  .toc__wide {
+    display: none;
+  }
+
+  .toc__title {
+    margin-bottom: var(--ws-space-2);
+    font: 600 0.875rem / 1.2 var(--web-font-sans);
+  }
+
+  @media (min-width: 900px) {
+    .toc {
+      position: sticky;
+      top: 88px;
+    }
+
+    .toc__mobile {
+      display: none;
+    }
+
+    .toc__wide {
+      display: block;
+    }
+  }
+</style>

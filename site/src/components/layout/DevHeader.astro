@@ -1,0 +1,104 @@
+---
+// The header of the developer pages (English only): the wordmark with a "Developers" label,
+// the sections of the page, the API reference, the examples, and the way back to the end-user
+// site.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { pagePath } from "../../lib/routes.ts";
+import { PROJECT } from "../../lib/site.ts";
+import Mark from "../brand/Mark.astro";
+import Wordmark from "../brand/Wordmark.astro";
+import Icon from "../ui/Icon.astro";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { locale } = Astro.props;
+---
+
+<header class="dev-header">
+  <div class="container dev-header__inner">
+    <a class="brand" href={pagePath("home", locale)}>
+      <Mark size={28} /><Wordmark />
+    </a>
+    <span class="dev-header__label">Developers</span>
+    <nav class="dev-header__nav" aria-label="Developers">
+      <a href="#quickstart">Quickstart</a>
+      <a href="#errors">Errors</a>
+      <a href="/api/">API reference</a>
+      <a href={`${PROJECT.repository}/tree/HEAD/examples/web`} target="_blank" rel="noopener noreferrer">
+        Examples<Icon name="arrow-square-out" size={16} /><span class="sr-only">(opens in a new tab)</span>
+      </a>
+    </nav>
+    <a class="dev-header__back" href={pagePath("install", locale)}>Install signlocal</a>
+  </div>
+</header>
+
+<style>
+  .dev-header {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    height: 64px;
+    background: var(--web-page);
+    border-bottom: 1px solid var(--ws-border);
+  }
+
+  .dev-header__inner {
+    display: flex;
+    align-items: center;
+    gap: var(--ws-space-4);
+    height: 100%;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+
+  .brand img {
+    border-radius: 8px;
+  }
+
+  .dev-header__label {
+    padding: 2px 10px;
+    border-radius: var(--web-radius-full);
+    background: var(--web-ink-100);
+    color: var(--ws-accent-fg);
+    font: var(--web-text-label);
+  }
+
+  .dev-header__nav {
+    display: none;
+    gap: var(--ws-space-6);
+    margin-left: var(--ws-space-4);
+    font-size: 0.9375rem;
+    font-weight: 500;
+  }
+
+  .dev-header__nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--ws-fg-muted);
+    text-decoration: none;
+  }
+
+  .dev-header__nav a:hover {
+    color: var(--ws-fg);
+  }
+
+  .dev-header__back {
+    margin-left: auto;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  @media (min-width: 900px) {
+    .dev-header__nav {
+      display: flex;
+    }
+  }
+</style>

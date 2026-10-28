@@ -1,0 +1,9 @@
+---
+import { languagePaths } from "../../../lib/paths.ts";
+import TestView from "../../../views/TestView.astro";
+
+export const getStaticPaths = languagePaths;
+const { locale } = Astro.props;
+---
+
+<TestView locale={locale} />

@@ -8,6 +8,7 @@ import { type Certificate, sign } from "@signlocal/sdk";
 import { type SignedAttributes, signedAttributes, signedData } from "./cms";
 import { embed, prepare, signedContent } from "./pdf";
 
+// #region site:pades
 export interface SignedPdf {
   readonly pdf: Uint8Array;
   readonly certificate: Certificate;
@@ -46,3 +47,4 @@ export async function signPdf(input: Uint8Array, signal?: AbortSignal): Promise<
     digest: result.digest,
   };
 }
+// #endregion site:pades

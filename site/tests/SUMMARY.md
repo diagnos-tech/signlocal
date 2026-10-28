@@ -1,6 +1,7 @@
-# tests
+# site/tests
 
-- `crypto.test.mjs` — tests for `assets/test-crypto.js` against `vectors.json`
-- `locales.test.mjs` — every locale has exactly the keys the pages use, none empty
-- `vectors.json` — throwaway RSA, P-256, P-384, P-521 certificates and signatures made by openssl
-- `gen-vectors.sh` — regenerates `vectors.json`
+Tests of the site. Unit tests run with `bun test`; end-to-end tests with Playwright against the built site.
+
+- `e2e/` — Playwright: pages, accessibility (axe), wizard, languages, no-script, live status, phones, no release, screenshots
+- `fixtures/` — release data, user agents and signature vectors
+- `unit/` — unit tests of the pure logic, the data generators and the texts

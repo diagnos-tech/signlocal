@@ -1,0 +1,143 @@
+---
+// The top of the home page: who this page is for, the promise, the two ways forward, the
+// trust points — and, beside them, the start card that begins the install.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { pagePath } from "../../lib/routes.ts";
+import { text } from "../../lib/translate.ts";
+import Button from "../ui/Button.astro";
+import Icon from "../ui/Icon.astro";
+import StartCard from "./StartCard.astro";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { locale } = Astro.props;
+const { t, html } = text(locale);
+const trust = [t("home.trust_free"), t("home.trust_open"), t("home.trust_pin")];
+---
+
+<section class="hero hero-glow">
+  <div class="container hero__grid">
+    <div class="hero__text">
+      <p class="hero__sent"><Icon name="info-fill" size={16} />{t("home.sent_here")}</p>
+      <h1 class="hero__title" set:html={html("home.title")} />
+      <p class="hero__lead">{t("home.lead")}</p>
+      <div class="hero__cta">
+        <Button href={pagePath("install", locale)} iconEnd="arrow-right">{t("home.cta_install")}</Button>
+        <a class="hero__test" href={pagePath("test", locale)}>{t("home.cta_test")}</a>
+      </div>
+      <ul class="hero__trust">
+        {trust.map((item) => <li><Icon name="check-circle-fill" size={20} />{item}</li>)}
+      </ul>
+    </div>
+    <StartCard locale={locale} />
+  </div>
+</section>
+
+<style>
+  .hero {
+    padding-block: var(--web-space-10) var(--web-space-12);
+  }
+
+  .hero__grid {
+    display: grid;
+    gap: var(--web-space-10);
+    align-items: center;
+  }
+
+  .hero__sent {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--ws-space-2);
+    margin-bottom: var(--ws-space-5);
+    font-size: 0.9375rem;
+    color: var(--ws-fg-muted);
+  }
+
+  .hero__sent :global(.icon) {
+    margin-top: 3px;
+    color: var(--ws-accent-fg);
+  }
+
+  .hero__title {
+    margin-bottom: var(--ws-space-6);
+    font: var(--web-text-display);
+    letter-spacing: var(--web-tracking-display);
+    text-wrap: balance;
+  }
+
+  .hero__lead {
+    margin-bottom: var(--ws-space-8);
+    max-width: 34em;
+    font: var(--web-text-lead);
+    color: var(--ws-fg-muted);
+  }
+
+  .hero__cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ws-space-3) var(--ws-space-6);
+  }
+
+  .hero__test {
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .hero__test:hover {
+    text-decoration: underline;
+  }
+
+  .hero__trust {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: var(--ws-space-8) 0 0;
+    padding: 0;
+    list-style: none;
+    color: var(--ws-fg-muted);
+    font-size: 0.9375rem;
+    font-weight: 500;
+  }
+
+  .hero__trust li {
+    display: flex;
+    align-items: center;
+    gap: var(--ws-space-2);
+  }
+
+  .hero__trust :global(.icon) {
+    color: var(--ws-success);
+  }
+
+  @media (max-width: 639px) {
+    .hero__cta {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .hero__test {
+      margin-top: var(--ws-space-2);
+    }
+  }
+
+  @media (min-width: 640px) {
+    .hero__trust {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: var(--ws-space-2) var(--ws-space-6);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .hero {
+      padding-block: 72px 80px;
+    }
+
+    .hero__grid {
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 56px;
+    }
+  }
+</style>

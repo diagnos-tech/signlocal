@@ -1,0 +1,34 @@
+---
+// A token or a smart card: its driver, the plug-in step, and on Linux the card service.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { text } from "../../lib/translate.ts";
+import { LINUX_CARD_SERVICE } from "../../platform/commands.ts";
+import Callout from "../ui/Callout.astro";
+import CommandBlock from "../ui/CommandBlock.astro";
+import DevicePicker from "./DevicePicker.astro";
+
+interface Props {
+  kind: "token" | "card";
+  /** Keeps the ids of two copies of the block (the main one and the folded one) apart. */
+  scope: string;
+  locale: LocaleCode;
+}
+const { kind, scope, locale } = Astro.props;
+const { t, html } = text(locale);
+const id = `${scope}-${kind}`;
+---
+
+<h4 class="variant-heading nojs-only">{kind === "token" ? t("cert.token") : t("cert.card")}</h4>
+<p>{kind === "token" ? t("certstep.driver_token") : t("certstep.driver_card")}</p>
+<DevicePicker kind={kind} id={`device-${id}`} locale={locale} />
+<p>{kind === "token" ? t("certstep.plug_token") : t("certstep.insert_card")}</p>
+<div data-os="linux" data-distro="deb">
+  <p>{t("certstep.linux_service")}</p>
+  <CommandBlock id={`pcsc-${id}-deb`} command={LINUX_CARD_SERVICE.deb} label={t("install.command_terminal")} locale={locale} />
+</div>
+<div data-os="linux" data-distro="rpm">
+  <p>{t("certstep.linux_service")}</p>
+  <CommandBlock id={`pcsc-${id}-rpm`} command={LINUX_CARD_SERVICE.rpm} label={t("install.command_terminal")} locale={locale} />
+</div>
+<p data-os="linux" data-distro="other" set:html={html("certstep.linux_service_other")} />
+<Callout variant="warning" data-browser="safari">{t("certstep.safari_pkcs11")}</Callout>

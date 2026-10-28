@@ -1,0 +1,48 @@
+/* Page structure: the centered column, section rhythm and the section heading block. */
+
+.container {
+  width: 100%;
+  max-width: calc(var(--web-content) + 2 * var(--web-gutter));
+  margin-inline: auto;
+  padding-inline: var(--web-gutter);
+}
+
+.container--narrow {
+  max-width: calc(var(--web-content-narrow) + 2 * var(--web-gutter));
+}
+
+.section {
+  padding-block: var(--web-space-12);
+}
+
+.section--band {
+  background: var(--web-band);
+}
+
+.section__head {
+  display: grid;
+  gap: var(--ws-space-3);
+  margin-bottom: var(--web-space-10);
+}
+
+.section__lead {
+  font: var(--web-text-lead);
+  color: var(--ws-fg-muted);
+  max-width: 40em;
+}
+
+.prose {
+  max-width: var(--web-measure);
+  display: grid;
+  gap: var(--ws-space-4);
+}
+
+.prose a {
+  font-weight: 500;
+}
+
+@media (min-width: 900px) {
+  .section {
+    padding-block: var(--web-space-20);
+  }
+}

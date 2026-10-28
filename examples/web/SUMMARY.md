@@ -5,6 +5,7 @@
 - `react/` — React example with a copy-paste `useSignlocal()` hook
 - `vue/` — Vue example with a `useSignlocal()` composable
 - `pades/` — PDF signing (PAdES B-B) with pdf-lib and PKI.js, plus its OpenSSL-verified test
+- `snippets/` — the code samples of the site's developers page, in `// #region site:<name>` blocks; type-checked here, never run
 - `shared/` — installs the testing fake (unless `?real`) with its control panel; shared styles; Vue shim
 - `vite.config.ts` — one dev server for every example; `@signlocal/sdk` aliased to `sdk/src`
 - `tsconfig.json` — type-checking settings (same aliases)

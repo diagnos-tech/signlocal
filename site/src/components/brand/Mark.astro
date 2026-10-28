@@ -1,0 +1,12 @@
+---
+// The signlocal mark: the pen and its signature stroke on an ink tile. One file, so a new logo
+// is a one-file change (src/brand/mark.svg).
+import markUrl from "../../brand/mark.svg?url";
+
+interface Props {
+  size?: number;
+}
+const { size = 28 } = Astro.props;
+---
+
+<img src={markUrl} width={size} height={size} alt="" />

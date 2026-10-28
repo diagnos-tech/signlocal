@@ -1,0 +1,42 @@
+---
+import Button from "../components/ui/Button.astro";
+import { LOCALES } from "../i18n/locales.ts";
+// GitHub Pages serves this for any address that does not exist, in whatever language the
+// visitor was reading, so it is in English and links to the home page of every language.
+import Base from "../layouts/Base.astro";
+import { pagePath } from "../lib/routes.ts";
+---
+
+<Base
+  locale="en"
+  page="home"
+  title="Page not found · signlocal"
+  description="This page doesn't exist."
+>
+  <div class="container container--narrow missing">
+    <h1>This page doesn't exist.</h1>
+    <p class="lead">It may have moved. Start from the home page in your language, or install signlocal.</p>
+    <ul>
+      {LOCALES.map((locale) => <li><a href={pagePath("home", locale.code)} lang={locale.code} hreflang={locale.code}>{locale.endonym}</a></li>)}
+    </ul>
+    <div><Button href={pagePath("install", "en")}>Install signlocal</Button></div>
+  </div>
+</Base>
+
+<style>
+  .missing {
+    display: grid;
+    justify-items: start;
+    gap: var(--ws-space-5);
+    padding-block: var(--web-space-16);
+  }
+
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ws-space-2) var(--ws-space-5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+</style>

@@ -1,0 +1,28 @@
+---
+// Browser logos (alrra/browser-logos, MIT; the marks are their owners' trademarks), shown
+// unmodified and as files: they contain gradient ids that would collide if inlined twice.
+import brave from "../../brands/brave.svg?url";
+import chrome from "../../brands/chrome.svg?url";
+import edge from "../../brands/edge.svg?url";
+import firefox from "../../brands/firefox.svg?url";
+import opera from "../../brands/opera.svg?url";
+import safari from "../../brands/safari.svg?url";
+import type { BrowserId } from "../../platform/types.ts";
+import Icon from "./Icon.astro";
+
+interface Props {
+  browser: BrowserId;
+  size?: 20 | 32 | 44;
+}
+const { browser, size = 44 } = Astro.props;
+const logos = { brave, chrome, edge, firefox, opera, safari } as const;
+const iconSize = size === 44 ? 48 : size;
+---
+
+{
+  browser === "chromium" ? (
+    <Icon name="browsers" size={iconSize} />
+  ) : (
+    <img src={logos[browser]} width={size} height={size} alt="" />
+  )
+}

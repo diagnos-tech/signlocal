@@ -31,7 +31,6 @@
     "test": "vitest run",
     "size": "bun scripts/size.ts",
     "docs": "sh tools/docs.sh",
-    "docs:check": "sh tools/docs.sh --check",
     "check:package": "bun run build && cd tools && bun install --frozen-lockfile --silent && ./node_modules/.bin/publint .. && ./node_modules/.bin/attw --pack .. --profile esm-only"
   },
   "devDependencies": {

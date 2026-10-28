@@ -1,0 +1,79 @@
+---
+// Step 4, "Your steps": a checklist of exactly what to do on this computer. Every variant of
+// every card is in the page (the cards in recipe.ts order, Safari's two swapped by their
+// conditions); the wizard shows the ones that match the choices and numbers them.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import type { ReleaseInfo } from "../../lib/data-types.ts";
+import { PROJECT } from "../../lib/site.ts";
+import { text } from "../../lib/translate.ts";
+import { artifactNames } from "../../platform/artifacts.ts";
+import type { StoreIds } from "../../platform/stores.ts";
+import CertificateCard from "../result/CertificateCard.astro";
+import ConnectCard from "../result/ConnectCard.astro";
+import ExtensionCard from "../result/ExtensionCard.astro";
+import ExtensionSafari from "../result/ExtensionSafari.astro";
+import InstallCard from "../result/InstallCard.astro";
+import NoReleaseCard from "../result/NoReleaseCard.astro";
+import ResultHeader from "../result/ResultHeader.astro";
+import TestCard from "../result/TestCard.astro";
+import Button from "../ui/Button.astro";
+
+interface Props {
+  locale: LocaleCode;
+  release: ReleaseInfo | null;
+}
+const { locale, release } = Astro.props;
+const { t } = text(locale);
+const ids: StoreIds = PROJECT.extension;
+const names = release ? artifactNames(PROJECT.slug, release.version) : undefined;
+---
+
+<div class="wizard__step wizard__step--result" data-step="result">
+  <ResultHeader locale={locale} release={release} />
+  <div class="cards">
+    {!release && <NoReleaseCard locale={locale} />}
+    {
+      release && names && (
+        <>
+          <InstallCard locale={locale} release={release} names={names} />
+          <ExtensionCard locale={locale} release={release} names={names} ids={ids} />
+          <ConnectCard locale={locale} />
+          <ExtensionSafari locale={locale} />
+        </>
+      )
+    }
+    <CertificateCard locale={locale} />
+    {release && <TestCard locale={locale} />}
+  </div>
+  <div class="result-nav">
+    <Button variant="secondary" icon="arrow-left" data-back>{t("wizard.back")}</Button>
+    <Button variant="secondary" icon="arrow-clockwise" data-restart>{t("wizard.start_over")}</Button>
+  </div>
+</div>
+
+<style>
+  .cards {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ws-space-4);
+    margin-top: var(--ws-space-5);
+    counter-reset: card;
+  }
+
+  .result-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--ws-space-3);
+    margin-top: var(--ws-space-8);
+    padding-top: var(--ws-space-5);
+    border-top: 1px solid var(--ws-border);
+  }
+
+  @media (max-width: 639px) {
+    .result-nav :global(.btn) {
+      flex: 1;
+      min-width: 0;
+      padding-inline: 12px;
+    }
+  }
+</style>

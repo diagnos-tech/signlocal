@@ -1,7 +1,8 @@
 /*
- * Maps TypeDoc's default theme onto the site's tokens (site/assets/tokens.css,
- * docs/ux.md §11), so the API reference looks like the rest of the site in
- * light and dark. Values are copied, not imported: site/api/ is self-contained.
+ * Maps TypeDoc's default theme onto the site's light palette (design/tokens.css, the same
+ * values the pages use), so the API reference looks like the rest of the site. The site is light
+ * only, so the dark variables carry the light values and the theme selector is hidden.
+ * Values are copied, not imported: the generated reference is self-contained.
  */
 :root {
   --light-color-background: #f5f6f9;
@@ -18,20 +19,21 @@
   --light-color-ts-keyword: #3346d1;
   --light-code-background: #edeff4;
 
-  --dark-color-background: #0e1016;
-  --dark-color-background-secondary: #161922;
-  --dark-color-background-active: #1e222d;
-  --dark-color-background-warning: #2a1f0e;
-  --dark-color-warning-text: #efb35e;
-  --dark-color-accent: #2a2f3c;
-  --dark-color-active-menu-item: #1a1f3c;
-  --dark-color-text: #e7e9ef;
-  --dark-color-text-aside: #a3aab9;
-  --dark-color-link: #9da8ff;
-  --dark-color-focus-outline: #9da8ff;
-  --dark-color-ts-keyword: #9da8ff;
-  --dark-code-background: #0b0d12;
+  --dark-color-background: #f5f6f9;
+  --dark-color-background-secondary: #ffffff;
+  --dark-color-background-active: #edeff4;
+  --dark-color-background-warning: #fff2d9;
+  --dark-color-warning-text: #935300;
+  --dark-color-accent: #dce0e8;
+  --dark-color-active-menu-item: #eef0fd;
+  --dark-color-text: #141722;
+  --dark-color-text-aside: #545c6d;
+  --dark-color-link: #3346d1;
+  --dark-color-focus-outline: #3346d1;
+  --dark-color-ts-keyword: #3346d1;
+  --dark-code-background: #edeff4;
 
+  color-scheme: light;
   --font-family-text: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   --font-family-code: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
@@ -41,4 +43,9 @@ body {
 code,
 pre {
   font-family: var(--font-family-code);
+}
+/* The reference has one theme: hide the selector. */
+#tsd-theme,
+.tsd-theme-toggle {
+  display: none;
 }

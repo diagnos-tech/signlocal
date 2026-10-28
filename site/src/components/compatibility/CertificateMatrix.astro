@@ -1,0 +1,101 @@
+---
+// The kinds of certificate and the systems they work on: tokens and cards everywhere, files on
+// Windows and macOS (not yet on Linux).
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { text } from "../../lib/translate.ts";
+import { OS_NAMES } from "../../platform/catalog.ts";
+import { OS_IDS } from "../../platform/types.ts";
+import Icon from "../ui/Icon.astro";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { locale } = Astro.props;
+const { t } = text(locale);
+const rows = [
+  { label: t("compat.cert_token"), works: { windows: true, macos: true, linux: true } },
+  { label: t("compat.cert_card"), works: { windows: true, macos: true, linux: true } },
+  { label: t("compat.cert_file"), works: { windows: true, macos: true, linux: false } },
+] as const;
+---
+
+<div class="certs">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col"><span class="sr-only">{t("compat.certs_title")}</span></th>
+        {OS_IDS.map((os) => <th scope="col">{OS_NAMES[os]}</th>)}
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map((row) => (
+          <tr>
+            <th scope="row">{row.label}</th>
+            {OS_IDS.map((os) => (
+              <td data-label={OS_NAMES[os]}>
+                {row.works[os] ? (
+                  <span class="yes"><Icon name="check" size={16} /><span class="sr-only">{t("compat.supported")}</span></span>
+                ) : (
+                  <span class="no">{t("compat.cert_file_linux")}</span>
+                )}
+              </td>
+            ))}
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+
+<style>
+  table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    border: 1px solid var(--ws-border);
+    border-radius: var(--web-radius-xl);
+    background: var(--ws-bg-surface);
+    font-size: 0.9375rem;
+  }
+
+  th,
+  td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--ws-border);
+    overflow-wrap: anywhere;
+  }
+
+  thead th:first-child {
+    width: 40%;
+  }
+
+  thead th {
+    background: var(--web-band);
+    font-size: 0.8125rem;
+    color: var(--ws-fg-muted);
+  }
+
+  tbody tr:last-child > * {
+    border-bottom: 0;
+  }
+
+  .yes {
+    display: inline-flex;
+    color: var(--ws-success);
+  }
+
+  .no {
+    color: var(--ws-fg-subtle);
+  }
+
+  @media (max-width: 639px) {
+    th,
+    td {
+      padding: 10px 12px;
+    }
+  }
+</style>

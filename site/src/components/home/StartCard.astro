@@ -1,0 +1,189 @@
+---
+// "Start here": three system tiles that are plain links to the wizard, so they work without
+// JavaScript. client/home.ts marks the detected system, writes the hint, and — on a phone —
+// swaps the tiles for the "signlocal runs on computers" notice.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { pagePath } from "../../lib/routes.ts";
+import { text } from "../../lib/translate.ts";
+import { OS_NAMES } from "../../platform/catalog.ts";
+import { OS_IDS } from "../../platform/types.ts";
+import Icon from "../ui/Icon.astro";
+import OsMark from "../ui/OsMark.astro";
+import DeviceNotice from "../wizard/DeviceNotice.astro";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { locale } = Astro.props;
+const { t } = text(locale);
+---
+
+<section class="start" aria-labelledby="start-title" data-start-card>
+  <p class="start__label">{t("home.start_title")}</p>
+  <h2 id="start-title" class="start__title">{t("system.question")}</h2>
+  <DeviceNotice kind="phone" locale={locale} />
+  <div class="start__tiles" data-start-tiles>
+    {
+      OS_IDS.map((os) => (
+        <a class="tile" href={`${pagePath("install", locale)}?os=${os}`} data-tile-os={os}>
+          <span class="tile__pill" data-detected-pill>{t("common.detected")}</span>
+          <span class="tile__check" data-detected-check><Icon name="check" size={16} /></span>
+          <OsMark os={os} size={48} />
+          <span class="tile__name">{OS_NAMES[os]}</span>
+        </a>
+      ))
+    }
+  </div>
+  <p class="start__hint" data-start-hint>{t("home.start_hint_unknown")}</p>
+</section>
+
+<style>
+  .start {
+    padding: 28px;
+    border: 1px solid var(--ws-border);
+    border-radius: var(--web-radius-2xl);
+    background: var(--ws-bg-surface);
+    box-shadow: var(--web-shadow-md);
+  }
+
+  .start__label {
+    margin-bottom: var(--ws-space-2);
+    font: var(--web-text-label);
+    color: var(--ws-accent-fg);
+  }
+
+  .start__title {
+    margin-bottom: var(--ws-space-5);
+    font: 650 1.375rem / 1.25 var(--web-font-sans);
+    letter-spacing: -0.015em;
+  }
+
+  .start__tiles {
+    display: grid;
+    gap: var(--ws-space-3);
+  }
+
+  .tile {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    min-height: 64px;
+    padding: 12px 16px;
+    border: 1px solid var(--ws-border);
+    border-radius: var(--web-radius-xl);
+    background: var(--ws-bg-surface);
+    box-shadow: var(--web-shadow-xs);
+    color: var(--ws-fg);
+    text-decoration: none;
+    transition:
+      border-color var(--ws-motion-fast) var(--ws-easing),
+      background-color var(--ws-motion-fast) var(--ws-easing),
+      box-shadow var(--ws-motion-fast) var(--ws-easing),
+      transform var(--ws-motion-fast) var(--ws-easing);
+  }
+
+  .tile:hover {
+    border-color: var(--web-tile-hover-border);
+    background: var(--web-tile-hover-bg);
+    box-shadow: var(--web-shadow-sm);
+    color: var(--ws-fg);
+    transform: translateY(-2px);
+  }
+
+  .tile :global(.icon--48) {
+    width: 32px;
+    height: 32px;
+  }
+
+  .tile__name {
+    font: 600 1.0625rem / 1.3 var(--web-font-sans);
+  }
+
+  /* The pill's space is always reserved: detection must never move anything. */
+  .tile__pill {
+    order: 3;
+    margin-left: auto;
+    padding: 2px 8px;
+    border-radius: var(--web-radius-full);
+    background: var(--web-ink-100);
+    color: var(--ws-accent-fg);
+    font: 600 0.75rem / 1.5 var(--web-font-sans);
+    visibility: hidden;
+  }
+
+  .tile__check {
+    order: 4;
+    display: none;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--ws-accent);
+    color: var(--ws-on-accent);
+  }
+
+  .tile[data-detected="true"] {
+    padding: 11px 15px;
+    border: 2px solid var(--ws-accent);
+    background: var(--ws-accent-soft);
+  }
+
+  .tile[data-detected="true"] .tile__pill {
+    visibility: visible;
+  }
+
+  .tile[data-detected="true"] .tile__check {
+    display: grid;
+  }
+
+  .start__hint {
+    margin-top: var(--ws-space-4);
+    font-size: 0.875rem;
+    color: var(--ws-fg-muted);
+  }
+
+  @media (min-width: 640px) {
+    .start__tiles {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .tile {
+      flex-direction: column;
+      justify-content: center;
+      gap: var(--ws-space-2);
+      min-height: 132px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .tile[data-detected="true"] {
+      padding: 15px;
+    }
+
+    .tile :global(.icon--48) {
+      width: 44px;
+      height: 44px;
+    }
+
+    .tile__pill {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      margin: 0;
+    }
+
+    .tile__check {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .start {
+      padding: 20px;
+    }
+  }
+</style>

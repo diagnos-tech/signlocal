@@ -1,0 +1,33 @@
+---
+import { FAQ } from "../../content/faq.ts";
+// The questions of the home page (the six marked `home` in content/faq.ts) or all of them.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { text } from "../../lib/translate.ts";
+import Disclosure from "../ui/Disclosure.astro";
+
+interface Props {
+  locale: LocaleCode;
+  /** Only the entries the home page shows. */
+  homeOnly?: boolean;
+}
+const { locale, homeOnly = false } = Astro.props;
+const { t, html } = text(locale);
+const entries = FAQ.filter((entry) => !homeOnly || entry.home);
+---
+
+<div class="faq">
+  {
+    entries.map((entry) => (
+      <Disclosure title={t(entry.question)} id={`faq-${entry.id}`}>
+        <p set:html={html(entry.answer)} />
+      </Disclosure>
+    ))
+  }
+</div>
+
+<style>
+  .faq {
+    display: grid;
+    gap: 10px;
+  }
+</style>

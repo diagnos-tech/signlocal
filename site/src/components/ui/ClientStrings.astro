@@ -1,0 +1,23 @@
+---
+// The texts a client module needs, as a JSON block the module reads (client/strings.ts).
+// Only the keys the module lists in its exported STRINGS array are sent.
+import type { MessageKey } from "../../generated/message-keys.ts";
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { text } from "../../lib/translate.ts";
+
+interface Props {
+  /** The module's name: the block's id is "<module>-strings". */
+  module: string;
+  keys: readonly MessageKey[];
+  locale: LocaleCode;
+}
+const { module, keys, locale } = Astro.props;
+const { t } = text(locale);
+// "<" is escaped so no text can end the script element early.
+const json = JSON.stringify(Object.fromEntries(keys.map((key) => [key, t.raw(key)]))).replaceAll(
+  "<",
+  "\\u003c",
+);
+---
+
+<script is:inline type="application/json" id={`${module}-strings`} set:html={json} />

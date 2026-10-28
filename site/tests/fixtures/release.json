@@ -1,0 +1,97 @@
+{
+  "source": "fixture",
+  "generatedAt": "2026-11-12T12:00:00.000Z",
+  "release": {
+    "version": "0.2.0",
+    "tag": "v0.2.0",
+    "prerelease": true,
+    "publishedAt": "2026-11-12T10:00:00Z",
+    "url": "https://github.com/diagnos-tech/signlocal/releases/tag/v0.2.0",
+    "assets": {
+      "signlocal-0.2.0-windows-x64.zip": {
+        "name": "signlocal-0.2.0-windows-x64.zip",
+        "url": "https://github.com/diagnos-tech/signlocal/releases/download/v0.2.0/signlocal-0.2.0-windows-x64.zip",
+        "size": 6512345,
+        "sha256": "ed3aebc55ffbecc16d4eb36fdd487802a40d88c2d6908e2cebd53f6ddd3cd3cf"
+      },
+      "signlocal-0.2.0-windows-arm64.zip": {
+        "name": "signlocal-0.2.0-windows-arm64.zip",
+        "url": "https://github.com/diagnos-tech/signlocal/releases/download/v0.2.0/signlocal-0.2.0-windows-arm64.zip",
+        "size": 6104882,
+        "sha256": "4553117573cf3ea02d6916429b82364bb1aa04233df14965d8dd911aab2d03da"
+      },
+      "signlocal-0.2.0-macos-universal.zip": {
+        "name": "signlocal-0.2.0-macos-universal.zip",
+        "url": "https://github.com/diagnos-tech/signlocal/releases/download/v0.2.0/signlocal-0.2.0-macos-universal.zip",
+        "size": 11203411,
+        "sha256": "74e4e11a48d16ff71ff521063e8860355590d54d80ab232ea5b6ac0afb44727f"
+      },
+      "signlocal_0.2.0_amd64.deb": {
+        "name": "signlocal_0.2.0_amd64.deb",
+        "url": "https://github.com/diagnos-tech/signlocal/releases/download/v0.2.0/signlocal_0.2.0_amd64.deb",
+        "size": 4811200,
+        "sha256": "a1d194a2f3c8f2b1a247bdd8ed31d2e1b23e6587b3868d9e0b0de63cd29526aa"
+      },
+      "signlocal_0.2.0_arm64.deb": {
+        "name": "signlocal_0.2.0_arm64.deb",
+        "url": "https://github.com/diagnos-tech/signlocal/releases/download/v0.2.0/signlocal_0.2.0_arm64.deb",
+        "size": 4602118,
+        "sha256": "36a18c61671c34afb203e61b55d0bea69443c54f3e01b55bc7bc9ab877a72632"
+      },
+      "signlocal-0.2.0-1.x86_64.rpm": {
+        "name": "signlocal-0.2.0-1.x86_64.rpm",
+        "url": "https://github.com/diagnos-tech/signlocal/releases/download/v0.2.0/signlocal-0.2.0-1.x86_64.rpm",
+        "size": 4820064,
+        "sha256": "f07de03e67df71068eb87cbca52e8573f0f84a7352a88cc7884b40baeb243b01"
+      },
+      "signlocal-0.2.0-1.aarch64.rpm": {
+        "name": "signlocal-0.2.0-1.aarch64.rpm",
+        "url": "https://github.com/diagnos-tech/signlocal/releases/download/v0.2.0/signlocal-0.2.0-1.aarch64.rpm",
+        "size": 4611920,
+        "sha256": "b6bd7264cf778294799e727594a48b3eda91e22fec61263eda6c471c87a7b62a"
+      },
+      "signlocal-0.2.0-linux-x64.tar.gz": {
+        "name": "signlocal-0.2.0-linux-x64.tar.gz",
+        "url": "https://github.com/diagnos-tech/signlocal/releases/download/v0.2.0/signlocal-0.2.0-linux-x64.tar.gz",
+        "size": 4702331,
+        "sha256": "b1a49185b2f9f40c0918b682f2c0152fed040557f486ff8f5c8df284e59e24f3"
+      },
+      "signlocal-0.2.0-linux-arm64.tar.gz": {
+        "name": "signlocal-0.2.0-linux-arm64.tar.gz",
+        "url": "https://github.com/diagnos-tech/signlocal/releases/download/v0.2.0/signlocal-0.2.0-linux-arm64.tar.gz",
+        "size": 4501790,
+        "sha256": "c3e128f3407a1a15ba4b35da3bdf55e672682e19b3f80e7638b73ffe157389b6"
+      },
+      "signlocal-extension-0.2.0-chromium.zip": {
+        "name": "signlocal-extension-0.2.0-chromium.zip",
+        "url": "https://github.com/diagnos-tech/signlocal/releases/download/v0.2.0/signlocal-extension-0.2.0-chromium.zip",
+        "size": 219412,
+        "sha256": "a780ed5f56fb10d37c6c7e4fc609b74108b10c674dd8dce44cbbea8043d48e72"
+      },
+      "signlocal-extension-0.2.0-firefox.zip": {
+        "name": "signlocal-extension-0.2.0-firefox.zip",
+        "url": "https://github.com/diagnos-tech/signlocal/releases/download/v0.2.0/signlocal-extension-0.2.0-firefox.zip",
+        "size": 218990,
+        "sha256": "6e33c8de33945594e5e77c8844bfce096f5beea760a9088e7f8874028cb4905b"
+      },
+      "install.sh": {
+        "name": "install.sh",
+        "url": "https://github.com/diagnos-tech/signlocal/releases/download/v0.2.0/install.sh",
+        "size": 18204,
+        "sha256": "305cde3e0f6bd3195d2562cb65faea86280df029515869784bbae1ed9cd71298"
+      },
+      "install.ps1": {
+        "name": "install.ps1",
+        "url": "https://github.com/diagnos-tech/signlocal/releases/download/v0.2.0/install.ps1",
+        "size": 22611,
+        "sha256": "a47ffcc7e065e27102f304a21ddc7a1c2098ee2dc75713f2b4feeb40562a98d5"
+      },
+      "SHA256SUMS": {
+        "name": "SHA256SUMS",
+        "url": "https://github.com/diagnos-tech/signlocal/releases/download/v0.2.0/SHA256SUMS",
+        "size": 1239,
+        "sha256": "ea40d51ce66d7a066ef55e9bf4312a7ede0c40a17ab7e96b2b598b6515b9a770"
+      }
+    }
+  }
+}

@@ -4,6 +4,7 @@
  * lines on purpose, not a package.
  */
 
+// #region site:react
 import {
   isSignlocalError,
   onChange,
@@ -66,3 +67,4 @@ export function useSignlocal(): SignlocalState {
 
   return { status, signing, error, sign };
 }
+// #endregion site:react

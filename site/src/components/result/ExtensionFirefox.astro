@@ -1,0 +1,86 @@
+---
+// Firefox: its add-ons page once the listing exists; until then the temporary add-on, which
+// Firefox forgets at every restart — said plainly, with the way to avoid it.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import type { ReleaseInfo } from "../../lib/data-types.ts";
+import { formatBytes } from "../../lib/format.ts";
+import { assetOf } from "../../lib/release-files.ts";
+import { text } from "../../lib/translate.ts";
+import type { ArtifactNames } from "../../platform/artifacts.ts";
+import { EXTENSION_ADDRESSES } from "../../platform/commands.ts";
+import { extensionSource, type StoreIds } from "../../platform/stores.ts";
+import Button from "../ui/Button.astro";
+import Callout from "../ui/Callout.astro";
+import CopyButton from "../ui/CopyButton.astro";
+import FileCard from "../ui/FileCard.astro";
+import Icon from "../ui/Icon.astro";
+
+interface Props {
+  locale: LocaleCode;
+  release: ReleaseInfo;
+  names: ArtifactNames;
+  ids: StoreIds;
+}
+const { locale, release, names, ids } = Astro.props;
+const { t, html } = text(locale);
+const source = extensionSource("firefox", ids);
+const file = assetOf(release, names.extensionFirefox);
+---
+
+<div data-browser="firefox" data-channel={source.channel}>
+  <h4 class="variant-heading nojs-only">Firefox</h4>
+  {
+    source.store ? (
+      <>
+        <p set:html={html("ext.intro_store", { store: source.store.name })} />
+        <div>
+          <Button href={source.store.url} external locale={locale} iconEnd="arrow-square-out">
+            {t("ext.store_button", { browser: "Firefox" })}
+          </Button>
+        </div>
+      </>
+    ) : (
+      <>
+        <Callout variant="warning">{t("ext.ff_intro")}</Callout>
+        <ol>
+          <li>
+            {t("ext.dev_download")}
+            <FileCard id="file-extension-firefox" name={file.name} size={formatBytes(file.size, locale)} url={file.url} sha256={file.sha256} os="all" locale={locale} />
+          </li>
+          <li set:html={html("ext.dev_unzip", { browser: "Firefox" })} />
+          <li>
+            <span set:html={html("ext.dev_open")} />
+            <span class="address">
+              <code id="address-firefox">{EXTENSION_ADDRESSES.firefox}</code>
+              <CopyButton from="address-firefox" locale={locale} />
+            </span>
+          </li>
+          <li set:html={html("ext.ff_load")} />
+        </ol>
+        <p class="tip"><Icon name="info-fill" size={16} />{t("ext.ff_tip")}</p>
+      </>
+    )
+  }
+</div>
+
+<style>
+  .address {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--ws-space-2);
+    margin-left: var(--ws-space-2);
+  }
+
+  .tip {
+    display: flex;
+    gap: var(--ws-space-2);
+    font-size: 0.875rem;
+    color: var(--ws-fg-muted);
+  }
+
+  .tip :global(.icon) {
+    margin-top: 3px;
+    color: var(--ws-accent-fg);
+  }
+</style>

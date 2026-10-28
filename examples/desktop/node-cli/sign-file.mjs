@@ -3,6 +3,7 @@
 //
 //   node sign-file.mjs <file>         uses the fake app: runs anywhere, e.g. in CI
 //   node sign-file.mjs <file> --app   uses the installed signlocal app
+// #region site:node
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { Signlocal, SignlocalError } from "@signlocal/desktop";
@@ -37,3 +38,4 @@ try {
   await signlocal?.close();
   await fake?.close();
 }
+// #endregion site:node

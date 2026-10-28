@@ -9,11 +9,17 @@
       "e2e/**",
       "examples/web/**",
       "examples/desktop/node-cli/**",
+      "site/**",
       "!**/generated",
       "!**/node_modules",
       "!**/.output",
       "!**/.wxt",
-      "!**/dist"
+      "!**/dist",
+      "!**/.astro",
+      "!site/public/boot.js",
+      "!site/**/*.astro",
+      "!site/**/*.svg",
+      "!site/**/*.html"
     ]
   },
   "formatter": {

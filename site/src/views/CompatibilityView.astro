@@ -1,0 +1,100 @@
+---
+// Where signlocal works today and how each part is checked: systems, browsers, certificates,
+// and the tokens and cards it knows. Every number comes from the files it is checked against.
+import BrowserMatrix from "../components/compatibility/BrowserMatrix.astro";
+import CertificateMatrix from "../components/compatibility/CertificateMatrix.astro";
+import DeviceTable from "../components/compatibility/DeviceTable.astro";
+import Systems from "../components/compatibility/Systems.astro";
+import type { LocaleCode } from "../i18n/codes.ts";
+import Base from "../layouts/Base.astro";
+import { PAGE_META } from "../lib/meta.ts";
+import { text } from "../lib/translate.ts";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { locale } = Astro.props;
+const { t, html } = text(locale);
+const meta = PAGE_META.compatibility;
+if (!meta) throw new Error("No meta for the compatibility page");
+---
+
+<Base locale={locale} page="compatibility" title={t(meta.title)} description={t(meta.description)}>
+  <div class="container compat">
+    <header class="compat__head">
+      <h1>{t("compat.title")}</h1>
+      <p class="lead">{t("compat.lead")}</p>
+    </header>
+    <section id="systems" aria-labelledby="systems-title">
+      <h2 id="systems-title">{t("compat.systems_title")}</h2>
+      <Systems locale={locale} />
+    </section>
+    <section id="browsers" aria-labelledby="browsers-title">
+      <h2 id="browsers-title">{t("compat.browsers_title")}</h2>
+      <p class="compat__lead">{t("compat.browsers_lead")}</p>
+      <BrowserMatrix locale={locale} />
+    </section>
+    <section id="certificates" aria-labelledby="certificates-title">
+      <h2 id="certificates-title">{t("compat.certs_title")}</h2>
+      <p class="compat__lead">{t("compat.certs_lead")}</p>
+      <CertificateMatrix locale={locale} />
+    </section>
+    <section id="devices" aria-labelledby="devices-title">
+      <h2 id="devices-title">{t("compat.devices_title")}</h2>
+      <p class="compat__lead">{t("compat.devices_lead")}</p>
+      <DeviceTable locale={locale} />
+      <div class="compat__report">
+        <h3>{t("compat.report_title")}</h3>
+        <p set:html={html("compat.report_body")} />
+      </div>
+    </section>
+  </div>
+  <script>
+    import { initDeviceFilter } from "../client/device-filter.ts";
+
+    initDeviceFilter();
+  </script>
+</Base>
+
+<style>
+  .compat {
+    display: grid;
+    gap: var(--web-space-12);
+    padding-block: var(--web-space-10) var(--web-space-16);
+  }
+
+  .compat__head {
+    display: grid;
+    gap: var(--ws-space-3);
+  }
+
+  section {
+    display: grid;
+    gap: var(--ws-space-4);
+    min-width: 0;
+  }
+
+  h2 {
+    font: var(--web-text-h2);
+    letter-spacing: var(--web-tracking-h2);
+  }
+
+  .compat__lead {
+    max-width: var(--web-measure);
+    color: var(--ws-fg-muted);
+  }
+
+  .compat__report {
+    display: grid;
+    gap: var(--ws-space-2);
+    margin-top: var(--ws-space-6);
+    padding: var(--ws-space-5);
+    border: 1px solid var(--web-ink-200);
+    border-radius: var(--web-radius-xl);
+    background: var(--web-ink-50);
+  }
+
+  .compat__report h3 {
+    font: var(--web-text-h3);
+  }
+</style>

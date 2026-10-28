@@ -1,0 +1,137 @@
+---
+// The language menu: a <details> button (globe and the language's own name, a short code on
+// narrow screens) over a list of links to the same page in every language. Each link carries
+// ?lang=<code>, so the choice is remembered even without JavaScript; client/language-menu.ts
+// closes the panel on Escape or an outside click and keeps the wizard's parameters.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { LOCALES, localeOf } from "../../i18n/locales.ts";
+import { isTranslated, type PageId, pagePath } from "../../lib/routes.ts";
+import { text } from "../../lib/translate.ts";
+import Icon from "../ui/Icon.astro";
+
+interface Props {
+  locale: LocaleCode;
+  page: PageId;
+  /** "footer" opens upward. */
+  placement?: "header" | "footer";
+}
+const { locale, page, placement = "header" } = Astro.props;
+const { t } = text(locale);
+const current = localeOf(locale);
+---
+
+<details class:list={["lang", `lang--${placement}`]} data-language-menu>
+  <summary class="lang__button">
+    <Icon name="globe" size={20} />
+    <span class="sr-only">{t("nav.language")}:</span>
+    <span class="lang__name">{current.endonym}</span>
+    <span class="lang__short">{current.short}</span>
+  </summary>
+  <ul class="lang__panel">
+    {
+      LOCALES.map((entry) => (
+        <li>
+          <a
+            href={`${isTranslated(page) ? pagePath(page, entry.code) : pagePath("home", entry.code)}?lang=${entry.code}`}
+            lang={entry.code}
+            hreflang={entry.code}
+            aria-current={entry.code === locale ? "true" : undefined}
+            data-language-link
+          >
+            <span>{entry.endonym}</span>
+            {entry.code === locale && <Icon name="check" size={16} />}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</details>
+
+<style>
+  .lang {
+    position: relative;
+  }
+
+  .lang__button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--ws-border);
+    border-radius: var(--ws-radius-lg);
+    background: var(--ws-bg-surface);
+    color: var(--ws-fg);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .lang__button::-webkit-details-marker {
+    display: none;
+  }
+
+  .lang__button :global(.icon) {
+    color: var(--ws-fg-muted);
+  }
+
+  .lang__button:hover {
+    background: var(--ws-bg-hover);
+  }
+
+  .lang__short {
+    display: none;
+  }
+
+  .lang__panel {
+    position: absolute;
+    right: 0;
+    z-index: 5;
+    min-width: 220px;
+    margin: 6px 0 0;
+    padding: 6px;
+    list-style: none;
+    border: 1px solid var(--ws-border);
+    border-radius: 12px;
+    background: var(--ws-bg-surface);
+    box-shadow: var(--web-shadow-md);
+  }
+
+  .lang--footer .lang__panel {
+    bottom: 100%;
+    right: auto;
+    left: 0;
+    margin: 0 0 6px;
+  }
+
+  .lang__panel a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ws-space-4);
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: var(--ws-fg);
+    text-decoration: none;
+  }
+
+  .lang__panel a:hover {
+    background: var(--ws-bg-hover);
+  }
+
+  .lang__panel a[aria-current="true"] {
+    font-weight: 600;
+    color: var(--ws-accent-fg);
+  }
+
+  @media (max-width: 899px) {
+    .lang--header .lang__name {
+      display: none;
+    }
+
+    .lang--header .lang__short {
+      display: inline;
+    }
+  }
+</style>

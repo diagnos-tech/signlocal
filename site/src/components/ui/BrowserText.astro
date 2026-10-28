@@ -1,0 +1,38 @@
+---
+// A sentence that names the browser, rendered once per variant. With JavaScript the wizard
+// shows the variant of the chosen browser; without it, the fallback (which says "your browser")
+// is the only one that shows, so the page still reads as one guide.
+import type { MessageKey } from "../../generated/message-keys.ts";
+import type { LocaleCode } from "../../i18n/codes.ts";
+import type { Variables } from "../../i18n/rich.ts";
+import { escapeHtml } from "../../i18n/rich.ts";
+import { text } from "../../lib/translate.ts";
+import type { BrowserId } from "../../platform/types.ts";
+
+interface Variant {
+  readonly browsers: readonly BrowserId[];
+  readonly key: MessageKey;
+  readonly variables?: Variables;
+}
+
+interface Props {
+  as: "h3" | "p" | "span" | "li";
+  locale: LocaleCode;
+  variants: readonly Variant[];
+  fallback: { readonly key: MessageKey; readonly variables?: Variables };
+  /** The messages use **bold**, `code` or links. */
+  rich?: boolean;
+  class?: string;
+}
+const { as: Tag, locale, variants, fallback, rich = false, class: extra } = Astro.props;
+const { t, html } = text(locale);
+const render = (key: MessageKey, variables?: Variables) =>
+  rich ? html(key, variables) : escapeHtml(t(key, variables));
+---
+
+{
+  variants.map((variant) => (
+    <Tag class:list={["js-only", extra]} data-browser={variant.browsers.join(" ")} set:html={render(variant.key, variant.variables)} />
+  ))
+}
+<Tag class:list={["nojs-only", extra]} set:html={render(fallback.key, fallback.variables)} />

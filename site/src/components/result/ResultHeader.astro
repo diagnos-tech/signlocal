@@ -1,0 +1,162 @@
+---
+// The top of "Your steps": the title, the three choices (each one editable), the link to share,
+// the notices (another computer, ready), and what is being installed — the version, its date
+// and where to read more. Everything but the release line needs JavaScript.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { browserLabel } from "../../lib/browsers.ts";
+import type { ReleaseInfo } from "../../lib/data-types.ts";
+import { formatDate } from "../../lib/format.ts";
+import { pagePath } from "../../lib/routes.ts";
+import { text } from "../../lib/translate.ts";
+import { OS_NAMES } from "../../platform/catalog.ts";
+import { ARCH_IDS, BROWSER_IDS, DISTRO_IDS, OS_IDS } from "../../platform/types.ts";
+import BrowserLogo from "../ui/BrowserLogo.astro";
+import Button from "../ui/Button.astro";
+import Callout from "../ui/Callout.astro";
+import Chip from "../ui/Chip.astro";
+import Icon from "../ui/Icon.astro";
+import OsMark from "../ui/OsMark.astro";
+import ChoiceChip from "./ChoiceChip.astro";
+
+interface Props {
+  locale: LocaleCode;
+  release: ReleaseInfo | null;
+}
+const { locale, release } = Astro.props;
+const { t } = text(locale);
+const action = (
+  key: "result.edit_system" | "result.edit_browser" | "result.edit_certificate",
+  label: string,
+) => `${t(key)}: ${label}`;
+const archName = { x64: "x64", arm64: "arm64" } as const;
+const distroLabel = {
+  deb: t("system.distro_deb_caption"),
+  rpm: t("system.distro_rpm_caption"),
+  other: t("system.distro_other_caption"),
+} as const;
+const certificates = [
+  { id: "token", label: t("cert.token"), icon: "usb" },
+  { id: "card", label: t("cert.card"), icon: "identification-card" },
+  { id: "file", label: t("cert.file"), icon: "desktop" },
+  { id: "unsure", label: t("cert.unsure"), icon: "question" },
+] as const;
+---
+
+<div class="result-head js-only">
+  <h2 class="step__title" tabindex="-1" data-step-title data-result-title></h2>
+  <div class="choices" role="group" aria-label={t("result.choices_label")}>
+    {
+      OS_IDS.map((os) =>
+        os === "macos" ? (
+          <ChoiceChip locale={locale} goto="system" label={OS_NAMES.macos} action={action("result.edit_system", OS_NAMES.macos)} data-os="macos" hidden>
+            <OsMark os="macos" size={48} />
+          </ChoiceChip>
+        ) : (
+          ARCH_IDS.flatMap((arch) =>
+            os === "windows"
+              ? [
+                  <ChoiceChip locale={locale} goto="system" label={`Windows · ${archName[arch]}`} action={action("result.edit_system", `Windows · ${archName[arch]}`)} data-os="windows" data-arch={arch} hidden>
+                    <OsMark os="windows" size={48} />
+                  </ChoiceChip>,
+                ]
+              : DISTRO_IDS.map((distro) => (
+                  <ChoiceChip locale={locale} goto="system" label={`Linux · ${archName[arch]} · ${distroLabel[distro]}`} action={action("result.edit_system", `Linux · ${archName[arch]} · ${distroLabel[distro]}`)} data-os="linux" data-arch={arch} data-distro={distro} hidden>
+                    <OsMark os="linux" size={48} />
+                  </ChoiceChip>
+                )),
+          )
+        ),
+      )
+    }
+    {
+      BROWSER_IDS.map((id) => (
+        <ChoiceChip locale={locale} goto="browser" label={browserLabel(id, t)} action={action("result.edit_browser", browserLabel(id, t))} data-browser={id} hidden>
+          <BrowserLogo browser={id} size={20} />
+        </ChoiceChip>
+      ))
+    }
+    {
+      certificates.map((cert) => (
+        <ChoiceChip locale={locale} goto="certificate" label={cert.label} action={action("result.edit_certificate", cert.label)} data-cert={cert.id} hidden>
+          <Icon name={cert.icon} size={20} />
+        </ChoiceChip>
+      ))
+    }
+    <Button variant="secondary" size="md" icon="link" class="choices__share" data-copy-wizard-link>
+      {t("wizard.copy_link")}
+    </Button>
+  </div>
+  <p class="sr-only" role="status" data-link-status></p>
+  <Callout variant="info" data-wrong-device hidden>
+    <span data-wrong-device-text></span>
+    <div><Button variant="secondary" size="md" data-wrong-device-action></Button></div>
+  </Callout>
+  <Callout variant="success" data-ready-banner hidden>
+    <strong data-ready-title></strong>
+    <span>{t("result.ready_body")}</span>
+    <div><Button href={pagePath("test", locale)} size="md" iconEnd="arrow-right">{t("result.ready_action")}</Button></div>
+  </Callout>
+</div>
+
+{
+  release && (
+    <div class="release">
+      <p class="release__line">
+        <span>{t("result.version", { version: release.version })}</span>
+        {release.prerelease && <Chip variant="info">{t("common.preview")}</Chip>}
+        <span aria-hidden="true">·</span>
+        <span>{t("result.released", { date: formatDate(release.publishedAt, { code: locale }) })}</span>
+        <span aria-hidden="true">·</span>
+        <a href={release.url} target="_blank" rel="noopener noreferrer">{t("result.release_notes")}<span class="sr-only">{t("common.new_tab")}</span></a>
+        <span aria-hidden="true">·</span>
+        <a href={release.url} target="_blank" rel="noopener noreferrer">{t("result.all_files")}<span class="sr-only">{t("common.new_tab")}</span></a>
+      </p>
+      {release.prerelease && (
+        <>
+          <Callout variant="warning" data-os="windows"><span>{t("result.unsigned_note", { os: OS_NAMES.windows })}</span></Callout>
+          <Callout variant="warning" data-os="macos"><span>{t("result.unsigned_note", { os: OS_NAMES.macos })}</span></Callout>
+        </>
+      )}
+    </div>
+  )
+}
+
+<style>
+  .result-head {
+    display: grid;
+    gap: var(--ws-space-3);
+  }
+
+  .choices {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ws-space-2);
+  }
+
+  .choices :global(.choices__share) {
+    margin-left: auto;
+  }
+
+  .release {
+    display: grid;
+    gap: var(--ws-space-3);
+    margin-block: var(--ws-space-3);
+  }
+
+  .release__line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 8px;
+    font-size: 0.875rem;
+    color: var(--ws-fg-muted);
+  }
+
+  @media (max-width: 639px) {
+    .choices :global(.choices__share) {
+      margin-left: 0;
+      width: 100%;
+    }
+  }
+</style>

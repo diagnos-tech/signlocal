@@ -1,0 +1,129 @@
+---
+// One row per error code, straight from the SDK: the stable code (with its own anchor, which
+// SignlocalError.docsUrl points to), what happened, what to do, and — when the desktop clients
+// advise something different — what desktop programs do.
+import { HINTS as DESKTOP_HINTS } from "../../../../clients/node/src/hints.ts";
+import type { ErrorCode } from "../../../../sdk/src/generated/ErrorCode.ts";
+import { HINTS } from "../../../../sdk/src/hints.ts";
+import { DESCRIPTIONS } from "../../content/developers/errors.ts";
+import { rich } from "../../i18n/rich.ts";
+
+/** The hints use `code` marks; there are no links in them. */
+const inline = (text: string) =>
+  rich(text, () => {
+    throw new Error("A hint must not link to a page");
+  });
+
+const codes = Object.keys(HINTS) as ErrorCode[];
+---
+
+<div class="errors">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Code</th>
+        <th scope="col">What happened</th>
+        <th scope="col">What to do</th>
+        <th scope="col">Desktop programs</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        codes.map((code) => (
+          <tr id={`error-${code}`}>
+            <th scope="row"><a href={`#error-${code}`}><code>{code}</code></a></th>
+            <td data-label="What happened">{DESCRIPTIONS[code]}</td>
+            <td data-label="What to do" set:html={inline(HINTS[code])} />
+            <td data-label="Desktop programs" set:html={DESKTOP_HINTS[code] === HINTS[code] ? "Same" : inline(DESKTOP_HINTS[code])} />
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+
+<style>
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    border: 1px solid var(--ws-border);
+    border-radius: var(--web-radius-xl);
+    background: var(--ws-bg-surface);
+    font-size: 0.9375rem;
+  }
+
+  th,
+  td {
+    padding: 12px 16px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--ws-border);
+  }
+
+  thead th {
+    background: var(--web-band);
+    font-size: 0.8125rem;
+    color: var(--ws-fg-muted);
+  }
+
+  tbody tr:last-child > * {
+    border-bottom: 0;
+  }
+
+  tbody th {
+    min-width: 12em;
+  }
+
+  tbody th a {
+    text-decoration: none;
+  }
+
+  tr:target > * {
+    background: var(--web-ink-50);
+  }
+
+  @media (max-width: 899px) {
+    thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+
+    table,
+    tbody,
+    tr,
+    th,
+    td {
+      display: block;
+    }
+
+    table {
+      border: 0;
+      background: none;
+    }
+
+    tr {
+      margin-bottom: var(--ws-space-3);
+      border: 1px solid var(--ws-border);
+      border-radius: var(--web-radius-xl);
+      background: var(--ws-bg-surface);
+      overflow: hidden;
+    }
+
+    td::before {
+      display: block;
+      content: attr(data-label);
+      font-size: 0.8125rem;
+      color: var(--ws-fg-muted);
+    }
+
+    tbody th {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+  }
+</style>

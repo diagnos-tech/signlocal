@@ -1,0 +1,99 @@
+---
+// Linux: the installer script (system package for deb and rpm systems, per user for the
+// others), or the package for the processor with the command that checks and installs it.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import type { ReleaseInfo } from "../../lib/data-types.ts";
+import { formatBytes } from "../../lib/format.ts";
+import { assetOf } from "../../lib/release-files.ts";
+import { text } from "../../lib/translate.ts";
+import type { ArtifactNames } from "../../platform/artifacts.ts";
+import { linuxAutomatic, linuxPackage } from "../../platform/commands.ts";
+import { ARCH_IDS } from "../../platform/types.ts";
+import CommandBlock from "../ui/CommandBlock.astro";
+import FileCard from "../ui/FileCard.astro";
+import Icon from "../ui/Icon.astro";
+
+interface Props {
+  mode: "auto" | "manual";
+  locale: LocaleCode;
+  release: ReleaseInfo;
+  names: ArtifactNames;
+}
+const { mode, locale, release, names } = Astro.props;
+const { t, html } = text(locale);
+const installer = assetOf(release, names.installSh);
+const pinned = { url: installer.url, sha256: installer.sha256 };
+const heading = {
+  deb: `Linux · ${t("system.distro_deb")}`,
+  rpm: `Linux · ${t("system.distro_rpm")}`,
+  other: `Linux · ${t("system.distro_other")}`,
+};
+const kinds = ["deb", "rpm"] as const;
+---
+
+{
+  mode === "auto" ? (
+    <>
+      <div data-os="linux" data-distro="deb rpm">
+        <h4 class="variant-heading nojs-only">{`Linux · ${t("system.distro_deb")} / ${t("system.distro_rpm")}`}</h4>
+        <ol>
+          <li set:html={html("install.linux_open")} />
+          <li>
+            <span set:html={html("install.paste")} />
+            <CommandBlock id="cmd-linux-system" command={linuxAutomatic(pinned, release.version, "system")} label={t("install.command_terminal")} locale={locale} />
+          </li>
+          <li>{t("install.wait_linux_system")}</li>
+        </ol>
+        <p class="what"><Icon name="info-fill" size={16} />{t("install.what_it_does")}</p>
+        <p set:html={html("install.linux_curl")} />
+      </div>
+      <div data-os="linux" data-distro="other">
+        <h4 class="variant-heading nojs-only">{heading.other}</h4>
+        <ol>
+          <li set:html={html("install.linux_open")} />
+          <li>
+            <span set:html={html("install.paste")} />
+            <CommandBlock id="cmd-linux-user" command={linuxAutomatic(pinned, release.version, "user")} label={t("install.command_terminal")} locale={locale} />
+          </li>
+          <li>{t("install.wait_linux_user")}</li>
+        </ol>
+        <p class="what"><Icon name="info-fill" size={16} />{t("install.what_it_does")}</p>
+        <p set:html={html("install.linux_curl")} />
+      </div>
+    </>
+  ) : (
+    <>
+      {kinds.map((kind) =>
+        ARCH_IDS.map((arch) => {
+          const file = assetOf(release, names[kind][arch]);
+          return (
+            <div data-os="linux" data-distro={kind} data-arch={arch}>
+              <h4 class="variant-heading nojs-only">{`${heading[kind]} · ${t(arch === "x64" ? "system.arch_x64" : "system.arch_arm64")}`}</h4>
+              <FileCard id={`file-${kind}-${arch}`} name={file.name} size={formatBytes(file.size, locale)} url={file.url} sha256={file.sha256} os="linux" locale={locale} />
+              <p>{t("install.linux_manual_command")}</p>
+              <CommandBlock id={`cmd-${kind}-${arch}`} command={linuxPackage(file, kind)} label={t("install.command_terminal")} locale={locale} />
+            </div>
+          );
+        }),
+      )}
+      <div data-os="linux" data-distro="other">
+        <h4 class="variant-heading nojs-only">{heading.other}</h4>
+        <p>{t("install.linux_other_manual")}</p>
+      </div>
+    </>
+  )
+}
+
+<style>
+  .what {
+    display: flex;
+    gap: var(--ws-space-2);
+    font-size: 0.875rem;
+    color: var(--ws-fg-muted);
+  }
+
+  .what :global(.icon) {
+    margin-top: 3px;
+    color: var(--ws-accent-fg);
+  }
+</style>

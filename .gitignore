@@ -5,12 +5,20 @@
 *.pdb
 **/mutants.out*/
 
-# Node / Bun / WXT
+# Node / Bun / WXT / Astro
 node_modules/
 dist/
 .output/
 .wxt/
+.astro/
 *.tsbuildinfo
+
+# The site: generated at build time (site/scripts/data) and test output
+site/src/generated/
+site/public/boot.js
+site/test-results/
+site/playwright-report/
+site/.lighthouseci/
 
 # Packaging outputs
 *.msix

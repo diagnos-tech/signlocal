@@ -1,0 +1,71 @@
+---
+// Step 1: which system, and for Windows and Linux which processor (and Linux distribution).
+// Everything for every system is rendered; the wizard shows what applies (data-os).
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { text } from "../../lib/translate.ts";
+import { OS_NAMES } from "../../platform/catalog.ts";
+import { OS_IDS } from "../../platform/types.ts";
+import Callout from "../ui/Callout.astro";
+import OsMark from "../ui/OsMark.astro";
+import DeviceNotice from "./DeviceNotice.astro";
+import Segmented from "./Segmented.astro";
+import Tile from "./Tile.astro";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { locale } = Astro.props;
+const { t } = text(locale);
+const captions = {
+  windows: t("system.windows_caption"),
+  macos: t("system.macos_caption", { version: "13" }),
+  linux: t("system.linux_caption"),
+} as const;
+const distros = [
+  { value: "deb", label: t("system.distro_deb"), caption: t("system.distro_deb_caption") },
+  { value: "rpm", label: t("system.distro_rpm"), caption: t("system.distro_rpm_caption") },
+  { value: "other", label: t("system.distro_other"), caption: t("system.distro_other_caption") },
+];
+---
+
+<form class="wizard__step" data-step="system" novalidate>
+  <fieldset class="step__fieldset">
+    <legend class="step__legend">
+      <h2 class="step__title" tabindex="-1" data-step-title>{t("system.question")}</h2>
+    </legend>
+    <p class="step__hint" data-hint="detected" hidden>{t("system.hint_detected")}</p>
+    <p class="step__hint" data-hint="unknown">{t("system.hint_unknown")}</p>
+    <p class="step__error" role="alert" data-error="os" hidden>{t("system.required")}</p>
+    <DeviceNotice kind="phone" locale={locale} withContinue />
+    <DeviceNotice kind="chromeos" locale={locale} />
+    <div class="step__tiles step__tiles--os">
+      {
+        OS_IDS.map((os) => (
+          <Tile field="os" value={os} label={OS_NAMES[os]} caption={captions[os]} variant="os" locale={locale} detected={`os:${os}`}>
+            <OsMark os={os} size={48} />
+          </Tile>
+        ))
+      }
+    </div>
+    <Segmented
+      field="arch"
+      legend={t("system.arch_label")}
+      locale={locale}
+      data-os="windows linux"
+      options={[
+        { value: "x64", label: t("system.arch_x64"), detected: "arch:x64" },
+        { value: "arm64", label: t("system.arch_arm64"), detected: "arch:arm64" },
+      ]}
+    >
+      <p class="step__small">{t("system.arch_hint")}</p>
+    </Segmented>
+    <Callout data-os="macos">{t("system.macos_universal")}</Callout>
+    <fieldset class="step__subset" data-os="linux">
+      <legend>{t("system.distro_label")}</legend>
+      <div class="step__tiles step__tiles--distro">
+        {distros.map((d) => <Tile field="distro" value={d.value} label={d.label} caption={d.caption} variant="distro" locale={locale} />)}
+      </div>
+      <p class="step__error" role="alert" data-error="distro" hidden>{t("system.distro_required")}</p>
+    </fieldset>
+  </fieldset>
+</form>

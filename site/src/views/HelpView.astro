@@ -1,0 +1,167 @@
+---
+// Fixes for the most common problems, how to uninstall, and how to get help; then every
+// question of the FAQ. Each topic is a <details> with an id, so the app and the extension can
+// link to it, and on a wide screen a list of topics sits beside them.
+import Faq from "../components/home/Faq.astro";
+import Button from "../components/ui/Button.astro";
+import CommandBlock from "../components/ui/CommandBlock.astro";
+import Disclosure from "../components/ui/Disclosure.astro";
+import type { LocaleCode } from "../i18n/codes.ts";
+import Base from "../layouts/Base.astro";
+import { PAGE_META } from "../lib/meta.ts";
+import { pagePath } from "../lib/routes.ts";
+import { text } from "../lib/translate.ts";
+import { UNINSTALL } from "../platform/commands.ts";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { locale } = Astro.props;
+const { t, html } = text(locale);
+const meta = PAGE_META.help;
+if (!meta) throw new Error("No meta for the help page");
+const topics = [
+  { id: "extension-missing", question: t("help.extension_missing_q") },
+  { id: "app-missing", question: t("help.app_missing_q") },
+  { id: "token", question: t("help.token_q") },
+  { id: "firefox-restart", question: t("help.firefox_restart_q") },
+  { id: "safari-restart", question: t("help.safari_restart_q") },
+  { id: "smartscreen", question: t("help.smartscreen_q") },
+  { id: "gatekeeper", question: t("help.gatekeeper_q") },
+  { id: "pin-locked", question: t("help.pin_locked_q") },
+  { id: "uninstall", question: t("help.uninstall_q") },
+  { id: "support", question: t("help.support_q") },
+];
+const terminal = t("install.command_terminal");
+---
+
+<Base locale={locale} page="help" title={t(meta.title)} description={t(meta.description)}>
+  <div class="container help">
+    <header class="help__head">
+      <h1>{t("help.title")}</h1>
+      <p class="lead">{t("help.lead")}</p>
+    </header>
+    <div class="help__layout">
+      <nav class="help__toc" aria-label={t("help.toc_label")}>
+        <ul>
+          {topics.map((topic) => <li><a href={`#${topic.id}`}>{topic.question}</a></li>)}
+        </ul>
+      </nav>
+      <div class="help__topics">
+        <Disclosure id="extension-missing" title={t("help.extension_missing_q")}>
+          <p>{t("help.extension_missing_a")}</p>
+          <div><Button href={pagePath("install", locale)} size="md">{t("help.extension_missing_action")}</Button></div>
+        </Disclosure>
+        <Disclosure id="app-missing" title={t("help.app_missing_q")}>
+          <p set:html={html("help.app_missing_a")} />
+          <div><Button href={pagePath("install", locale)} variant="secondary" size="md">{t("activate.install")}</Button></div>
+        </Disclosure>
+        <Disclosure id="token" title={t("help.token_q")}>
+          <p set:html={html("help.token_a")} />
+        </Disclosure>
+        <Disclosure id="firefox-restart" title={t("help.firefox_restart_q")}>
+          <p set:html={html("help.firefox_restart_a")} />
+        </Disclosure>
+        <Disclosure id="safari-restart" title={t("help.safari_restart_q")}>
+          <p set:html={html("help.safari_restart_a")} />
+        </Disclosure>
+        <Disclosure id="smartscreen" title={t("help.smartscreen_q")}>
+          <p set:html={html("help.smartscreen_a")} />
+        </Disclosure>
+        <Disclosure id="gatekeeper" title={t("help.gatekeeper_q")}>
+          <p set:html={html("help.gatekeeper_a")} />
+        </Disclosure>
+        <Disclosure id="pin-locked" title={t("help.pin_locked_q")}>
+          <p set:html={html("help.pin_locked_a")} />
+        </Disclosure>
+        <Disclosure id="uninstall" title={t("help.uninstall_q")}>
+          <p set:html={html("help.uninstall_windows")} />
+          <CommandBlock id="uninstall-windows" command={UNINSTALL.windows} label={t("install.command_powershell")} locale={locale} />
+          <p set:html={html("help.uninstall_macos")} />
+          <CommandBlock id="uninstall-macos" command={UNINSTALL.macos} label={terminal} locale={locale} />
+          <p set:html={html("help.uninstall_linux")} />
+          <CommandBlock id="uninstall-linux" command={UNINSTALL.linux} label={terminal} locale={locale} />
+          <p>{t("help.uninstall_extension")}</p>
+        </Disclosure>
+        <Disclosure id="support" title={t("help.support_q")}>
+          <p set:html={html("help.support_a")} />
+        </Disclosure>
+        <h2 class="help__faq">{t("help.faq_title")}</h2>
+        <Faq locale={locale} />
+      </div>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .help {
+    padding-block: var(--web-space-10) var(--web-space-16);
+  }
+
+  .help__head {
+    display: grid;
+    gap: var(--ws-space-3);
+    margin-bottom: var(--web-space-10);
+  }
+
+  .help__layout {
+    display: grid;
+    gap: var(--ws-space-8);
+  }
+
+  .help__toc {
+    display: none;
+  }
+
+  .help__toc ul {
+    display: grid;
+    gap: var(--ws-space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .help__toc a {
+    display: block;
+    padding: 4px 0;
+    color: var(--ws-fg-muted);
+    font-size: 0.9375rem;
+    text-decoration: none;
+  }
+
+  .help__toc a:hover {
+    color: var(--ws-accent-fg);
+  }
+
+  .help__topics {
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+    max-width: var(--web-content-narrow);
+  }
+
+  .help__faq {
+    margin-top: var(--web-space-10);
+    font: var(--web-text-h2);
+    letter-spacing: var(--web-tracking-h2);
+  }
+
+  /* The target of a link from the app or the extension stands out. */
+  .help__topics :global(details:target) {
+    border-color: var(--ws-accent);
+    box-shadow: 0 0 0 3px var(--web-ink-100);
+  }
+
+  @media (min-width: 900px) {
+    .help__layout {
+      grid-template-columns: 240px minmax(0, 1fr);
+    }
+
+    .help__toc {
+      position: sticky;
+      top: 88px;
+      display: block;
+      align-self: start;
+    }
+  }
+</style>

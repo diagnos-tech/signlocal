@@ -1,0 +1,9 @@
+---
+import { languagePaths } from "../../lib/paths.ts";
+import PrivacyView from "../../views/PrivacyView.astro";
+
+export const getStaticPaths = languagePaths;
+const { locale } = Astro.props;
+---
+
+<PrivacyView locale={locale} />

@@ -1,0 +1,52 @@
+---
+// A status pill: neutral, success, warning or info. Live chips fade in over --ws-motion-base.
+interface Props {
+  variant?: "neutral" | "success" | "warning" | "info";
+  class?: string;
+  [attribute: string]: unknown;
+}
+const { variant = "neutral", class: extra, ...attributes } = Astro.props;
+---
+
+<span class:list={["chip", `chip--${variant}`, extra]} {...attributes}><slot /></span>
+
+<style>
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 28px;
+    padding: 0 10px;
+    border: 1px solid var(--ws-border);
+    border-radius: var(--web-radius-full);
+    background: var(--ws-bg-surface);
+    color: var(--ws-fg-muted);
+    font: var(--web-text-label);
+    white-space: nowrap;
+    animation: chip-in var(--ws-motion-base) var(--ws-easing);
+  }
+
+  .chip--success {
+    background: var(--ws-success-soft);
+    border-color: var(--ws-success-border);
+    color: var(--ws-success);
+  }
+
+  .chip--warning {
+    background: var(--ws-warning-soft);
+    border-color: var(--ws-warning-border);
+    color: var(--ws-warning);
+  }
+
+  .chip--info {
+    background: var(--web-ink-100);
+    border-color: var(--web-ink-200);
+    color: var(--ws-accent-fg);
+  }
+
+  @keyframes chip-in {
+    from {
+      opacity: 0;
+    }
+  }
+</style>

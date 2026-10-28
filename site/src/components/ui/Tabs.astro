@@ -1,0 +1,77 @@
+---
+// The tab list of an ARIA tabs control with automatic activation (client/tabs.ts). The panels
+// are written by the caller: <div role="tabpanel" id="<group>-panel-<tab>" aria-labelledby=…>.
+// Without JavaScript the list is hidden and every panel shows, each with its own heading.
+interface Props {
+  /** Prefix of the ids: tab "<group>-tab-<id>" controls panel "<group>-panel-<id>". */
+  group: string;
+  label: string;
+  tabs: readonly { id: string; label: string }[];
+}
+const { group, label, tabs } = Astro.props;
+---
+
+<div class="tabs js-only" role="tablist" aria-label={label} data-tabs={group}>
+  {
+    tabs.map((tab, index) => (
+      <button
+        type="button"
+        role="tab"
+        class="tabs__tab"
+        id={`${group}-tab-${tab.id}`}
+        aria-controls={`${group}-panel-${tab.id}`}
+        aria-selected={index === 0 ? "true" : "false"}
+        tabindex={index === 0 ? 0 : -1}
+        data-tab={tab.id}
+      >
+        {tab.label}
+      </button>
+    ))
+  }
+</div>
+
+<style>
+  .tabs {
+    display: inline-flex;
+    gap: 4px;
+    margin-bottom: var(--ws-space-5);
+    padding: 4px;
+    border-radius: 12px;
+    background: var(--ws-bg-sunken);
+  }
+
+  .tabs__tab {
+    min-height: 36px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 9px;
+    background: none;
+    color: var(--ws-fg-muted);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+      background-color var(--ws-motion-fast) var(--ws-easing),
+      color var(--ws-motion-fast) var(--ws-easing);
+  }
+
+  .tabs__tab[aria-selected="true"] {
+    background: var(--ws-bg-surface);
+    color: var(--ws-fg);
+    font-weight: 600;
+    box-shadow: var(--web-shadow-xs);
+  }
+
+  @media (max-width: 639px) {
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      width: 100%;
+    }
+  }
+
+  /* With JavaScript only the selected panel shows. */
+  :global(html.js [role="tabpanel"]:not(.is-active)) {
+    display: none;
+  }
+</style>

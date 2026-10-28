@@ -1,0 +1,107 @@
+---
+// The install page of one language: a short heading and the wizard. The release comes from
+// GitHub at build time (scripts/data/release.ts); with none published the wizard says so.
+import Wizard from "../components/wizard/Wizard.astro";
+import type { LocaleCode } from "../i18n/codes.ts";
+import Base from "../layouts/Base.astro";
+import { PAGE_META } from "../lib/meta.ts";
+import { pagePath } from "../lib/routes.ts";
+import { PROJECT, RELEASE } from "../lib/site.ts";
+import { text } from "../lib/translate.ts";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { locale } = Astro.props;
+const { t } = text(locale);
+const meta = PAGE_META.install;
+if (!meta) throw new Error("No meta for the install page");
+const others = [
+  { href: `${PROJECT.repository}/releases`, label: t("wizard.other_releases"), external: true },
+  {
+    href: pagePath("help", locale, "uninstall"),
+    label: t("wizard.other_uninstall"),
+    external: false,
+  },
+  { href: pagePath("developers", locale), label: t("wizard.other_developers"), external: false },
+];
+---
+
+<Base locale={locale} page="install" title={t(meta.title)} description={t(meta.description)} bodyClass="page-install">
+  <section class="install-head hero-glow">
+    <div class="container">
+      <h1>{t("wizard.title")}</h1>
+      <p class="lead js-only">{t("wizard.lead")}</p>
+      <p class="lead nojs-only">{t("wizard.lead_nojs")}</p>
+    </div>
+  </section>
+  <div class="install-body">
+    <div class="container">
+      <Wizard locale={locale} release={RELEASE.release} />
+      <p class="other">
+        {t("wizard.other_heading")}
+        {
+          others.map((other, index) => (
+            <>
+              {index > 0 && <span aria-hidden="true"> · </span>}
+              <a href={other.href} {...(other.external ? { target: "_blank", rel: "noopener noreferrer" } : {})} lang={other.href.startsWith("/developers") ? "en" : undefined}>
+                {other.label}{other.external && <span class="sr-only">{t("common.new_tab")}</span>}
+              </a>
+            </>
+          ))
+        }
+      </p>
+    </div>
+  </div>
+  <script>
+    import { initWizard } from "../wizard/main.ts";
+
+    initWizard();
+  </script>
+</Base>
+
+<style>
+  :global(.page-install) {
+    background: var(--ws-bg-canvas);
+  }
+
+  .install-head {
+    padding-block: 48px 32px;
+    text-align: center;
+  }
+
+  .install-head h1 {
+    margin-bottom: var(--ws-space-3);
+    font: var(--web-text-h1);
+    letter-spacing: var(--web-tracking-h1);
+  }
+
+  .install-head .lead {
+    font-size: 1.1875rem;
+  }
+
+  .install-body {
+    padding-bottom: var(--web-space-12);
+  }
+
+  .other {
+    margin-top: var(--ws-space-8);
+    text-align: center;
+    font-size: 0.9375rem;
+    color: var(--ws-fg-muted);
+  }
+
+  @media (max-width: 639px) {
+    .install-head {
+      padding: 28px 0 20px;
+    }
+
+    .install-head h1 {
+      font-size: 2rem;
+    }
+
+    .install-head .lead {
+      font-size: 1.0625rem;
+    }
+  }
+</style>

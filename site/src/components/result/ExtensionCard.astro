@@ -1,0 +1,44 @@
+---
+// "Add the extension to <browser>" for every browser but Safari, whose extension comes with
+// the app and has a card of its own (see ExtensionSafari).
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { browserLabel } from "../../lib/browsers.ts";
+import type { ReleaseInfo } from "../../lib/data-types.ts";
+import { text } from "../../lib/translate.ts";
+import type { ArtifactNames } from "../../platform/artifacts.ts";
+import type { StoreIds } from "../../platform/stores.ts";
+import type { BrowserId } from "../../platform/types.ts";
+import BrowserText from "../ui/BrowserText.astro";
+import Chip from "../ui/Chip.astro";
+import Icon from "../ui/Icon.astro";
+import ExtensionChromium from "./ExtensionChromium.astro";
+import ExtensionFirefox from "./ExtensionFirefox.astro";
+import StepCard from "./StepCard.astro";
+
+interface Props {
+  locale: LocaleCode;
+  release: ReleaseInfo;
+  names: ArtifactNames;
+  ids: StoreIds;
+}
+const { locale, release, names, ids } = Astro.props;
+const { t } = text(locale);
+const browsers: readonly BrowserId[] = ["chrome", "edge", "firefox", "opera", "brave", "chromium"];
+---
+
+<StepCard locale={locale} card="extension" id="extension" data-release="yes" data-browser="!safari">
+  <Fragment slot="title">
+    <BrowserText
+      as="h3"
+      locale={locale}
+      variants={browsers.map((id) => ({ browsers: [id], key: "ext.title", variables: { browser: browserLabel(id, t) } }))}
+      fallback={{ key: "ext.title", variables: { browser: t("browser.name_chromium") } }}
+    />
+  </Fragment>
+  <Fragment slot="live">
+    <Chip variant="success" data-live="extension-installed" hidden><Icon name="check-circle-fill" size={16} /><span data-live-text></span></Chip>
+    <Chip data-live="extension-missing" hidden><span data-live-text></span></Chip>
+  </Fragment>
+  <ExtensionChromium locale={locale} release={release} names={names} ids={ids} />
+  <ExtensionFirefox locale={locale} release={release} names={names} ids={ids} />
+</StepCard>

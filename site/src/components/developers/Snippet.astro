@@ -1,0 +1,17 @@
+---
+// A code sample cut from a file of examples/ (scripts/data/snippets.ts): the same dark block as
+// the install commands, with its Copy button.
+import { SNIPPETS } from "../../lib/site.ts";
+import CommandBlock from "../ui/CommandBlock.astro";
+
+interface Props {
+  /** The region's name: `// #region site:<name>` in the example file. */
+  name: string;
+  label: string;
+}
+const { name, label } = Astro.props;
+const code = SNIPPETS[name];
+if (code === undefined) throw new Error(`No snippet "${name}"`);
+---
+
+<CommandBlock id={`snippet-${name}`} command={code} label={label} locale="en" icon="code" />

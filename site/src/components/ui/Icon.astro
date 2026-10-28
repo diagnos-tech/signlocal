@@ -1,0 +1,13 @@
+---
+// An inline Phosphor icon (MIT). The name is the file name in src/icons/ui or src/icons/os.
+import { icon } from "../../lib/icons.ts";
+import type { IconSize } from "../../lib/svg.ts";
+
+interface Props {
+  name: string;
+  size?: IconSize;
+}
+const { name, size = 20 } = Astro.props;
+---
+
+<Fragment set:html={icon(name, size)} />

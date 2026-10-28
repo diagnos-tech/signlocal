@@ -1,0 +1,192 @@
+---
+// For developers (English only): add signing with the visitor's own certificate to a website,
+// or call the app from a desktop program. The code comes from examples/, the error table from the
+// SDK and the Node client, so none of it can drift from what ships.
+import ErrorsTable from "../components/developers/ErrorsTable.astro";
+import Snippet from "../components/developers/Snippet.astro";
+import Toc from "../components/developers/Toc.astro";
+import UrlContract from "../components/developers/UrlContract.astro";
+import Button from "../components/ui/Button.astro";
+import CommandBlock from "../components/ui/CommandBlock.astro";
+import Disclosure from "../components/ui/Disclosure.astro";
+import Base from "../layouts/Base.astro";
+import { PROJECT } from "../lib/site.ts";
+
+const examples = `${PROJECT.repository}/tree/HEAD/examples`;
+const items = [
+  { id: "quickstart", label: "Quickstart" },
+  { id: "prepare", label: "How prepare works" },
+  { id: "status", label: "Detect signlocal" },
+  { id: "errors", label: "Errors" },
+  { id: "testing", label: "Testing" },
+  { id: "frameworks", label: "React and Vue" },
+  { id: "pdf", label: "PDF (PAdES)" },
+  { id: "links", label: "Send users to the right steps" },
+  { id: "desktop", label: "Desktop programs" },
+  { id: "api", label: "API reference" },
+];
+const { sdk } = PROJECT;
+---
+
+<Base
+  locale="en"
+  page="developers"
+  header="developers"
+  title="For developers · signlocal"
+  description="Add signing with the visitor's smart card, USB token or OS certificate to your website: @signlocal/sdk quickstart, errors, testing utilities and API reference."
+>
+  <div class="container dev">
+    <aside class="dev__toc"><Toc items={items} /></aside>
+    <article class="dev__content">
+      <header class="dev__head">
+        <h1>Add signing with the visitor's own certificate</h1>
+        <p class="lead">
+          You build the document and its hash; signlocal returns the signature and the certificate.
+          <code>@signlocal/sdk</code> {sdk.version} · zero dependencies · typed · under {sdk.budgetKb} KB gzip.
+        </p>
+      </header>
+
+      <section id="quickstart" aria-labelledby="quickstart-title">
+        <h2 id="quickstart-title">Quickstart</h2>
+        <p>Install the package. It has no dependencies, is fully typed and adds under {sdk.budgetKb} KB to your page.</p>
+        <CommandBlock id="install-sdk" command="bun add @signlocal/sdk     # or: npm install @signlocal/sdk" label="Terminal" locale="en" />
+        <p>Then sign. <code>prepare</code> receives the certificate the person chose and returns the hash to sign:</p>
+        <Snippet name="quickstart" label="TypeScript" />
+        <p>
+          <code>result.signature</code> is the raw signature (ECDSA r‖s, or the RSA block). Put it in your CMS or PDF together with
+          <code>result.certificate.der</code> and <code>result.certificate.chain</code>.
+        </p>
+      </section>
+
+      <section id="prepare" aria-labelledby="prepare-title">
+        <h2 id="prepare-title">How prepare works</h2>
+        <ol>
+          <li>Your page calls <code>sign()</code>. The signlocal window opens and the person chooses a certificate.</li>
+          <li><code>prepare(certificate)</code> runs in your page. PAdES and CAdES put the certificate inside the signed data, so this is where you build the signed attributes and return their hash (32, 48 or 64 bytes).</li>
+          <li>The person compares the verification code and confirms, typing the PIN in the app if needed. The document never leaves your page.</li>
+          <li><code>sign()</code> resolves with the signature. If the person switches certificate, <code>prepare</code> runs again and only the last hash is signed.</li>
+        </ol>
+        <p>The types follow your options: with <code>hash: "SHA-384"</code> and <code>algorithm: "ECDSA"</code>, prepare's context and the result are typed with exactly those values.</p>
+      </section>
+
+      <section id="status" aria-labelledby="status-title">
+        <h2 id="status-title">Show the Sign button only when signlocal is ready</h2>
+        <p><code>status()</code> never opens a window and never fails. <code>problem</code> says what is missing; <code>onChange</code> tells you when the person installs or updates something while your page is open.</p>
+        <Snippet name="status" label="TypeScript" />
+      </section>
+
+      <section id="errors" aria-labelledby="errors-title">
+        <h2 id="errors-title">Errors</h2>
+        <p>Every failure is a <code>SignlocalError</code> with a stable <code>code</code>, a <code>message</code> and a <code>hint</code> for you, and a <code>docsUrl</code> that points to this table. For the person, <code>errorText(error)</code> from <code>@signlocal/sdk/messages</code> gives a title and the next step in 7 languages.</p>
+        <Snippet name="errors" label="TypeScript" />
+        <ErrorsTable />
+      </section>
+
+      <section id="testing" aria-labelledby="testing-title">
+        <h2 id="testing-title">Test without the extension</h2>
+        <p><code>@signlocal/sdk/testing</code> installs a fake extension and app on <code>window</code>. Your code runs unchanged: <code>status()</code>, <code>certificates()</code> and <code>sign()</code> work, <code>prepare</code> runs, and the signatures are real ECDSA or RSA made with public test keys, so you can verify them. Script every outcome: the person cancels, no certificates, app missing, outdated, driver errors.</p>
+        <Snippet name="testing" label="TypeScript" />
+        <p>The same fake lets you build your page before installing anything. Load it only in development:</p>
+        <Snippet name="testing-dev" label="TypeScript" />
+        <p><strong>Never ship the fake.</strong> Anyone can sign with its keys. It refuses to run outside localhost-like addresses and warns on the console when installed.</p>
+      </section>
+
+      <section id="frameworks" aria-labelledby="frameworks-title">
+        <h2 id="frameworks-title">React and Vue</h2>
+        <p>The SDK has no framework code. The examples include a copy-paste <code>useSignlocal()</code> hook for React and the same as a Vue composable: live status, progress, error, and cancelling when the component goes away.</p>
+        <Snippet name="react-usage" label="TSX" />
+        <Disclosure title="The hook" variant="plain">
+          <Snippet name="react" label="TypeScript" />
+        </Disclosure>
+      </section>
+
+      <section id="pdf" aria-labelledby="pdf-title">
+        <h2 id="pdf-title">Signing PDFs (PAdES)</h2>
+        <p>Your PDF library reserves room for the signature and hashes the rest of the file. In <code>prepare</code> you build the signed attributes for the chosen certificate and return their hash; the signature you get back goes into the CMS inside the PDF. The PAdES example does this with pdf-lib and PKI.js, and its test checks the result with OpenSSL.</p>
+        <Snippet name="pades" label="TypeScript" />
+        <div><Button href={`${examples}/web`} external size="md" iconEnd="arrow-square-out">See the examples</Button></div>
+      </section>
+
+      <section id="links" aria-labelledby="links-title">
+        <h2 id="links-title">Send your users to the right steps</h2>
+        <p>The install page at <code>https://signlocal.diagnos.health/download.html</code> reads its choices from the address, so you can link people straight to the steps that matter to them, for example <code>download.html?cert=token</code> for people who sign with a USB token. Unknown parameters and invalid values are dropped silently.</p>
+        <UrlContract />
+      </section>
+
+      <section id="desktop" aria-labelledby="desktop-title">
+        <h2 id="desktop-title">Desktop programs</h2>
+        <h3>Node, Bun, Electron: <code>@signlocal/desktop</code></h3>
+        <p>Connect to the app, then call <code>sign()</code>. The app names your program in its confirmation window.</p>
+        <Snippet name="node" label="JavaScript" />
+        <h3>Rust: <code>signlocal-client</code></h3>
+        <p><code>Client::connect()</code>, then <code>certificates()</code> or <code>sign()</code>. The app is started on demand.</p>
+        <Snippet name="rust" label="Rust" />
+        <p class="muted">API guides and contracts in the repository: <a href={`${PROJECT.repository}/blob/HEAD/docs/architecture/web-api.md`}>docs/architecture/web-api.md</a> and <a href={`${PROJECT.repository}/blob/HEAD/docs/architecture/desktop-api.md`}>docs/architecture/desktop-api.md</a>.</p>
+      </section>
+
+      <section id="api" aria-labelledby="api-title">
+        <h2 id="api-title">API reference</h2>
+        <p>Every function and type of <code>@signlocal/sdk</code>, <code>@signlocal/sdk/messages</code> and <code>@signlocal/sdk/testing</code>, with examples, generated from the source.</p>
+        <div><Button href="/api/" variant="secondary" size="md">Open the API reference</Button></div>
+      </section>
+    </article>
+  </div>
+</Base>
+
+<style>
+  .dev {
+    display: grid;
+    gap: var(--ws-space-6);
+    padding-block: var(--web-space-10) var(--web-space-16);
+  }
+
+  .dev__content {
+    display: grid;
+    gap: var(--web-space-12);
+    min-width: 0;
+  }
+
+  .dev__head {
+    display: grid;
+    gap: var(--ws-space-3);
+  }
+
+  section {
+    display: grid;
+    gap: var(--ws-space-3);
+    min-width: 0;
+  }
+
+  h2 {
+    font: var(--web-text-h2);
+    letter-spacing: var(--web-tracking-h2);
+  }
+
+  h3 {
+    margin-top: var(--ws-space-3);
+  }
+
+  section > p,
+  section > ol {
+    max-width: var(--web-measure);
+    margin: 0;
+  }
+
+  ol {
+    display: grid;
+    gap: var(--ws-space-2);
+    padding-left: var(--ws-space-5);
+  }
+
+  .muted {
+    color: var(--ws-fg-muted);
+    font-size: 0.9375rem;
+  }
+
+  @media (min-width: 900px) {
+    .dev {
+      grid-template-columns: 220px minmax(0, 1fr);
+      gap: var(--web-space-12);
+    }
+  }
+</style>

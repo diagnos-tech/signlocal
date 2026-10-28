@@ -1,0 +1,32 @@
+---
+// The last card: sign a harmless sample to see that everything works together.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { pagePath } from "../../lib/routes.ts";
+import { text } from "../../lib/translate.ts";
+import Button from "../ui/Button.astro";
+import StepCard from "./StepCard.astro";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { locale } = Astro.props;
+const { t, html } = text(locale);
+---
+
+<StepCard card="test" id="test" data-release="yes">
+  <h3 slot="title">{t("teststep.title")}</h3>
+  <p>{t("teststep.body")}</p>
+  <div class="test__row">
+    <Button href={pagePath("test", locale)} iconEnd="arrow-right">{t("teststep.button")}</Button>
+    <p set:html={html("teststep.trouble")} />
+  </div>
+</StepCard>
+
+<style>
+  .test__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ws-space-3) var(--ws-space-5);
+  }
+</style>

@@ -1,0 +1,45 @@
+---
+// Step 3: where the certificate is. Never preselected: only the person knows.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { text } from "../../lib/translate.ts";
+import Icon from "../ui/Icon.astro";
+import Tile from "./Tile.astro";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { locale } = Astro.props;
+const { t } = text(locale);
+---
+
+<form class="wizard__step" data-step="certificate" novalidate>
+  <fieldset class="step__fieldset">
+    <legend class="step__legend">
+      <h2 class="step__title" tabindex="-1" data-step-title>{t("cert.question")}</h2>
+    </legend>
+    <p class="step__hint">{t("cert.hint")}</p>
+    <p class="step__error" role="alert" data-error="cert" hidden>{t("cert.required")}</p>
+    <div class="step__tiles step__tiles--cert">
+      <Tile field="cert" value="token" label={t("cert.token")} caption={t("cert.token_caption")} variant="cert" locale={locale}>
+        <Icon name="usb" size={32} />
+      </Tile>
+      <Tile field="cert" value="card" label={t("cert.card")} caption={t("cert.card_caption")} variant="cert" locale={locale}>
+        <Icon name="identification-card" size={32} />
+      </Tile>
+      <Tile
+        field="cert"
+        value="file"
+        label={t("cert.file")}
+        caption={t("cert.file_caption")}
+        captionLinux={t("cert.file_linux_note")}
+        variant="cert"
+        locale={locale}
+      >
+        <Icon name="desktop" size={32} />
+      </Tile>
+      <Tile field="cert" value="unsure" label={t("cert.unsure")} caption={t("cert.unsure_caption")} variant="cert" locale={locale}>
+        <Icon name="question" size={32} />
+      </Tile>
+    </div>
+  </fieldset>
+</form>

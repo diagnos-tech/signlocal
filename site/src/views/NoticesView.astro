@@ -1,0 +1,144 @@
+---
+// Licenses and trademarks (English only): the fonts, icons and logos the site carries, their
+// licences, and the statement that the browser and system names and logos belong to their owners.
+import Base from "../layouts/Base.astro";
+
+const parts = [
+  {
+    name: "Inter",
+    version: "4.1",
+    licence: "SIL OFL-1.1",
+    file: "OFL-Inter.txt",
+    note: "Variable font by The Inter Project Authors, from @fontsource-variable/inter 5.3.0, unmodified.",
+  },
+  {
+    name: "JetBrains Mono",
+    version: "variable",
+    licence: "SIL OFL-1.1",
+    file: "OFL-JetBrains-Mono.txt",
+    note: "By The JetBrains Mono Project Authors, from @fontsource-variable/jetbrains-mono 5.3.0, unmodified.",
+  },
+  {
+    name: "Phosphor Icons",
+    version: "2.1.1",
+    licence: "MIT",
+    file: "MIT-Phosphor.txt",
+    note: "Interface and operating-system icons, inlined as SVG.",
+  },
+  {
+    name: "browser-logos",
+    version: "75.0.1",
+    licence: "MIT (repository)",
+    file: "MIT-browser-logos.txt",
+    note: "The repository is MIT; the logos themselves are trademarks of their owners.",
+  },
+] as const;
+---
+
+<Base
+  locale="en"
+  page="notices"
+  title="Licenses and trademarks · signlocal"
+  description="The fonts, icons and logos used by this website, their licenses, and the trademarks of the browsers and systems signlocal works with."
+>
+  <div class="container container--narrow notices">
+    <h1>Licenses and trademarks</h1>
+    <p class="lead">This website uses the following free fonts, icons and logos. Nothing is loaded from another site.</p>
+    <table>
+      <thead>
+        <tr><th scope="col">Name</th><th scope="col">Version</th><th scope="col">License</th><th scope="col">Notes</th></tr>
+      </thead>
+      <tbody>
+        {
+          parts.map((part) => (
+            <tr>
+              <th scope="row">{part.name}</th>
+              <td data-label="Version">{part.version}</td>
+              <td data-label="License"><a href={`/licenses/${part.file}`}>{part.licence}</a></td>
+              <td data-label="Notes">{part.note}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+    <h2>Trademarks</h2>
+    <p>
+      Windows and Microsoft Edge are trademarks of the Microsoft group of companies. Apple, macOS and Safari are trademarks of Apple
+      Inc., registered in the U.S. and other countries and regions. Linux® is the registered trademark of Linus Torvalds in the U.S. and
+      other countries. Google Chrome is a trademark of Google LLC. Firefox is a trademark of the Mozilla Foundation in the U.S. and
+      other countries. Opera is a trademark of Opera Norway AS. Brave is a trademark of Brave Software, Inc. signlocal uses these names
+      and logos only to say which systems and browsers it works with. signlocal is not affiliated with, sponsored or endorsed by these
+      companies.
+    </p>
+  </div>
+</Base>
+
+<style>
+  .notices {
+    display: grid;
+    gap: var(--ws-space-5);
+    padding-block: var(--web-space-10) var(--web-space-16);
+  }
+
+  h2 {
+    margin-top: var(--ws-space-4);
+    font: var(--web-text-h3);
+  }
+
+  p {
+    max-width: var(--web-measure);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    border: 1px solid var(--ws-border);
+    border-radius: var(--web-radius-xl);
+    font-size: 0.9375rem;
+  }
+
+  th,
+  td {
+    padding: 12px 16px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--ws-border);
+  }
+
+  thead th {
+    background: var(--web-band);
+    font-size: 0.8125rem;
+    color: var(--ws-fg-muted);
+  }
+
+  tbody tr:last-child > * {
+    border-bottom: 0;
+  }
+
+  @media (max-width: 639px) {
+    thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+
+    table,
+    tbody,
+    tr,
+    th,
+    td {
+      display: block;
+    }
+
+    td::before {
+      display: block;
+      content: attr(data-label);
+      font-size: 0.8125rem;
+      color: var(--ws-fg-muted);
+    }
+  }
+</style>

@@ -1,0 +1,45 @@
+# site/src/icons/ui
+
+Interface icons, Phosphor regular weight unless the name ends in `-fill`.
+
+- `arrow-clockwise.svg` — `arrow-clockwise` icon
+- `arrow-left.svg` — `arrow-left` icon
+- `arrow-right.svg` — `arrow-right` icon
+- `arrow-square-out.svg` — `arrow-square-out` icon
+- `browsers.svg` — `browsers` icon
+- `caret-down.svg` — `caret-down` icon
+- `caret-right.svg` — `caret-right` icon
+- `check-circle-fill.svg` — `check-circle-fill` icon
+- `check.svg` — `check` icon
+- `code.svg` — `code` icon
+- `copy.svg` — `copy` icon
+- `desktop.svg` — `desktop` icon
+- `device-mobile.svg` — `device-mobile` icon
+- `download-simple.svg` — `download-simple` icon
+- `envelope-simple.svg` — `envelope-simple` icon
+- `file-zip.svg` — `file-zip` icon
+- `github-logo.svg` — `github-logo` icon
+- `globe.svg` — `globe` icon
+- `hash.svg` — `hash` icon
+- `identification-card.svg` — `identification-card` icon
+- `info-fill.svg` — `info-fill` icon
+- `lifebuoy.svg` — `lifebuoy` icon
+- `link.svg` — `link` icon
+- `list-checks.svg` — `list-checks` icon
+- `list.svg` — `list` icon
+- `lock-simple.svg` — `lock-simple` icon
+- `magnifying-glass.svg` — `magnifying-glass` icon
+- `package.svg` — `package` icon
+- `pencil-simple.svg` — `pencil-simple` icon
+- `plug.svg` — `plug` icon
+- `puzzle-piece.svg` — `puzzle-piece` icon
+- `question.svg` — `question` icon
+- `seal-check.svg` — `seal-check` icon
+- `share-network.svg` — `share-network` icon
+- `shield-check.svg` — `shield-check` icon
+- `signature.svg` — `signature` icon
+- `terminal-window.svg` — `terminal-window` icon
+- `usb.svg` — `usb` icon
+- `warning-fill.svg` — `warning-fill` icon
+- `x-circle-fill.svg` — `x-circle-fill` icon
+- `x.svg` — `x` icon

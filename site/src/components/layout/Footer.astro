@@ -1,0 +1,147 @@
+---
+// Three columns (brand, the product, the project) and the language menu again below them.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { type PageId, pagePath } from "../../lib/routes.ts";
+import { PROJECT } from "../../lib/site.ts";
+import { text } from "../../lib/translate.ts";
+import Mark from "../brand/Mark.astro";
+import Wordmark from "../brand/Wordmark.astro";
+import Icon from "../ui/Icon.astro";
+import LanguageMenu from "./LanguageMenu.astro";
+
+interface Props {
+  locale: LocaleCode;
+  page: PageId;
+}
+const { locale, page } = Astro.props;
+const { t } = text(locale);
+const product: readonly { id: PageId; label: string }[] = [
+  { id: "install", label: t("nav.install") },
+  { id: "test", label: t("footer.test") },
+  { id: "compatibility", label: t("nav.compatibility") },
+  { id: "help", label: t("nav.help") },
+  { id: "privacy", label: t("nav.privacy") },
+];
+const outside = [
+  { href: PROJECT.repository, label: t("footer.source") },
+  { href: `${PROJECT.repository}/releases`, label: t("footer.releases") },
+  { href: `${PROJECT.repository}/security/policy`, label: t("footer.security") },
+];
+---
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="site-footer__columns">
+      <div class="site-footer__brand">
+        <a class="brand" href={pagePath("home", locale)}>
+          <Mark size={32} /><Wordmark small />
+        </a>
+        <p>{t("footer.tagline")}</p>
+        <p class="site-footer__license">{t("footer.license")}</p>
+      </div>
+      <nav aria-label={t("footer.label")}>
+        <h2>{t("footer.product_heading")}</h2>
+        <ul>
+          {product.map((link) => <li><a href={pagePath(link.id, locale)}>{link.label}</a></li>)}
+        </ul>
+      </nav>
+      <nav aria-label={t("footer.project_heading")}>
+        <h2>{t("footer.project_heading")}</h2>
+        <ul>
+          {
+            outside.map((link) => (
+              <li>
+                <a href={link.href} target="_blank" rel="noopener noreferrer">
+                  {link.label}<Icon name="arrow-square-out" size={16} /><span class="sr-only">{t("common.new_tab")}</span>
+                </a>
+              </li>
+            ))
+          }
+          <li><a href={pagePath("developers", locale)} lang={locale === "en" ? undefined : "en"}>{t("nav.developers")}</a></li>
+          <li><a href={pagePath("notices", locale)} lang={locale === "en" ? undefined : "en"}>{t("footer.notices")}</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="site-footer__bottom">
+      <LanguageMenu locale={locale} page={page} placement="footer" />
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    padding-block: var(--web-space-12) var(--ws-space-8);
+    background: var(--web-band);
+    border-top: 1px solid var(--ws-border);
+    font-size: 0.9375rem;
+    color: var(--ws-fg-muted);
+  }
+
+  .site-footer__columns {
+    display: grid;
+    gap: var(--web-space-10);
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: var(--ws-space-3);
+    text-decoration: none;
+  }
+
+  .brand img {
+    border-radius: 8px;
+  }
+
+  .site-footer__brand {
+    display: grid;
+    justify-items: start;
+    gap: var(--ws-space-2);
+    max-width: 34ch;
+  }
+
+  .site-footer__license {
+    margin-top: var(--ws-space-1);
+  }
+
+  h2 {
+    margin-bottom: var(--ws-space-3);
+    font: 600 0.875rem / 1.2 var(--web-font-sans);
+    letter-spacing: 0;
+  }
+
+  ul {
+    display: grid;
+    gap: var(--ws-space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 28px;
+    color: var(--ws-fg-muted);
+    text-decoration: none;
+  }
+
+  nav a:hover {
+    color: var(--ws-fg);
+    text-decoration: underline;
+  }
+
+  .site-footer__bottom {
+    margin-top: var(--web-space-10);
+    padding-top: var(--ws-space-6);
+    border-top: 1px solid var(--ws-border);
+  }
+
+  @media (min-width: 900px) {
+    .site-footer__columns {
+      grid-template-columns: 1.4fr 1fr 1fr;
+    }
+  }
+</style>

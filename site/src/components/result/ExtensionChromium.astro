@@ -1,0 +1,151 @@
+---
+// The extension for Chrome, Edge, Opera, Brave and other Chromium browsers: the store button
+// once project.toml has a store ID for the browser, the developer install until then.
+import type { MessageKey } from "../../generated/message-keys.ts";
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { browserLabel } from "../../lib/browsers.ts";
+import type { ReleaseInfo } from "../../lib/data-types.ts";
+import { formatBytes } from "../../lib/format.ts";
+import { assetOf } from "../../lib/release-files.ts";
+import { text } from "../../lib/translate.ts";
+import type { ArtifactNames } from "../../platform/artifacts.ts";
+import { EXTENSION_ADDRESSES } from "../../platform/commands.ts";
+import { extensionSource, type StoreIds } from "../../platform/stores.ts";
+import type { BrowserId } from "../../platform/types.ts";
+import BrowserText from "../ui/BrowserText.astro";
+import Button from "../ui/Button.astro";
+import Callout from "../ui/Callout.astro";
+import CopyButton from "../ui/CopyButton.astro";
+import Disclosure from "../ui/Disclosure.astro";
+import FileCard from "../ui/FileCard.astro";
+import Icon from "../ui/Icon.astro";
+
+interface Props {
+  locale: LocaleCode;
+  release: ReleaseInfo;
+  names: ArtifactNames;
+  ids: StoreIds;
+}
+const { locale, release, names, ids } = Astro.props;
+const { t, html } = text(locale);
+type Chromium = Exclude<BrowserId, "firefox" | "safari">;
+const family: readonly Chromium[] = ["chrome", "edge", "opera", "brave", "chromium"];
+const sources = family.map((id) => [id, extensionSource(id, ids)] as const);
+const developer = sources.filter(([, source]) => source.channel === "dev").map(([id]) => id);
+const stores = sources.flatMap(([id, source]) =>
+  source.store ? [{ id, source, store: source.store }] : [],
+);
+const withAddress = developer.filter(
+  (id): id is Exclude<Chromium, "chromium"> => id !== "chromium",
+);
+const file = assetOf(release, names.extensionChromium);
+const keyOf = (id: Chromium): MessageKey =>
+  id === "edge"
+    ? "ext.devmode_edge"
+    : id === "opera"
+      ? "ext.devmode_opera"
+      : id === "chromium"
+        ? "ext.devmode_other"
+        : "ext.devmode_chrome";
+const devmode = (["chrome", "edge", "opera", "chromium"] as const)
+  .map((id) => ({
+    browsers:
+      id === "chrome"
+        ? developer.filter((b) => b === "chrome" || b === "brave")
+        : developer.filter((b) => b === id),
+    key: keyOf(id),
+  }))
+  .filter((variant) => variant.browsers.length > 0);
+---
+
+{
+  developer.length > 0 && (
+    <div data-browser={developer.join(" ")} data-channel="dev">
+      <h4 class="variant-heading nojs-only">Chrome, Edge, Opera, Brave</h4>
+      <p>{t("ext.intro_dev")}</p>
+      <ol>
+        <li>
+          {t("ext.dev_download")}
+          <FileCard id="file-extension-chromium" name={file.name} size={formatBytes(file.size, locale)} url={file.url} sha256={file.sha256} os="all" locale={locale} />
+        </li>
+        <BrowserText
+          as="li"
+          locale={locale}
+          rich
+          variants={developer.map((id) => ({ browsers: [id], key: "ext.dev_unzip", variables: { browser: browserLabel(id, t) } }))}
+          fallback={{ key: "ext.dev_unzip", variables: { browser: t("browser.name_chromium") } }}
+        />
+        {
+          withAddress.length > 0 && (
+            <li data-browser={withAddress.join(" ")}>
+              <span set:html={html("ext.dev_open")} />
+              {withAddress.map((id) => (
+                <span class="address" data-browser={id}>
+                  <code id={`address-${id}`}>{EXTENSION_ADDRESSES[id]}</code>
+                  <CopyButton from={`address-${id}`} locale={locale} />
+                </span>
+              ))}
+            </li>
+          )
+        }
+        {
+          developer.includes("chromium") && (
+            <li data-browser="chromium">
+              {t("ext.chromium_open")}
+              <span class="addresses">
+                {(["chrome", "edge", "opera", "brave"] as const).map((id) => <code>{EXTENSION_ADDRESSES[id]}</code>)}
+              </span>
+            </li>
+          )
+        }
+        <BrowserText as="li" locale={locale} rich variants={devmode} fallback={{ key: "ext.devmode_other" }} />
+        <li set:html={html("ext.dev_load")} />
+      </ol>
+      <p class="tip"><Icon name="info-fill" size={16} />{t("ext.pin")}</p>
+      <Disclosure title={t("ext.why_dev_title")} variant="plain">
+        <p>{t("ext.why_dev")}</p>
+      </Disclosure>
+    </div>
+  )
+}
+{
+  stores.map(({ id, source, store }) => (
+    <div data-browser={id} data-channel="store">
+      <p set:html={source.operaNeedsAddon ? html("ext.opera_store") : html("ext.intro_store", { store: store.name })} />
+      {source.edgeUsesChromeStore && <Callout><span set:html={html("ext.edge_other_stores")} /></Callout>}
+      <div>
+        <Button href={store.url} external locale={locale} iconEnd="arrow-square-out">
+          {t("ext.store_button", { browser: browserLabel(id, t) })}
+        </Button>
+      </div>
+    </div>
+  ))
+}
+
+<style>
+  .address {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ws-space-2);
+    margin-left: var(--ws-space-2);
+  }
+
+  .addresses {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ws-space-2);
+    margin-top: var(--ws-space-2);
+  }
+
+  .tip {
+    display: flex;
+    gap: var(--ws-space-2);
+    font-size: 0.875rem;
+    color: var(--ws-fg-muted);
+  }
+
+  .tip :global(.icon) {
+    margin-top: 3px;
+    color: var(--ws-accent-fg);
+  }
+</style>

@@ -1,0 +1,9 @@
+---
+import { languagePaths } from "../../lib/paths.ts";
+import CompatibilityView from "../../views/CompatibilityView.astro";
+
+export const getStaticPaths = languagePaths;
+const { locale } = Astro.props;
+---
+
+<CompatibilityView locale={locale} />

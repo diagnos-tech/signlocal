@@ -25,7 +25,7 @@ only the last hash is signed. `signature` is raw (ECDSA r‖s, or the RSA block)
 `algorithm: "ECDSA"`, `prepare`'s context and the result are typed with exactly those values.
 
 Guide with the errors table: [developers page](https://signlocal.diagnos.health/developers.html).
-API reference: [`site/api/`](https://signlocal.diagnos.health/api/). Examples (vanilla, React, Vue,
+API reference: [signlocal.diagnos.health/api](https://signlocal.diagnos.health/api/) (generated from the source). Examples (vanilla, React, Vue,
 PAdES with pdf-lib + PKI.js): [`examples/web/`](../examples/web/).
 
 ## Is signlocal ready?
@@ -124,7 +124,8 @@ dynamic import (`if (import.meta.env.DEV) await (await import("@signlocal/sdk/te
   `cargo xtask gen`.
 - `bun run typecheck`, `bun run test`, `bun run build`, then `bun run size` (fails when the main entry
   reaches 5 KB gzip; reports the other entries).
-- `bun run docs` regenerates the API reference into `site/api/` (TypeDoc, in `tools/`, which has its own
-  lockfile because it needs the TypeScript 6 compiler API); `bun run docs:check` fails when it is stale.
+- `bun run docs` generates the API reference into `site/dist/api/` (TypeDoc, in `tools/`, which has its own
+  lockfile because it needs the TypeScript 6 compiler API). Nothing generated is committed: the site's
+  build runs it, in CI as locally (`bun run build` in `site/`).
 - `bun run check:package` runs publint and are-the-types-wrong on the packed package.
 - License: **Apache-2.0** ([`LICENSE`](LICENSE)).

@@ -1,0 +1,134 @@
+---
+// The systems and browsers signlocal works with, as marks, and the versions behind them —
+// read from the extension manifest, Info.plist.in and docs/architecture/compatibility.md.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { pagePath } from "../../lib/routes.ts";
+import { SUPPORT } from "../../lib/site.ts";
+import { text } from "../../lib/translate.ts";
+import { BROWSER_NAMES, OS_NAMES } from "../../platform/catalog.ts";
+import { SAFARI_MIN } from "../../platform/facts.ts";
+import { OS_IDS } from "../../platform/types.ts";
+import BrowserLogo from "../ui/BrowserLogo.astro";
+import OsMark from "../ui/OsMark.astro";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { locale } = Astro.props;
+const { t } = text(locale);
+const browsers = Object.keys(BROWSER_NAMES) as (keyof typeof BROWSER_NAMES)[];
+const note = t("home.works_note", {
+  macos: SUPPORT.macos,
+  chromium: SUPPORT.chromium,
+  firefox: SUPPORT.firefox,
+  safari: SAFARI_MIN,
+});
+---
+
+<section class="works" aria-labelledby="works-title">
+  <div class="container">
+    <div class="works__card card">
+      <h2 id="works-title" class="sr-only">{t("home.works_title")}</h2>
+      <div>
+        <h3 class="works__heading">{t("home.works_systems")}</h3>
+        <ul class="works__marks works__marks--systems">
+          {OS_IDS.map((os) => <li><OsMark os={os} size={32} /><span>{OS_NAMES[os]}</span></li>)}
+        </ul>
+      </div>
+      <span class="works__divider" aria-hidden="true"></span>
+      <div>
+        <h3 class="works__heading">{t("home.works_browsers")}</h3>
+        <ul class="works__marks works__marks--browsers">
+          {
+            browsers.map((id) => (
+              <li>
+                <BrowserLogo browser={id} size={32} />
+                <span>{BROWSER_NAMES[id]}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+    <p class="works__note">
+      {note}
+      <a href={pagePath("compatibility", locale)}>{t("home.works_link")}</a>
+    </p>
+  </div>
+</section>
+
+<style>
+  .works {
+    padding-block: var(--web-space-10) var(--ws-space-6);
+  }
+
+  .works__card {
+    display: grid;
+    gap: var(--ws-space-5);
+    padding: 20px;
+    border-radius: var(--web-radius-2xl);
+  }
+
+  .works__heading {
+    margin-bottom: 14px;
+    font: var(--web-text-label);
+    letter-spacing: 0;
+    color: var(--ws-fg-subtle);
+  }
+
+  .works__marks {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--ws-space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .works__marks li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--ws-space-2);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ws-fg-muted);
+  }
+
+  .works__divider {
+    display: none;
+  }
+
+  .works__note {
+    max-width: 64em;
+    margin: 18px auto 0;
+    font-size: 0.875rem;
+    color: var(--ws-fg-muted);
+    text-align: center;
+  }
+
+  @media (min-width: 900px) {
+    .works {
+      padding-block: 56px 24px;
+    }
+
+    .works__card {
+      grid-template-columns: auto 1px 1fr;
+      align-items: center;
+      gap: 40px;
+      padding: 28px 36px;
+    }
+
+    .works__divider {
+      display: block;
+      width: 1px;
+      height: 72px;
+      background: var(--ws-border);
+    }
+
+    .works__marks {
+      display: flex;
+      gap: 26px;
+    }
+  }
+</style>

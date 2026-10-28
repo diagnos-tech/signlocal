@@ -1,0 +1,66 @@
+---
+// The frame of every end-user page: head, skip link, header, main and footer. Styles are
+// imported here once; components carry their own scoped styles.
+import "../../../design/tokens.css";
+import "../../../design/tokens-web.css";
+import "../styles/fonts.css";
+import "../styles/base.css";
+import "../styles/layout.css";
+import "../styles/utilities.css";
+import { STRINGS as COPY_STRINGS } from "../client/copy.ts";
+import DevHeader from "../components/layout/DevHeader.astro";
+import Footer from "../components/layout/Footer.astro";
+import Head from "../components/layout/Head.astro";
+import Header from "../components/layout/Header.astro";
+import SampleDataRibbon from "../components/layout/SampleDataRibbon.astro";
+import SkipLink from "../components/layout/SkipLink.astro";
+import ClientStrings from "../components/ui/ClientStrings.astro";
+import type { LocaleCode } from "../i18n/codes.ts";
+import { localeOf } from "../i18n/locales.ts";
+import { isTranslated, type PageId } from "../lib/routes.ts";
+
+interface Props {
+  locale: LocaleCode;
+  page: PageId;
+  title: string;
+  description: string;
+  noindex?: boolean;
+  /** Extra class on <body>, e.g. the install page's canvas background. */
+  bodyClass?: string;
+  /** The developer pages have their own header. */
+  header?: "site" | "developers";
+}
+const {
+  locale,
+  page,
+  title,
+  description,
+  noindex = false,
+  bodyClass,
+  header = "site",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang={localeOf(locale).code} data-theme="light" data-localized={String(isTranslated(page))}>
+  <Head locale={locale} page={page} title={title} description={description} noindex={noindex} />
+  <body class={bodyClass}>
+    <SkipLink locale={locale} />
+    {header === "site" ? <Header locale={locale} page={page} /> : <DevHeader locale={locale} />}
+    <main id="main" tabindex="-1">
+      <SampleDataRibbon />
+      <slot />
+    </main>
+    <Footer locale={locale} page={page} />
+    <ClientStrings module="copy" keys={COPY_STRINGS} locale={locale} />
+    <script>
+      import { initCopyButtons } from "../client/copy.ts";
+      import { initLanguageMenus } from "../client/language-menu.ts";
+      import { initTabs } from "../client/tabs.ts";
+
+      initCopyButtons();
+      initLanguageMenus();
+      initTabs();
+    </script>
+  </body>
+</html>

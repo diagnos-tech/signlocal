@@ -1,0 +1,260 @@
+---
+// A radio card: a visually hidden but focusable radio input over an icon, a label, an optional
+// caption and an optional "Detected" pill. Selection shows as a thicker border AND a check
+// badge, never colour alone. The input covers the card, so a click anywhere selects it.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { text } from "../../lib/translate.ts";
+import Icon from "../ui/Icon.astro";
+
+interface Props {
+  /** The radio group, and the field of the wizard it sets. */
+  field: string;
+  value: string;
+  label: string;
+  caption?: string | undefined;
+  /** Replaces the caption when the chosen system is Linux. */
+  captionLinux?: string | undefined;
+  variant: "os" | "browser" | "cert" | "distro";
+  locale: LocaleCode;
+  /** "os:windows": client/… reveals the pill when detection says so. */
+  detected?: string;
+  /** Extra data attributes for conditions (data-os …). */
+  [attribute: string]: unknown;
+}
+const { field, value, label, caption, captionLinux, variant, locale, detected, ...attributes } =
+  Astro.props;
+const { t } = text(locale);
+---
+
+<label class={`tile tile--${variant}`} {...attributes}>
+  <input class="tile__input" type="radio" name={field} value={value} data-field={field} />
+  {detected && <span class="tile__pill" data-detected={detected} hidden>{t("common.detected")}</span>}
+  <span class="tile__badge" aria-hidden="true"><Icon name="check" size={16} /></span>
+  <span class="tile__icon"><slot /></span>
+  <span class="tile__text">
+    <span class="tile__label">{label}</span>
+    {caption && <span class="tile__caption" data-os={captionLinux ? "!linux" : undefined}>{caption}</span>}
+    {captionLinux && <span class="tile__caption" data-os="linux">{captionLinux}</span>}
+  </span>
+</label>
+
+<style>
+  .tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--ws-space-2);
+    min-height: 64px;
+    padding: 16px;
+    border: 1px solid var(--ws-border);
+    border-radius: var(--web-radius-xl);
+    background: var(--ws-bg-surface);
+    box-shadow: var(--web-shadow-xs);
+    text-align: center;
+    cursor: pointer;
+    transition:
+      border-color var(--ws-motion-fast) var(--ws-easing),
+      background-color var(--ws-motion-fast) var(--ws-easing),
+      box-shadow var(--ws-motion-fast) var(--ws-easing),
+      transform var(--ws-motion-fast) var(--ws-easing);
+  }
+
+  .tile:hover {
+    border-color: var(--web-tile-hover-border);
+    background: var(--web-tile-hover-bg);
+    box-shadow: var(--web-shadow-sm);
+    transform: translateY(-2px);
+  }
+
+  .tile__input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .tile:has(:checked) {
+    padding: 15px;
+    border: 2px solid var(--ws-accent);
+    background: var(--ws-accent-soft);
+  }
+
+  .tile:has(:focus-visible) {
+    outline: var(--ws-focus-width) solid var(--ws-focus);
+    outline-offset: 3px;
+  }
+
+  .tile__badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--ws-accent);
+    color: var(--ws-on-accent);
+    transform: scale(0.6);
+    opacity: 0;
+    transition:
+      transform var(--ws-motion-base) var(--ws-easing),
+      opacity var(--ws-motion-base) var(--ws-easing);
+  }
+
+  .tile:has(:checked) .tile__badge {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  .tile__pill {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 2px 8px;
+    border-radius: var(--web-radius-full);
+    background: var(--web-ink-100);
+    color: var(--ws-accent-fg);
+    font: 600 0.75rem / 1.5 var(--web-font-sans);
+  }
+
+  .tile__icon {
+    display: inline-flex;
+  }
+
+  .tile__text {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .tile__label {
+    font: 600 1.0625rem / 1.3 var(--web-font-sans);
+    overflow-wrap: anywhere;
+  }
+
+  .tile__caption {
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--ws-fg-muted);
+  }
+
+  /* Operating-system tiles: tall on desktop, a row with the icon at the left on a phone. */
+  .tile--os {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 14px;
+    padding: 12px 16px;
+    text-align: left;
+  }
+
+  .tile--os:has(:checked) {
+    padding: 11px 15px;
+  }
+
+  .tile--os .tile__pill,
+  .tile--os .tile__badge {
+    position: static;
+  }
+
+  .tile--os .tile__pill {
+    order: 3;
+    margin-left: auto;
+  }
+
+  .tile--os .tile__badge {
+    order: 4;
+    flex: none;
+  }
+
+  .tile--os .tile__icon :global(.icon--48) {
+    width: 32px;
+    height: 32px;
+  }
+
+  .tile--browser {
+    min-height: 132px;
+  }
+
+  .tile--cert,
+  .tile--distro {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--ws-space-4);
+    min-height: 96px;
+    text-align: left;
+  }
+
+  .tile--distro {
+    min-height: 72px;
+  }
+
+  .tile--cert .tile__icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--web-ink-100);
+    color: var(--ws-accent-fg);
+  }
+
+  .tile--cert .tile__text,
+  .tile--distro .tile__text {
+    padding-right: 28px;
+  }
+
+  .tile--cert .tile__caption {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  @media (min-width: 640px) {
+    .tile--os {
+      flex-direction: column;
+      justify-content: center;
+      min-height: 168px;
+      padding: 24px 16px 16px;
+      text-align: center;
+    }
+
+    .tile--os:has(:checked) {
+      padding: 23px 15px 15px;
+    }
+
+    .tile--os .tile__pill,
+    .tile--os .tile__badge {
+      position: absolute;
+      top: 10px;
+      margin: 0;
+    }
+
+    .tile--os .tile__pill {
+      left: 10px;
+    }
+
+    .tile--os .tile__badge {
+      right: 10px;
+    }
+
+    .tile--os .tile__icon :global(.icon--48) {
+      width: 52px;
+      height: 52px;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .tile:has(:checked) {
+      outline: 3px solid Highlight;
+    }
+  }
+</style>

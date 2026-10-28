@@ -1,0 +1,62 @@
+---
+// "Install the signlocal app": automatic (a pasted command that checks what it downloads) or
+// manual (the file and its checksum). Both tabs hold every system; the wizard shows one.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import type { ReleaseInfo } from "../../lib/data-types.ts";
+import { text } from "../../lib/translate.ts";
+import type { ArtifactNames } from "../../platform/artifacts.ts";
+import Chip from "../ui/Chip.astro";
+import Icon from "../ui/Icon.astro";
+import Tabs from "../ui/Tabs.astro";
+import InstallLinux from "./InstallLinux.astro";
+import InstallMacos from "./InstallMacos.astro";
+import InstallWindows from "./InstallWindows.astro";
+import StepCard from "./StepCard.astro";
+
+interface Props {
+  locale: LocaleCode;
+  release: ReleaseInfo;
+  names: ArtifactNames;
+}
+const { locale, release, names } = Astro.props;
+const { t } = text(locale);
+const tabs = [
+  { id: "auto", label: t("install.auto") },
+  { id: "manual", label: t("install.manual") },
+];
+---
+
+<StepCard locale={locale} card="install" id="install" data-release="yes">
+  <h3 slot="title">{t("install.title")}</h3>
+  <Fragment slot="live">
+    <Chip variant="success" data-live="app-installed" hidden><Icon name="check-circle-fill" size={16} /><span data-live-text></span></Chip>
+    <Chip variant="warning" data-live="app-outdated" hidden><Icon name="warning-fill" size={16} /><span data-live-text></span></Chip>
+  </Fragment>
+  <Tabs group="install" label={t("install.method_label")} tabs={tabs} />
+  <div role="tabpanel" id="install-panel-auto" aria-labelledby="install-tab-auto" class="is-active" data-panel="auto">
+    <h4 class="panel-title nojs-only">{t("install.auto")}</h4>
+    <InstallWindows mode="auto" locale={locale} release={release} names={names} />
+    <InstallMacos mode="auto" locale={locale} release={release} names={names} />
+    <InstallLinux mode="auto" locale={locale} release={release} names={names} />
+  </div>
+  <div role="tabpanel" id="install-panel-manual" aria-labelledby="install-tab-manual" data-panel="manual">
+    <h4 class="panel-title nojs-only">{t("install.manual")}</h4>
+    <InstallWindows mode="manual" locale={locale} release={release} names={names} />
+    <InstallMacos mode="manual" locale={locale} release={release} names={names} />
+    <InstallLinux mode="manual" locale={locale} release={release} names={names} />
+  </div>
+</StepCard>
+
+<style>
+  [role="tabpanel"] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ws-space-3);
+    min-width: 0;
+  }
+
+  .panel-title {
+    margin-top: var(--ws-space-4);
+    font: 650 1.0625rem / 1.3 var(--web-font-sans);
+  }
+</style>

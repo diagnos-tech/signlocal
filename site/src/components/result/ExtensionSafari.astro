@@ -1,0 +1,31 @@
+---
+// Safari: the extension is inside the app; until Apple signs it, Safari needs a developer
+// setting, which it turns off at every quit.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { text } from "../../lib/translate.ts";
+import Callout from "../ui/Callout.astro";
+import Chip from "../ui/Chip.astro";
+import Icon from "../ui/Icon.astro";
+import StepCard from "./StepCard.astro";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { locale } = Astro.props;
+const { t, html } = text(locale);
+---
+
+<StepCard locale={locale} card="extension" id="extension-safari" data-release="yes" data-browser="safari">
+  <h3 slot="title">{t("ext.safari_title")}</h3>
+  <Fragment slot="live">
+    <Chip variant="success" data-live="extension-installed" hidden><Icon name="check-circle-fill" size={16} /><span data-live-text></span></Chip>
+    <Chip data-live="extension-missing" hidden><span data-live-text></span></Chip>
+  </Fragment>
+  <p>{t("ext.safari_intro")}</p>
+  <ol>
+    <li set:html={html("ext.safari_1")} />
+    <li set:html={html("ext.safari_2")} />
+    <li set:html={html("ext.safari_3")} />
+  </ol>
+  <Callout variant="warning"><span set:html={html("ext.safari_restart")} /></Callout>
+</StepCard>

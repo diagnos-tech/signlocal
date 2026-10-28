@@ -1,0 +1,74 @@
+---
+// A boxed note: info (ink), warning (amber) or success (green), with an icon and an optional title.
+import Icon from "./Icon.astro";
+
+interface Props {
+  variant?: "info" | "warning" | "success";
+  /** Phosphor icon name; each variant has a default. */
+  icon?: string;
+  class?: string;
+  [attribute: string]: unknown;
+}
+const { variant = "info", icon, class: extra, ...attributes } = Astro.props;
+const icons = { info: "info-fill", warning: "warning-fill", success: "check-circle-fill" } as const;
+---
+
+<div class:list={["callout", `callout--${variant}`, extra]} {...attributes}>
+  <Icon name={icon ?? icons[variant]} size={20} />
+  <div class="callout__body">
+    <slot />
+  </div>
+</div>
+
+<style>
+  .callout {
+    display: flex;
+    gap: var(--ws-space-3);
+    padding: var(--ws-space-4);
+    border: 1px solid;
+    border-radius: 12px;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+
+  .callout > :global(.icon) {
+    margin-top: 2px;
+  }
+
+  .callout__body {
+    min-width: 0;
+    display: grid;
+    gap: var(--ws-space-2);
+  }
+
+  .callout__body :global(strong:first-child) {
+    font-weight: 600;
+  }
+
+  .callout--info {
+    background: var(--web-ink-50);
+    border-color: var(--web-ink-200);
+  }
+
+  .callout--info > :global(.icon) {
+    color: var(--ws-accent-fg);
+  }
+
+  .callout--warning {
+    background: var(--ws-warning-soft);
+    border-color: var(--ws-warning-border);
+  }
+
+  .callout--warning > :global(.icon) {
+    color: var(--ws-warning);
+  }
+
+  .callout--success {
+    background: var(--ws-success-soft);
+    border-color: var(--ws-success-border);
+  }
+
+  .callout--success > :global(.icon) {
+    color: var(--ws-success);
+  }
+</style>

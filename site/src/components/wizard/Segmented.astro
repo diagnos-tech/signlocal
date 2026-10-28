@@ -1,0 +1,121 @@
+---
+// A radio group as a segmented control (the processor). Below 640 px the options stack.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { text } from "../../lib/translate.ts";
+
+interface Props {
+  field: string;
+  legend: string;
+  options: readonly { value: string; label: string; detected?: string }[];
+  locale: LocaleCode;
+  [attribute: string]: unknown;
+}
+const { field, legend, options, locale, ...attributes } = Astro.props;
+const { t } = text(locale);
+---
+
+<fieldset class="segmented" {...attributes}>
+  <legend>{legend}</legend>
+  <div class="segmented__options">
+    {
+      options.map((option) => (
+        <label class="segmented__option">
+          <input type="radio" name={field} value={option.value} data-field={field} />
+          <span class="segmented__label">{option.label}</span>
+          {option.detected && (
+            <span class="segmented__pill" data-detected={option.detected} hidden>
+              {t("common.detected")}
+            </span>
+          )}
+        </label>
+      ))
+    }
+  </div>
+  <slot />
+</fieldset>
+
+<style>
+  .segmented {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  legend {
+    padding: 0;
+    margin-bottom: 10px;
+    font: 600 0.9375rem / 1.3 var(--web-font-sans);
+  }
+
+  .segmented__options {
+    display: inline-flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 12px;
+    background: var(--ws-bg-sunken);
+  }
+
+  .segmented__option {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ws-space-2);
+    min-height: 40px;
+    padding: 0 18px;
+    border-radius: 9px;
+    color: var(--ws-fg-muted);
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+      background-color var(--ws-motion-fast) var(--ws-easing),
+      color var(--ws-motion-fast) var(--ws-easing);
+  }
+
+  .segmented__option input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .segmented__option:has(:checked) {
+    background: var(--ws-bg-surface);
+    color: var(--ws-fg);
+    font-weight: 600;
+    box-shadow: var(--web-shadow-xs);
+  }
+
+  .segmented__option:has(:focus-visible) {
+    outline: var(--ws-focus-width) solid var(--ws-focus);
+    outline-offset: 2px;
+  }
+
+  .segmented__pill {
+    padding: 1px 8px;
+    border-radius: var(--web-radius-full);
+    background: var(--web-ink-100);
+    color: var(--ws-accent-fg);
+    font: 600 0.75rem / 1.5 var(--web-font-sans);
+  }
+
+  @media (max-width: 639px) {
+    .segmented__options {
+      display: grid;
+      width: 100%;
+    }
+
+    .segmented__option {
+      justify-content: space-between;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .segmented__option:has(:checked) {
+      outline: 3px solid Highlight;
+    }
+  }
+</style>

@@ -1,0 +1,52 @@
+---
+// "Connect signlocal to <browser>": the button opens the app through its signlocal: link,
+// which registers the app with every browser. For Safari there is nothing to click: opening the
+// app once lets Safari find the extension inside it. Safari's card comes first in the page so that
+// the visible order is install, open the app, turn the extension on.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { browserLabel } from "../../lib/browsers.ts";
+import { PROJECT } from "../../lib/site.ts";
+import { text } from "../../lib/translate.ts";
+import type { BrowserId } from "../../platform/types.ts";
+import BrowserText from "../ui/BrowserText.astro";
+import Button from "../ui/Button.astro";
+import Chip from "../ui/Chip.astro";
+import Icon from "../ui/Icon.astro";
+import StepCard from "./StepCard.astro";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { locale } = Astro.props;
+const { t, html } = text(locale);
+const browsers: readonly BrowserId[] = ["chrome", "edge", "firefox", "opera", "brave", "chromium"];
+const named = (key: "connect.title" | "connect.body") =>
+  browsers.map((id) => ({ browsers: [id], key, variables: { browser: browserLabel(id, t) } }));
+const generic = { browser: t("browser.name_chromium") };
+---
+
+<StepCard locale={locale} card="connect" id="connect-safari" data-release="yes" data-browser="safari">
+  <h3 slot="title">{t("connect.safari_title")}</h3>
+  <p set:html={html("connect.safari_body")} />
+</StepCard>
+
+<StepCard locale={locale} card="connect" id="connect" data-release="yes" data-browser="!safari">
+  <Fragment slot="title">
+    <BrowserText as="h3" locale={locale} variants={named("connect.title")} fallback={{ key: "connect.title", variables: generic }} />
+  </Fragment>
+  <Fragment slot="live">
+    <Chip variant="success" data-live="connected" hidden><Icon name="check-circle-fill" size={16} /><span data-live-text></span></Chip>
+  </Fragment>
+  <BrowserText as="p" locale={locale} rich variants={named("connect.body")} fallback={{ key: "connect.body", variables: generic }} />
+  <div>
+    <Button href={`${PROJECT.urlScheme}:activate`} icon="plug">{t("connect.button")}</Button>
+  </div>
+  <p class="nothing">{t("connect.nothing")}</p>
+</StepCard>
+
+<style>
+  .nothing {
+    font-size: 0.9375rem;
+    color: var(--ws-fg-muted);
+  }
+</style>

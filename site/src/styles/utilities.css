@@ -1,0 +1,35 @@
+/* Small pieces several components use: the lead paragraph, the card surface, the hero glow. */
+
+.lead {
+  font: var(--web-text-lead);
+  color: var(--ws-fg-muted);
+}
+
+.card {
+  background: var(--ws-bg-surface);
+  border: 1px solid var(--ws-border);
+  border-radius: var(--web-radius-xl);
+  box-shadow: var(--web-shadow-xs);
+}
+
+.hero-glow {
+  background: var(--web-hero);
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--ws-space-4);
+  top: -100px;
+  z-index: 10;
+  padding: var(--ws-space-3) var(--ws-space-4);
+  border-radius: var(--ws-radius-lg);
+  background: var(--ws-accent);
+  color: var(--ws-on-accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  top: var(--ws-space-3);
+  color: var(--ws-on-accent);
+}

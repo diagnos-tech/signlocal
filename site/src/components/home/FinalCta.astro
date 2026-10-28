@@ -1,0 +1,48 @@
+---
+// The closing call to action: install, or test an installation.
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { pagePath } from "../../lib/routes.ts";
+import { text } from "../../lib/translate.ts";
+import Button from "../ui/Button.astro";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { locale } = Astro.props;
+const { t } = text(locale);
+---
+
+<section class="final section" aria-labelledby="final-title">
+  <div class="container">
+    <h2 id="final-title">{t("home.final_title")}</h2>
+    <p class="section__lead">{t("home.final_body")}</p>
+    <div class="final__cta">
+      <Button href={pagePath("install", locale)} iconEnd="arrow-right">{t("home.cta_install")}</Button>
+      <Button href={pagePath("test", locale)} variant="secondary">{t("footer.test")}</Button>
+    </div>
+  </div>
+</section>
+
+<style>
+  .final {
+    background: linear-gradient(180deg, var(--web-ink-50), var(--web-page));
+    text-align: center;
+  }
+
+  .section__lead {
+    margin: var(--ws-space-3) auto var(--ws-space-8);
+  }
+
+  .final__cta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--ws-space-3);
+  }
+
+  @media (max-width: 639px) {
+    .final__cta {
+      flex-direction: column;
+    }
+  }
+</style>

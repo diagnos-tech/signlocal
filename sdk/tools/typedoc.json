@@ -3,7 +3,7 @@
   "name": "@signlocal/sdk",
   "entryPoints": ["../src/index.ts", "../src/messages.ts", "../src/testing/index.ts"],
   "tsconfig": "../tsconfig.build.json",
-  "out": "../../site/api",
+  "out": "../../site/dist/api",
   "readme": "api-index.md",
   "customCss": "api-theme.css",
   "excludePrivate": true,
@@ -12,13 +12,14 @@
   "hideGenerator": true,
   "githubPages": false,
   "cleanOutputDir": true,
-  "sourceLinkTemplate": "https://github.com/diagnos-tech/signlocal/blob/main/{path}#L{line}",
+  "sourceLinkTemplate": "https://github.com/diagnos-tech/signlocal/blob/develop/{path}#L{line}",
   "disableGit": true,
   "basePath": "../..",
   "navigationLinks": {
     "Quickstart": "../developers.html",
-    "Examples": "https://github.com/diagnos-tech/signlocal/tree/main/examples/web",
-    "Source": "https://github.com/diagnos-tech/signlocal/tree/main/sdk"
+    "signlocal": "../",
+    "Examples": "https://github.com/diagnos-tech/signlocal/tree/HEAD/examples/web",
+    "Source": "https://github.com/diagnos-tech/signlocal/tree/HEAD/sdk"
   },
   "sort": ["kind", "instance-first", "source-order"],
   "treatWarningsAsErrors": true

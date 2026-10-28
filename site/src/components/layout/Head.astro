@@ -1,0 +1,55 @@
+---
+// The <head> of every page, in this order: encoding, viewport, security policy, referrer,
+// colour scheme, the blocking boot script, then title, description, canonical, language
+// alternates, social previews, icons, the font preload and the build id.
+import interUrl from "../../fonts/inter-subset.woff2?url";
+import type { LocaleCode } from "../../i18n/codes.ts";
+import { localeOf } from "../../i18n/locales.ts";
+import { alternates, isTranslated, type PageId, pageUrl } from "../../lib/routes.ts";
+import { BUILD_ID, PROJECT } from "../../lib/site.ts";
+
+interface Props {
+  locale: LocaleCode;
+  page: PageId;
+  title: string;
+  description: string;
+  noindex?: boolean;
+}
+const { locale, page, title, description, noindex = false } = Astro.props;
+const canonical = pageUrl(page, locale, PROJECT.homepage);
+const image = new URL("og.png", PROJECT.homepage).href;
+// Nothing inline, nothing from another origin: the whole policy is "this site only".
+const policy =
+  "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'self'; object-src 'none'; upgrade-insecure-requests";
+---
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  {import.meta.env.PROD && <meta http-equiv="Content-Security-Policy" content={policy} />}
+  <meta name="referrer" content="no-referrer" />
+  <meta name="color-scheme" content="light" />
+  <script is:inline src="/boot.js"></script>
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonical} />
+  {noindex && <meta name="robots" content="noindex" />}
+  {
+    isTranslated(page) &&
+      alternates(page, PROJECT.homepage).map((alternate) => (
+        <link rel="alternate" hreflang={alternate.hreflang} href={alternate.href} />
+      ))
+  }
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content={PROJECT.name} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonical} />
+  <meta property="og:image" content={image} />
+  <meta property="og:locale" content={localeOf(locale).ogLocale} />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preload" href={interUrl} as="font" type="font/woff2" crossorigin />
+  <meta name="signlocal:build" content={BUILD_ID} />
+</head>

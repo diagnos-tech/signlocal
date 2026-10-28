@@ -1,0 +1,85 @@
+---
+import { STRINGS as ACTIVATE_STRINGS } from "../client/activate.ts";
+// "Finish setting up signlocal": the app is installed; this one click connects it to every
+// browser. The page then watches the connection and says when it is ready.
+import Button from "../components/ui/Button.astro";
+import Callout from "../components/ui/Callout.astro";
+import ClientStrings from "../components/ui/ClientStrings.astro";
+import type { LocaleCode } from "../i18n/codes.ts";
+import Base from "../layouts/Base.astro";
+import { PAGE_META } from "../lib/meta.ts";
+import { pagePath } from "../lib/routes.ts";
+import { PROJECT } from "../lib/site.ts";
+import { text } from "../lib/translate.ts";
+
+interface Props {
+  locale: LocaleCode;
+}
+const { locale } = Astro.props;
+const { t, html } = text(locale);
+const meta = PAGE_META.activate;
+if (!meta) throw new Error("No meta for the activate page");
+---
+
+<Base locale={locale} page="activate" title={t(meta.title)} description={t(meta.description)} noindex>
+  <div class="container container--narrow activate">
+    <h1>{t("activate.title")}</h1>
+    <p class="lead">{t("activate.lead")}</p>
+    <div>
+      <Button href={`${PROJECT.urlScheme}:activate`} icon="plug" data-activate-button>{t("activate.button")}</Button>
+    </div>
+    <p class="activate__allow">{t("activate.allow")}</p>
+    <div data-activate-live aria-live="polite">
+      <p class="activate__waiting" data-state="waiting" hidden>{t("activate.waiting")}</p>
+      <Callout variant="success" data-state="done" hidden>
+        <strong data-done-text></strong>
+        <div><Button href={pagePath("test", locale)} size="md" iconEnd="arrow-right">{t("activate.test")}</Button></div>
+      </Callout>
+      <Callout variant="warning" data-state="extension-first" hidden>
+        <span set:html={html("activate.extension_first")} />
+      </Callout>
+    </div>
+    <section class="activate__none" aria-labelledby="none-title">
+      <h2 id="none-title">{t("activate.none_title")}</h2>
+      <p>{t("activate.none")}</p>
+      <div><Button href={pagePath("install", locale)} variant="secondary">{t("activate.install")}</Button></div>
+    </section>
+  </div>
+  <ClientStrings module="activate" keys={ACTIVATE_STRINGS} locale={locale} />
+  <script>
+    import { initActivate } from "../client/activate.ts";
+
+    initActivate();
+  </script>
+</Base>
+
+<style>
+  .activate {
+    display: grid;
+    justify-items: start;
+    gap: var(--ws-space-5);
+    padding-block: var(--web-space-10) var(--web-space-16);
+  }
+
+  .activate__allow {
+    max-width: var(--web-measure);
+    color: var(--ws-fg-muted);
+  }
+
+  .activate__waiting {
+    color: var(--ws-fg-muted);
+  }
+
+  .activate__none {
+    display: grid;
+    justify-items: start;
+    gap: var(--ws-space-3);
+    margin-top: var(--ws-space-8);
+    padding-top: var(--ws-space-8);
+    border-top: 1px solid var(--ws-border);
+  }
+
+  .activate__none h2 {
+    font: var(--web-text-h3);
+  }
+</style>
