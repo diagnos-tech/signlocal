@@ -55,7 +55,7 @@ jobs:
           percent=$(( total == 0 ? 100 : caught * 100 / total ))
           echo "${{ matrix.crate }}: $caught of $total viable mutants killed ($percent %)"
           [ "$percent" -ge 85 ]
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: mutants-${{ matrix.crate }}
@@ -94,7 +94,7 @@ jobs:
               echo "::endgroup::"
             done
           done
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: fuzz-artifacts
