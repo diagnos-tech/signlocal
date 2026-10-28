@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="site/assets/icon.svg" alt="" width="72" height="72">
+<img src="site/src/brand/mark.svg" alt="" width="72" height="72">
 
 # signlocal
 
@@ -126,7 +126,7 @@ privately as described in [`SECURITY.md`](SECURITY.md).
 | [`crates/`](crates/) | The app's libraries; the protocol and project-settings crates are Apache-2.0 | GPL-3.0-or-later / Apache-2.0 |
 | [`devices.json`](devices.json) | Driver hints per device (USB and ATR), community-maintained | CC0-1.0 |
 | [`i18n/`](i18n/) | Texts in en, pt-BR, pt-PT, es, fr, it, de | GPL-3.0-or-later OR Apache-2.0 |
-| [`site/`](site/) | The website: download, test page, `/activate` | GPL-3.0-or-later |
+| [`site/`](site/) | The website: install wizard, test page, help, compatibility, developer docs (Astro) | GPL-3.0-or-later |
 | [`packaging/`](packaging/), [`scripts/install/`](scripts/install/) | Release artifacts and installers | GPL-3.0-or-later |
 
 The app's GPL does not reach websites or programs that call it: they talk through messages, not

@@ -13,7 +13,6 @@ name = "signlocal"
 slug = "signlocal"
 tagline = "Use your smart card, USB token, or OS certificate to sign on any website."
 repository = "https://github.com/diagnos-tech/signlocal"
-# TODO(gustavo): DNS (CNAME) of signlocal.diagnos.health and the GitHub Pages custom domain.
 homepage = "https://signlocal.diagnos.health/"
 
 [ids]

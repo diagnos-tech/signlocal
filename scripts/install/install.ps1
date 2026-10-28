@@ -73,8 +73,8 @@ function Test-GhLoggedIn {
 }
 
 # Downloads asset $Name of release v$Version into $Dest. Source order: a local
-# release folder, gh when logged in, a bearer token for the private
-# repository, anonymous HTTPS.
+# release folder, gh when logged in, a bearer token (SIGNLOCAL_GITHUB_TOKEN),
+# anonymous HTTPS.
 function Get-ReleaseFile([string]$Name, [string]$Dest) {
     $target = Join-Path $Dest $Name
     if ($ReleaseDir) {
@@ -102,7 +102,7 @@ function Get-ReleaseFile([string]$Name, [string]$Dest) {
     try {
         Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $target
     } catch {
-        throw "cannot download $Name (private repository? run 'gh auth login' or set SIGNLOCAL_GITHUB_TOKEN): $($_.Exception.Message)"
+        throw "cannot download $Name (check the network and that release v$Version exists): $($_.Exception.Message)"
     }
 }
 

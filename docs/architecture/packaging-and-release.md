@@ -83,13 +83,13 @@ nothing is piped into a shell. [`docs/install.md`](../install.md) has the full
 per-OS steps; the shape is:
 
 ```sh
-# macOS and Linux (private repository: authenticated with gh)
+# macOS and Linux (gh, or download both files from the release page)
 gh release download v<version> --repo diagnos-tech/signlocal --pattern install.sh --pattern SHA256SUMS
 sha256sum --ignore-missing -c SHA256SUMS && sh install.sh --version <version>   # macOS: shasum -a 256
 ```
 
 ```powershell
-# Windows (private repository: authenticated with gh)
+# Windows (gh, or download both files from the release page)
 gh release download v<version> --repo diagnos-tech/signlocal --pattern install.ps1 --pattern SHA256SUMS
 # verify install.ps1 against SHA256SUMS (docs/install.md), then:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Version <version>

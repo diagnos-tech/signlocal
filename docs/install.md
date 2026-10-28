@@ -9,8 +9,8 @@ computer) and the **browser extension**. Install both, in three steps:
 2. Add the [browser extension](#browser-extension).
 3. Sign a harmless sample on the website's `/test` page to check that everything works.
 
-The [download page](https://signlocal.diagnos.health/download.html) shows the same steps for your
-system and browser. Prerelease builds are **not code-signed yet** (see [Why unsigned?](#why-unsigned)), so each OS shows a
+The [install page](https://signlocal.diagnos.health/download.html) shows the same steps for your
+system and browser, with the exact version, sizes and checksums of the latest release. Prerelease builds are **not code-signed yet** (see [Why unsigned?](#why-unsigned)), so each OS shows a
 warning once. File names below are those of [`docs/architecture/packaging-and-release.md`](architecture/packaging-and-release.md);
 replace `<v>` with the release version (for example `0.1.0`).
 
@@ -19,14 +19,8 @@ prereleases, so every command below names the tag (`v<v>`) instead of relying on
 
 ## Downloading
 
-The repository is **private for now**, so downloads need an authenticated GitHub CLI (`gh auth login`):
-
-```sh
-gh release download v<v> --repo diagnos-tech/signlocal --pattern install.sh --pattern SHA256SUMS
-```
-
-Once the repository is public, the same files are at
-`https://github.com/diagnos-tech/signlocal/releases/download/v<v>/<file>` and `gh` is no longer needed.
+Every file is at `https://github.com/diagnos-tech/signlocal/releases/download/v<v>/<file>`: a browser or `curl` is
+enough, and no account is needed.
 
 ### Verify every download
 
@@ -60,21 +54,16 @@ A mismatch means the download is corrupt or altered: delete it and do not run it
 administrator rights are needed.
 
 ```powershell
-# Private repository (now)
-gh release download v<v> --repo diagnos-tech/signlocal --pattern install.ps1 --pattern SHA256SUMS
-# verify install.ps1 with the checksum block above ($file = 'install.ps1'), optionally read it, then:
-powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Version <v>
-```
-
-`-ExecutionPolicy Bypass` applies to this one run only; Windows blocks scripts by default.
-
-```powershell
-# Once the repository is public: download, verify as above, then run
+# Download, verify (the checksum block above with $file = 'install.ps1'), optionally read it, then run
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 $base = 'https://github.com/diagnos-tech/signlocal/releases/download/v<v>'
 Invoke-WebRequest -UseBasicParsing -Uri "$base/install.ps1" -OutFile install.ps1
 Invoke-WebRequest -UseBasicParsing -Uri "$base/SHA256SUMS" -OutFile SHA256SUMS
+# ... verify install.ps1, then:
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Version <v>
 ```
+
+`-ExecutionPolicy Bypass` applies to this one run only; Windows blocks scripts by default.
 
 The first line enables TLS 1.2, which Windows PowerShell 5.1 may not use by default.
 
@@ -93,11 +82,6 @@ remembered sites), delete `%LOCALAPPDATA%\Programs\signlocal`, and remove that f
 ## macOS (universal: Apple silicon and Intel)
 
 ```sh
-# Private repository (now)
-gh release download v<v> --repo diagnos-tech/signlocal --pattern install.sh --pattern SHA256SUMS
-shasum -a 256 --ignore-missing -c SHA256SUMS && sh install.sh --version <v>
-
-# Once the repository is public: same steps, downloading with curl
 curl -fsSLO https://github.com/diagnos-tech/signlocal/releases/download/v<v>/install.sh
 curl -fsSLO https://github.com/diagnos-tech/signlocal/releases/download/v<v>/SHA256SUMS
 shasum -a 256 --ignore-missing -c SHA256SUMS && sh install.sh --version <v>
@@ -122,11 +106,6 @@ the app and the link. By hand: `signlocal uninstall` (add `--purge` to also dele
 **Installer script** (any distribution; per user by default, no root):
 
 ```sh
-# Private repository (now)
-gh release download v<v> --repo diagnos-tech/signlocal --pattern install.sh --pattern SHA256SUMS
-sha256sum --ignore-missing -c SHA256SUMS && sh install.sh --version <v>
-
-# Once the repository is public: same steps, downloading with curl
 curl -fsSLO https://github.com/diagnos-tech/signlocal/releases/download/v<v>/install.sh
 curl -fsSLO https://github.com/diagnos-tech/signlocal/releases/download/v<v>/SHA256SUMS
 sha256sum --ignore-missing -c SHA256SUMS && sh install.sh --version <v>
@@ -144,11 +123,13 @@ architecture and `SHA256SUMS`, verify, then install:
 
 ```sh
 # Ubuntu 22.04 / 24.04, Debian 12 (arm64: signlocal_<v>_arm64.deb)
-gh release download v<v> --repo diagnos-tech/signlocal --pattern 'signlocal_<v>_amd64.deb' --pattern SHA256SUMS
+curl -fsSLO https://github.com/diagnos-tech/signlocal/releases/download/v<v>/signlocal_<v>_amd64.deb
+curl -fsSLO https://github.com/diagnos-tech/signlocal/releases/download/v<v>/SHA256SUMS
 sha256sum --ignore-missing -c SHA256SUMS && sudo apt install ./signlocal_<v>_amd64.deb
 
 # Fedora 42, Rocky Linux 9 (arm64: signlocal-<v>-1.aarch64.rpm)
-gh release download v<v> --repo diagnos-tech/signlocal --pattern 'signlocal-<v>-1.x86_64.rpm' --pattern SHA256SUMS
+curl -fsSLO https://github.com/diagnos-tech/signlocal/releases/download/v<v>/signlocal-<v>-1.x86_64.rpm
+curl -fsSLO https://github.com/diagnos-tech/signlocal/releases/download/v<v>/SHA256SUMS
 sha256sum --ignore-missing -c SHA256SUMS && sudo dnf install ./signlocal-<v>-1.x86_64.rpm
 ```
 

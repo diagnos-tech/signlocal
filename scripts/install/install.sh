@@ -114,7 +114,7 @@ fetch_gh() {
         || die "gh could not download $1 of v$VERSION"
 }
 
-# The private repository through the REST API: the release description
+# With a token (higher API limits) through the REST API: the release description
 # names the asset id, which is then downloaded as a raw stream.
 fetch_token() {
     have curl || die "curl is required"
@@ -130,12 +130,12 @@ fetch_token() {
 fetch_https() {
     have curl || die "curl is required"
     get "https://github.com/$REPO/releases/download/v$VERSION/$1" -o "$WORK/$1" \
-        || die "cannot download $1 (private repository? run 'gh auth login' or set SIGNLOCAL_GITHUB_TOKEN)"
+        || die "cannot download $1 (check the network and that release v$VERSION exists)"
 }
 
 # Downloads asset "$1" of release v$VERSION into "$WORK". Source order: a
 # local release folder (tests, offline), gh when logged in, a bearer token
-# for the private repository, anonymous HTTPS.
+# (SIGNLOCAL_GITHUB_TOKEN), anonymous HTTPS.
 fetch() {
     if [ -n "${SIGNLOCAL_RELEASE_DIR:-}" ]; then fetch_local "$1"
     elif have gh && gh auth status >/dev/null 2>&1; then fetch_gh "$1"

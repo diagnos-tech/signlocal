@@ -18,7 +18,7 @@ export type IconName =
 
 const SHAPES: Readonly<Record<IconName, string>> = {
   spinner: '<path d="M21 12a9 9 0 1 1-6.2-8.56"/>',
-  // The site's mark (site/assets/icon.svg): a pen and its signature stroke.
+  // The signlocal mark (site/public/favicon.svg): a pen and its signature stroke.
   brand: '<path d="M3 20c4 0 5-9 8-9s1 6 4 6 3-4 6-4"/><path d="m4 12 4-4 3 3-4 4z"/>',
   "check-circle": '<circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.8 2.8L16 9.5"/>',
   download: '<path d="M12 4v11m-5-4.5 5 5 5-5M5 20h14"/>',

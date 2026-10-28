@@ -27,7 +27,8 @@ packaging/                linux/, windows/, macos/ packaging definitions
 scripts/install/          install.sh, install.ps1
 e2e/                      Playwright suites
 xtask/                    cargo xtask gen|check|package|screenshots
-site/                     static website, deployed to GitHub Pages by .github/workflows/pages.yml
+site/                     Astro static site in seven languages (install wizard, test page, docs), built in CI and
+                          deployed to GitHub Pages by .github/workflows/pages.yml
 .github/workflows/        ci, e2e, release, pages, scheduled; prototypes and ui-spike by hand only
 docs/                     plan.md, ux.md, architecture/, prototypes/, research/, screenshots/
 ```

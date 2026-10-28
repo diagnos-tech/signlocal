@@ -7,18 +7,13 @@ prerelease, so GitHub's "latest release" skips it: every command names the tag `
 
 ## Download
 
-The repository is **private for now**, so downloads need an authenticated GitHub CLI (`gh auth login`). Once it is
-public, the same files are at `https://github.com/{{repo}}/releases/download/{{tag}}/<file>` and `gh` is no longer
-needed (the public commands are shown below each private one).
+Every file is at `https://github.com/{{repo}}/releases/download/{{tag}}/<file>`: a browser or `curl` is enough, and no
+account is needed. The [install page](https://signlocal.diagnos.health/download.html) shows these steps for your system
+and browser.
 
 ## macOS (universal) and Linux (amd64, arm64)
 
 ```sh
-# Private repository (now)
-gh release download {{tag}} --repo {{repo}} --pattern install.sh --pattern SHA256SUMS
-sha256sum --ignore-missing -c SHA256SUMS && sh install.sh --version {{version}}   # macOS: shasum -a 256 --ignore-missing -c SHA256SUMS
-
-# Once the repository is public: same steps, downloading with curl
 curl -fsSLO https://github.com/{{repo}}/releases/download/{{tag}}/install.sh
 curl -fsSLO https://github.com/{{repo}}/releases/download/{{tag}}/SHA256SUMS
 sha256sum --ignore-missing -c SHA256SUMS && sh install.sh --version {{version}}   # macOS: shasum -a 256 --ignore-missing -c SHA256SUMS
@@ -31,11 +26,13 @@ installs per user from the tarball; `--system` installs the verified deb or rpm 
 
 ```sh
 # Ubuntu 22.04 / 24.04, Debian 12 (arm64: signlocal_{{version}}_arm64.deb)
-gh release download {{tag}} --repo {{repo}} --pattern 'signlocal_{{version}}_amd64.deb' --pattern SHA256SUMS
+curl -fsSLO https://github.com/{{repo}}/releases/download/{{tag}}/signlocal_{{version}}_amd64.deb
+curl -fsSLO https://github.com/{{repo}}/releases/download/{{tag}}/SHA256SUMS
 sha256sum --ignore-missing -c SHA256SUMS && sudo apt install ./signlocal_{{version}}_amd64.deb
 
 # Fedora 42, Rocky Linux 9 (arm64: signlocal-{{version}}-1.aarch64.rpm)
-gh release download {{tag}} --repo {{repo}} --pattern 'signlocal-{{version}}-1.x86_64.rpm' --pattern SHA256SUMS
+curl -fsSLO https://github.com/{{repo}}/releases/download/{{tag}}/signlocal-{{version}}-1.x86_64.rpm
+curl -fsSLO https://github.com/{{repo}}/releases/download/{{tag}}/SHA256SUMS
 sha256sum --ignore-missing -c SHA256SUMS && sudo dnf install ./signlocal-{{version}}-1.x86_64.rpm
 ```
 
@@ -45,10 +42,6 @@ Smart cards and tokens need the PC/SC daemon: `sudo apt install pcscd` or `sudo 
 ## Windows (x64, arm64)
 
 ```powershell
-# Private repository (now)
-gh release download {{tag}} --repo {{repo}} --pattern install.ps1 --pattern SHA256SUMS
-
-# Once the repository is public
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 $base = 'https://github.com/{{repo}}/releases/download/{{tag}}'
 Invoke-WebRequest -UseBasicParsing -Uri "$base/install.ps1" -OutFile install.ps1
