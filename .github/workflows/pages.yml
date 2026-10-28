@@ -43,7 +43,7 @@ jobs:
         timeout-minutes: 10
         working-directory: site
         run: bun install --frozen-lockfile
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
         id: pages
       # The address Pages will serve the site at must be the homepage project.toml names:
       # canonical URLs, the sitemap and the SDK's error links are built from it.
