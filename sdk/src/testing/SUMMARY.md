@@ -1,6 +1,6 @@
 # sdk/src/testing
 
-- `index.ts` — `installFakeWebSign()` and the `FakeWebSign` controller (the public entry)
+- `index.ts` — `installFakeSignlocal()` and the `FakeSignlocal` controller (the public entry)
 - `extension.ts` — the fake extension + app: answers status, choose and sign requests with a scripted person
 - `transport.ts` — message events on the page's window, as the content script sends them
 - `replies.ts` — scenarios and the frames the fake sends

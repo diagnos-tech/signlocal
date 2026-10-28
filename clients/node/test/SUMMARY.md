@@ -1,7 +1,7 @@
 # clients/node/test
 
 - `errors.test.ts` — every code has a hint and the docs link; message, name and details unchanged
-- `fixtures/` — `fake-websign.mjs`, a scripted stand-in for `websign connect`
+- `fixtures/` — `fake-signlocal.mjs`, a scripted stand-in for `signlocal connect`
 - `api.test.ts` — smoke test of the public surface
 - `certificate.test.ts` — `der`/`chain` decoded to bytes and validity to `Date` everywhere; garbled input rejected
 - `connect.test.ts` — connect, hello negotiation, misbehaving apps, process cleanup

@@ -3,8 +3,8 @@
 //! (F5 / Ctrl+R).
 
 use egui::{Align, Label, Layout, Ui, Vec2};
-use websign_i18n::{Key, k};
-use websign_protocol::messages::DiagnosticsTab;
+use signlocal_i18n::{Key, k};
+use signlocal_protocol::messages::DiagnosticsTab;
 
 use super::Screen;
 use super::sidebar::identity;

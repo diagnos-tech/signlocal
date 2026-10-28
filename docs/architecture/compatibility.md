@@ -24,7 +24,7 @@ excepted: no maintained pure-Rust verifier; the app logs that it skipped).
 Spanish and Austrian cards) use brainpool curves. The `bp256`/`bp384` 0.14
 crates (RustCrypto, same generation as `p256` 0.14) verify P256r1/P384r1;
 nothing maintained verifies P512r1. Summaries recognize all three
-(`websign-core` SPEC §4.1).
+(`signlocal-core` SPEC §4.1).
 
 **Why EdDSA is out.** Pure Ed25519/Ed448 sign the *message*, not a hash
 (RFC 8032): the key store must see the whole signed attributes, which breaks
@@ -41,7 +41,7 @@ profiles do not use it. EdDSA certificates are listed as hidden
 | Windows | same store via CAPI (`CryptAcquireCertificatePrivateKey`) | legacy CSPs (older tokens), A1 imported into `PROV_RSA_FULL` | CSP dialog (`PP_CLIENT_HWND`) |
 | macOS | Keychain (`macos:keychain`) | imported A1 (`.p12`) | keychain access dialog |
 | macOS | CryptoTokenKit (`macos:ctk`) | tokens whose middleware ships a CTK extension (SafeSign ≥ 4, OpenSC, Autenticação.gov, Apple PIV) | driver dialog |
-| all | PKCS#11 modules | p11-kit registrations, known vendor paths (`crates/websign-keystores/src/pkcs11/known_paths`), user-added drivers | our PIN field (or the reader keypad) |
+| all | PKCS#11 modules | p11-kit registrations, known vendor paths (`crates/signlocal-keystores/src/pkcs11/known_paths`), user-added drivers | our PIN field (or the reader keypad) |
 
 The same certificate seen by the OS and by a PKCS#11 module is shown once,
 through the OS (decision 2); the module path remains as an alternate ("Try
@@ -68,7 +68,7 @@ The app never talks to a chip. Hardware detection only helps:
 |---|---|---|---|
 | Chrome, Edge, Brave, Chromium, Vivaldi, Opera | HKCU keys (proof 1) | per-user manifests (proof 2) | per-user and system manifests (proof 4); Chromium Snap/Flatpak folders |
 | Firefox ≥ 121 | HKCU key | per-user manifest | per-user and system manifests; Snap via the WebExtensions portal (system manifest) |
-| Safari 17+ | — | macOS 13+: the app extension inside `WebeSign.app` relays to a bundled host (`safari/SPEC.md`); nothing to register. Unsigned builds need **Allow Unsigned Extensions**; PKCS#11-only tokens may not work (below). TODO(gustavo): Developer ID signing, notarization, Mac App Store | — |
+| Safari 17+ | — | macOS 13+: the app extension inside `signlocal.app` relays to a bundled host (`safari/SPEC.md`); nothing to register. Unsigned builds need **Allow Unsigned Extensions**; PKCS#11-only tokens may not work (below). TODO(gustavo): Developer ID signing, notarization, Mac App Store | — |
 
 **Safari and PKCS#11.** Safari starts no native host: the host runs as the
 app extension's copy, inside its sandbox (`safari/SPEC.md` §4). Keychain

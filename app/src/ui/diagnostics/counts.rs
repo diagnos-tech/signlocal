@@ -5,9 +5,11 @@ use std::cmp::Reverse;
 use std::collections::BTreeMap;
 
 use jiff::Timestamp;
-use websign_core::PublicKeyKind;
-use websign_ui_model::certs::{Badge, CertRow, DisabledReason, HiddenReason, KeySource, RowStatus};
-use websign_ui_model::diagnostics::report::CertificateCounts;
+use signlocal_core::PublicKeyKind;
+use signlocal_ui_model::certs::{
+    Badge, CertRow, DisabledReason, HiddenReason, KeySource, RowStatus,
+};
+use signlocal_ui_model::diagnostics::report::CertificateCounts;
 
 use super::facts::CertificatesFact;
 

@@ -17,9 +17,9 @@ Without hardware: SoftHSM2, and what remains unproven is recorded in §5.
 ```sh
 cd docs/prototypes/kit
 sudo apt-get install -y softhsm2 opensc p11-kit pcscd libpcsclite-dev
-cargo build --release -p websign-probe
+cargo build --release -p signlocal-probe
 (cd nm-e2e && npm ci && npx playwright-core install --with-deps chromium)
-PROBE_EXE=$PWD/target/release/websign-probe REPORT_PATH=/tmp/report-linux.md bash linux/ci-linux.sh
+PROBE_EXE=$PWD/target/release/signlocal-probe REPORT_PATH=/tmp/report-linux.md bash linux/ci-linux.sh
 ```
 
 `CHROMIUM=/path/to/chrome` uses an already installed Chromium instead of the one Playwright downloads. CI does the
@@ -39,7 +39,7 @@ Module sources and risks: [pkcs11-modules.md](../research/pkcs11-modules.md). To
 
 Environment: Ubuntu 24.04.4 (kernel 6.18, x86_64), SoftHSM2 2.6.1, OpenSC 0.25.0~rc1, p11-kit 0.25.3,
 libccid 1.5.5, pcscd 2.0.3 (no readers), Chromium 141 (Playwright 1194), Node 22.22.2, rustc 1.98.1,
-`cryptoki` 0.12.1, `websign-probe` 0.1.0. The whole script takes ~5 s.
+`cryptoki` 0.12.1, `signlocal-probe` 0.1.0. The whole script takes ~5 s.
 
 | # | Question | Result | Evidence |
 |---|---|---|---|
@@ -57,16 +57,16 @@ libccid 1.5.5, pcscd 2.0.3 (no readers), Chromium 141 (Playwright 1194), Node 22
 ## 3. Evidence
 
 Output of `linux/ci-linux.sh` (the provider text was shortened with `…` on some lines; the rest is literal;
-there is no PIN or person's name: the test certificate is `WebeSign Test …`).
+there is no PIN or person's name: the test certificate is `signlocal Test …`).
 
 ### 3.1 `list`
 
 ```text
-> websign-probe list --no-known-modules --no-p11-kit --module /usr/lib/softhsm/libsofthsm2.so
- 1. WebeSign Test ec-p384 | certificate | EC P-384 | until 2036-09-26 | pkcs11:libsofthsm2.so (SoftHSM v2; …; key hidden until login, software; PIN by app) | 256adb9aabc7534b
- 2. WebeSign Test ec-p521 | certificate | EC P-521 | until 2036-09-26 | pkcs11:libsofthsm2.so (SoftHSM v2; …; key hidden until login, software; PIN by app) | 3e1a37449c5cdd7d
- 3. WebeSign Test rsa-2048 | certificate | RSA-2048 | until 2036-09-26 | pkcs11:libsofthsm2.so (SoftHSM v2; …; key hidden until login, software; PIN by app) | 6f0071f15c22c1de
- 4. WebeSign Test ec-p256 | certificate | EC P-256 | until 2036-09-26 | pkcs11:libsofthsm2.so (SoftHSM v2; …; key hidden until login, software; PIN by app) | d2e5ac9b7e671211
+> signlocal-probe list --no-known-modules --no-p11-kit --module /usr/lib/softhsm/libsofthsm2.so
+ 1. signlocal Test ec-p384 | certificate | EC P-384 | until 2036-09-26 | pkcs11:libsofthsm2.so (SoftHSM v2; …; key hidden until login, software; PIN by app) | 256adb9aabc7534b
+ 2. signlocal Test ec-p521 | certificate | EC P-521 | until 2036-09-26 | pkcs11:libsofthsm2.so (SoftHSM v2; …; key hidden until login, software; PIN by app) | 3e1a37449c5cdd7d
+ 3. signlocal Test rsa-2048 | certificate | RSA-2048 | until 2036-09-26 | pkcs11:libsofthsm2.so (SoftHSM v2; …; key hidden until login, software; PIN by app) | 6f0071f15c22c1de
+ 4. signlocal Test ec-p256 | certificate | EC P-256 | until 2036-09-26 | pkcs11:libsofthsm2.so (SoftHSM v2; …; key hidden until login, software; PIN by app) | d2e5ac9b7e671211
 ```
 
 The full provider text is `SoftHSM v2 (SoftHSM project); slot "SoftHSM slot ID 0x…"; libsofthsm2.so; key hidden
@@ -76,14 +76,14 @@ until login`: token model and manufacturer, slot description, module file, and w
 ### 3.2 `sign --all --hash all --pss` (the module directly)
 
 ```text
-WebeSign Test rsa-2048 | certificate | RSA-2048 | … | 6f0071f15c22c1de
+signlocal Test rsa-2048 | certificate | RSA-2048 | … | 6f0071f15c22c1de
    OK    SHA-256 RSASSA-PKCS1-v1_5 via C_Sign in 3 ms
    OK    SHA-256 RSASSA-PSS via C_Sign in 7 ms
    OK    SHA-384 RSASSA-PKCS1-v1_5 via C_Sign in 3 ms
    OK    SHA-384 RSASSA-PSS via C_Sign in 3 ms
    OK    SHA-512 RSASSA-PKCS1-v1_5 via C_Sign in 3 ms
    OK    SHA-512 RSASSA-PSS via C_Sign in 3 ms
-WebeSign Test ec-p256 | … | d2e5ac9b7e671211
+signlocal Test ec-p256 | … | d2e5ac9b7e671211
    OK    SHA-256 ECDSA via C_Sign in 2 ms
    OK    SHA-384 ECDSA via C_Sign in 2 ms
    OK    SHA-512 ECDSA via C_Sign in 2 ms
@@ -98,7 +98,7 @@ digest again.
 ### 3.3 Wrong PIN
 
 ```text
-> websign-probe sign --cert 6f0071f15c22c1de --pin-env WRONG_PIN --no-known-modules --no-p11-kit --module …
+> signlocal-probe sign --cert 6f0071f15c22c1de --pin-env WRONG_PIN --no-known-modules --no-p11-kit --module …
    FAIL  SHA-256 RSASSA-PKCS1-v1_5: wrong PIN
 (exit code 1)
 ```
@@ -109,21 +109,21 @@ Right afterwards, the token's `list` shows `…key hidden until login; PIN attem
 
 ### 3.4 User-registered p11-kit
 
-A `~/.config/pkcs11/modules/websign-test.module` points to a copy of SoftHSM2; a second one points to a
+A `~/.config/pkcs11/modules/signlocal-test.module` points to a copy of SoftHSM2; a second one points to a
 file that does not exist:
 
 ```text
-> websign-probe list --every-path --no-known-modules
-warning: pkcs11:libsofthsm2-missing.so: module file not found: /tmp/websign-ci-linux.…/lib/libsofthsm2-missing.so
- 1. WebeSign Test ec-p384 | … | pkcs11:libsofthsm2.so (SoftHSM v2; …) | 256adb9aabc7534b
+> signlocal-probe list --every-path --no-known-modules
+warning: pkcs11:libsofthsm2-missing.so: module file not found: /tmp/signlocal-ci-linux.…/lib/libsofthsm2-missing.so
+ 1. signlocal Test ec-p384 | … | pkcs11:libsofthsm2.so (SoftHSM v2; …) | 256adb9aabc7534b
     also via pkcs11:libsofthsm2-registered.so (SoftHSM v2; …)
 ```
 
 ### 3.5 The same certificate through two modules
 
 ```text
-> websign-probe list --no-known-modules --no-p11-kit --module /usr/lib/softhsm/libsofthsm2.so --module /usr/lib/x86_64-linux-gnu/p11-kit-proxy.so
- 1. WebeSign Test ec-p384 | certificate | EC P-384 | … | pkcs11:libsofthsm2.so (SoftHSM v2; …) | 256adb9aabc7534b
+> signlocal-probe list --no-known-modules --no-p11-kit --module /usr/lib/softhsm/libsofthsm2.so --module /usr/lib/x86_64-linux-gnu/p11-kit-proxy.so
+ 1. signlocal Test ec-p384 | certificate | EC P-384 | … | pkcs11:libsofthsm2.so (SoftHSM v2; …) | 256adb9aabc7534b
     (+1 other path(s); --every-path to show)
 ```
 
@@ -135,7 +135,7 @@ directly **and** through the proxy in the same process works: the second `C_Init
 ### 3.6 Key with `CKA_ALWAYS_AUTHENTICATE`
 
 ```text
-> websign-probe sign --cert ee8c71007793ea12 --hash all --pss --pin-env WEBSIGN_PROBE_PIN …
+> signlocal-probe sign --cert ee8c71007793ea12 --hash all --pss --pin-env SIGNLOCAL_PROBE_PIN …
    OK    SHA-256 RSASSA-PKCS1-v1_5 via C_Sign in 5 ms
    OK    SHA-256 RSASSA-PSS via C_Sign in 5 ms
    (… 6 of 6, one line per hash and algorithm)
@@ -151,7 +151,7 @@ The script requires all 6 combinations.
 ### 3.7 `devices`
 
 ```text
-> websign-probe devices
+> signlocal-probe devices
 USB smart card readers and tokens:
   USB enumeration failed: /sys/bus/usb/devices/ not found (errno 2)
 
@@ -182,7 +182,7 @@ _the PC/SC service is not running (start pcscd on Linux, or the Smart Card servi
 ### 3.9 End-to-end native messaging (Chromium, SoftHSM2)
 
 ```text
-> node nm-e2e/run.mjs --probe …/release/websign-probe --expect-sign --chromium /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+> node nm-e2e/run.mjs --probe …/release/signlocal-probe --expect-sign --chromium /opt/pw-browsers/chromium-1194/chrome-linux/chrome
   NM-E2E: PASS
   … event=request type=list … event=certificates count=4 warnings=0
   … event=sign hash=SHA-256 algorithm=RSASSA-PKCS1-v1_5 digest_bytes=32
@@ -190,7 +190,7 @@ _the PC/SC service is not running (start pcscd on Linux, or the Smart Card servi
 ```
 
 The host found SoftHSM2 without any `--module`: through the known-paths list and the p11-kit registration
-(`SOFTHSM2_CONF` and `WEBSIGN_PROBE_PIN` reach the host through the browser's environment). Since the host never
+(`SOFTHSM2_CONF` and `SIGNLOCAL_PROBE_PIN` reach the host through the browser's environment). Since the host never
 receives the PIN from the browser, this test uses the variable only because the kit has no PIN window.
 
 ## 4. What the proof fixed in the code
@@ -215,7 +215,7 @@ receives the PIN from the browser, this test uses the variable only because the 
 | **`CKA_ALWAYS_AUTHENTICATE` with a real card** (Cartão de Cidadão, DNIe, Estonian card) | proven only on SoftHSM2 (§3.6); real cards may open their own PIN dialog on the context login | Real Cartão de Cidadão/DNIe, script in §6 |
 | **PIN pad** (`CKF_PROTECTED_AUTHENTICATION_PATH`) | SoftHSM2 has none; the code passes `NULL` to `C_Login` and `pin: App { protected_path: true }` to the caller | reader with a keypad (GemPCPinpad `08e6:3478`) |
 | Token with `CKF_CLOCK_ON_TOKEN` and an invalid time | `cryptoki` rejects `C_GetTokenInfo` and the slot vanishes from the list | real token; if it happens, read the raw `CK_TOKEN_INFO` |
-| `pcscd` with a reader and card (real ATR, `devices` with USB) | the container has no `/sys/bus/usb`; I tested `pcscd` without a reader | `websign-probe devices --all-usb` on a machine with a reader |
+| `pcscd` with a reader and card (real ATR, `devices` with USB) | the container has no `/sys/bus/usb`; I tested `pcscd` without a reader | `signlocal-probe devices --all-usb` on a machine with a reader |
 | Modules that open their own PIN dialog during `C_Sign` | no token | Real Cartão de Cidadão/DNIe |
 | Fedora/Arch and `aarch64` | only Ubuntu 24.04 x86_64; the `lib64` paths are convention | CI in a Fedora container |
 | `libpcsclite.so.1` is a dynamic dependency of the binary (`ldd`) | `devices` uses `pcsc`; without pcsc-lite the host does not even start, not even for PKCS#11 | `Depends: libpcsclite1` in the `.deb` and `pcsc-lite-libs` in the `.rpm`, or load the library at runtime |
@@ -223,13 +223,13 @@ receives the PIN from the browser, this test uses the variable only because the 
 ## 6. Script with a real token (Linux)
 
 1. `sudo apt install pcscd opensc p11-kit` and the vendor's middleware ([tokens.md](../research/tokens.md)); `sudo systemctl start pcscd`.
-2. Download `websign-probe` from the CI `report-linux` artifact (or build it).
-3. `websign-probe devices --all-usb` → note `VID:PID` and ATR in the matrix.
-4. `websign-probe list` → does the token appear? through which module? (`--every-path` shows all of them).
-5. `PIN=… websign-probe sign --cert <thumbprint> --hash all --pss --pin-env PIN` (the PIN comes from a
+2. Download `signlocal-probe` from the CI `report-linux` artifact (or build it).
+3. `signlocal-probe devices --all-usb` → note `VID:PID` and ATR in the matrix.
+4. `signlocal-probe list` → does the token appear? through which module? (`--every-path` shows all of them).
+5. `PIN=… signlocal-probe sign --cert <thumbprint> --hash all --pss --pin-env PIN` (the PIN comes from a
    variable **only in this test**; without `--pin-env` the probe asks in the terminal). Careful: each wrong PIN uses up
    an attempt.
-6. `websign-probe report --run-signatures --all --hash all --pss --pin-env PIN --out report.md` and paste it here
+6. `signlocal-probe report --run-signatures --all --hash all --pss --pin-env PIN --out report.md` and paste it here
    (the report contains no name, CPF/CNPJ, or serial number).
 
 | Token / card | Module (file) | Registered in p11-kit? | `list` | RSA v1.5 | RSA-PSS | ECDSA | Wrong PIN | Notes |
@@ -263,11 +263,11 @@ receives the PIN from the browser, this test uses the variable only because the 
 
 **Script (Ubuntu 24.04 with a graphical interface, default Firefox Snap):**
 
-1. `./websign-probe register --browser firefox` and, for the portal, also the system manifest:
-   `sudo install -Dm644 ~/.mozilla/native-messaging-hosts/dev.websign.host.json /usr/lib/mozilla/native-messaging-hosts/dev.websign.host.json`.
+1. `./signlocal-probe register --browser firefox` and, for the portal, also the system manifest:
+   `sudo install -Dm644 ~/.mozilla/native-messaging-hosts/health.diagnos.signlocal.json /usr/lib/mozilla/native-messaging-hosts/health.diagnos.signlocal.json`.
 2. `about:debugging` → "Load Temporary Add-on" → `kit/extension/manifest.json`.
 3. Open `kit/nm-e2e/page.html` served at `http://localhost:8000` (`python3 -m http.server` in the folder).
-4. Note: did the portal dialog appear? Did the page show `pong`? Does the `/tmp/websign-probe-host.log` log
+4. Note: did the portal dialog appear? Did the page show `pong`? Does the `/tmp/signlocal-probe-host.log` log
    have `family=firefox`? With the token, does `sign` return `verified=true`?
 
 ## 8. Decision

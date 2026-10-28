@@ -1,5 +1,5 @@
 #!/bin/sh
-# WebeSign installer for Linux and macOS (POSIX sh).
+# signlocal installer for Linux and macOS (POSIX sh).
 #
 #   sh install.sh --version <v> [--yes] [--prefix DIR] [--system]
 #                 [--no-register] [--dry-run]
@@ -7,17 +7,17 @@
 #
 # It downloads the artifact and SHA256SUMS of release v<v>, verifies the hash
 # (any doubt aborts before the system is touched), installs, and runs
-# `websign install`. Contract: docs/architecture/packaging-and-release.md and
-# scripts/install/README.md. Tests source this file with WEBSIGN_INSTALL_LIB=1.
+# `signlocal install`. Contract: docs/architecture/packaging-and-release.md and
+# scripts/install/README.md. Tests source this file with SIGNLOCAL_INSTALL_LIB=1.
 set -eu
 
 # Identifiers come from project.toml; `cargo xtask check release` keeps them equal.
-SLUG=websign
-APP_NAME=WebeSign
-BUNDLE_ID=dev.websign.app
-REPO=${WEBSIGN_REPO:-diagnos-tech/web-esign}
+SLUG=signlocal
+APP_NAME=signlocal
+BUNDLE_ID=health.diagnos.signlocal
+REPO=${SIGNLOCAL_REPO:-diagnos-tech/signlocal}
 
-VERSION=${WEBSIGN_VERSION:-}
+VERSION=${SIGNLOCAL_VERSION:-}
 YES=0
 PREFIX=
 SYSTEM=0
@@ -52,7 +52,7 @@ on_signal() { exit 130; }
 # ---- detection ----------------------------------------------------------
 
 detect_os() {
-    case "${WEBSIGN_UNAME_S:-$(uname -s)}" in
+    case "${SIGNLOCAL_UNAME_S:-$(uname -s)}" in
         Linux) echo linux ;;
         Darwin) echo macos ;;
         *) die "unsupported operating system (Windows uses install.ps1)" ;;
@@ -61,10 +61,10 @@ detect_os() {
 
 # Prints x64 or arm64.
 detect_arch() {
-    case "${WEBSIGN_UNAME_M:-$(uname -m)}" in
+    case "${SIGNLOCAL_UNAME_M:-$(uname -m)}" in
         x86_64 | amd64) echo x64 ;;
         aarch64 | arm64) echo arm64 ;;
-        *) die "unsupported CPU architecture: ${WEBSIGN_UNAME_M:-$(uname -m)}" ;;
+        *) die "unsupported CPU architecture: ${SIGNLOCAL_UNAME_M:-$(uname -m)}" ;;
     esac
 }
 
@@ -72,7 +72,7 @@ detect_arch() {
 # file; running it would execute whatever it contains). Prints deb, rpm or
 # other: the package formats we ship.
 detect_distro() {
-    file=${WEBSIGN_OS_RELEASE:-/etc/os-release}
+    file=${SIGNLOCAL_OS_RELEASE:-/etc/os-release}
     [ -r "$file" ] || { echo other; return 0; }
     ids=$(sed -n -e 's/^ID=//p' -e 's/^ID_LIKE=//p' "$file" | tr -d '"'"'" | tr '\n' ' ')
     for id in $ids; do
@@ -94,7 +94,7 @@ get() { curl -fsSL --proto '=https' --proto-redir '=https' --tlsv1.2 "$@"; }
 # get() with the bearer token passed through a config on stdin, so it never
 # shows in the process list the way a -H argument would.
 get_auth() {
-    printf 'header = "Authorization: Bearer %s"\n' "$WEBSIGN_GITHUB_TOKEN" | get -K - "$@"
+    printf 'header = "Authorization: Bearer %s"\n' "$SIGNLOCAL_GITHUB_TOKEN" | get -K - "$@"
 }
 
 # The asset id of "$2" in the JSON release description "$1" (GitHub API).
@@ -106,7 +106,7 @@ asset_id() {
 }
 
 fetch_local() {
-    cp "$WEBSIGN_RELEASE_DIR/$1" "$WORK/$1" || die "$1 is not in $WEBSIGN_RELEASE_DIR"
+    cp "$SIGNLOCAL_RELEASE_DIR/$1" "$WORK/$1" || die "$1 is not in $SIGNLOCAL_RELEASE_DIR"
 }
 
 fetch_gh() {
@@ -130,16 +130,16 @@ fetch_token() {
 fetch_https() {
     have curl || die "curl is required"
     get "https://github.com/$REPO/releases/download/v$VERSION/$1" -o "$WORK/$1" \
-        || die "cannot download $1 (private repository? run 'gh auth login' or set WEBSIGN_GITHUB_TOKEN)"
+        || die "cannot download $1 (private repository? run 'gh auth login' or set SIGNLOCAL_GITHUB_TOKEN)"
 }
 
 # Downloads asset "$1" of release v$VERSION into "$WORK". Source order: a
 # local release folder (tests, offline), gh when logged in, a bearer token
 # for the private repository, anonymous HTTPS.
 fetch() {
-    if [ -n "${WEBSIGN_RELEASE_DIR:-}" ]; then fetch_local "$1"
+    if [ -n "${SIGNLOCAL_RELEASE_DIR:-}" ]; then fetch_local "$1"
     elif have gh && gh auth status >/dev/null 2>&1; then fetch_gh "$1"
-    elif [ -n "${WEBSIGN_GITHUB_TOKEN:-}" ]; then fetch_token "$1"
+    elif [ -n "${SIGNLOCAL_GITHUB_TOKEN:-}" ]; then fetch_token "$1"
     else fetch_https "$1"
     fi
 }
@@ -193,7 +193,7 @@ next_steps() {
     say ""
     say "$APP_NAME is installed. Last step: install the browser extension."
     say "Steps per browser: https://github.com/$REPO/blob/main/docs/install.md#browser-extension"
-    say "(download websign-extension-$VERSION-chromium.zip or -firefox.zip from the same release)."
+    say "(download signlocal-extension-$VERSION-chromium.zip or -firefox.zip from the same release)."
 }
 
 # ---- Linux --------------------------------------------------------------
@@ -388,11 +388,11 @@ main() {
     fi
     [ -n "$VERSION" ] || die "--version is required: prereleases are not \"latest\" (see docs/install.md)"
     valid_version "$VERSION" || die "--version must be a release version such as 1.2.3 or 1.2.3-rc.1"
-    WORK=$(mktemp -d "${TMPDIR:-/tmp}/websign-install.XXXXXX")
+    WORK=$(mktemp -d "${TMPDIR:-/tmp}/signlocal-install.XXXXXX")
     trap cleanup EXIT
     trap on_signal INT TERM
     "install_$os"
     next_steps
 }
 
-[ "${WEBSIGN_INSTALL_LIB:-}" = 1 ] || main "$@"
+[ "${SIGNLOCAL_INSTALL_LIB:-}" = 1 ] || main "$@"

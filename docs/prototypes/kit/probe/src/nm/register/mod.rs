@@ -1,4 +1,4 @@
-//! `websign-probe register`: writes the native messaging host manifest where
+//! `signlocal-probe register`: writes the native messaging host manifest where
 //! each browser looks for it.
 //!
 //! Registration writes only into folders a browser already created. Creating
@@ -28,7 +28,7 @@ use destination::{Action, Context as ApplyContext, Outcome, Target, apply};
 
 use super::log::log_path;
 
-/// Arguments of `websign-probe register`.
+/// Arguments of `signlocal-probe register`.
 #[derive(Debug, clap::Args)]
 pub struct Args {
     /// Browser to register with (repeatable). Default: all of them.

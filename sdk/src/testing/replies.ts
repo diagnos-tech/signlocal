@@ -13,7 +13,7 @@ import type {
  * states a visitor's computer can be in.
  *
  * @example
- * installFakeWebSign({ scenario: "app-missing" });
+ * installFakeSignlocal({ scenario: "app-missing" });
  */
 export type FakeScenario =
   | "ready"
@@ -32,7 +32,7 @@ const OLD = { installed: "0.9.0", required: "1.0.0" };
 export function announcement(scenario: FakeScenario): ExtensionToPage {
   const version = scenario === "sdk-outdated" ? 2 : 1;
   return {
-    source: "websign-extension",
+    source: "signlocal-extension",
     kind: "announce",
     extension: EXTENSION,
     protocols: { min: version, max: version },
@@ -43,7 +43,7 @@ export function errorReply(code: ErrorCode, details?: ErrorDetails): PageReply {
   return {
     type: "error",
     code,
-    message: `Fake WebeSign: ${code}.`,
+    message: `Fake signlocal: ${code}.`,
     ...(details && { details }),
   };
 }

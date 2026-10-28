@@ -6,11 +6,11 @@
 # with ${a[@]+"${a[@]}"} (bash 3.2 treats "${a[@]}" of an empty array as
 # unset under `set -u`).
 
-WEBSIGN_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../.." && pwd)
+SIGNLOCAL_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../.." && pwd)
 
 # A string value from the repository's project.toml, e.g. native_host.
 project_value() { # KEY
-    sed -n "s/^$1 = \"\(.*\)\"$/\1/p" "$WEBSIGN_ROOT/project.toml" | head -n1
+    sed -n "s/^$1 = \"\(.*\)\"$/\1/p" "$SIGNLOCAL_ROOT/project.toml" | head -n1
 }
 
 # Starts a collapsible group in the GitHub Actions log (plain title elsewhere).
@@ -42,7 +42,7 @@ with_timeout() {
     perl -e 'alarm shift @ARGV; exec @ARGV or die "cannot run $ARGV[0]: $!\n"' "$seconds" "$@"
 }
 
-# The first 16 hex digits of a certificate's SHA-256: what `websign-probe
+# The first 16 hex digits of a certificate's SHA-256: what `signlocal-probe
 # list` prints and what `--cert` accepts.
 cert_fingerprint() { # CERT_PEM
     "$OPENSSL" x509 -in "$1" -outform DER | shasum -a 256 | cut -c1-16
@@ -78,7 +78,7 @@ distinguished_name = dn
 prompt = no
 [dn]
 CN = $name
-O = WebeSign CI
+O = signlocal CI
 [ext]
 basicConstraints = critical, CA:FALSE
 keyUsage = critical, digitalSignature, nonRepudiation

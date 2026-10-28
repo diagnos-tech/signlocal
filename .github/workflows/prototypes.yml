@@ -1,4 +1,4 @@
-# Risk proofs: builds websign-probe on each OS and exercises every signing
+# Risk proofs: builds signlocal-probe on each OS and exercises every signing
 # path with software keys (SoftHSM2, CNG/CAPI software providers, a test
 # keychain). Real tokens are covered by the manual steps in docs/prototypes/.
 # Kept as an evidence tool for docs/prototypes/: it runs only by hand, since
@@ -43,7 +43,7 @@ jobs:
           cargo clippy --all-targets -- -D warnings
           cargo test --all
       - name: Build probe
-        run: cargo build --release -p websign-probe
+        run: cargo build --release -p signlocal-probe
       - uses: actions/setup-node@v5
         with:
           node-version: 22
@@ -53,7 +53,7 @@ jobs:
       - name: PKCS#11 signing and native messaging end to end
         timeout-minutes: 10
         env:
-          PROBE_EXE: ${{ github.workspace }}/docs/prototypes/kit/target/release/websign-probe
+          PROBE_EXE: ${{ github.workspace }}/docs/prototypes/kit/target/release/signlocal-probe
           REPORT_PATH: ${{ runner.temp }}/report-linux.md
         run: bash linux/ci-linux.sh
       - uses: actions/upload-artifact@v4
@@ -64,8 +64,8 @@ jobs:
           if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
         with:
-          name: websign-probe-linux-x64
-          path: docs/prototypes/kit/target/release/websign-probe
+          name: signlocal-probe-linux-x64
+          path: docs/prototypes/kit/target/release/signlocal-probe
 
   windows:
     runs-on: windows-latest
@@ -86,7 +86,7 @@ jobs:
           cargo clippy --all-targets -- -D warnings
           cargo test --all
       - name: Build probe
-        run: cargo build --release -p websign-probe
+        run: cargo build --release -p signlocal-probe
       - name: CNG and CAPI signing with software keys
         # Every certificate creation and probe run has its own time limit
         # and names what hung (the probe traces its native calls); this is
@@ -94,7 +94,7 @@ jobs:
         timeout-minutes: 20
         shell: pwsh
         env:
-          PROBE_EXE: ${{ github.workspace }}\docs\prototypes\kit\target\release\websign-probe.exe
+          PROBE_EXE: ${{ github.workspace }}\docs\prototypes\kit\target\release\signlocal-probe.exe
           REPORT_PATH: ${{ runner.temp }}\report-windows.md
         run: ./windows/ci-windows.ps1
       - uses: actions/setup-node@v5
@@ -110,9 +110,9 @@ jobs:
         timeout-minutes: 15
         shell: pwsh
         env:
-          PROBE_EXE: ${{ github.workspace }}\docs\prototypes\kit\target\release\websign-probe.exe
+          PROBE_EXE: ${{ github.workspace }}\docs\prototypes\kit\target\release\signlocal-probe.exe
         run: |
-          ./msix/build-msix.ps1 -OutDir "$env:RUNNER_TEMP\websign-msix"
+          ./msix/build-msix.ps1 -OutDir "$env:RUNNER_TEMP\signlocal-msix"
           ./msix/test-msix.ps1
       - uses: actions/upload-artifact@v4
         if: always()
@@ -125,11 +125,11 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: websign-probe-windows-x64
+          name: signlocal-probe-windows-x64
           path: |
-            docs/prototypes/kit/target/release/websign-probe.exe
-            ${{ runner.temp }}/websign-msix/*.msix
-            ${{ runner.temp }}/websign-msix/*.cer
+            docs/prototypes/kit/target/release/signlocal-probe.exe
+            ${{ runner.temp }}/signlocal-msix/*.msix
+            ${{ runner.temp }}/signlocal-msix/*.cer
           if-no-files-found: ignore
 
   macos:
@@ -148,11 +148,11 @@ jobs:
           cargo clippy --all-targets -- -D warnings
           cargo test --all
       - name: Build probe
-        run: cargo build --release -p websign-probe
+        run: cargo build --release -p signlocal-probe
       - name: Keychain signing with test identities
         timeout-minutes: 10
         env:
-          PROBE_EXE: ${{ github.workspace }}/docs/prototypes/kit/target/release/websign-probe
+          PROBE_EXE: ${{ github.workspace }}/docs/prototypes/kit/target/release/signlocal-probe
           REPORT_PATH: ${{ runner.temp }}/report-macos.md
         run: bash macos/ci-macos.sh
       - name: App Sandbox (manifests, keychain, PKCS#11 module loading)
@@ -160,7 +160,7 @@ jobs:
         # Includes `brew install softhsm opensc`.
         timeout-minutes: 15
         env:
-          PROBE_EXE: ${{ github.workspace }}/docs/prototypes/kit/target/release/websign-probe
+          PROBE_EXE: ${{ github.workspace }}/docs/prototypes/kit/target/release/signlocal-probe
         run: bash macos/sandbox/sandbox-test.sh
       - uses: actions/upload-artifact@v4
         if: always()
@@ -170,5 +170,5 @@ jobs:
           if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
         with:
-          name: websign-probe-macos-arm64
-          path: docs/prototypes/kit/target/release/websign-probe
+          name: signlocal-probe-macos-arm64
+          path: docs/prototypes/kit/target/release/signlocal-probe

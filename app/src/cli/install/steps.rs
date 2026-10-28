@@ -1,14 +1,14 @@
 //! The registration steps shared by `install`, `uninstall`, `register` and
 //! the silent repair, as report steps.
 
-use websign_registration::{Action, Outcome, Request, Scope, url_scheme};
+use signlocal_registration::{Action, Outcome, Request, Scope, url_scheme};
 
 use crate::cli::report::{Kind, Step};
 
 /// Native messaging manifests for `request`; a run that cannot be planned
 /// (`--system` off Linux, no home folder) is one failed step.
 pub fn manifests(request: &Request) -> Vec<Step> {
-    match websign_registration::run(request) {
+    match signlocal_registration::run(request) {
         Ok(report) => report
             .results
             .into_iter()
@@ -41,10 +41,10 @@ pub fn request(action: Action, system: bool, dry_run: bool) -> Request {
     }
 }
 
-/// The `websign:` URL handler (per user).
+/// The `signlocal:` URL handler (per user).
 pub fn url_scheme(action: Action, dry_run: bool) -> Step {
     let outcome = match action {
-        Action::Install => match websign_registration::host_binary() {
+        Action::Install => match signlocal_registration::host_binary() {
             Ok(exe) => url_scheme::register(&exe, dry_run),
             Err(error) => Outcome::Failed(error.to_string()),
         },
@@ -52,7 +52,7 @@ pub fn url_scheme(action: Action, dry_run: bool) -> Step {
     };
     Step {
         kind: Kind::UrlScheme,
-        target: format!("{}: URLs", websign_project::URL_SCHEME),
+        target: format!("{}: URLs", signlocal_project::URL_SCHEME),
         location: String::new(),
         outcome,
     }
@@ -61,7 +61,7 @@ pub fn url_scheme(action: Action, dry_run: bool) -> Step {
 /// Windows extension pre-registration (nothing elsewhere, or before the
 /// extension is in a store).
 pub fn preregistration(action: Action, dry_run: bool) -> Vec<Step> {
-    websign_registration::preregister::apply(action == Action::Uninstall, dry_run)
+    signlocal_registration::preregister::apply(action == Action::Uninstall, dry_run)
         .into_iter()
         .map(|(what, outcome)| Step {
             kind: Kind::Extension,

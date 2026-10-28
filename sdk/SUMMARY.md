@@ -1,6 +1,6 @@
 # sdk
 
-- `src/` — sources of `@websign/sdk` (entries: main, `/messages`, `/testing`)
+- `src/` — sources of `@signlocal/sdk` (entries: main, `/messages`, `/testing`)
 - `test/` — Vitest tests of the SDK
 - `scripts/` — size budget check of the built package (`bun run size`)
 - `tools/` — API reference (TypeDoc) and package checks (publint, are-the-types-wrong); own lockfile

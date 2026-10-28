@@ -9,11 +9,11 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleIdentifier</key>
-	<string>dev.websign.app</string>
+	<string>health.diagnos.signlocal</string>
 	<key>CFBundleExecutable</key>
-	<string>websign-probe</string>
+	<string>signlocal-probe</string>
 	<key>CFBundleName</key>
-	<string>WebeSign</string>
+	<string>signlocal</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleInfoDictionaryVersion</key>

@@ -6,9 +6,9 @@
 use jiff::Timestamp;
 use jiff::civil::Date;
 use jiff::tz::TimeZone;
-use websign_core::present::document::display_document;
-use websign_core::present::holder::display_name;
-use websign_ui_model::certs::{
+use signlocal_core::present::document::display_document;
+use signlocal_core::present::holder::display_name;
+use signlocal_ui_model::certs::{
     CertCandidate, CertList, CertRow, HiddenReason, ListContext, RowStatus, badge, location,
     validity_label,
 };
@@ -42,7 +42,7 @@ pub fn hidden_rows(
         .collect()
 }
 
-/// The row `websign-ui-model` would build, for a candidate it hid.
+/// The row `signlocal-ui-model` would build, for a candidate it hid.
 fn row(candidate: &CertCandidate, context: &ListContext) -> Option<CertRow> {
     let info = candidate.info.as_ref().ok()?;
     let zone = &context.time_zone;

@@ -1,5 +1,5 @@
 import { toCertificate } from "./convert.js";
-import { WebSignError } from "./errors.js";
+import { SignlocalError } from "./errors.js";
 import { ask, connect, readReply } from "./request.js";
 import type { Certificate, CertificateOptions } from "./types.js";
 import { checkAlgorithms } from "./validate.js";
@@ -15,7 +15,7 @@ import { checkAlgorithms } from "./validate.js";
  * @example
  * const [certificate] = await certificates({ algorithm: "ECDSA" });
  *
- * @throws {WebSignError} `ExtensionMissing`, `AppMissing`, `AppOutdated`,
+ * @throws {SignlocalError} `ExtensionMissing`, `AppMissing`, `AppOutdated`,
  * `UserCancelled`, `NoCertificates`, `Timeout`, `Busy`, `Aborted`…
  */
 export async function certificates(options: CertificateOptions = {}): Promise<Certificate[]> {
@@ -28,6 +28,6 @@ export async function certificates(options: CertificateOptions = {}): Promise<Ce
   );
   const list = readReply(() => reply.certificates.map(toCertificate));
   // The app reports an empty choice as NoCertificates; an empty list would be a bug there.
-  if (list.length === 0) throw new WebSignError("NoCertificates", "No certificate was chosen.");
+  if (list.length === 0) throw new SignlocalError("NoCertificates", "No certificate was chosen.");
   return list;
 }

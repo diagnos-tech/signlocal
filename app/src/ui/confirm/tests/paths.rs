@@ -5,10 +5,10 @@
 use egui::accesskit::Role;
 use egui_kittest::kittest::Queryable as _;
 use secrecy::ExposeSecret;
-use websign_protocol::types::BrowserName;
-use websign_ui_model::certs::{KeyPath, KeySource};
-use websign_ui_model::confirm::UiEvent;
-use websign_ui_model::confirm::port::Failure;
+use signlocal_protocol::types::BrowserName;
+use signlocal_ui_model::certs::{KeyPath, KeySource};
+use signlocal_ui_model::confirm::UiEvent;
+use signlocal_ui_model::confirm::port::Failure;
 
 use super::fixtures::*;
 use super::support::Rig;

@@ -1,4 +1,4 @@
-//! The framed pipe to one `websign connect` child.
+//! The framed pipe to one `signlocal connect` child.
 
 use std::fmt;
 #[cfg(feature = "testing")]
@@ -9,8 +9,8 @@ use std::process::Child;
 use std::sync::mpsc::{Receiver, RecvTimeoutError};
 use std::time::Duration;
 
-use websign_protocol::framing::write_frame;
-use websign_protocol::{
+use signlocal_protocol::framing::write_frame;
+use signlocal_protocol::{
     AppEnvelope, ClientEnvelope, ParseError, parse_app_message, parse_hello_reply, to_json,
 };
 

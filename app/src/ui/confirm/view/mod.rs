@@ -23,8 +23,8 @@ mod rows;
 use std::time::Instant;
 
 use egui::{CentralPanel, Frame, Margin, Panel, ScrollArea, Ui};
-use websign_i18n::Catalog;
-use websign_ui_model::confirm::{ConfirmView, UserInput};
+use signlocal_i18n::Catalog;
+use signlocal_ui_model::confirm::{ConfirmView, UserInput};
 
 use super::session::Session;
 use crate::ui::theme;

@@ -3,14 +3,14 @@
 //!
 //! A recursive delete is the one irreversible thing the installer does, so
 //! a folder is deleted only when its path proves it is ours: absolute, at
-//! least three components deep, and named after the app (`…/websign`) or
-//! its log folder (`…/websign/logs`). An odd environment (`HOME=/`,
+//! least three components deep, and named after the app (`…/signlocal`) or
+//! its log folder (`…/signlocal/logs`). An odd environment (`HOME=/`,
 //! `XDG_CONFIG_HOME=` pointing at a shared folder) then fails the step
 //! instead of deleting someone's files.
 
 use std::path::{Component, Path};
 
-use websign_registration::Outcome;
+use signlocal_registration::Outcome;
 
 use crate::cli::report::{Kind, Step};
 
@@ -19,7 +19,7 @@ pub fn purge(dry_run: bool) -> Vec<Step> {
     [
         (
             "settings and remembered sites",
-            websign_host::store::data_dir(),
+            signlocal_host::store::data_dir(),
         ),
         ("logs", crate::logging::log_dir()),
     ]
@@ -62,7 +62,7 @@ fn is_our_folder(dir: &Path) -> bool {
     let plain = dir
         .components()
         .all(|part| !matches!(part, Component::ParentDir | Component::CurDir));
-    let slug = std::ffi::OsStr::new(websign_project::SLUG);
+    let slug = std::ffi::OsStr::new(signlocal_project::SLUG);
     let ours = match names.as_slice() {
         [.., app, logs] if *logs == "logs" => *app == slug,
         [.., last] => *last == slug,
@@ -88,24 +88,24 @@ mod tests {
     #[test]
     fn only_folders_named_after_the_app_are_deleted() {
         for ours in [
-            "/home/ana/.config/websign",
-            "/home/ana/.local/state/websign",
-            "/Users/ana/Library/Logs/websign",
+            "/home/ana/.config/signlocal",
+            "/home/ana/.local/state/signlocal",
+            "/Users/ana/Library/Logs/signlocal",
         ] {
             assert!(is_our_folder(&absolute(ours)), "{ours}");
         }
         for other in [
             "/",
-            "/websign",
-            "/home/websign",
+            "/signlocal",
+            "/home/signlocal",
             "/home/ana/.config",
-            "/home/ana/../websign/websign",
-            "/home/ana/.config/websign/other",
+            "/home/ana/../signlocal/signlocal",
+            "/home/ana/.config/signlocal/other",
             "/home/ana/.config/logs",
         ] {
             assert!(!is_our_folder(&absolute(other)), "{other}");
         }
-        for relative in ["", "relative/dir/websign"] {
+        for relative in ["", "relative/dir/signlocal"] {
             assert!(!is_our_folder(Path::new(relative)), "{relative}");
         }
     }
@@ -114,14 +114,14 @@ mod tests {
     #[test]
     fn windows_folders_are_recognized() {
         assert!(is_our_folder(Path::new(
-            r"C:\Users\ana\AppData\Roaming\websign"
+            r"C:\Users\ana\AppData\Roaming\signlocal"
         )));
         assert!(is_our_folder(Path::new(
-            r"C:\Users\ana\AppData\Local\websign\logs"
+            r"C:\Users\ana\AppData\Local\signlocal\logs"
         )));
-        assert!(!is_our_folder(Path::new(r"C:\websign")));
+        assert!(!is_our_folder(Path::new(r"C:\signlocal")));
         assert!(!is_our_folder(Path::new(
-            r"\Users\ana\AppData\Roaming\websign"
+            r"\Users\ana\AppData\Roaming\signlocal"
         )));
     }
 

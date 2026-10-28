@@ -9,7 +9,7 @@ use super::target::MACOS_SLICES;
 use super::tool::run;
 use super::{Context, archive, build, macos_sign, names, safari};
 
-/// Builds `WebeSign.app` into `websign-<v>-macos-universal.zip`, with the
+/// Builds `signlocal.app` into `signlocal-<v>-macos-universal.zip`, with the
 /// Safari appex in `Contents/PlugIns` (`safari/SPEC.md`). Signatures are ad
 /// hoc for now (`macos_sign.rs`).
 pub fn app(context: &Context) -> Result<PathBuf, String> {
@@ -51,7 +51,7 @@ pub fn app(context: &Context) -> Result<PathBuf, String> {
 /// Renders `Info.plist`. The URL-scheme entry comes from the app's
 /// registration code, the one place that declares the scheme.
 fn write_info_plist(context: &Context, to: &Path) -> Result<(), String> {
-    let url_types = websign_registration::url_scheme::info_plist_url_types();
+    let url_types = signlocal_registration::url_scheme::info_plist_url_types();
     render_template(
         context,
         "macos/Info.plist.in",

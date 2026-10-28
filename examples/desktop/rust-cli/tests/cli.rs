@@ -5,7 +5,7 @@ use std::process::Command;
 use sha2::{Digest, Sha256};
 
 fn cli() -> Command {
-    Command::new(env!("CARGO_BIN_EXE_websign-rust-cli-example"))
+    Command::new(env!("CARGO_BIN_EXE_signlocal-rust-cli-example"))
 }
 
 #[test]

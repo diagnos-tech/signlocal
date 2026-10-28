@@ -6,8 +6,8 @@
 //! the site is announced with its status and warnings together (§14).
 
 use egui::{Align, Layout, Ui, UiBuilder, Vec2};
-use websign_i18n::{Catalog, k};
-use websign_ui_model::confirm::port::{CallerView, Mode};
+use signlocal_i18n::{Catalog, k};
+use signlocal_ui_model::confirm::port::{CallerView, Mode};
 
 use super::{Screen, origin};
 use crate::ui::confirm::words;

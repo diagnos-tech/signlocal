@@ -5,10 +5,10 @@
 use egui::Key;
 use egui::accesskit::Role;
 use egui_kittest::kittest::{NodeT as _, Queryable as _};
-use websign_protocol::ErrorCode;
-use websign_protocol::types::BrowserName;
-use websign_ui_model::confirm::UiEvent;
-use websign_ui_model::confirm::port::Mode;
+use signlocal_protocol::ErrorCode;
+use signlocal_protocol::types::BrowserName;
+use signlocal_ui_model::confirm::UiEvent;
+use signlocal_ui_model::confirm::port::Mode;
 
 use super::fixtures::*;
 use super::support::Rig;

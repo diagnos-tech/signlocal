@@ -2,11 +2,11 @@
 //! Certificates, Help.
 //!
 //! One scan of this computer ([`facts`]) feeds everything: the tabs, the
-//! traffic lights ([`lights`], decided by `websign-ui-model`) and the exact
+//! traffic lights ([`lights`], decided by `signlocal-ui-model`) and the exact
 //! "Copy diagnostics" text ([`report`]). The scan runs off the UI thread
 //! ([`services`]) and again when devices change ([`live`]); drawing
 //! ([`view`]) only reads state and returns actions, which [`apply`] carries
-//! out after the frame. `websign doctor` prints the same report through
+//! out after the frame. `signlocal doctor` prints the same report through
 //! [`report::terminal_input`].
 
 mod apply;
@@ -27,9 +27,9 @@ mod window;
 mod tests;
 
 use egui::ViewportBuilder;
-use websign_host::store::{DiskStores, MemoryStores, Stores, data_dir};
-use websign_i18n::k;
-use websign_protocol::messages::DiagnosticsTab;
+use signlocal_host::store::{DiskStores, MemoryStores, Stores, data_dir};
+use signlocal_i18n::k;
+use signlocal_protocol::messages::DiagnosticsTab;
 
 pub use window::DiagnosticsWindow;
 
@@ -45,7 +45,7 @@ pub fn run(tab: Option<DiagnosticsTab>) -> Result<(), eframe::Error> {
     let catalog = i18n::catalog();
     let title = catalog.tr(k::DIAG_WINDOW_TITLE).to_string();
     eframe::run_native(
-        websign_project::PRODUCT_NAME,
+        signlocal_project::PRODUCT_NAME,
         native_options(&title),
         Box::new(move |creation| {
             let installed = theme::install(creation, crate::platform::motion::reduce_motion());
@@ -81,7 +81,7 @@ fn native_options(title: &str) -> eframe::NativeOptions {
         renderer: renderer::choose().eframe(),
         viewport: ViewportBuilder::default()
             .with_title(title)
-            .with_app_id(websign_project::SLUG)
+            .with_app_id(signlocal_project::SLUG)
             .with_inner_size(metrics::WINDOW_DIAGNOSTICS)
             .with_resizable(false)
             .with_maximize_button(false),

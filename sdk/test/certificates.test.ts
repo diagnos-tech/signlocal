@@ -107,7 +107,7 @@ describe("certificates()", () => {
 
   describe("errors", () => {
     for (const code of ERROR_CODES) {
-      it(`maps error ${code} to WebSignError(${code}) with message and details`, async () => {
+      it(`maps error ${code} to SignlocalError(${code}) with message and details`, async () => {
         const env = await loadSdk();
         const details = { installed: "1.0.0", required: "1.4.0", native: "0x5" };
         env.script.autoReply = () => [wireError(code, { details })];

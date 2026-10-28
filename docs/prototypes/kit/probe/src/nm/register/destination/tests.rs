@@ -12,7 +12,7 @@ impl Scratch {
     fn new() -> Self {
         static COUNTER: AtomicU32 = AtomicU32::new(0);
         let path = std::env::temp_dir().join(format!(
-            "websign-register-test-{}-{}",
+            "signlocal-register-test-{}-{}",
             std::process::id(),
             COUNTER.fetch_add(1, Ordering::Relaxed)
         ));
@@ -49,14 +49,14 @@ fn install_writes_the_manifest_and_creates_missing_folders() {
     let hosts = scratch.path("profile/NativeMessagingHosts");
     let target = Target::file("Test", Family::Chromium, &hosts);
     let origins = vec!["chrome-extension://abcdefghijklmnopabcdefghijklmnop/".to_owned()];
-    let host = PathBuf::from("/opt/websign/probe");
+    let host = PathBuf::from("/opt/signlocal/probe");
 
     let outcome = apply(&target, Action::Install, &context(&host, &origins, false));
 
     assert_eq!(outcome, Outcome::Written);
     let manifest = read_manifest(&hosts.join(format!("{NATIVE_HOST}.json")));
     assert_eq!(manifest["name"], NATIVE_HOST);
-    assert_eq!(manifest["path"], "/opt/websign/probe");
+    assert_eq!(manifest["path"], "/opt/signlocal/probe");
     assert_eq!(manifest["allowed_origins"][0], origins[0]);
 }
 
@@ -64,7 +64,7 @@ fn install_writes_the_manifest_and_creates_missing_folders() {
 fn firefox_manifest_carries_the_gecko_id() {
     let scratch = Scratch::new();
     let target = Target::file("Test", Family::Firefox, &scratch.path("hosts"));
-    let host = PathBuf::from("/opt/websign/probe");
+    let host = PathBuf::from("/opt/signlocal/probe");
     apply(&target, Action::Install, &context(&host, &[], false));
     let manifest = read_manifest(&scratch.path(&format!("hosts/{NATIVE_HOST}.json")));
     assert_eq!(manifest["allowed_extensions"][0], FIREFOX_ID);
@@ -80,7 +80,7 @@ fn a_missing_browser_folder_skips_without_creating_anything() {
         &root.join("NativeMessagingHosts"),
     )
     .requiring(&root);
-    let host = PathBuf::from("/opt/websign/probe");
+    let host = PathBuf::from("/opt/signlocal/probe");
 
     let outcome = apply(&target, Action::Install, &context(&host, &[], false));
 
@@ -99,7 +99,7 @@ fn an_existing_browser_folder_is_written_into() {
         &root.join("NativeMessagingHosts"),
     )
     .requiring(&root);
-    let host = PathBuf::from("/opt/websign/probe");
+    let host = PathBuf::from("/opt/signlocal/probe");
     assert_eq!(
         apply(&target, Action::Install, &context(&host, &[], false)),
         Outcome::Written
@@ -111,7 +111,7 @@ fn dry_run_changes_nothing() {
     let scratch = Scratch::new();
     let hosts = scratch.path("hosts");
     let target = Target::file("Test", Family::Chromium, &hosts);
-    let host = PathBuf::from("/opt/websign/probe");
+    let host = PathBuf::from("/opt/signlocal/probe");
     let outcome = apply(&target, Action::Install, &context(&host, &[], true));
     assert_eq!(outcome, Outcome::DryRun);
     assert!(!hosts.exists());
@@ -122,7 +122,7 @@ fn uninstall_removes_the_manifest_and_reports_when_it_is_gone() {
     let scratch = Scratch::new();
     let hosts = scratch.path("hosts");
     let target = Target::file("Test", Family::Chromium, &hosts);
-    let host = PathBuf::from("/opt/websign/probe");
+    let host = PathBuf::from("/opt/signlocal/probe");
     let ctx = context(&host, &[], false);
     apply(&target, Action::Install, &ctx);
 
@@ -136,7 +136,7 @@ fn uninstall_dry_run_keeps_the_manifest() {
     let scratch = Scratch::new();
     let hosts = scratch.path("hosts");
     let target = Target::file("Test", Family::Chromium, &hosts);
-    let host = PathBuf::from("/opt/websign/probe");
+    let host = PathBuf::from("/opt/signlocal/probe");
     apply(&target, Action::Install, &context(&host, &[], false));
     assert_eq!(
         apply(&target, Action::Uninstall, &context(&host, &[], true)),
@@ -151,7 +151,7 @@ fn flatpak_style_targets_copy_the_host_and_point_the_manifest_at_the_copy() {
     let real_host = scratch.path("real-host");
     fs::write(&real_host, b"binary").unwrap();
     let hosts = scratch.path("app/hosts");
-    let copy = hosts.join("websign-probe");
+    let copy = hosts.join("signlocal-probe");
     let target = Target::file("Flatpak", Family::Chromium, &hosts).with_host_copy(copy.clone());
     let ctx = context(&real_host, &[], false);
 
@@ -175,7 +175,7 @@ fn a_folder_that_cannot_be_written_is_reported_as_failed() {
         Family::Chromium,
         &blocker.join("NativeMessagingHosts"),
     );
-    let host = PathBuf::from("/opt/websign/probe");
+    let host = PathBuf::from("/opt/signlocal/probe");
     let outcome = apply(&target, Action::Install, &context(&host, &[], false));
     assert!(matches!(outcome, Outcome::Failed(_)), "{outcome:?}");
 }

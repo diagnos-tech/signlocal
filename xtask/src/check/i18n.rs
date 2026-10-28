@@ -2,7 +2,7 @@
 
 use std::path::Path;
 
-use websign_i18n::check::{Problem, check_locale};
+use signlocal_i18n::check::{Problem, check_locale};
 
 use crate::i18n_files::{SHIPPED, locale_texts};
 

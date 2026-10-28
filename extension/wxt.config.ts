@@ -7,7 +7,7 @@
 import { defineConfig } from "wxt";
 import { channelFromEnv, manifestFor } from "./build/manifest";
 
-const channel = channelFromEnv(process.env.WEBSIGN_CHANNEL);
+const channel = channelFromEnv(process.env.SIGNLOCAL_CHANNEL);
 
 export default defineConfig({
   srcDir: "src",

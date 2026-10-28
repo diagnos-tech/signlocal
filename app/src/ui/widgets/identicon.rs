@@ -1,12 +1,12 @@
 //! The mirrored 5 × 5 identicon of a verification code (`docs/ux.md` §4.4):
 //! a 40 px well with 6 px cells 1 px apart, in the code's palette color.
 //!
-//! The grid itself comes from `websign_protocol::code`, the same function
+//! The grid itself comes from `signlocal_protocol::code`, the same function
 //! the SDK mirrors, so the site and the window always draw the same picture.
 //! Decorative: the code text next to it is what screen readers read.
 
 use egui::{CornerRadius, Rect, Response, Sense, Stroke, StrokeKind, Ui, Vec2, Widget, pos2};
-use websign_protocol::code::{GRID, VerificationCode};
+use signlocal_protocol::code::{GRID, VerificationCode};
 
 use crate::ui::theme::{self, metrics, tokens};
 

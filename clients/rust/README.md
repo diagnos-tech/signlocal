@@ -1,20 +1,20 @@
-# websign-client
+# signlocal-client
 
-Call the WebeSign app from a Rust program: the person picks a certificate in
+Call the signlocal app from a Rust program: the person picks a certificate in
 the app's window, your closure supplies the digest, the app signs it with the
-key (PIN included). Starts `websign connect` on demand; the window names
-your program. Same flow and options as the web SDK (`@websign/sdk`) and the
-Node client (`@websign/desktop`).
+key (PIN included). Starts `signlocal connect` on demand; the window names
+your program. Same flow and options as the web SDK (`@signlocal/sdk`) and the
+Node client (`@signlocal/desktop`).
 
 ## Quickstart
 
 ```toml
 [dependencies]
-websign-client = "0.1"
+signlocal-client = "0.1"
 ```
 
 ```rust,no_run
-use websign_client::{Client, ClientError, ErrorCode, HashName, SignOptions};
+use signlocal_client::{Client, ClientError, ErrorCode, HashName, SignOptions};
 
 fn main() -> Result<(), ClientError> {
     let mut client = Client::connect()?; // ClientError::AppMissing if not installed
@@ -40,15 +40,15 @@ real protocol, so your code runs unchanged:
 
 ```toml
 [dev-dependencies]
-websign-client = { version = "0.1", features = ["testing"] }
+signlocal-client = { version = "0.1", features = ["testing"] }
 ```
 
 ```rust,ignore
-use websign_client::testing::FakeApp;
-use websign_client::{ErrorCode, HashName, SignOptions};
+use signlocal_client::testing::FakeApp;
+use signlocal_client::{ErrorCode, HashName, SignOptions};
 
 #[test]
-fn a_blocked_pin_is_reported() -> Result<(), websign_client::ClientError> {
+fn a_blocked_pin_is_reported() -> Result<(), signlocal_client::ClientError> {
     let app = FakeApp::builder().fail_at_confirm(ErrorCode::PinLocked).build();
     let mut client = app.connect()?;
     let error = client
@@ -82,7 +82,7 @@ I/O or protocol failure of `AppMissing` and `Connection`.
   and returns exactly 32/48/64 bytes for SHA-256/384/512. `Err(String)`, a
   wrong length, or an app that asks for another hash or an algorithm outside
   your set cancels the request in the app (`Aborted` / `InvalidRequest`).
-- Blocking API over `std::process`; `Client` is `Send`. `WEBSIGN_EXECUTABLE`
+- Blocking API over `std::process`; `Client` is `Send`. `SIGNLOCAL_EXECUTABLE`
   or `ConnectOptions::executable` pins the binary, otherwise
   `find_executable()` searches `PATH` and the per-OS install locations.
 - Certificates are the protocol crate's type: `der`/`chain` are decoded
@@ -93,13 +93,13 @@ I/O or protocol failure of `AppMissing` and `Connection`.
 - API guide: [`docs/architecture/desktop-api.md`](../../docs/architecture/desktop-api.md) §7.
 - Contract: [`SPEC.md`](SPEC.md). Example: [`examples/desktop/rust-cli`](../../examples/desktop/rust-cli).
 - License: **Apache-2.0** ([`LICENSE`](LICENSE)). Runtime dependencies: the
-  Apache-2.0 crates `websign-protocol` (the wire contract) and
-  `websign-project` (the product and executable names), plus `thiserror`.
+  Apache-2.0 crates `signlocal-protocol` (the wire contract) and
+  `signlocal-project` (the product and executable names), plus `thiserror`.
 
 ```sh
-cargo test -p websign-client
+cargo test -p signlocal-client
 ```
 
-The tests run against `examples/fake_websign`, a fake `websign connect`
+The tests run against `examples/fake_signlocal`, a fake `signlocal connect`
 (one scenario per misbehavior), and against the public `FakeApp`
-(`cargo test -p websign-client --all-features`); no installed app is needed.
+(`cargo test -p signlocal-client --all-features`); no installed app is needed.

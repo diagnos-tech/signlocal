@@ -2,9 +2,9 @@
 //! process on first use.
 //!
 //! Shortcuts of the probe, on purpose:
-//! * the PKCS#11 PIN comes from `WEBSIGN_PROBE_PIN` (the probe has no PIN
+//! * the PKCS#11 PIN comes from `SIGNLOCAL_PROBE_PIN` (the probe has no PIN
 //!   window, and the value is never logged);
-//! * extra PKCS#11 modules come from `WEBSIGN_PROBE_MODULES`, a list of paths
+//! * extra PKCS#11 modules come from `SIGNLOCAL_PROBE_MODULES`, a list of paths
 //!   separated like `PATH` is, because a browser cannot pass `--module`;
 //! * a panic inside a key source is caught and reported as an `internal`
 //!   error, so an unfinished or crashing driver cannot take the host down
@@ -26,9 +26,9 @@ mod sources;
 use sources::{State, ensure_loaded, panic_message};
 
 /// Environment variable with the PKCS#11 PIN, for tests only.
-pub const PIN_ENV: &str = "WEBSIGN_PROBE_PIN";
+pub const PIN_ENV: &str = "SIGNLOCAL_PROBE_PIN";
 /// Environment variable with extra PKCS#11 module paths, for tests only.
-pub const MODULES_ENV: &str = "WEBSIGN_PROBE_MODULES";
+pub const MODULES_ENV: &str = "SIGNLOCAL_PROBE_MODULES";
 
 pub struct KeystoreBackend {
     state: State,

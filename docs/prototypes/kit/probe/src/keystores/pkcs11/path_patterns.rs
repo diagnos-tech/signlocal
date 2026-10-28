@@ -70,7 +70,7 @@ mod tests {
 
     fn scratch_dir(name: &str) -> PathBuf {
         let dir =
-            std::env::temp_dir().join(format!("websign-patterns-{name}-{}", std::process::id()));
+            std::env::temp_dir().join(format!("signlocal-patterns-{name}-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         dir
@@ -83,7 +83,7 @@ mod tests {
             Some("plain/path".to_owned())
         );
         assert_eq!(
-            expand_variables(r"%WEBSIGN_TEST_UNSET_VARIABLE%\x.dll"),
+            expand_variables(r"%SIGNLOCAL_TEST_UNSET_VARIABLE%\x.dll"),
             None
         );
         let path = std::env::var("PATH").unwrap();
@@ -115,7 +115,7 @@ mod tests {
 
     #[test]
     fn expand_combines_variables_and_wildcards() {
-        assert!(expand(r"%WEBSIGN_TEST_UNSET_VARIABLE%\x.dll").is_empty());
+        assert!(expand(r"%SIGNLOCAL_TEST_UNSET_VARIABLE%\x.dll").is_empty());
         assert_eq!(expand("/plain/lib.so"), [PathBuf::from("/plain/lib.so")]);
     }
 }

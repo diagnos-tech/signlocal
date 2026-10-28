@@ -8,7 +8,7 @@
 //!
 //! Threads (`docs/architecture/overview.md` §Threads): main (UI), engine
 //! (this module spawns it), and the stdin reader, key store worker, device
-//! monitor and ticker that `websign_host::runtime::serve` spawns. The
+//! monitor and ticker that `signlocal_host::runtime::serve` spawns. The
 //! process ends when the engine does: the client closed stdin, the desktop
 //! idle limit passed, or the first frame was refused. Nothing outlives it:
 //! the window closes when the engine ends, and [`exit_guard`] ends the
@@ -24,17 +24,17 @@ use std::io::Read;
 use std::process::ExitCode;
 use std::sync::mpsc::channel;
 
-use websign_core::present::caller::DesktopCaller;
-use websign_host::BrowserLaunch;
-use websign_host::engine::EngineConfig;
-use websign_host::ports::{ConfirmUi, Outbound};
-use websign_host::runtime::{EventSender, StdoutOutbound, serve as serve_engine};
-use websign_host::session::Transport;
-use websign_host::store::{DiskStores, MemoryStores, Stores, data_dir};
-use websign_keystores::Options;
-use websign_protocol::ProtocolRange;
-use websign_protocol::types::{AppInfo, OsName};
-use websign_ui_model::confirm::UiCommand;
+use signlocal_core::present::caller::DesktopCaller;
+use signlocal_host::BrowserLaunch;
+use signlocal_host::engine::EngineConfig;
+use signlocal_host::ports::{ConfirmUi, Outbound};
+use signlocal_host::runtime::{EventSender, StdoutOutbound, serve as serve_engine};
+use signlocal_host::session::Transport;
+use signlocal_host::store::{DiskStores, MemoryStores, Stores, data_dir};
+use signlocal_keystores::Options;
+use signlocal_protocol::ProtocolRange;
+use signlocal_protocol::types::{AppInfo, OsName};
+use signlocal_ui_model::confirm::UiCommand;
 
 /// Serves a browser's native messaging port.
 pub fn serve_browser(launch: BrowserLaunch) -> ExitCode {
@@ -47,9 +47,9 @@ pub fn serve_browser(launch: BrowserLaunch) -> ExitCode {
     exit_code(status)
 }
 
-/// Serves `websign connect` for the program `caller`.
+/// Serves `signlocal connect` for the program `caller`.
 pub fn serve_desktop(caller: DesktopCaller) -> ExitCode {
-    log::info!("started by a program for websign connect");
+    log::info!("started by a program for signlocal connect");
     let status = serve(
         Transport::Desktop { caller },
         std::io::stdin(),

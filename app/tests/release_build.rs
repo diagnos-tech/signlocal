@@ -6,14 +6,18 @@
 
 /// Strings only e2e code contains: the variables' prefix, the marker the
 /// release job greps for, and the headless port's log line.
-const NEEDLES: [&str; 3] = ["WEBSIGN_E2E_", "WEBSIGN_E2E_BUILD", "headless confirmation"];
+const NEEDLES: [&str; 3] = [
+    "SIGNLOCAL_E2E_",
+    "SIGNLOCAL_E2E_BUILD",
+    "headless confirmation",
+];
 
 fn contains(binary: &[u8], needle: &str) -> bool {
     binary.windows(needle.len()).any(|w| w == needle.as_bytes())
 }
 
 fn binary() -> Vec<u8> {
-    std::fs::read(env!("CARGO_BIN_EXE_websign")).unwrap()
+    std::fs::read(env!("CARGO_BIN_EXE_signlocal")).unwrap()
 }
 
 #[cfg(not(feature = "e2e"))]

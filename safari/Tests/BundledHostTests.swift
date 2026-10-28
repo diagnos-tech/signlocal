@@ -2,15 +2,15 @@
 
 import Foundation
 import XCTest
-@testable import WebeSignRelay
+@testable import SignlocalRelay
 
-/// The real host, from a packaged appex (`WEBSIGN_TEST_APPEX`), through the
+/// The real host, from a packaged appex (`SIGNLOCAL_TEST_APPEX`), through the
 /// same relay the handler uses: the launch shape is accepted and `hello`
 /// comes back. Safari itself is the one piece left out (docs/compatibility.md).
 final class BundledHostTests: XCTestCase {
     func testTheBundledHostAnswersHello() throws {
-        guard let path = ProcessInfo.processInfo.environment["WEBSIGN_TEST_APPEX"] else {
-            throw XCTSkip("set WEBSIGN_TEST_APPEX to a packaged .appex")
+        guard let path = ProcessInfo.processInfo.environment["SIGNLOCAL_TEST_APPEX"] else {
+            throw XCTSkip("set SIGNLOCAL_TEST_APPEX to a packaged .appex")
         }
         let appex = URL(fileURLWithPath: path)
         let bundled = try BundledHost.command(appex: appex)
@@ -29,7 +29,7 @@ final class BundledHostTests: XCTestCase {
         let session = relay.open()
         let hello: [String: Any] = [
             "v": 1, "id": "hello", "type": "hello",
-            "client": ["name": "websign-extension", "version": try version(of: appex)],
+            "client": ["name": "signlocal-extension", "version": try version(of: appex)],
             "protocols": ["min": 1, "max": 1],
             "browser": ["name": "safari", "version": "18.0", "reason": "page"],
         ]

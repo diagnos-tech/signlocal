@@ -2,7 +2,7 @@
 
 mod common;
 
-use websign_client::{
+use signlocal_client::{
     ClientError, DiagnosticsTab, ErrorCode, HashName, PrepareContext, SignOptions,
     SignatureAlgorithmName,
 };
@@ -163,8 +163,8 @@ fn app_errors_keep_their_code() {
 fn the_public_types_can_cross_threads() {
     fn send<T: Send>() {}
     fn send_sync<T: Send + Sync + 'static>() {}
-    send::<websign_client::Client>();
+    send::<signlocal_client::Client>();
     send_sync::<ClientError>();
-    send_sync::<websign_client::ConnectOptions>();
+    send_sync::<signlocal_client::ConnectOptions>();
     send_sync::<SignOptions>();
 }

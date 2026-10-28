@@ -42,7 +42,7 @@ describe("connect: opening", () => {
     expect(port.sent[0]).toMatchObject({
       v: 1,
       type: "hello",
-      client: { name: "websign-extension", version: fakeBrowser.manifestVersion },
+      client: { name: "signlocal-extension", version: fakeBrowser.manifestVersion },
       protocols: { min: 1, max: 1 },
       browser: { name: "chrome", version: "121.0", reason: "page" },
     });
@@ -88,7 +88,9 @@ describe("connect: failures", () => {
 
   it("AppMissing when connectNative itself throws", async () => {
     // Firefox may throw synchronously for a missing host: the same "host not found".
-    fakeBrowser.connectNativeError = new Error("No such native application dev.websign.host");
+    fakeBrowser.connectNativeError = new Error(
+      "No such native application health.diagnos.signlocal",
+    );
     await expect(mod.connect()).rejects.toMatchObject({ code: "AppMissing" });
   });
 

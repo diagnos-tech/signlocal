@@ -1,5 +1,5 @@
 [package]
-name = "websign-probe"
+name = "signlocal-probe"
 version = "0.1.0"
 description = "Lists and signs with every certificate the OS and PKCS#11 modules expose, to prove each path works."
 edition.workspace = true

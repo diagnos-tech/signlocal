@@ -1,5 +1,5 @@
-import { fingerprint, isWebSignError } from "@websign/sdk";
-import { errorText } from "@websign/sdk/messages";
+import { fingerprint, isSignlocalError } from "@signlocal/sdk";
+import { errorText } from "@signlocal/sdk/messages";
 import { setUpFake } from "../shared/fake";
 import { samplePdf } from "./pdf";
 import { signPdf } from "./sign-pdf";
@@ -23,8 +23,8 @@ async function run(input: Uint8Array, name: string) {
       `Signed by ${certificate.displayName} (${certificate.issuerName}). Verification code ${fingerprint(digest).text}.`;
     $("result").className = "card";
   } catch (error) {
-    if (isWebSignError(error, "UserCancelled")) return;
-    const text = isWebSignError(error) ? errorText(error) : undefined;
+    if (isSignlocalError(error, "UserCancelled")) return;
+    const text = isSignlocalError(error) ? errorText(error) : undefined;
     $("summary").textContent = text ? `${text.title}. ${text.body}` : String(error);
     $("download").replaceChildren();
     $("result").className = "card error";

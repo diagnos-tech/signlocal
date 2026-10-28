@@ -5,7 +5,7 @@ const prepare = () => new Uint8Array(32);
 const signOnce = (sdk: Awaited<ReturnType<typeof load>>["sdk"]) =>
   sdk.sign({ hash: "SHA-256", prepare });
 
-describe("@websign/sdk/testing scenarios", () => {
+describe("@signlocal/sdk/testing scenarios", () => {
   const broken = [
     ["app-missing", "AppMissing", { app: { installed: false, outdated: false } }],
     ["app-outdated", "AppOutdated", { app: { installed: true, version: "0.9.0", outdated: true } }],
@@ -15,22 +15,22 @@ describe("@websign/sdk/testing scenarios", () => {
   for (const [scenario, code, status] of broken) {
     it(`${scenario}: status() says so and sign() rejects ${code}`, async () => {
       const { sdk, testing } = await load();
-      await testing.installFakeWebSign({ scenario });
+      await testing.installFakeSignlocal({ scenario });
       expect(await sdk.status()).toMatchObject(status);
-      await expect(signOnce(sdk)).rejects.toMatchObject({ name: "WebSignError", code });
+      await expect(signOnce(sdk)).rejects.toMatchObject({ name: "SignlocalError", code });
     });
   }
 
   it("app-outdated carries the versions, which errorText fills in", async () => {
     const { sdk, testing } = await load();
-    await testing.installFakeWebSign({ scenario: "app-outdated" });
+    await testing.installFakeSignlocal({ scenario: "app-outdated" });
     const error = await signOnce(sdk).catch((e: unknown) => e);
     expect(error).toMatchObject({ details: { installed: "0.9.0", required: "1.0.0" } });
   });
 
   it("extension-missing: status() waits for discovery, then sign() rejects ExtensionMissing", async () => {
     const { sdk, testing } = await load();
-    const fake = await testing.installFakeWebSign({ scenario: "extension-missing" });
+    const fake = await testing.installFakeSignlocal({ scenario: "extension-missing" });
     expect(await sdk.status()).toMatchObject({ ready: false, problem: "ExtensionMissing" });
     await expect(signOnce(sdk)).rejects.toMatchObject({ code: "ExtensionMissing" });
     expect(fake.requests).toEqual([]);
@@ -41,7 +41,7 @@ describe("@websign/sdk/testing scenarios", () => {
 
   it("failNext: the next certificates()/sign() fails once, status is untouched", async () => {
     const { sdk, testing } = await load();
-    const fake = await testing.installFakeWebSign();
+    const fake = await testing.installFakeSignlocal();
     fake.failNext("UserCancelled");
     expect((await sdk.status()).ready).toBe(true);
     await expect(signOnce(sdk)).rejects.toMatchObject({ code: "UserCancelled" });
@@ -55,14 +55,14 @@ describe("@websign/sdk/testing scenarios", () => {
 
   it("no certificates: certificates() and sign() reject NoCertificates", async () => {
     const { sdk, testing } = await load();
-    await testing.installFakeWebSign({ certificates: [] });
+    await testing.installFakeSignlocal({ certificates: [] });
     await expect(sdk.certificates()).rejects.toMatchObject({ code: "NoCertificates" });
     await expect(signOnce(sdk)).rejects.toMatchObject({ code: "NoCertificates" });
   });
 
   it("an algorithm no certificate supports rejects NoCertificates", async () => {
     const { sdk, testing } = await load();
-    await testing.installFakeWebSign({ certificates: [{ key: "EC" }] });
+    await testing.installFakeSignlocal({ certificates: [{ key: "EC" }] });
     await expect(
       sdk.sign({ hash: "SHA-256", algorithm: "RSASSA-PSS", prepare }),
     ).rejects.toMatchObject({ code: "NoCertificates" });
@@ -70,13 +70,13 @@ describe("@websign/sdk/testing scenarios", () => {
 
   it("an expired certificate rejects CertificateNotValid", async () => {
     const { sdk, testing } = await load();
-    await testing.installFakeWebSign({ certificates: [{ notAfter: new Date("2020-01-01") }] });
+    await testing.installFakeSignlocal({ certificates: [{ notAfter: new Date("2020-01-01") }] });
     await expect(signOnce(sdk)).rejects.toMatchObject({ code: "CertificateNotValid" });
   });
 
   it("a preselected fingerprint the person does not have rejects CertificateUnavailable", async () => {
     const { sdk, testing } = await load();
-    await testing.installFakeWebSign();
+    await testing.installFakeSignlocal();
     const certificate = "0".repeat(64);
     await expect(sdk.sign({ hash: "SHA-256", certificate, prepare })).rejects.toMatchObject({
       code: "CertificateUnavailable",
@@ -85,7 +85,7 @@ describe("@websign/sdk/testing scenarios", () => {
 
   it("switchDuringNextSign: prepare runs for both certificates and the second one signs", async () => {
     const { sdk, testing } = await load();
-    const fake = await testing.installFakeWebSign();
+    const fake = await testing.installFakeSignlocal();
     fake.switchDuringNextSign(1);
     const seen: string[] = [];
     const result = await sdk.sign({
@@ -103,7 +103,7 @@ describe("@websign/sdk/testing scenarios", () => {
 
   it("setScenario re-announces, so onChange listeners see the new status", async () => {
     const { sdk, testing } = await load();
-    const fake = await testing.installFakeWebSign();
+    const fake = await testing.installFakeSignlocal();
     const seen = vi.fn();
     const stop = sdk.onChange(seen);
     fake.setScenario("app-missing");
@@ -115,7 +115,7 @@ describe("@websign/sdk/testing scenarios", () => {
 
   it("an abort cancels the fake's request", async () => {
     const { sdk, testing } = await load();
-    const fake = await testing.installFakeWebSign();
+    const fake = await testing.installFakeSignlocal();
     const controller = new AbortController();
     const signing = sdk.sign({
       hash: "SHA-256",
@@ -132,7 +132,7 @@ describe("@websign/sdk/testing scenarios", () => {
 
   it("latencyMs delays every answer", async () => {
     const { sdk, testing } = await load();
-    await testing.installFakeWebSign({ latencyMs: 60 });
+    await testing.installFakeSignlocal({ latencyMs: 60 });
     const started = performance.now();
     await sdk.certificates();
     expect(performance.now() - started).toBeGreaterThanOrEqual(55);
@@ -140,8 +140,10 @@ describe("@websign/sdk/testing scenarios", () => {
 
   it("uninstall stops answering; a new install replaces the old fake", async () => {
     const { sdk, testing } = await load();
-    const first = await testing.installFakeWebSign({ certificates: [{ displayName: "First" }] });
-    const second = await testing.installFakeWebSign({ certificates: [{ displayName: "Second" }] });
+    const first = await testing.installFakeSignlocal({ certificates: [{ displayName: "First" }] });
+    const second = await testing.installFakeSignlocal({
+      certificates: [{ displayName: "Second" }],
+    });
     const [chosen] = await sdk.certificates();
     expect(chosen?.displayName).toBe("Second");
     expect(first.requests).toEqual([]);

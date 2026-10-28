@@ -1,7 +1,7 @@
 import { currentEnvironment, search } from "./candidates.js";
 
 /**
- * The `websign` executable: `WEBSIGN_EXECUTABLE` if it exists, else `websign`
+ * The `signlocal` executable: `SIGNLOCAL_EXECUTABLE` if it exists, else `signlocal`
  * on `PATH`, else the per-OS install locations of
  * docs/architecture/packaging-and-release.md §Install locations, in that
  * order. `undefined` when none exists.
@@ -11,7 +11,7 @@ import { currentEnvironment, search } from "./candidates.js";
  *
  * @example
  * ```ts
- * if (findExecutable() === undefined) console.log("Install WebeSign first.");
+ * if (findExecutable() === undefined) console.log("Install signlocal first.");
  * ```
  */
 export function findExecutable(): string | undefined {

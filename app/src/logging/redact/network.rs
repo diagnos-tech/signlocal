@@ -2,7 +2,7 @@
 //! (a home connection, a machine on a hospital network).
 //!
 //! Only text with the full shape counts, so what logs carry stays: versions
-//! (`1.4.0`), times (`12:30:45`), Rust paths (`websign_host::engine`).
+//! (`1.4.0`), times (`12:30:45`), Rust paths (`signlocal_host::engine`).
 
 use super::spans::{Span, is_word, run_end};
 
@@ -114,7 +114,7 @@ mod tests {
             "v1.4.0",
             "1.4.0",
             "12:30:45",
-            "websign_host::engine",
+            "signlocal_host::engine",
             "a::b",
             "999.1.1.1",
             "0x000000A0",

@@ -23,7 +23,7 @@ const CHECKING_DELAY_MS = 150;
 const PLATFORMS: readonly string[] = ["win", "mac", "linux"];
 
 async function send(op: PopupRequest["op"]): Promise<ProbeResult> {
-  const request: PopupRequest = { kind: "websign-popup", op };
+  const request: PopupRequest = { kind: "signlocal-popup", op };
   try {
     const result: ProbeResult | undefined = await browser.runtime.sendMessage(request);
     return result ?? { ok: false, code: "Internal" };

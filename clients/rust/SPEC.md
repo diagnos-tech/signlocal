@@ -1,6 +1,6 @@
-# websign-client — specification
+# signlocal-client — specification
 
-Rust twin of `@websign/desktop` ([`clients/node/SPEC.md`](../node/SPEC.md));
+Rust twin of `@signlocal/desktop` ([`clients/node/SPEC.md`](../node/SPEC.md));
 blocking API over `std::process`.
 
 ## 1. `find_executable`
@@ -9,9 +9,9 @@ Same search order as the Node client §1.
 
 ## 2. `Client`
 
-- `connect_with`: spawn `websign connect` (stdin/stdout piped, stderr null;
+- `connect_with`: spawn `signlocal connect` (stdin/stdout piped, stderr null;
   `CREATE_NO_WINDOW` on Windows); `hello` at `v = ProtocolRange::CURRENT.max`
-  with `client {name: "websign-client", version: CARGO_PKG_VERSION}` unless
+  with `client {name: "signlocal-client", version: CARGO_PKG_VERSION}` unless
   overridden and `protocols = ProtocolRange::CURRENT`. The answer is parsed
   with `parse_hello_reply(frame, v)` (protocol SPEC §5.1: the app's `hello`,
   or an `error` at our `v`) within 10 s. Outcomes: spawn failure, exit
@@ -19,7 +19,7 @@ Same search order as the Node client §1.
   `App { code }`; no common version per `negotiate(app.protocols, CURRENT)`
   → `App { ClientOutdated | AppOutdated }`; `protocol` other than the
   negotiated one, unparseable frame, other id → `Connection`.
-- Frames with `websign_protocol::framing` (a reader thread feeds a channel of
+- Frames with `signlocal_protocol::framing` (a reader thread feeds a channel of
   16 frames, so a flooding app cannot grow memory); messages with
   `parse_app_message(frame, Some(negotiated))` and `to_json`. Request ids are
   `n1`, `n2`, …; one request open at a time. A reply for another id, an
@@ -44,7 +44,7 @@ Same search order as the Node client §1.
   (`Connection` on the next call).
 - Public surface: `ErrorCode`, the certificate and status types and
   everything the crate docs' examples use are re-exported, so callers need
-  no direct `websign-protocol` dependency.
+  no direct `signlocal-protocol` dependency.
 - `Drop`: close stdin, wait up to 5 s, then kill; never blocks longer.
 - Errors and `Debug` never contain the executable path, digests or
   certificate bodies (`Certificate`'s own `Debug` is the protocol crate's).

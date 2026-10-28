@@ -1,4 +1,4 @@
-//! `websign:` URLs on macOS, which Launch Services delivers as a `kAEGetURL`
+//! `signlocal:` URLs on macOS, which Launch Services delivers as a `kAEGetURL`
 //! Apple Event, never as an argument: when it starts the app for a URL the
 //! process gets no URL in `argv`, and a copy of the app that already has a
 //! window (diagnostics, a confirmation window kept hidden) receives the
@@ -33,8 +33,8 @@ const DIRECT_OBJECT: u32 = u32::from_be_bytes(*b"----");
 
 /// Selectors of the receiver class, prefixed so they never collide with a
 /// method AppKit or winit might add to `NSObject`.
-const WILL_FINISH: &CStr = c"websignWillFinishLaunching:";
-const GOT_URL: &CStr = c"websignHandleGetURLEvent:withReplyEvent:";
+const WILL_FINISH: &CStr = c"signlocalWillFinishLaunching:";
+const GOT_URL: &CStr = c"signlocalHandleGetURLEvent:withReplyEvent:";
 
 static HANDLER: OnceLock<fn(&str)> = OnceLock::new();
 
@@ -89,7 +89,7 @@ fn new_receiver() -> Option<Id> {
     ];
     // SAFETY: both implementations below take `(Id, Sel, …)` exactly as
     // their encodings declare; `listen` runs this once (`HANDLER`).
-    let receiver_class = unsafe { define_class(c"WebeSignURLEventReceiver", &methods) }?;
+    let receiver_class = unsafe { define_class(c"SignlocalURLEventReceiver", &methods) }?;
     // SAFETY: `+alloc`/`-init` of an `NSObject` subclass return an object.
     let receiver: Id = unsafe { send0(send0::<Id>(receiver_class, c"alloc"), c"init") };
     (!receiver.is_null()).then_some(receiver)

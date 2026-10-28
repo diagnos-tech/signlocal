@@ -1,9 +1,9 @@
-//! `websign sign`: one signature from the command line.
+//! `signlocal sign`: one signature from the command line.
 //!
 //! For digests that do not depend on the certificate (raw hash signing,
-//! XAdES/JAdES built after choosing with `websign choose`). Formats that put
+//! XAdES/JAdES built after choosing with `signlocal choose`). Formats that put
 //! the certificate inside the signed data (PAdES, CAdES with
-//! signing-certificate-v2) use `websign connect` or a client library, which
+//! signing-certificate-v2) use `signlocal connect` or a client library, which
 //! implement `prepare(certificate)`.
 
 mod digest;
@@ -11,14 +11,14 @@ mod digest;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use websign_protocol::messages::{ClientMessage, SignBegin};
-use websign_protocol::types::{FingerprintHex, HashName};
-use websign_protocol::{AppMessage, ErrorCode};
+use signlocal_protocol::messages::{ClientMessage, SignBegin};
+use signlocal_protocol::types::{FingerprintHex, HashName};
+use signlocal_protocol::{AppMessage, ErrorCode};
 
 use super::options::{AlgorithmArg, HashArg};
 use super::output::{error, finish};
 
-/// `websign sign`.
+/// `signlocal sign`.
 #[derive(Debug, clap::Args)]
 pub struct SignArgs {
     /// The hash the digest was computed with.

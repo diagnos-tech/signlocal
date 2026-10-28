@@ -15,8 +15,11 @@ pub fn install_format() -> InstallFormat {
     let Ok(executable) = std::env::current_exe() else {
         return InstallFormat::Archive;
     };
-    let dpkg_list =
-        std::fs::read_to_string(format!("/var/lib/dpkg/info/{}.list", websign_project::SLUG)).ok();
+    let dpkg_list = std::fs::read_to_string(format!(
+        "/var/lib/dpkg/info/{}.list",
+        signlocal_project::SLUG
+    ))
+    .ok();
     let rpm_system = RPM_DATABASES.iter().any(|dir| Path::new(dir).is_dir());
     classify(&executable, dpkg_list.as_deref(), rpm_system)
 }
@@ -42,17 +45,17 @@ fn classify(executable: &Path, dpkg_list: Option<&str>, rpm_system: bool) -> Ins
 mod tests {
     use super::*;
 
-    const BINARY: &str = "/usr/bin/websign";
+    const BINARY: &str = "/usr/bin/signlocal";
 
     #[test]
     fn a_binary_dpkg_lists_is_the_deb() {
-        let list = "/.\n/usr\n/usr/bin\n/usr/bin/websign\n";
+        let list = "/.\n/usr\n/usr/bin\n/usr/bin/signlocal\n";
         assert_eq!(
             classify(Path::new(BINARY), Some(list), true),
             InstallFormat::Deb
         );
         assert_eq!(
-            classify(Path::new("/home/u/.local/bin/websign"), Some(list), false),
+            classify(Path::new("/home/u/.local/bin/signlocal"), Some(list), false),
             InstallFormat::Archive
         );
     }
@@ -61,7 +64,7 @@ mod tests {
     fn a_binary_in_usr_on_an_rpm_system_is_the_rpm() {
         assert_eq!(classify(Path::new(BINARY), None, true), InstallFormat::Rpm);
         assert_eq!(
-            classify(Path::new("/usr/local/bin/websign"), None, true),
+            classify(Path::new("/usr/local/bin/signlocal"), None, true),
             InstallFormat::Archive
         );
         assert_eq!(

@@ -38,7 +38,7 @@ export class FakeWindow {
 
   /** Messages the extension posted to the page. */
   fromExtension(): Array<Record<string, unknown>> {
-    return this.posted.map((p) => p.message).filter((m) => m.source === "websign-extension");
+    return this.posted.map((p) => p.message).filter((m) => m.source === "signlocal-extension");
   }
 }
 

@@ -82,15 +82,15 @@ mod tests {
     #[test]
     fn disable_in_excludes_only_the_listed_programs() {
         let file = ModuleFile::parse("module: a.so\ndisable-in: p11-kit-proxy");
-        assert!(file.applies_to(&programs(&["websign"])));
-        assert!(!file.applies_to(&programs(&["websign", "p11-kit-proxy"])));
+        assert!(file.applies_to(&programs(&["signlocal"])));
+        assert!(!file.applies_to(&programs(&["signlocal", "p11-kit-proxy"])));
     }
 
     #[test]
     fn enable_in_is_an_allow_list() {
         let file = ModuleFile::parse("module: a.so\nenable-in: firefox thunderbird");
-        assert!(!file.applies_to(&programs(&["websign"])));
-        assert!(file.applies_to(&programs(&["websign", "thunderbird"])));
+        assert!(!file.applies_to(&programs(&["signlocal"])));
+        assert!(file.applies_to(&programs(&["signlocal", "thunderbird"])));
     }
 
     #[test]

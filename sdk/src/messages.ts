@@ -1,10 +1,10 @@
 /**
- * @websign/sdk/messages — texts for people, per error code, in the shipped
+ * @signlocal/sdk/messages — texts for people, per error code, in the shipped
  * locales (generated from i18n/*.toml `[site.errors]`). A separate entry
  * point so sites that bring their own texts do not ship these.
  *
  * @packageDocumentation
- * @module @websign/sdk/messages
+ * @module @signlocal/sdk/messages
  */
 
 import type { ErrorCode, ErrorDetails } from "./generated/index.js";
@@ -32,7 +32,7 @@ export interface ErrorText {
 }
 
 /**
- * A `WebSignError`, or anything with its `code` (and `details`), such as an
+ * A `SignlocalError`, or anything with its `code` (and `details`), such as an
  * error your server relayed as JSON.
  *
  * @example
@@ -45,7 +45,7 @@ export interface ErrorLike {
 
 /**
  * The texts for an error in the closest shipped locale to `locale` (BCP 47,
- * default: the browser's language, else English). Given a `WebSignError`,
+ * default: the browser's language, else English). Given a `SignlocalError`,
  * `{installed}` and `{required}` are filled from its `details`.
  *
  * Returns `undefined` for codes a site never shows people (`InvalidRequest`,
@@ -53,10 +53,10 @@ export interface ErrorLike {
  * `errorText(status.problem)` just works.
  *
  * @example
- * import { errorText } from "@websign/sdk/messages";
+ * import { errorText } from "@signlocal/sdk/messages";
  *
  * catch (error) {
- *   if (!isWebSignError(error) || error.code === "UserCancelled") return;
+ *   if (!isSignlocalError(error) || error.code === "UserCancelled") return;
  *   const text = errorText(error, document.documentElement.lang);
  *   if (text) showBanner(text.title, text.body);
  * }

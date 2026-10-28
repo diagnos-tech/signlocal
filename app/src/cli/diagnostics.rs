@@ -1,15 +1,15 @@
-//! `websign diagnostics` (and `websign` with no command): the diagnostics
+//! `signlocal diagnostics` (and `signlocal` with no command): the diagnostics
 //! window, in this process.
 
 use std::process::ExitCode;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use clap::ValueEnum;
-use websign_protocol::messages::DiagnosticsTab;
+use signlocal_protocol::messages::DiagnosticsTab;
 
 use crate::ui::renderer;
 
-/// `websign diagnostics`.
+/// `signlocal diagnostics`.
 #[derive(Debug, Default, clap::Args)]
 pub struct DiagnosticsArgs {
     /// Open this tab instead of the first one with a problem.
@@ -46,7 +46,7 @@ pub fn run(args: &DiagnosticsArgs) -> ExitCode {
 /// Set while this process shows the diagnostics window.
 static OPEN: AtomicBool = AtomicBool::new(false);
 
-/// Whether this process shows the diagnostics window (a `websign:` URL
+/// Whether this process shows the diagnostics window (a `signlocal:` URL
 /// event then needs no second one).
 pub fn is_open() -> bool {
     OPEN.load(Ordering::Relaxed)
@@ -66,12 +66,12 @@ pub fn open(tab: Option<DiagnosticsTab>) -> ExitCode {
     log::error!("the diagnostics window could not open: {error}");
     if renderer::is_renderer_failure(&error) && renderer::may_fall_back_to_glow() {
         renderer::remember_glow_needed();
-        eprintln!("websign: {error}; trying again with the OpenGL renderer");
+        eprintln!("signlocal: {error}; trying again with the OpenGL renderer");
         if let Some(code) = rerun_with_glow() {
             return code;
         }
     }
-    eprintln!("websign: the diagnostics window could not open: {error}");
+    eprintln!("signlocal: the diagnostics window could not open: {error}");
     ExitCode::from(super::output::FAILURE)
 }
 
@@ -84,7 +84,7 @@ fn rerun_with_glow() -> Option<ExitCode> {
             // A child killed by a signal has no exit code; say so, or the
             // person sees the window fail with no message at all.
             if status.code().is_none() {
-                eprintln!("websign: the OpenGL renderer stopped unexpectedly ({status})");
+                eprintln!("signlocal: the OpenGL renderer stopped unexpectedly ({status})");
             }
             Some(crate::host_process::exit_code(status.code().unwrap_or(1)))
         }

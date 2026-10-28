@@ -4,9 +4,9 @@
 //! primary button in the footer.
 
 use egui::{Ui, Vec2};
-use websign_i18n::k;
-use websign_ui_model::confirm::UserInput;
-use websign_ui_model::confirm::port::Failure;
+use signlocal_i18n::k;
+use signlocal_ui_model::confirm::UserInput;
+use signlocal_ui_model::confirm::port::Failure;
 
 use super::{Action, Screen};
 use crate::ui::confirm::failure_text::failure_text;

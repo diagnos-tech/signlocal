@@ -2,8 +2,8 @@
 //! tokens and cards, and card readers with the card in each.
 
 use egui::Ui;
-use websign_i18n::{Catalog, k};
-use websign_ui_model::diagnostics::atr_mask::mask_atr;
+use signlocal_i18n::{Catalog, k};
+use signlocal_ui_model::diagnostics::atr_mask::mask_atr;
 
 use super::Screen;
 use super::action::Trailing;

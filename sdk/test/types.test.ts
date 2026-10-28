@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from "vitest";
 import type { ErrorCode, PrepareContext, SignResult, Status, StatusProblem } from "../src/index";
-import { isWebSignError, sign } from "../src/index";
+import { isSignlocalError, sign } from "../src/index";
 
 // Compile-time contract of the public types: `bun run typecheck` fails when they regress.
 // Nothing here runs a signature: the calls are only type-checked.
@@ -43,12 +43,12 @@ describe("type-level ergonomics", () => {
     void (() => sign({ hash: "SHA-256", prepare: () => "ab".repeat(32) }));
   });
 
-  it("isWebSignError narrows the code", () => {
+  it("isSignlocalError narrows the code", () => {
     const error: unknown = undefined;
-    if (isWebSignError(error, "UserCancelled", "Aborted")) {
+    if (isSignlocalError(error, "UserCancelled", "Aborted")) {
       expectTypeOf(error.code).toEqualTypeOf<"UserCancelled" | "Aborted">();
     }
-    if (isWebSignError(error)) expectTypeOf(error.code).toEqualTypeOf<ErrorCode>();
+    if (isSignlocalError(error)) expectTypeOf(error.code).toEqualTypeOf<ErrorCode>();
   });
 
   it("status().problem is an error code and dates are Dates", () => {

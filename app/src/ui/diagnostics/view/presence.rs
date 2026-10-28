@@ -2,7 +2,7 @@
 //! "2 certificates", "No certificates · install {driver}" with the
 //! download link for this OS, or "We can't tell if it has certificates".
 
-use websign_i18n::{Catalog, k};
+use signlocal_i18n::{Catalog, k};
 
 use super::row::{Extra, Status};
 use super::words::tr;

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { installUrl, type SignResult } from "@websign/sdk";
-import { errorText } from "@websign/sdk/messages";
+import { installUrl, type SignResult } from "@signlocal/sdk";
+import { errorText } from "@signlocal/sdk/messages";
 import { computed, ref, shallowRef } from "vue";
-import { useWebSign } from "./useWebSign";
+import { useSignlocal } from "./useSignlocal";
 
-const { status, signing, error, sign } = useWebSign();
+const { status, signing, error, sign } = useSignlocal();
 const text = ref("I agree to the terms.");
 const result = shallowRef<SignResult>();
 
@@ -28,14 +28,14 @@ async function onSign() {
   <main>
     <h1>Sign a text (Vue)</h1>
     <p class="muted" role="status">
-      {{ !status ? "Checking WebeSign…" : setup ? `${setup.title}. ${setup.body}` : "WebeSign is ready." }}
+      {{ !status ? "Checking signlocal…" : setup ? `${setup.title}. ${setup.body}` : "signlocal is ready." }}
     </p>
-    <a v-if="status?.problem === 'ExtensionMissing'" :href="installUrl()">Install WebeSign</a>
+    <a v-if="status?.problem === 'ExtensionMissing'" :href="installUrl()">Install signlocal</a>
     <label for="text">Text to sign</label>
     <textarea id="text" v-model="text" rows="3" style="width: 100%" />
     <p>
       <button type="button" :disabled="!status?.ready || signing" @click="onSign">
-        {{ signing ? "Confirm in the WebeSign window…" : "Sign with my certificate" }}
+        {{ signing ? "Confirm in the signlocal window…" : "Sign with my certificate" }}
       </button>
     </p>
     <div aria-live="polite">

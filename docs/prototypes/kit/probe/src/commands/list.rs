@@ -1,4 +1,4 @@
-//! `websign-probe list`.
+//! `signlocal-probe list`.
 
 use std::process::ExitCode;
 
@@ -6,7 +6,7 @@ use super::view;
 use crate::keystores::Options;
 use crate::keystores::inventory::Inventory;
 
-/// Arguments of `websign-probe list`.
+/// Arguments of `signlocal-probe list`.
 #[derive(Debug, clap::Args)]
 pub struct Args {
     #[command(flatten)]

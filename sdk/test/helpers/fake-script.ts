@@ -4,7 +4,7 @@ import { vi } from "vitest";
 import type { FakeWindow } from "./fake-window";
 
 export interface RequestFrame {
-  readonly source: "websign-page";
+  readonly source: "signlocal-page";
   readonly kind: "request";
   readonly id: string;
   readonly message: { readonly type: string; readonly [key: string]: unknown };
@@ -28,7 +28,7 @@ export class FakeScript {
   ) {
     win.onPost = ({ data }) => {
       const frame = data as { source?: string; kind?: string };
-      if (frame?.source !== "websign-page") return;
+      if (frame?.source !== "signlocal-page") return;
       if (frame.kind === "discover" && options.answerDiscover !== false) this.announce();
       if (frame.kind === "request") {
         const request = data as RequestFrame;
@@ -39,7 +39,7 @@ export class FakeScript {
 
   announcement(): Record<string, unknown> {
     return {
-      source: "websign-extension",
+      source: "signlocal-extension",
       kind: "announce",
       extension: {
         version: this.options.version ?? "1.4.2",
@@ -54,7 +54,7 @@ export class FakeScript {
   }
 
   reply(id: string, message: unknown): void {
-    this.win.deliver({ data: { source: "websign-extension", kind: "message", id, message } });
+    this.win.deliver({ data: { source: "signlocal-extension", kind: "message", id, message } });
   }
 
   get discovers(): unknown[] {
@@ -66,7 +66,7 @@ export class FakeScript {
   get requests(): RequestFrame[] {
     return this.win.posted
       .map((p) => p.data as RequestFrame)
-      .filter((d) => d.source === "websign-page" && d.kind === "request");
+      .filter((d) => d.source === "signlocal-page" && d.kind === "request");
   }
 
   requestsOfType(type: string): RequestFrame[] {

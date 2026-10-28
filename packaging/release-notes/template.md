@@ -2,7 +2,7 @@
 > below get past them. Verify every download against `SHA256SUMS` first. Full guide:
 > [docs/install.md](https://github.com/{{repo}}/blob/{{tag}}/docs/install.md).
 
-WebeSign has two parts: the **app** (`websign`) and the **browser extension**. Install both. This is a
+signlocal has two parts: the **app** (`signlocal`) and the **browser extension**. Install both. This is a
 prerelease, so GitHub's "latest release" skips it: every command names the tag `{{tag}}`.
 
 ## Download
@@ -30,13 +30,13 @@ installs per user from the tarball; `--system` installs the verified deb or rpm 
 **Linux packages** (system-wide):
 
 ```sh
-# Ubuntu 22.04 / 24.04, Debian 12 (arm64: websign_{{version}}_arm64.deb)
-gh release download {{tag}} --repo {{repo}} --pattern 'websign_{{version}}_amd64.deb' --pattern SHA256SUMS
-sha256sum --ignore-missing -c SHA256SUMS && sudo apt install ./websign_{{version}}_amd64.deb
+# Ubuntu 22.04 / 24.04, Debian 12 (arm64: signlocal_{{version}}_arm64.deb)
+gh release download {{tag}} --repo {{repo}} --pattern 'signlocal_{{version}}_amd64.deb' --pattern SHA256SUMS
+sha256sum --ignore-missing -c SHA256SUMS && sudo apt install ./signlocal_{{version}}_amd64.deb
 
-# Fedora 42, Rocky Linux 9 (arm64: websign-{{version}}-1.aarch64.rpm)
-gh release download {{tag}} --repo {{repo}} --pattern 'websign-{{version}}-1.x86_64.rpm' --pattern SHA256SUMS
-sha256sum --ignore-missing -c SHA256SUMS && sudo dnf install ./websign-{{version}}-1.x86_64.rpm
+# Fedora 42, Rocky Linux 9 (arm64: signlocal-{{version}}-1.aarch64.rpm)
+gh release download {{tag}} --repo {{repo}} --pattern 'signlocal-{{version}}-1.x86_64.rpm' --pattern SHA256SUMS
+sha256sum --ignore-missing -c SHA256SUMS && sudo dnf install ./signlocal-{{version}}-1.x86_64.rpm
 ```
 
 Smart cards and tokens need the PC/SC daemon: `sudo apt install pcscd` or `sudo dnf install pcsc-lite`, then
@@ -70,17 +70,17 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Version {{ver
 
 ## Browser extension
 
-Download `websign-extension-{{version}}-chromium.zip` or `websign-extension-{{version}}-firefox.zip`, verify it
+Download `signlocal-extension-{{version}}-chromium.zip` or `signlocal-extension-{{version}}-firefox.zip`, verify it
 against `SHA256SUMS`, and unzip it.
 
 - **Chrome, Edge, Brave:** `chrome://extensions` (`edge://extensions`, `brave://extensions`) → **Developer mode** →
-  **Load unpacked** → the unzipped `websign-extension-{{version}}-chromium` folder. Keep the folder.
+  **Load unpacked** → the unzipped `signlocal-extension-{{version}}-chromium` folder. Keep the folder.
 - **Firefox:** `about:debugging` → **This Firefox** → **Load Temporary Add-on** → `manifest.json` in the unzipped
   folder (lasts until Firefox restarts). Firefox Developer Edition, Nightly or ESR with
   `xpinstall.signatures.required` set to `false` can keep it: `about:addons` → **Install Add-on From File**.
-- **Safari (macOS 13+, Safari 17+):** nothing to download: the extension is inside `WebeSign.app`. Open the app
+- **Safari (macOS 13+, Safari 17+):** nothing to download: the extension is inside `signlocal.app`. Open the app
   once, then in Safari **Settings → Advanced** → **Show features for web developers**, **Settings → Developer** →
-  **Allow unsigned extensions** (again after every Safari restart while builds are unsigned), and tick WebeSign in
+  **Allow unsigned extensions** (again after every Safari restart while builds are unsigned), and tick signlocal in
   **Settings → Extensions**. Keychain and CryptoTokenKit certificates work; a token reachable only
   through a PKCS#11 driver may not, because the host runs inside the extension's sandbox: use Chrome, Edge,
   Brave, Opera or Firefox for it.
@@ -89,8 +89,8 @@ against `SHA256SUMS`, and unzip it.
 
 | Where | What happens | What to do |
 |---|---|---|
-| Windows | SmartScreen "Windows protected your PC" when running a downloaded `websign.exe` by hand | The install script avoids it. Manual download: **More info → Run anyway**. |
-| macOS | Gatekeeper "cannot be opened because the developer cannot be verified" | The install script removes the quarantine flag from `WebeSign.app` only. Manual: System Settings → Privacy & Security → **Open Anyway** (macOS 14 and earlier: right-click the app → **Open**), or `xattr -dr com.apple.quarantine /Applications/WebeSign.app`. |
+| Windows | SmartScreen "Windows protected your PC" when running a downloaded `signlocal.exe` by hand | The install script avoids it. Manual download: **More info → Run anyway**. |
+| macOS | Gatekeeper "cannot be opened because the developer cannot be verified" | The install script removes the quarantine flag from `signlocal.app` only. Manual: System Settings → Privacy & Security → **Open Anyway** (macOS 14 and earlier: right-click the app → **Open**), or `xattr -dr com.apple.quarantine /Applications/signlocal.app`. |
 | Linux | nothing (packages are unsigned) | — |
 | Chrome / Edge / Brave | not in the stores yet | **Load unpacked** (above). |
 | Firefox | release Firefox refuses unsigned add-ons | **Load Temporary Add-on** (above). |

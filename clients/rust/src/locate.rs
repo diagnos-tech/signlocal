@@ -1,23 +1,23 @@
-//! Finding the `websign` executable.
+//! Finding the `signlocal` executable.
 
 use std::env;
 use std::ffi::OsString;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use websign_project::{PRODUCT_NAME, SLUG};
+use signlocal_project::{PRODUCT_NAME, SLUG};
 
 /// Name the caller can set to bypass the search (tests, unusual installs).
-const OVERRIDE_VARIABLE: &str = "WEBSIGN_EXECUTABLE";
+const OVERRIDE_VARIABLE: &str = "SIGNLOCAL_EXECUTABLE";
 
-/// The app executable: `WEBSIGN_EXECUTABLE` when set, else `websign` on
+/// The app executable: `SIGNLOCAL_EXECUTABLE` when set, else `signlocal` on
 /// `PATH`, else the install locations of `docs/architecture/
 /// packaging-and-release.md` §Install locations for this OS. `None` when
 /// none exists.
 ///
 /// ```
-/// if websign_client::find_executable().is_none() {
-///     println!("Install WebeSign first.");
+/// if signlocal_client::find_executable().is_none() {
+///     println!("Install signlocal first.");
 /// }
 /// ```
 pub fn find_executable() -> Option<PathBuf> {

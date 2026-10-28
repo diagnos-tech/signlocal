@@ -1,6 +1,6 @@
 //! The diagnostics window's e2e driver: once the scan has finished and the
 //! tab stopped changing, save it in both themes and close the window. The
-//! suite opens one window per tab (`websign diagnostics --tab <tab>`).
+//! suite opens one window per tab (`signlocal diagnostics --tab <tab>`).
 
 use std::time::{Duration, Instant};
 
@@ -57,7 +57,7 @@ fn tab_argument(args: impl Iterator<Item = String>) -> Option<String> {
 
 impl egui::Plugin for DiagnosticsDriver {
     fn debug_name(&self) -> &'static str {
-        "websign-e2e-diagnostics"
+        "signlocal-e2e-diagnostics"
     }
 
     fn input_hook(&mut self, ctx: &Context, input: &mut RawInput) {
@@ -112,13 +112,13 @@ mod tests {
     #[test]
     fn reads_the_tab_flag() {
         assert_eq!(
-            tab_argument(args(&["websign", "diagnostics", "--tab", "help"])).as_deref(),
+            tab_argument(args(&["signlocal", "diagnostics", "--tab", "help"])).as_deref(),
             Some("help")
         );
         assert_eq!(
-            tab_argument(args(&["websign", "diagnostics", "--tab=devices"])).as_deref(),
+            tab_argument(args(&["signlocal", "diagnostics", "--tab=devices"])).as_deref(),
             Some("devices")
         );
-        assert_eq!(tab_argument(args(&["websign", "diagnostics"])), None);
+        assert_eq!(tab_argument(args(&["signlocal", "diagnostics"])), None);
     }
 }

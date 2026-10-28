@@ -1,13 +1,13 @@
 //! The traffic lights of each tab and of the whole window (`docs/ux.md`
 //! §8.1), the tab the window opens on, and the "Getting started" checklist
-//! (§8.2), decided by `websign-ui-model` from the facts of a scan.
+//! (§8.2), decided by `signlocal-ui-model` from the facts of a scan.
 
-use websign_i18n::{Key, k};
-use websign_protocol::messages::DiagnosticsTab;
-use websign_registration::status::RegistrationState;
-use websign_ui_model::certs::{CertRow, ValidityLabel};
-use websign_ui_model::diagnostics::onboarding::{Onboarding, OnboardingFacts, onboarding};
-use websign_ui_model::diagnostics::status::{
+use signlocal_i18n::{Key, k};
+use signlocal_protocol::messages::DiagnosticsTab;
+use signlocal_registration::status::RegistrationState;
+use signlocal_ui_model::certs::{CertRow, ValidityLabel};
+use signlocal_ui_model::diagnostics::onboarding::{Onboarding, OnboardingFacts, onboarding};
+use signlocal_ui_model::diagnostics::status::{
     BrowsersFacts, CertificatesFacts, DevicesFacts, Light, browsers_light, certificates_light,
     devices_light, overall,
 };

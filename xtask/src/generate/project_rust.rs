@@ -1,4 +1,4 @@
-//! `project.toml` → `crates/websign-project/src/generated.rs`.
+//! `project.toml` → `crates/signlocal-project/src/generated.rs`.
 //!
 //! The constants are committed rather than produced by a build script: a
 //! build script would read `../../project.toml`, which is outside the crate
@@ -9,7 +9,7 @@ use std::path::Path;
 use crate::fsutil::read_text;
 use crate::plan::Plan;
 
-const OUTPUT: &str = "crates/websign-project/src/generated.rs";
+const OUTPUT: &str = "crates/signlocal-project/src/generated.rs";
 
 /// rustfmt's line width; a longer `pub const` wraps after `=` like rustfmt
 /// would, so `cargo fmt --check` accepts the file as generated.

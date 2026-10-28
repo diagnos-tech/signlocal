@@ -1,7 +1,7 @@
 /** Turns the wire certificate (Base64, Unix seconds) into the public one (bytes, `Date`). */
 
 import { decodeBase64 } from "./convert.js";
-import { WebSignError } from "./errors.js";
+import { SignlocalError } from "./errors.js";
 import type { Certificate as WireCertificate } from "./generated/index.js";
 import type { Certificate } from "./types.js";
 
@@ -32,6 +32,6 @@ function toDate(unixSeconds: unknown): Date {
   return date;
 }
 
-function malformed(what: string): WebSignError {
-  return new WebSignError("Internal", `the app sent a ${what}`);
+function malformed(what: string): SignlocalError {
+  return new SignlocalError("Internal", `the app sent a ${what}`);
 }

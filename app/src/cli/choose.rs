@@ -1,14 +1,14 @@
-//! `websign choose`: the certificate the person picks, as JSON.
+//! `signlocal choose`: the certificate the person picks, as JSON.
 
 use std::process::ExitCode;
 
-use websign_protocol::messages::{Choose, ClientMessage};
-use websign_protocol::types::CertificateFilter;
+use signlocal_protocol::messages::{Choose, ClientMessage};
+use signlocal_protocol::types::CertificateFilter;
 
 use super::options::AlgorithmArg;
 use super::output::finish;
 
-/// `websign choose`.
+/// `signlocal choose`.
 #[derive(Debug, clap::Args)]
 pub struct ChooseArgs {
     /// Only certificates whose key can produce one of these (repeatable).

@@ -1,19 +1,19 @@
-//! The Linux app-menu entry that opens diagnostics (`websign` with no
+//! The Linux app-menu entry that opens diagnostics (`signlocal` with no
 //! arguments).
 //!
-//! Packages and `install.sh` ship their own `websign.desktop` with icons;
+//! Packages and `install.sh` ship their own `signlocal.desktop` with icons;
 //! this entry exists for a binary unpacked by hand. So it is written only
 //! when no entry exists yet, marked as ours, and removed only when it
 //! carries the mark — never a file a package owns.
 
 use std::path::{Path, PathBuf};
 
-use websign_registration::Outcome;
+use signlocal_registration::Outcome;
 
 use crate::cli::report::{Kind, Step};
 
 /// Identifies the entries this command wrote.
-const MARK: &str = "X-WebeSign-Written-By=websign install";
+const MARK: &str = "X-signlocal-Written-By=signlocal install";
 /// Where packages put theirs.
 const SYSTEM_APPLICATIONS: &str = "/usr/share/applications";
 
@@ -22,7 +22,7 @@ pub fn apply(install: bool, dry_run: bool) -> Option<Step> {
     if !cfg!(target_os = "linux") {
         return None;
     }
-    let file_name = format!("{}.desktop", websign_project::SLUG);
+    let file_name = format!("{}.desktop", signlocal_project::SLUG);
     let Some(dir) = applications_dir() else {
         return Some(step(
             String::new(),
@@ -52,7 +52,7 @@ fn write(file: &Path, system: &Path, dry_run: bool) -> Outcome {
     if file.exists() || system.exists() {
         return Outcome::Skipped("an entry already exists".to_owned());
     }
-    let exe = match websign_registration::host_binary() {
+    let exe = match signlocal_registration::host_binary() {
         Ok(exe) => exe,
         Err(error) => return Outcome::Failed(error.to_string()),
     };
@@ -92,9 +92,9 @@ pub fn contents(exe: &Path) -> Option<String> {
     let exe = exec_argument(exe.to_str()?)?;
     Some(format!(
         "[Desktop Entry]\nType=Application\nName={}\nComment={}\nExec={exe}\nIcon={}\nTerminal=false\nCategories=Utility;Security;\n{MARK}\n",
-        websign_project::PRODUCT_NAME,
-        websign_project::TAGLINE,
-        websign_project::SLUG,
+        signlocal_project::PRODUCT_NAME,
+        signlocal_project::TAGLINE,
+        signlocal_project::SLUG,
     ))
 }
 
@@ -138,7 +138,7 @@ mod tests {
     #[test]
     fn install_writes_a_marked_entry_once_and_uninstall_removes_only_ours() {
         let dir = tempfile::tempdir().unwrap();
-        let file = dir.path().join("websign.desktop");
+        let file = dir.path().join("signlocal.desktop");
         let no_system = dir.path().join("none.desktop");
         assert_eq!(write(&file, &no_system, true), Outcome::DryRun);
         assert_eq!(write(&file, &no_system, false), Outcome::Written);
@@ -155,8 +155,8 @@ mod tests {
 
     #[test]
     fn exec_is_quoted() {
-        let text = contents(Path::new("/opt/my apps/websign")).unwrap();
-        assert!(text.contains("Exec=\"/opt/my apps/websign\"\n"), "{text}");
+        let text = contents(Path::new("/opt/my apps/signlocal")).unwrap();
+        assert!(text.contains("Exec=\"/opt/my apps/signlocal\"\n"), "{text}");
         assert_eq!(
             exec_argument(r#"/o/100% "a" $b `c` \d"#).unwrap(),
             r#""/o/100%% \\"a\\" \\$b \\`c\\` \\\\d""#

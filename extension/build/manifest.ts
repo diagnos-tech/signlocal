@@ -7,7 +7,7 @@
  * `dev_key`: it pins the extension ID to `dev_id`, the ID the native host's
  * manifest allows. `store` builds must not carry it (the stores assign and
  * sign the ID). Only `direct` exists today, so it is the default; store
- * uploads set `WEBSIGN_CHANNEL=store`.
+ * uploads set `SIGNLOCAL_CHANNEL=store`.
  */
 
 import { DEV_KEY, FIREFOX_ID } from "../src/generated/project";
@@ -32,11 +32,11 @@ export const EXTENSION_PAGES_CSP =
   "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; " +
   "object-src 'none'; base-uri 'none'; form-action 'none'";
 
-/** The channel named by `WEBSIGN_CHANNEL`; unknown values fail the build loudly. */
+/** The channel named by `SIGNLOCAL_CHANNEL`; unknown values fail the build loudly. */
 export function channelFromEnv(value: string | undefined): Channel {
   if (value === undefined || value === "" || value === "direct") return "direct";
   if (value === "store") return "store";
-  throw new Error(`WEBSIGN_CHANNEL must be "direct" or "store", not "${value}"`);
+  throw new Error(`SIGNLOCAL_CHANNEL must be "direct" or "store", not "${value}"`);
 }
 
 function isChromium(browser: string): boolean {

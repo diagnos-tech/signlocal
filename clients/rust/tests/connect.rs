@@ -5,14 +5,14 @@ mod common;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
-use websign_client::{Client, ClientError, ConnectOptions, ErrorCode};
+use signlocal_client::{Client, ClientError, ConnectOptions, ErrorCode};
 
 use common::{Fake, QUICK_GRACE, QUICK_HELLO};
 
 #[test]
 fn a_missing_executable_is_app_missing() {
     let result = Client::connect_with(ConnectOptions {
-        executable: Some(PathBuf::from("/nonexistent/websign")),
+        executable: Some(PathBuf::from("/nonexistent/signlocal")),
         ..ConnectOptions::default()
     });
     assert!(matches!(result, Err(ClientError::AppMissing(_))));

@@ -1,6 +1,6 @@
 # app/assets
 
-Files embedded into the `websign` binary, with the licenses that travel with them.
+Files embedded into the `signlocal` binary, with the licenses that travel with them.
 
 - `fonts/` — Inter and JetBrains Mono (OFL-1.1), subset for size
 - `icons/` — the license of the Phosphor icons compiled in through `egui-phosphor`

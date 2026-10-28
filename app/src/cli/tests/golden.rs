@@ -2,10 +2,10 @@
 
 use std::process::ExitCode;
 
-use websign_protocol::messages::ChooseResult;
-use websign_protocol::types::{AppInfo, Channel, OsName};
-use websign_protocol::{AppMessage, ErrorCode, ProtocolRange};
-use websign_registration::Outcome;
+use signlocal_protocol::messages::ChooseResult;
+use signlocal_protocol::types::{AppInfo, Channel, OsName};
+use signlocal_protocol::{AppMessage, ErrorCode, ProtocolRange};
+use signlocal_registration::Outcome;
 
 use crate::cli::options::HashArg;
 use crate::cli::output::{error, message_json};
@@ -27,7 +27,7 @@ fn info() -> AppInfo {
 fn version_text_and_json() {
     assert_eq!(
         render(&info(), false).unwrap(),
-        "websign 1.4.0 (protocol 1)"
+        "signlocal 1.4.0 (protocol 1)"
     );
     assert_eq!(
         render(&info(), true).unwrap(),
@@ -117,13 +117,14 @@ fn registration_report_json_and_exit_code() {
             Step {
                 kind: Kind::Manifest,
                 target: "Google Chrome".to_owned(),
-                location: "/h/.config/google-chrome/NativeMessagingHosts/dev.websign.host.json"
-                    .to_owned(),
+                location:
+                    "/h/.config/google-chrome/NativeMessagingHosts/health.diagnos.signlocal.json"
+                        .to_owned(),
                 outcome: Outcome::DryRun,
             },
             Step {
                 kind: Kind::UrlScheme,
-                target: "websign: URLs".to_owned(),
+                target: "signlocal: URLs".to_owned(),
                 location: String::new(),
                 outcome: Outcome::Skipped("xdg-mime is missing".to_owned()),
             },
@@ -131,7 +132,7 @@ fn registration_report_json_and_exit_code() {
     };
     assert_eq!(
         report.to_json().to_string(),
-        r#"{"command":"install","dryRun":true,"ok":true,"scope":"user","steps":[{"kind":"manifest","location":"/h/.config/google-chrome/NativeMessagingHosts/dev.websign.host.json","outcome":"dryRun","target":"Google Chrome"},{"kind":"urlScheme","location":"","outcome":"skipped","reason":"xdg-mime is missing","target":"websign: URLs"}]}"#
+        r#"{"command":"install","dryRun":true,"ok":true,"scope":"user","steps":[{"kind":"manifest","location":"/h/.config/google-chrome/NativeMessagingHosts/health.diagnos.signlocal.json","outcome":"dryRun","target":"Google Chrome"},{"kind":"urlScheme","location":"","outcome":"skipped","reason":"xdg-mime is missing","target":"signlocal: URLs"}]}"#
     );
     report.steps[0].outcome = Outcome::Failed("denied".to_owned());
     assert!(!report.ok());
@@ -150,7 +151,7 @@ fn registration_report_json_and_exit_code() {
 
 #[test]
 fn doctor_json_keys_are_stable() {
-    use websign_ui_model::diagnostics::report::{BrowserLine, ReportInput};
+    use signlocal_ui_model::diagnostics::report::{BrowserLine, ReportInput};
     let input = ReportInput {
         app_version: "1.4.0".to_owned(),
         packaging: "deb".to_owned(),

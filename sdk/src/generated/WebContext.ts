@@ -5,7 +5,7 @@
  * extension (`MessageSender`), never as the page claims.
  *
  * Required on `status`, `choose` and `sign.begin` arriving over native
- * messaging; refused on `websign connect`, where the app identifies the
+ * messaging; refused on `signlocal connect`, where the app identifies the
  * calling program itself.
  */
 export type WebContext = { 

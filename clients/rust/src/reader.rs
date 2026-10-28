@@ -5,7 +5,7 @@ use std::io::{self, Read};
 use std::sync::mpsc::{Receiver, sync_channel};
 use std::thread;
 
-use websign_protocol::framing::{FrameError, read_frame};
+use signlocal_protocol::framing::{FrameError, read_frame};
 
 /// Frames buffered before the reader waits for the caller. Bounded so an app
 /// that floods stdout cannot make this process allocate without limit.
@@ -31,7 +31,7 @@ pub(crate) enum Incoming {
 pub(crate) fn spawn(mut stdout: impl Read + Send + 'static) -> io::Result<Receiver<Incoming>> {
     let (sender, receiver) = sync_channel(BUFFERED_FRAMES);
     thread::Builder::new()
-        .name("websign-client-reader".into())
+        .name("signlocal-client-reader".into())
         .spawn(move || {
             loop {
                 let item = match read_frame(&mut stdout) {

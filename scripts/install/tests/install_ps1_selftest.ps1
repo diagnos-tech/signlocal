@@ -19,14 +19,14 @@ function Assert-Throws([scriptblock]$Body) {
     if (-not $threw) { throw 'expected an error' }
 }
 
-$root = Join-Path ([IO.Path]::GetTempPath()) ("websign-ps1-test-" + [Guid]::NewGuid().ToString('N'))
+$root = Join-Path ([IO.Path]::GetTempPath()) ("signlocal-ps1-test-" + [Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $root | Out-Null
 
 Test-Case 'architecture mapping' {
-    Assert-Equal 'x64' (Get-WebsignArch 'AMD64' '')
-    Assert-Equal 'arm64' (Get-WebsignArch 'ARM64' '')
-    Assert-Equal 'arm64' (Get-WebsignArch 'x86' 'ARM64')
-    Assert-Throws { Get-WebsignArch 'x86' '' }
+    Assert-Equal 'x64' (Get-SignlocalArch 'AMD64' '')
+    Assert-Equal 'arm64' (Get-SignlocalArch 'ARM64' '')
+    Assert-Equal 'arm64' (Get-SignlocalArch 'x86' 'ARM64')
+    Assert-Throws { Get-SignlocalArch 'x86' '' }
 }
 
 Test-Case 'PATH entries are added once and removed cleanly' {
@@ -36,14 +36,14 @@ Test-Case 'PATH entries are added once and removed cleanly' {
     Assert-Equal 'C:\w' (Add-PathEntry '' 'C:\w')
 }
 
-# A fake release: a zip with a placeholder websign.exe and its SHA256SUMS.
+# A fake release: a zip with a placeholder signlocal.exe and its SHA256SUMS.
 $version = '9.9.9'
-$arch = Get-WebsignArch $env:PROCESSOR_ARCHITECTURE $env:PROCESSOR_ARCHITEW6432
-$zipName = "websign-$version-windows-$arch.zip"
+$arch = Get-SignlocalArch $env:PROCESSOR_ARCHITECTURE $env:PROCESSOR_ARCHITEW6432
+$zipName = "signlocal-$version-windows-$arch.zip"
 $release = Join-Path $root 'release'
 $content = Join-Path $root 'content'
 New-Item -ItemType Directory -Path $release, $content | Out-Null
-Set-Content -Path (Join-Path $content 'websign.exe') -Value 'placeholder'
+Set-Content -Path (Join-Path $content 'signlocal.exe') -Value 'placeholder'
 Set-Content -Path (Join-Path $content 'README.txt') -Value 'readme'
 Compress-Archive -Path (Join-Path $content '*') -DestinationPath (Join-Path $release $zipName)
 function Write-Sums([string]$Folder) {
@@ -67,7 +67,7 @@ function Invoke-Installer([string]$Folder, [string]$Target, [string[]]$Extra) {
 Test-Case 'install from a verified release' {
     $target = Join-Path $root 'ok'
     Assert-Equal 0 (Invoke-Installer $release $target @())
-    if (-not (Test-Path (Join-Path $target 'websign.exe'))) { throw 'websign.exe missing' }
+    if (-not (Test-Path (Join-Path $target 'signlocal.exe'))) { throw 'signlocal.exe missing' }
     Assert-Equal 0 (Invoke-Installer $release $target @())   # second run upgrades in place
 }
 
@@ -77,7 +77,7 @@ Test-Case 'checksum mismatch installs nothing' {
     Add-Content -Path (Join-Path $bad $zipName) -Value 'tampered'
     $target = Join-Path $root 'bad-target'
     if ((Invoke-Installer $bad $target @()) -eq 0) { throw 'the installer accepted a tampered zip' }
-    if (Test-Path (Join-Path $target 'websign.exe')) { throw 'files were installed' }
+    if (Test-Path (Join-Path $target 'signlocal.exe')) { throw 'files were installed' }
 }
 
 Test-Case 'a file missing from SHA256SUMS is refused' {

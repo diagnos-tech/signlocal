@@ -143,7 +143,7 @@ mod tests {
     #[test]
     fn missing_programs_mean_no_dialog() {
         let none = [Invocation {
-            program: "websign-no-such-dialog",
+            program: "signlocal-no-such-dialog",
             args: Vec::new(),
         }];
         assert_eq!(run_first(&none), Picked::Unavailable);

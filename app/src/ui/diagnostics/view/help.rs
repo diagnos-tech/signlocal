@@ -3,7 +3,7 @@
 
 use egui::accesskit::Role;
 use egui::{Frame, Label, Margin, ScrollArea, Stroke, Ui};
-use websign_i18n::k;
+use signlocal_i18n::k;
 
 use super::Screen;
 use super::faq;
@@ -19,11 +19,11 @@ const PREVIEW_HEIGHT: f32 = 8.0 * 16.0;
 
 /// Where people report problems.
 pub fn support_page() -> String {
-    format!("{}/issues", websign_project::REPOSITORY)
+    format!("{}/issues", signlocal_project::REPOSITORY)
 }
 
 fn privacy_page() -> String {
-    format!("{}privacy.html", websign_project::HOMEPAGE)
+    format!("{}privacy.html", signlocal_project::HOMEPAGE)
 }
 
 pub fn show(ui: &mut Ui, screen: &Screen<'_>, actions: &mut Vec<Action>) {
@@ -93,13 +93,13 @@ fn about(ui: &mut Ui, screen: &Screen<'_>, actions: &mut Vec<Action>) {
     let line = catalog
         .tr(k::HELP_ABOUT_LINE)
         .arg("version", &screen.environment.app_version)
-        .arg("protocol", websign_protocol::version::PROTOCOL_VERSION)
+        .arg("protocol", signlocal_protocol::version::PROTOCOL_VERSION)
         .to_string();
     ui.horizontal_wrapped(|ui| {
         ui.spacing_mut().item_spacing.x = metrics::SPACE_2;
         ui.label(typography::SMALL.rich(line).color(c.fg_subtle));
         for (key, url) in [
-            (k::HELP_SOURCE, websign_project::REPOSITORY.to_owned()),
+            (k::HELP_SOURCE, signlocal_project::REPOSITORY.to_owned()),
             (k::HELP_PRIVACY, privacy_page()),
         ] {
             ui.label(typography::SMALL.rich("·").color(c.fg_subtle));

@@ -2,4 +2,4 @@
 export const VERSION = "0.1.0";
 
 /** Sent in `hello` as `client.name`. */
-export const CLIENT_NAME = "@websign/desktop";
+export const CLIENT_NAME = "@signlocal/desktop";

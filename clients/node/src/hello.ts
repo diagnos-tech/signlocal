@@ -1,6 +1,6 @@
 /** The `hello` negotiation: which protocol version both sides speak. */
 
-import { WebSignError } from "./errors.js";
+import { SignlocalError } from "./errors.js";
 import type { AppEnvelope } from "./generated/index.js";
 
 /** Newest protocol this library speaks; `hello` offers `{min: 1, max: PROTOCOL}`. */
@@ -24,10 +24,10 @@ export function helloFields(client: ClientIdentity): Record<string, unknown> {
  */
 export function negotiatedVersion(reply: AppEnvelope): number {
   if (reply.type !== "hello" || !Number.isInteger(reply.protocol)) {
-    throw new WebSignError("Internal", "the app's first message was not a hello reply");
+    throw new SignlocalError("Internal", "the app's first message was not a hello reply");
   }
   if (reply.protocol < 1 || reply.protocol > PROTOCOL) {
-    throw new WebSignError(
+    throw new SignlocalError(
       "ClientOutdated",
       `the app chose protocol ${reply.protocol}; this library speaks 1 to ${PROTOCOL}`,
       { installed: String(PROTOCOL), required: String(reply.protocol) },

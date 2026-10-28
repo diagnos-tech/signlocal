@@ -1,5 +1,5 @@
 //! The few Objective-C messages the platform layer sends (AppKit,
-//! SecurityInterface), and the one class it defines (the `websign:` URL
+//! SecurityInterface), and the one class it defines (the `signlocal:` URL
 //! event receiver), through the runtime's C API instead of a binding crate:
 //! `objc_msgSend` cast to the exact signature of each method.
 //!

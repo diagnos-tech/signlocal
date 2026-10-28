@@ -4,8 +4,8 @@
 
 use std::path::PathBuf;
 
-use websign_core::Fingerprint;
-use websign_protocol::messages::DiagnosticsTab;
+use signlocal_core::Fingerprint;
+use signlocal_protocol::messages::DiagnosticsTab;
 
 /// Seconds "Revoke" stays turned into "Confirm revoke" (§8.3).
 pub const REVOKE_CONFIRM_SECONDS: f64 = 4.0;

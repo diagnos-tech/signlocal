@@ -4,7 +4,7 @@ import { load } from "./dom";
 
 const data = new TextEncoder().encode("signed attributes of a test document");
 
-describe("@websign/sdk/testing: the SDK signs through the fake", () => {
+describe("@signlocal/sdk/testing: the SDK signs through the fake", () => {
   const cases = [
     ["ECDSA", "SHA-256"],
     ["ECDSA", "SHA-384"],
@@ -17,7 +17,7 @@ describe("@websign/sdk/testing: the SDK signs through the fake", () => {
   for (const [algorithm, hash] of cases) {
     it(`${algorithm} with ${hash}: a signature Node's crypto verifies with the certificate`, async () => {
       const { sdk, testing } = await load();
-      const fake = await testing.installFakeWebSign();
+      const fake = await testing.installFakeSignlocal();
       const result = await sdk.sign({
         hash,
         algorithm,
@@ -54,7 +54,7 @@ describe("@websign/sdk/testing: the SDK signs through the fake", () => {
 
   it("certificates are self-signed X.509 whose fingerprint is the SHA-256 of the DER", async () => {
     const { testing } = await load();
-    const fake = await testing.installFakeWebSign();
+    const fake = await testing.installFakeSignlocal();
     for (const certificate of fake.certificates) {
       const x509 = new X509Certificate(certificate.der);
       expect(x509.verify(x509.publicKey)).toBe(true);
@@ -67,7 +67,7 @@ describe("@websign/sdk/testing: the SDK signs through the fake", () => {
   it("is deterministic: same certificates and signatures on every install", async () => {
     const run = async () => {
       const { sdk, testing } = await load();
-      const fake = await testing.installFakeWebSign();
+      const fake = await testing.installFakeSignlocal();
       const results = await Promise.all(
         (["ECDSA", "RSASSA-PKCS1-v1_5", "RSASSA-PSS"] as const).map((algorithm) =>
           sdk.sign({
@@ -87,7 +87,7 @@ describe("@websign/sdk/testing: the SDK signs through the fake", () => {
 
   it("status() is ready and certificates() returns the chosen certificate", async () => {
     const { sdk, testing } = await load();
-    const fake = await testing.installFakeWebSign({ remembered: true });
+    const fake = await testing.installFakeSignlocal({ remembered: true });
     expect(await sdk.status()).toMatchObject({ ready: true, remembered: true });
     expect(await sdk.certificates()).toEqual([fake.certificates[0]]);
     fake.choose(1);
@@ -97,7 +97,7 @@ describe("@websign/sdk/testing: the SDK signs through the fake", () => {
 
   it("records what the page asked, including the digest signed", async () => {
     const { sdk, testing } = await load();
-    const fake = await testing.installFakeWebSign();
+    const fake = await testing.installFakeSignlocal();
     const [ec] = fake.certificates;
     if (!ec) throw new Error("no default certificate");
     const result = await sdk.sign({
@@ -115,7 +115,7 @@ describe("@websign/sdk/testing: the SDK signs through the fake", () => {
 
   it("the preselected certificate signs, and result.certificate equals fake.certificates[i]", async () => {
     const { sdk, testing } = await load();
-    const fake = await testing.installFakeWebSign();
+    const fake = await testing.installFakeSignlocal();
     const rsa = fake.certificates[1];
     if (!rsa) throw new Error("no default RSA certificate");
     const result = await sdk.sign({

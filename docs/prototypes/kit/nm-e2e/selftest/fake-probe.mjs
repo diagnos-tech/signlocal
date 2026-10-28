@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// A stand-in for websign-probe that speaks the same native messaging
+// A stand-in for signlocal-probe that speaks the same native messaging
 // protocol with one canned certificate, so the test harness itself (page,
 // extension, verdict, `--expect-sign`) can be exercised without any keystore:
 //

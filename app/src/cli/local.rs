@@ -1,6 +1,6 @@
-//! `websign sign` and `websign choose` run one whole connection inside this
+//! `signlocal sign` and `signlocal choose` run one whole connection inside this
 //! process: an in-memory client speaks the protocol to the same engine,
-//! window and key store worker that serve `websign connect`, so the command
+//! window and key store worker that serve `signlocal connect`, so the command
 //! line gets exactly the web's behavior (queue, consent, verification code,
 //! self-check) with no second implementation to drift.
 
@@ -8,11 +8,11 @@ mod frames;
 
 use std::sync::{Arc, Mutex};
 
-use websign_core::present::caller::DesktopCaller;
-use websign_host::session::Transport;
-use websign_protocol::messages::{ClientMessage, Hello};
-use websign_protocol::types::ClientInfo;
-use websign_protocol::{AppMessage, ErrorCode, ProtocolRange};
+use signlocal_core::present::caller::DesktopCaller;
+use signlocal_host::session::Transport;
+use signlocal_protocol::messages::{ClientMessage, Hello};
+use signlocal_protocol::types::ClientInfo;
+use signlocal_protocol::{AppMessage, ErrorCode, ProtocolRange};
 
 use super::output::error;
 use frames::{FrameReader, LocalClient, envelope};
@@ -38,7 +38,7 @@ pub fn request(request: ClientMessage, digest: Option<Vec<u8>>) -> AppMessage {
 fn run(caller: DesktopCaller, request: ClientMessage, digest: Option<Vec<u8>>) -> AppMessage {
     let hello = ClientMessage::Hello(Hello {
         client: ClientInfo {
-            name: "websign-cli".to_owned(),
+            name: "signlocal-cli".to_owned(),
             version: env!("CARGO_PKG_VERSION").to_owned(),
         },
         protocols: ProtocolRange::CURRENT,

@@ -1,15 +1,15 @@
 /**
  * Playwright configuration. Chromium loads the unpacked extension (persistent
- * context); the app is the `e2e` build found through WEBSIGN_E2E_APP. See
+ * context); the app is the `e2e` build found through SIGNLOCAL_E2E_APP. See
  * docs/architecture/testing.md §E2E and lib/environment.ts.
  *
- * With WEBSIGN_E2E_BROWSER_NAME set, the run proves one installed browser:
+ * With SIGNLOCAL_E2E_BROWSER_NAME set, the run proves one installed browser:
  * only the cross-browser core (`browsers/`) runs, then the log audit.
  */
 
 import { defineConfig } from "@playwright/test";
 
-const named = (process.env.WEBSIGN_E2E_BROWSER_NAME ?? "") !== "";
+const named = (process.env.SIGNLOCAL_E2E_BROWSER_NAME ?? "") !== "";
 const suite = named
   ? { name: "browsers", testMatch: "browsers/**/*.spec.ts" }
   : { name: "scenarios", testMatch: "tests/**/*.spec.ts" };

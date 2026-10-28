@@ -5,10 +5,10 @@
 //!   on Linux to Vulkan llvmpipe, on macOS it uses Metal.
 //! * **glow** is a fallback on macOS and Linux only: on Windows it fails
 //!   ("egui_glow requires opengl 2.0+"). The fallback is a **re-exec** of the
-//!   same process arguments with `WEBSIGN_RENDERER=glow`, never an in-process
+//!   same process arguments with `SIGNLOCAL_RENDERER=glow`, never an in-process
 //!   retry (a second event loop is only proven to work on X11).
 //!
-//! `WEBSIGN_RENDERER=wgpu|glow` forces one. The backend that drew is reported
+//! `SIGNLOCAL_RENDERER=wgpu|glow` forces one. The backend that drew is reported
 //! in diagnostics (`render: wgpu/dx12`, `render: glow`).
 //!
 //! **Startup order.** A re-exec is only safe before stdin is read, but a
@@ -52,7 +52,7 @@ impl Backend {
 }
 
 /// Environment variable that forces a backend (and marks a re-exec).
-pub const RENDERER_ENV: &str = "WEBSIGN_RENDERER";
+pub const RENDERER_ENV: &str = "SIGNLOCAL_RENDERER";
 
 /// The backend for this process: the forced one, else glow when this
 /// machine needed it before (macOS and Linux), else wgpu. Reads a file and
@@ -87,7 +87,7 @@ pub fn remember_glow_needed() {
 
 /// The marker file: `renderer-glow` in the app's data folder.
 fn glow_marker() -> Option<std::path::PathBuf> {
-    websign_host::store::data_dir().map(|dir| dir.join("renderer-glow"))
+    signlocal_host::store::data_dir().map(|dir| dir.join("renderer-glow"))
 }
 
 /// Whether a failed wgpu start may be retried by re-executing with glow:

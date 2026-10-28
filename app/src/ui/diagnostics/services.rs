@@ -6,7 +6,7 @@
 use std::path::Path;
 use std::sync::mpsc::{Receiver, TryRecvError, channel};
 
-use websign_registration::{Action, BrowserChoice, Request, Scope};
+use signlocal_registration::{Action, BrowserChoice, Request, Scope};
 
 use super::facts::{Facts, ScanInput, collect};
 use crate::platform::file_picker::{self, FileRequest, Picked};
@@ -67,7 +67,7 @@ impl Os for RealOs {
             host: None,
             dry_run: false,
         };
-        match websign_registration::run(&request) {
+        match signlocal_registration::run(&request) {
             Ok(report) => !report.failed(),
             Err(error) => {
                 log::warn!("diagnostics: repair could not run: {error}");

@@ -1,6 +1,6 @@
 //! `[site.errors]` of every locale → `sdk/src/messages.gen.ts`.
 //!
-//! Exported only from `@websign/sdk/messages`, so sites that bring their own
+//! Exported only from `@signlocal/sdk/messages`, so sites that bring their own
 //! texts do not ship these. `MESSAGES` is typed with the protocol's
 //! `ErrorCode`, so a misspelled code in `i18n/` fails the SDK typecheck;
 //! codes a site never shows (`ClientOutdated`, …) simply have no entry.

@@ -8,8 +8,8 @@
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 
-use websign_keystores::SourceFailure;
-use websign_keystores::inventory::Inventory;
+use signlocal_keystores::SourceFailure;
+use signlocal_keystores::inventory::Inventory;
 
 use super::DriverFact;
 use super::home::{anonymize, anonymize_text};

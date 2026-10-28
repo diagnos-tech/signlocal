@@ -7,7 +7,7 @@ use clap::{Parser, Subcommand};
 use crate::{commands, devices, nm};
 
 #[derive(Debug, Parser)]
-#[command(name = "websign-probe", version, about, propagate_version = true)]
+#[command(name = "signlocal-probe", version, about, propagate_version = true)]
 struct Cli {
     #[command(subcommand)]
     command: Command,

@@ -81,7 +81,7 @@ mod tests {
     use super::*;
 
     fn keys(browsers: &[Browser]) -> Vec<(String, String)> {
-        targets(browsers, Path::new(r"C:\Users\u\AppData\Local\websign"))
+        targets(browsers, Path::new(r"C:\Users\u\AppData\Local\signlocal"))
             .into_iter()
             .filter_map(|target| match target.location {
                 Location::Registry { subkey, .. } => Some((target.label, subkey)),

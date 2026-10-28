@@ -9,7 +9,7 @@ use std::os::windows::ffi::OsStringExt;
 use std::os::windows::io::{AsRawHandle, FromRawHandle, OwnedHandle};
 use std::path::PathBuf;
 
-use websign_core::present::caller::{CodeSigner, DesktopCaller};
+use signlocal_core::present::caller::{CodeSigner, DesktopCaller};
 use windows::Win32::Foundation::{FILETIME, HANDLE};
 use windows::Win32::System::Diagnostics::ToolHelp::{
     CreateToolhelp32Snapshot, PROCESSENTRY32W, Process32FirstW, Process32NextW, TH32CS_SNAPPROCESS,

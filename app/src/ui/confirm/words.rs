@@ -1,12 +1,12 @@
 //! Small localized pieces of the window: who asks, the window title, names
 //! of browsers, hashes and algorithms, and the spoken code.
 
-use websign_core::present::origin::FormattedOrigin;
-use websign_i18n::{Catalog, k};
-use websign_protocol::types::{BrowserName, HashName, SignatureAlgorithmName};
-use websign_ui_model::confirm::ConfirmView;
-use websign_ui_model::confirm::port::{CallerView, Mode};
-use websign_ui_model::confirm::view::PinSystem;
+use signlocal_core::present::origin::FormattedOrigin;
+use signlocal_i18n::{Catalog, k};
+use signlocal_protocol::types::{BrowserName, HashName, SignatureAlgorithmName};
+use signlocal_ui_model::confirm::ConfirmView;
+use signlocal_ui_model::confirm::port::{CallerView, Mode};
+use signlocal_ui_model::confirm::view::PinSystem;
 
 /// The `{site}` of every message: the host with its port
 /// (`app.diagnos.health`), or the program's name.
@@ -58,7 +58,7 @@ fn cut_left(host: &str, keep: usize) -> String {
     format!("…{kept}")
 }
 
-/// The OS window title: "Sign for {site} — WebeSign", "(1 of 3)" when a
+/// The OS window title: "Sign for {site} — signlocal", "(1 of 3)" when a
 /// queue waits.
 pub fn window_title(tr: &Catalog, view: &ConfirmView) -> String {
     let key = match view.mode {

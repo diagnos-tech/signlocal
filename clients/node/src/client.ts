@@ -1,7 +1,7 @@
 /** One connection to the app. */
 
 import { decodeCertificate } from "./certificate.js";
-import { aborted, WebSignError } from "./errors.js";
+import { aborted, SignlocalError } from "./errors.js";
 import type { DiagnosticsTab, StatusReply } from "./generated/index.js";
 import { findExecutable } from "./locate.js";
 import { DEFAULT_TIMINGS, Session } from "./session.js";
@@ -17,24 +17,24 @@ import { checkAlgorithms } from "./validate.js";
 import { CLIENT_NAME, VERSION } from "./version.js";
 
 /**
- * A running `websign connect` child. The app lives only as long as this
- * object: call {@link WebSign.close} when done, or it exits when your process
+ * A running `signlocal connect` child. The app lives only as long as this
+ * object: call {@link Signlocal.close} when done, or it exits when your process
  * does. One connection serves one caller; open several for parallel work.
  *
  * @example
  * ```ts
- * const websign = await WebSign.connect();
+ * const signlocal = await Signlocal.connect();
  * try {
- *   const { signature } = await websign.sign({
+ *   const { signature } = await signlocal.sign({
  *     hash: "SHA-256",
  *     prepare: () => sha256OfMyDocument(),
  *   });
  * } finally {
- *   await websign.close();
+ *   await signlocal.close();
  * }
  * ```
  */
-export class WebSign {
+export class Signlocal {
   private constructor(private readonly session: Session) {}
 
   /**
@@ -44,22 +44,22 @@ export class WebSign {
    *
    * @example
    * ```ts
-   * import { WebSign, WebSignError } from "@websign/desktop";
+   * import { Signlocal, SignlocalError } from "@signlocal/desktop";
    *
    * try {
-   *   const websign = await WebSign.connect({ clientName: "my-invoicing-app" });
-   *   await websign.close();
+   *   const signlocal = await Signlocal.connect({ clientName: "my-invoicing-app" });
+   *   await signlocal.close();
    * } catch (error) {
-   *   if (error instanceof WebSignError && error.code === "AppMissing") {
+   *   if (error instanceof SignlocalError && error.code === "AppMissing") {
    *     console.error(error.hint); // tells the person how to install it
    *   }
    * }
    * ```
    */
-  static async connect(options: ConnectOptions = {}): Promise<WebSign> {
+  static async connect(options: ConnectOptions = {}): Promise<Signlocal> {
     const executable = options.executable ?? findExecutable();
     if (executable === undefined) {
-      throw new WebSignError("AppMissing", "the websign executable was not found");
+      throw new SignlocalError("AppMissing", "the signlocal executable was not found");
     }
     const session = await Session.open(
       executable,
@@ -70,18 +70,18 @@ export class WebSign {
       DEFAULT_TIMINGS,
       options.executableArgs,
     );
-    return new WebSign(session);
+    return new Signlocal(session);
   }
 
   /**
    * Asks the app who it is (`app.version`, OS, channel) and whether this
    * program is remembered. Never opens a window; `remembered` says whether
-   * {@link WebSign.certificates} will skip it too.
+   * {@link Signlocal.certificates} will skip it too.
    *
    * @example
    * ```ts
-   * const { app, remembered } = await websign.status();
-   * console.log(`WebeSign ${app.version}`, remembered ? "(remembered)" : "");
+   * const { app, remembered } = await signlocal.status();
+   * console.log(`signlocal ${app.version}`, remembered ? "(remembered)" : "");
    * ```
    */
   async status(): Promise<StatusReply> {
@@ -93,16 +93,16 @@ export class WebSign {
   /**
    * `choose`: the person picks a certificate (or a remembered program gets
    * the ones it used before). Never the machine's whole list. `der` and
-   * `chain` are decoded to bytes. Same options as `@websign/sdk`.
+   * `chain` are decoded to bytes. Same options as `@signlocal/sdk`.
    *
-   * @throws {@link WebSignError} `NoCertificates` when the person chose none,
+   * @throws {@link SignlocalError} `NoCertificates` when the person chose none,
    * `UserCancelled`, `Aborted` (signal), `Timeout`.
    *
    * @example
    * ```ts
-   * const [certificate] = await websign.certificates({ algorithm: "ECDSA" });
+   * const [certificate] = await signlocal.certificates({ algorithm: "ECDSA" });
    * console.log(certificate.displayName, certificate.fingerprint);
-   * // Later: websign.sign({ certificate, ... }) skips the choice.
+   * // Later: signlocal.sign({ certificate, ... }) skips the choice.
    * ```
    */
   async certificates(options: CertificateOptions = {}): Promise<Certificate[]> {
@@ -119,7 +119,7 @@ export class WebSign {
       }
       // The app reports an empty choice as NoCertificates; an empty list would be a bug there.
       if (reply.certificates.length === 0) {
-        throw new WebSignError("NoCertificates", "no certificate was chosen");
+        throw new SignlocalError("NoCertificates", "no certificate was chosen");
       }
       return reply.certificates.map(decodeCertificate);
     } finally {
@@ -132,7 +132,7 @@ export class WebSign {
    * window, the person picks a certificate, `options.prepare` supplies the
    * digest for it, and the person confirms with the PIN.
    *
-   * @throws {@link WebSignError} `UserCancelled`, `PinLocked`, `TokenRemoved`,
+   * @throws {@link SignlocalError} `UserCancelled`, `PinLocked`, `TokenRemoved`,
    * `Timeout`, `Aborted` (signal or throwing `prepare`), `InvalidRequest`
    * (wrong digest length, or an app asking for another hash/algorithm), …
    *
@@ -140,7 +140,7 @@ export class WebSign {
    * ```ts
    * import { createHash } from "node:crypto";
    *
-   * const { signature, certificate, algorithm } = await websign.sign({
+   * const { signature, certificate, algorithm } = await signlocal.sign({
    *   hash: "SHA-256",
    *   algorithm: ["ECDSA", "RSASSA-PSS"],
    *   signal: AbortSignal.timeout(120_000),
@@ -159,7 +159,7 @@ export class WebSign {
    *
    * @example
    * ```ts
-   * await websign.openDiagnostics("devices"); // or "browsers", "certificates", "help"
+   * await signlocal.openDiagnostics("devices"); // or "browsers", "certificates", "help"
    * ```
    */
   async openDiagnostics(tab?: DiagnosticsTab): Promise<void> {
@@ -173,7 +173,7 @@ export class WebSign {
    *
    * @example
    * ```ts
-   * await websign.close();
+   * await signlocal.close();
    * ```
    */
   close(): Promise<void> {
@@ -181,6 +181,6 @@ export class WebSign {
   }
 }
 
-function unexpected(got: string, request: string): WebSignError {
-  return new WebSignError("Internal", `unexpected reply ${got} to ${request}`);
+function unexpected(got: string, request: string): SignlocalError {
+  return new SignlocalError("Internal", `unexpected reply ${got} to ${request}`);
 }

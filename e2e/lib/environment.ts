@@ -7,23 +7,23 @@
  * person's; the suite only needs their certificates to pick and verify):
  *
  * - Linux and containers: a SoftHSM2 token made by
- *   `crates/websign-keystores/tests/support/softhsm-fixture.sh`. Set
- *   WEBSIGN_E2E_SOFTHSM to its folder, or leave it unset and the suite makes
+ *   `crates/signlocal-keystores/tests/support/softhsm-fixture.sh`. Set
+ *   SIGNLOCAL_E2E_SOFTHSM to its folder, or leave it unset and the suite makes
  *   one (`global-setup.ts`). The app loads the module as a driver the person
  *   added (`userModules` in its settings.json) and reads SOFTHSM2_CONF.
  * - Windows: CNG and CAPI software keys in Cert:\CurrentUser\My made by
  *   `docs/prototypes/kit/windows/make-test-certs.ps1`; CI exports their
- *   certificates to WEBSIGN_E2E_CERTS.
+ *   certificates to SIGNLOCAL_E2E_CERTS.
  * - macOS: identities imported into a temporary keychain on the search list
  *   (`docs/prototypes/kit/macos/lib/common.sh`), the e2e binary allowed in
- *   its partition list; CI copies their certificates to WEBSIGN_E2E_CERTS.
+ *   its partition list; CI copies their certificates to SIGNLOCAL_E2E_CERTS.
  *
- * WEBSIGN_E2E_BROWSER_NAME names an installed browser to prove
+ * SIGNLOCAL_E2E_BROWSER_NAME names an installed browser to prove
  * (`lib/browsers.ts`); the suite then registers the host as a person's
  * install does.
  *
- * WEBSIGN_E2E_WINDOW=headless is for machines without a display: the app
- * then decides without its window (`WEBSIGN_E2E_HEADLESS=1`) and the
+ * SIGNLOCAL_E2E_WINDOW=headless is for machines without a display: the app
+ * then decides without its window (`SIGNLOCAL_E2E_HEADLESS=1`) and the
  * scenarios about the window are skipped.
  */
 
@@ -52,45 +52,45 @@ export type KeySource =
 
 /** The e2e environment. */
 export interface E2eEnvironment {
-  /** `websign` built with `--features e2e` (WEBSIGN_E2E_APP). */
+  /** `signlocal` built with `--features e2e` (SIGNLOCAL_E2E_APP). */
   readonly app: string;
   /**
-   * Unpacked extension (WEBSIGN_E2E_EXTENSION), by default the build for
+   * Unpacked extension (SIGNLOCAL_E2E_EXTENSION), by default the build for
    * the browser's engine: extension/.output/chrome-mv3 or firefox-mv3.
    */
   readonly extension: string;
-  /** Screenshot folder (WEBSIGN_E2E_SCREENSHOTS). */
+  /** Screenshot folder (SIGNLOCAL_E2E_SCREENSHOTS). */
   readonly screenshots: string;
-  /** Browser executable to use instead of Playwright's (WEBSIGN_E2E_BROWSER). */
+  /** Browser executable to use instead of Playwright's (SIGNLOCAL_E2E_BROWSER). */
   readonly browser?: string;
   /**
-   * The installed browser this run proves (WEBSIGN_E2E_BROWSER_NAME, with
-   * WEBSIGN_E2E_BROWSER its executable): registered as `websign install`
+   * The installed browser this run proves (SIGNLOCAL_E2E_BROWSER_NAME, with
+   * SIGNLOCAL_E2E_BROWSER its executable): registered as `signlocal install`
    * does, and only the cross-browser suite (`browsers/`) runs. Unset: the
-   * full suite in Playwright's Chromium (or WEBSIGN_E2E_BROWSER), with the
+   * full suite in Playwright's Chromium (or SIGNLOCAL_E2E_BROWSER), with the
    * host registered in the throwaway profile.
    */
   readonly browserName?: BrowserName;
   readonly keys: KeySource;
-  /** The confirmation window opens (false: WEBSIGN_E2E_WINDOW=headless). */
+  /** The confirmation window opens (false: SIGNLOCAL_E2E_WINDOW=headless). */
   readonly window: boolean;
 }
 
 /** Reads the environment, failing with a clear message when something is missing. */
 export function environment(): E2eEnvironment {
   const env = process.env;
-  const app = required("WEBSIGN_E2E_APP", "the `websign` binary built with --features e2e");
-  const browserName = named(env.WEBSIGN_E2E_BROWSER_NAME);
+  const app = required("SIGNLOCAL_E2E_APP", "the `signlocal` binary built with --features e2e");
+  const browserName = named(env.SIGNLOCAL_E2E_BROWSER_NAME);
   const build = browserName === "firefox" ? "firefox-mv3" : "chrome-mv3";
-  const extension = env.WEBSIGN_E2E_EXTENSION ?? join(REPO, "extension/.output", build);
-  mustExist(extension, `WEBSIGN_E2E_EXTENSION (build it with \`bunx wxt build\`: ${build})`);
-  const screenshots = env.WEBSIGN_E2E_SCREENSHOTS ?? join(tmpdir(), "websign-e2e-screenshots");
+  const extension = env.SIGNLOCAL_E2E_EXTENSION ?? join(REPO, "extension/.output", build);
+  mustExist(extension, `SIGNLOCAL_E2E_EXTENSION (build it with \`bunx wxt build\`: ${build})`);
+  const screenshots = env.SIGNLOCAL_E2E_SCREENSHOTS ?? join(tmpdir(), "signlocal-e2e-screenshots");
   mkdirSync(screenshots, { recursive: true });
-  const browser = env.WEBSIGN_E2E_BROWSER;
-  if (browser !== undefined) mustExist(browser, "WEBSIGN_E2E_BROWSER");
+  const browser = env.SIGNLOCAL_E2E_BROWSER;
+  if (browser !== undefined) mustExist(browser, "SIGNLOCAL_E2E_BROWSER");
   if (browserName !== undefined && browser === undefined) {
     throw new Error(
-      "WEBSIGN_E2E_BROWSER_NAME needs WEBSIGN_E2E_BROWSER (the browser's executable)",
+      "SIGNLOCAL_E2E_BROWSER_NAME needs SIGNLOCAL_E2E_BROWSER (the browser's executable)",
     );
   }
   return {
@@ -100,7 +100,7 @@ export function environment(): E2eEnvironment {
     ...(browser === undefined ? {} : { browser }),
     ...(browserName === undefined ? {} : { browserName }),
     keys: keySource(),
-    window: env.WEBSIGN_E2E_WINDOW !== "headless",
+    window: env.SIGNLOCAL_E2E_WINDOW !== "headless",
   };
 }
 
@@ -109,22 +109,22 @@ function named(value: string | undefined): BrowserName | undefined {
   const name = BROWSER_NAMES.find((known) => known === value);
   if (name === undefined) {
     throw new Error(
-      `WEBSIGN_E2E_BROWSER_NAME=${value}: expected one of ${BROWSER_NAMES.join(", ")}`,
+      `SIGNLOCAL_E2E_BROWSER_NAME=${value}: expected one of ${BROWSER_NAMES.join(", ")}`,
     );
   }
   return name;
 }
 
 function keySource(): KeySource {
-  const softhsm = process.env.WEBSIGN_E2E_SOFTHSM;
+  const softhsm = process.env.SIGNLOCAL_E2E_SOFTHSM;
   if (softhsm !== undefined) return { kind: "softhsm", token: readToken(softhsm) };
-  const certificates = process.env.WEBSIGN_E2E_CERTS;
+  const certificates = process.env.SIGNLOCAL_E2E_CERTS;
   if (certificates !== undefined) {
-    mustExist(certificates, "WEBSIGN_E2E_CERTS");
+    mustExist(certificates, "SIGNLOCAL_E2E_CERTS");
     return { kind: "os-store", certificates };
   }
   throw new Error(
-    "No software keys: set WEBSIGN_E2E_SOFTHSM (a softhsm-fixture.sh folder) or WEBSIGN_E2E_CERTS " +
+    "No software keys: set SIGNLOCAL_E2E_SOFTHSM (a softhsm-fixture.sh folder) or SIGNLOCAL_E2E_CERTS " +
       "(certificates of the OS store's test keys); see e2e/lib/environment.ts",
   );
 }
@@ -132,7 +132,7 @@ function keySource(): KeySource {
 /** Reads `fixture.conf` (KEY=VALUE lines) of a softhsm-fixture.sh folder. */
 export function readToken(dir: string): SoftHsm {
   const conf = join(dir, "fixture.conf");
-  mustExist(conf, "WEBSIGN_E2E_SOFTHSM/fixture.conf");
+  mustExist(conf, "SIGNLOCAL_E2E_SOFTHSM/fixture.conf");
   const values = new Map<string, string>();
   for (const line of readFileSync(conf, "utf8").split(/\r?\n/)) {
     const at = line.indexOf("=");

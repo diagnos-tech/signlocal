@@ -1,16 +1,16 @@
-//! Call the WebeSign app from a Rust program.
+//! Call the signlocal app from a Rust program.
 //!
 //! The person picks a certificate in the app's window, your closure supplies
 //! the digest for it, and the app signs it with the key (PIN included). The
-//! app is started on demand (`websign connect`) and speaks the same protocol
+//! app is started on demand (`signlocal connect`) and speaks the same protocol
 //! as the browser extension; this crate hides the framing and the message
 //! exchange. The flow and the options are the web SDK's and the Node
-//! client's (`@websign/desktop`).
+//! client's (`@signlocal/desktop`).
 //!
 //! # Quickstart
 //!
 //! ```no_run
-//! use websign_client::{Client, ErrorCode, HashName, SignOptions};
+//! use signlocal_client::{Client, ErrorCode, HashName, SignOptions};
 //!
 //! # fn my_digest(_certificate_der: &[u8]) -> Vec<u8> { vec![0; 32] }
 //! let mut client = Client::connect()?; // ClientError::AppMissing if not installed
@@ -24,7 +24,7 @@
 //!     Err(error) if error.code() == ErrorCode::UserCancelled => println!("cancelled"),
 //!     Err(error) => return Err(error),
 //! }
-//! # Ok::<(), websign_client::ClientError>(())
+//! # Ok::<(), signlocal_client::ClientError>(())
 //! ```
 //!
 //! For CMS/PAdES, build the signed attributes from `certificate.der` and
@@ -47,19 +47,19 @@
 //!
 //! ```toml
 //! [dev-dependencies]
-//! websign-client = { version = "0.1", features = ["testing"] }
+//! signlocal-client = { version = "0.1", features = ["testing"] }
 //! ```
 //!
 //! ```
 //! # #[cfg(feature = "testing")] {
-//! use websign_client::testing::FakeApp;
-//! use websign_client::{HashName, SignOptions};
+//! use signlocal_client::testing::FakeApp;
+//! use signlocal_client::{HashName, SignOptions};
 //!
 //! let mut client = FakeApp::new().connect()?;
 //! let signed = client.sign(SignOptions::new(HashName::Sha256), |_, _| Ok(vec![0; 32]))?;
 //! assert_eq!(signed.signature.as_bytes().len(), 32);
 //! # }
-//! # Ok::<(), websign_client::ClientError>(())
+//! # Ok::<(), signlocal_client::ClientError>(())
 //! ```
 //!
 //! # Good to know
@@ -67,7 +67,7 @@
 //! - The person confirms every signature in the app's window, which shows
 //!   this program's name (and its code signer when the OS can verify it).
 //! - Blocking API over `std::process`; [`Client`] is `Send`.
-//! - `WEBSIGN_EXECUTABLE` or [`ConnectOptions::executable`] pins the binary;
+//! - `SIGNLOCAL_EXECUTABLE` or [`ConnectOptions::executable`] pins the binary;
 //!   otherwise [`find_executable`] searches `PATH` and the per-OS install
 //!   locations.
 //!
@@ -97,9 +97,9 @@ pub use client::Client;
 pub use error::ClientError;
 pub use locate::find_executable;
 pub use options::{ConnectOptions, PrepareContext, SignOptions};
-pub use websign_protocol::ErrorCode;
-pub use websign_protocol::messages::{DiagnosticsTab, SignResult, StatusReply};
-pub use websign_protocol::types::{
+pub use signlocal_protocol::ErrorCode;
+pub use signlocal_protocol::messages::{DiagnosticsTab, SignResult, StatusReply};
+pub use signlocal_protocol::types::{
     AppInfo, Base64Bytes, Certificate, CertificateProfile, Channel, CurveName, EidasProfile,
     EidasType, FingerprintHex, HashName, KeyDescription, KeyStorage, OsName,
     SignatureAlgorithmName,

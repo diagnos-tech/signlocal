@@ -1,14 +1,14 @@
 //! `cargo xtask gen`: every derived file, from one description each.
 //!
-//! * `ts` — `websign-protocol` types (ts-rs) into `sdk/`, `extension/` and
+//! * `ts` — `signlocal-protocol` types (ts-rs) into `sdk/`, `extension/` and
 //!   `clients/node/` under `src/generated/`, with an `index.ts` barrel;
 //! * `locales` — `i18n/*.toml` `[popup]`, `[store]`, `[extension]` into
 //!   `extension/public/_locales/<xx_YY>/messages.json`;
 //! * `messages` — `i18n/*.toml` `[site.errors]` into `sdk/src/messages.gen.ts`;
 //! * `project` — `project.toml` into `project.ts` of the extension and the
 //!   Node client (IDs, `MIN_APP_VERSION`), and into the Rust constants of
-//!   `crates/websign-project`;
-//! * `limits` — `websign-protocol` version, message sources, lengths and
+//!   `crates/signlocal-project`;
+//! * `limits` — `signlocal-protocol` version, message sources, lengths and
 //!   timers into `extension/src/shared/limits.gen.ts`.
 //!
 //! The generators only build a [`Plan`]; `gen` writes it and

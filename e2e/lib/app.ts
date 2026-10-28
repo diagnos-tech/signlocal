@@ -18,22 +18,22 @@ const run = promisify(execFile);
 /** What the confirmation window does by itself (`app/src/e2e.rs`). */
 export type Confirm = "sign" | "choose" | "remember" | "cancel" | "wait";
 
-/** Per-run folders, made once by `global-setup.ts` (WEBSIGN_E2E_HOME). */
+/** Per-run folders, made once by `global-setup.ts` (SIGNLOCAL_E2E_HOME). */
 export function runHome(): string {
-  const home = process.env.WEBSIGN_E2E_HOME;
-  if (home === undefined) throw new Error("WEBSIGN_E2E_HOME is not set: run through playwright");
+  const home = process.env.SIGNLOCAL_E2E_HOME;
+  if (home === undefined) throw new Error("SIGNLOCAL_E2E_HOME is not set: run through playwright");
   return home;
 }
 
-/** The app's settings and data folder (`dirs::config_dir()/websign`). */
+/** The app's settings and data folder (`dirs::config_dir()/signlocal`). */
 export function appDataDir(): string {
   switch (platform()) {
     case "win32":
-      return join(process.env.APPDATA ?? join(homedir(), "AppData", "Roaming"), "websign");
+      return join(process.env.APPDATA ?? join(homedir(), "AppData", "Roaming"), "signlocal");
     case "darwin":
-      return join(homedir(), "Library", "Application Support", "websign");
+      return join(homedir(), "Library", "Application Support", "signlocal");
     default:
-      return join(runHome(), "config", "websign");
+      return join(runHome(), "config", "signlocal");
   }
 }
 
@@ -43,13 +43,13 @@ export function appLogDir(): string {
     case "win32":
       return join(
         process.env.LOCALAPPDATA ?? join(homedir(), "AppData", "Local"),
-        "websign",
+        "signlocal",
         "logs",
       );
     case "darwin":
-      return join(homedir(), "Library", "Logs", "websign");
+      return join(homedir(), "Library", "Logs", "signlocal");
     default:
-      return join(runHome(), "state", "websign");
+      return join(runHome(), "state", "signlocal");
   }
 }
 
@@ -61,8 +61,8 @@ export function appEnv(
 ): NodeJS.ProcessEnv {
   const vars: NodeJS.ProcessEnv = {
     ...process.env,
-    WEBSIGN_LOCALE: "en",
-    WEBSIGN_LOG: process.env.WEBSIGN_LOG ?? "info",
+    SIGNLOCAL_LOCALE: "en",
+    SIGNLOCAL_LOG: process.env.SIGNLOCAL_LOG ?? "info",
   };
   if (platform() === "linux") {
     vars.XDG_CONFIG_HOME = join(runHome(), "config");
@@ -72,12 +72,12 @@ export function appEnv(
   }
   if (env.keys.kind === "softhsm") {
     vars.SOFTHSM2_CONF = env.keys.token.conf;
-    vars.WEBSIGN_E2E_PIN = env.keys.token.pin;
+    vars.SIGNLOCAL_E2E_PIN = env.keys.token.pin;
   }
-  if (confirm !== "wait") vars.WEBSIGN_E2E_CONFIRM = confirm;
-  if (!env.window) vars.WEBSIGN_E2E_HEADLESS = "1";
+  if (confirm !== "wait") vars.SIGNLOCAL_E2E_CONFIRM = confirm;
+  if (!env.window) vars.SIGNLOCAL_E2E_HEADLESS = "1";
   // Each window state is saved once per app process, so this costs little.
-  if (screenshots && env.window) vars.WEBSIGN_E2E_SCREENSHOTS = env.screenshots;
+  if (screenshots && env.window) vars.SIGNLOCAL_E2E_SCREENSHOTS = env.screenshots;
   return vars;
 }
 
@@ -130,7 +130,7 @@ export async function diagnostics(env: E2eEnvironment, tab: string): Promise<voi
     const log = appLog().split("\n").slice(-40).join("\n");
     const crash = signal ? await crashSummary(env.app, started) : "";
     throw new Error(
-      `websign diagnostics --tab ${tab} failed (code ${code}, signal ${signal})\n${log}\n${crash}`,
+      `signlocal diagnostics --tab ${tab} failed (code ${code}, signal ${signal})\n${log}\n${crash}`,
       {
         cause: error,
       },

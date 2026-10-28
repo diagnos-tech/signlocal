@@ -1,8 +1,8 @@
 {
-  "name": "websign-extension",
+  "name": "signlocal-extension",
   "version": "0.1.0",
   "private": true,
-  "description": "WebeSign browser extension: the bridge between pages using @websign/sdk and the WebeSign app (native messaging). No UI besides the toolbar popup.",
+  "description": "signlocal browser extension: the bridge between pages using @signlocal/sdk and the signlocal app (native messaging). No UI besides the toolbar popup.",
   "license": "GPL-3.0-or-later",
   "type": "module",
   "scripts": {
@@ -12,7 +12,7 @@
     "zip": "wxt zip -b chrome && wxt zip -b edge && wxt zip -b firefox --mv3 && wxt zip -b safari",
     "typecheck": "tsc --noEmit -p .",
     "test": "vitest run",
-    "zip:store": "WEBSIGN_CHANNEL=store wxt zip -b chrome && WEBSIGN_CHANNEL=store wxt zip -b edge && WEBSIGN_CHANNEL=store wxt zip -b firefox --mv3",
+    "zip:store": "SIGNLOCAL_CHANNEL=store wxt zip -b chrome && SIGNLOCAL_CHANNEL=store wxt zip -b edge && SIGNLOCAL_CHANNEL=store wxt zip -b firefox --mv3",
     "size": "bun scripts/size.ts",
     "screenshots": "bun scripts/screenshots.ts"
   },

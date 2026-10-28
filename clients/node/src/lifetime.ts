@@ -1,4 +1,4 @@
-/** How the `websign connect` child relates to the caller's own process lifetime. */
+/** How the `signlocal connect` child relates to the caller's own process lifetime. */
 
 import type { ChildProcess } from "node:child_process";
 

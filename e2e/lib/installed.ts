@@ -1,6 +1,6 @@
 /**
  * Registration as a person's install does it, for a named browser
- * (WEBSIGN_E2E_BROWSER_NAME): `websign register --browser <name>` with no
+ * (SIGNLOCAL_E2E_BROWSER_NAME): `signlocal register --browser <name>` with no
  * test-only folder, into the folders or registry keys that browser reads.
  *
  * - Linux: the run's private home and config home (`appEnv` sets HOME and
@@ -51,10 +51,10 @@ export interface Installed {
 export async function install(env: E2eEnvironment, name: BrowserName): Promise<Installed> {
   if (platform() === "darwin" && process.env.CI === undefined) {
     throw new Error(
-      "WEBSIGN_E2E_BROWSER_NAME on macOS writes your real browser folders; it runs in CI only",
+      "SIGNLOCAL_E2E_BROWSER_NAME on macOS writes your real browser folders; it runs in CI only",
     );
   }
-  const profile = mkdtempSync(join(tmpdir(), "websign-e2e-profile-"));
+  const profile = mkdtempSync(join(tmpdir(), "signlocal-e2e-profile-"));
   const root = browserRoot(name, {
     home: join(runHome(), "home"),
     config: join(runHome(), "config"),
@@ -85,7 +85,7 @@ export async function install(env: E2eEnvironment, name: BrowserName): Promise<I
  * `profile` for Chromium browsers, a folder for Firefox. Returns how to undo it.
  */
 function claim(root: string, name: BrowserName, profile: string): () => void {
-  const aside = `${root}.websign-e2e-aside`;
+  const aside = `${root}.signlocal-e2e-aside`;
   const existed = exists(root);
   if (existed) renameSync(root, aside);
   mkdirSync(dirname(root), { recursive: true });

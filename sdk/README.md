@@ -1,15 +1,15 @@
-# @websign/sdk
+# @signlocal/sdk
 
 Let people sign on your website with the certificate they already have: a smart card, a USB token or a
-certificate installed on their computer, through the WebeSign extension and app. Zero dependencies, ESM,
+certificate installed on their computer, through the signlocal extension and app. Zero dependencies, ESM,
 fully typed, under 5 KB gzipped, framework-agnostic.
 
 ```sh
-bun add @websign/sdk     # or: npm install @websign/sdk
+bun add @signlocal/sdk     # or: npm install @signlocal/sdk
 ```
 
 ```ts
-import { sign } from "@websign/sdk";
+import { sign } from "@signlocal/sdk";
 
 const { signature, certificate } = await sign({
   hash: "SHA-256",
@@ -17,22 +17,22 @@ const { signature, certificate } = await sign({
 });
 ```
 
-That is the whole happy path. `prepare` runs once the person has chosen a certificate in the WebeSign window
+That is the whole happy path. `prepare` runs once the person has chosen a certificate in the signlocal window
 (PAdES and CAdES put the certificate inside the signed data) and returns the hash to sign: 32, 48 or 64 bytes
 for SHA-256/384/512, as a `Uint8Array` or `ArrayBuffer`. It runs again if the person switches certificate;
 only the last hash is signed. `signature` is raw (ECDSA r‖s, or the RSA block); put it in your CMS with
 `certificate.der` and `certificate.chain`. The types follow your options: with `hash: "SHA-384"` and
 `algorithm: "ECDSA"`, `prepare`'s context and the result are typed with exactly those values.
 
-Guide with the errors table: [developers page](https://diagnos-tech.github.io/web-esign/developers.html).
-API reference: [`site/api/`](https://diagnos-tech.github.io/web-esign/api/). Examples (vanilla, React, Vue,
+Guide with the errors table: [developers page](https://signlocal.diagnos.health/developers.html).
+API reference: [`site/api/`](https://signlocal.diagnos.health/api/). Examples (vanilla, React, Vue,
 PAdES with pdf-lib + PKI.js): [`examples/web/`](../examples/web/).
 
-## Is WebeSign ready?
+## Is signlocal ready?
 
 ```ts
-import { installUrl, onChange, status } from "@websign/sdk";
-import { errorText } from "@websign/sdk/messages";
+import { installUrl, onChange, status } from "@signlocal/sdk";
+import { errorText } from "@signlocal/sdk/messages";
 
 function show({ ready, problem }: Status) {
   signButton.hidden = !ready;
@@ -41,23 +41,23 @@ function show({ ready, problem }: Status) {
   notice.textContent = errorText(problem)?.body ?? ""; // localized, empty when ready
 }
 show(await status()); // never rejects, never opens a window
-onChange(show); // the person installs or updates WebeSign while the page is open
+onChange(show); // the person installs or updates signlocal while the page is open
 ```
 
 ## Errors
 
-Every rejection is a `WebSignError`: a stable `code`, a `message` (what happened) and a `hint` (what to do)
+Every rejection is a `SignlocalError`: a stable `code`, a `message` (what happened) and a `hint` (what to do)
 for you, a `docsUrl` to its row on the developers page, and `details` for version and driver errors. For the
-person, `errorText(error)` from `@websign/sdk/messages` gives a title and the next step in 7 languages.
+person, `errorText(error)` from `@signlocal/sdk/messages` gives a title and the next step in 7 languages.
 
 ```ts
-import { isWebSignError, sign } from "@websign/sdk";
-import { errorText } from "@websign/sdk/messages";
+import { isSignlocalError, sign } from "@signlocal/sdk";
+import { errorText } from "@signlocal/sdk/messages";
 
 try {
   await sign({ hash: "SHA-256", prepare });
 } catch (error) {
-  if (!isWebSignError(error)) throw error;
+  if (!isSignlocalError(error)) throw error;
   if (error.code === "UserCancelled") return; // nothing to show
   console.warn(error.code, error.hint, error.docsUrl);
   const text = errorText(error); // fills {installed}/{required} from details
@@ -70,15 +70,15 @@ Cancel with an `AbortSignal` (`sign({ ..., signal })`): the window closes and th
 
 ## Testing without the extension
 
-`@websign/sdk/testing` installs a fake extension and app on `window` (browser, jsdom or happy-dom). Your code
+`@signlocal/sdk/testing` installs a fake extension and app on `window` (browser, jsdom or happy-dom). Your code
 runs unchanged, and signatures are real ECDSA P-256 / RSA-2048 made with public test keys, deterministic, so
 you can verify and snapshot them.
 
 ```ts
-import { installFakeWebSign, type FakeWebSign } from "@websign/sdk/testing";
+import { installFakeSignlocal, type FakeSignlocal } from "@signlocal/sdk/testing";
 
-let fake: FakeWebSign;
-beforeEach(async () => (fake = await installFakeWebSign()));
+let fake: FakeSignlocal;
+beforeEach(async () => (fake = await installFakeSignlocal()));
 afterEach(() => fake.uninstall());
 
 it("signs", async () => {
@@ -99,7 +99,7 @@ Setups: `scenario: "ready" | "extension-missing" | "app-missing" | "app-outdated
 
 Never ship it: anyone can sign with its keys. It is a separate entry point, refuses non-local origins unless
 `allowAnyOrigin: true`, and warns on the console at every install. For local development, load it behind a
-dynamic import (`if (import.meta.env.DEV) await (await import("@websign/sdk/testing")).installFakeWebSign()`).
+dynamic import (`if (import.meta.env.DEV) await (await import("@signlocal/sdk/testing")).installFakeSignlocal()`).
 
 ## Other calls
 
@@ -112,7 +112,7 @@ dynamic import (`if (import.meta.env.DEV) await (await import("@websign/sdk/test
 
 - Only messages from the page's own window and origin, from the extension's content script and with the
   expected shape are accepted; the SDK posts only to its own origin, never `"*"`, and never logs.
-- The SDK speaks page protocol 1 (`ClientOutdated`: update `@websign/sdk`; `ExtensionOutdated`: the person
+- The SDK speaks page protocol 1 (`ClientOutdated`: update `@signlocal/sdk`; `ExtensionOutdated`: the person
   updates the extension).
 - Safe to import during server-side rendering: nothing touches `window` until a call.
 - Batch signing is not offered: each signature is one confirmation.

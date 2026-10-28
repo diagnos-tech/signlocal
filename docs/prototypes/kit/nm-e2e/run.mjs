@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 // End-to-end check of the whole browser path, in a real Chromium:
 //
-//   page -> content script -> service worker -> native messaging -> websign-probe
+//   page -> content script -> service worker -> native messaging -> signlocal-probe
 //
 // Registers the probe as native host for a throwaway Chromium profile, loads
 // the test extension, lets page.html ping/list/sign through it and judges the
 // outcome together with the host's own log.
 //
-//   node run.mjs --probe <websign-probe> [--chromium <exe>] [--no-register] [--expect-sign]
+//   node run.mjs --probe <signlocal-probe> [--chromium <exe>] [--no-register] [--expect-sign]
 //
 // Prints `NM-E2E: PASS` or `NM-E2E: FAIL <reason>` (then the host log) and
 // exits 0 or 1.
@@ -37,7 +37,7 @@ async function main() {
   // The manifest and config.js must match project.toml before Chromium loads them.
   execFileSync(process.execPath, [join(extensionDir, "generate-manifest.mjs")], { stdio: "inherit" });
 
-  const userDataDir = mkdtempSync(join(tmpdir(), "websign-nm-e2e-"));
+  const userDataDir = mkdtempSync(join(tmpdir(), "signlocal-nm-e2e-"));
   const hostLog = watchHostLog(hostLogPath(project.slug));
   const page = await startPageServer();
   let context;

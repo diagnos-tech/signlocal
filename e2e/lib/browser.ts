@@ -4,7 +4,7 @@
  * `docs/prototypes/kit/nm-e2e`). The browser hands its environment to the
  * app it starts, so each launch fixes what the confirmation window does.
  *
- * A named installed browser (WEBSIGN_E2E_BROWSER_NAME: Chrome, Edge, Brave,
+ * A named installed browser (SIGNLOCAL_E2E_BROWSER_NAME: Chrome, Edge, Brave,
  * Opera…) is registered as a person's install does (`installed.ts`) and gets
  * the extension through the DevTools protocol (`Extensions.loadUnpacked`),
  * because branded Chrome and Edge ignore `--load-extension`.
@@ -108,7 +108,7 @@ async function prepareProfile(
     const installed = await install(env, env.browserName);
     return { dir: installed.profile, remove: () => installed.remove() };
   }
-  const dir = mkdtempSync(join(tmpdir(), "websign-e2e-profile-"));
+  const dir = mkdtempSync(join(tmpdir(), "signlocal-e2e-profile-"));
   if (host !== "none") await register(env, dir);
   if (host === "old-app") installOldApp(dir);
   return {

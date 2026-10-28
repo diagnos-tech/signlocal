@@ -4,7 +4,7 @@ mod common;
 
 use std::time::{Duration, Instant};
 
-use websign_client::{ClientError, ErrorCode, HashName, SignOptions};
+use signlocal_client::{ClientError, ErrorCode, HashName, SignOptions};
 
 use common::{Fake, QUICK_GRACE, connect};
 

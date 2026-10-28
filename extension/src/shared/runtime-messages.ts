@@ -9,7 +9,7 @@ import type { PageReply } from "../generated";
 
 /** Content script → background: a rebuilt page request. */
 export interface RelayRequest {
-  readonly kind: "websign-request";
+  readonly kind: "signlocal-request";
   /** Random per content-script instance (one per document); see {@link RelayGone}. */
   readonly document: string;
   readonly id: string;
@@ -18,13 +18,13 @@ export interface RelayRequest {
 
 /** Content script → background: this document is going away; cancel what it opened. */
 export interface RelayGone {
-  readonly kind: "websign-gone";
+  readonly kind: "signlocal-gone";
   readonly document: string;
 }
 
 /** Background → content script: a reply for the page. */
 export interface RelayReply {
-  readonly kind: "websign-reply";
+  readonly kind: "signlocal-reply";
   /** The requesting document's token; other documents in the frame drop the reply. */
   readonly document: string;
   readonly id: string;
@@ -33,12 +33,12 @@ export interface RelayReply {
 
 /** Background → top frame's content script: "what is your origin?" (§2.3). */
 export interface OriginQuery {
-  readonly kind: "websign-origin";
+  readonly kind: "signlocal-origin";
 }
 
 /** Popup → background. */
 export interface PopupRequest {
-  readonly kind: "websign-popup";
+  readonly kind: "signlocal-popup";
   readonly op: "probe" | "diagnostics";
 }
 

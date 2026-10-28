@@ -11,7 +11,7 @@ case "${1:-}" in
     *) exit 0 ;;
 esac
 
-if command -v websign >/dev/null 2>&1; then
-    websign uninstall --system || echo "websign: removing the system registrations failed; browser manifests may remain (docs/install.md, Uninstall)" >&2
+if command -v signlocal >/dev/null 2>&1; then
+    signlocal uninstall --system || echo "signlocal: removing the system registrations failed; browser manifests may remain (docs/install.md, Uninstall)" >&2
 fi
 exit 0

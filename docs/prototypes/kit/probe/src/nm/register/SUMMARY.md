@@ -1,6 +1,6 @@
 # probe/src/nm/register
 
-`websign-probe register`: writes the native messaging manifest where each browser looks for it.
+`signlocal-probe register`: writes the native messaging manifest where each browser looks for it.
 
 - `browsers.rs` — the browsers `--browser` accepts
 - `destination.rs` — one place a browser looks for the host, and how to write or remove it

@@ -1,50 +1,50 @@
-# @websign/desktop
+# @signlocal/desktop
 
-Call the WebeSign app from Node.js, Bun or Electron: the person picks a
+Call the signlocal app from Node.js, Bun or Electron: the person picks a
 certificate in the app's window, you supply the digest, the app signs it with
 the key (PIN included). Zero runtime dependencies. Node ≥ 20.19 (ESM; `require()`
 works too).
 
 ```sh
-npm install @websign/desktop
+npm install @signlocal/desktop
 ```
 
 ## Quickstart
 
-Save as `sign.mjs` and run `node sign.mjs` (the WebeSign app must be installed):
+Save as `sign.mjs` and run `node sign.mjs` (the signlocal app must be installed):
 
 ```ts
 import { createHash } from "node:crypto";
-import { WebSign } from "@websign/desktop";
+import { Signlocal } from "@signlocal/desktop";
 
-const websign = await WebSign.connect(); // AppMissing if not installed
+const signlocal = await Signlocal.connect(); // AppMissing if not installed
 try {
-  const { signature, certificate } = await websign.sign({
+  const { signature, certificate } = await signlocal.sign({
     hash: "SHA-256",
     prepare: () => createHash("sha256").update("my document").digest(),
   });
   console.log(`${certificate.displayName}: ${signature.byteLength} bytes`);
 } finally {
-  await websign.close();
+  await signlocal.close();
 }
 ```
 
 No app yet, or in CI? Swap the first line for the fake (see below):
-`const app = fakeApp(); const websign = await app.connect();`.
+`const app = fakeApp(); const signlocal = await app.connect();`.
 
 ## Test without the app
 
-`@websign/desktop/testing` starts a fake `websign connect` that speaks the real
+`@signlocal/desktop/testing` starts a fake `signlocal connect` that speaks the real
 protocol, so your code runs unchanged:
 
 ```ts
-import { WebSignError } from "@websign/desktop";
-import { fakeApp } from "@websign/desktop/testing";
+import { SignlocalError } from "@signlocal/desktop";
+import { fakeApp } from "@signlocal/desktop/testing";
 
 const app = fakeApp({ failWith: { code: "UserCancelled" } }); // or omit to sign
-const websign = await app.connect();
-await websign.sign({ hash: "SHA-256", prepare: () => new Uint8Array(32) }).catch((error) => {
-  console.log(error instanceof WebSignError, error.code); // true "UserCancelled"
+const signlocal = await app.connect();
+await signlocal.sign({ hash: "SHA-256", prepare: () => new Uint8Array(32) }).catch((error) => {
+  console.log(error instanceof SignlocalError, error.code); // true "UserCancelled"
 });
 await app.close();
 ```
@@ -57,12 +57,12 @@ sent.
 
 ## Errors
 
-Every failure is a `WebSignError` with a stable `code` (branch on it), a
+Every failure is a `SignlocalError` with a stable `code` (branch on it), a
 developer `message` (English), a `hint` saying what to do, and a `docsUrl`:
 
 ```ts
 catch (error) {
-  if (error instanceof WebSignError && error.code !== "UserCancelled") {
+  if (error instanceof SignlocalError && error.code !== "UserCancelled") {
     console.error(`${error.code}: ${error.message}\n${error.hint}\n${error.docsUrl}`);
   }
 }
@@ -70,7 +70,7 @@ catch (error) {
 
 ## Good to know
 
-- Same mental model as the web SDK (`@websign/sdk`): the same `sign({ hash,
+- Same mental model as the web SDK (`@signlocal/sdk`): the same `sign({ hash,
   algorithm, certificate, prepare, signal })` options, `prepare(certificate,
   { hash, algorithm })`, the same `Certificate` shape (`notBefore`/`notAfter`
   are `Date`s) and the same error codes. `algorithm` is one name or a list in
@@ -81,7 +81,7 @@ catch (error) {
   `InvalidRequest`. So does an app that asks for another hash or an
   algorithm outside the ones you accepted (`InvalidRequest`, before `prepare`
   runs).
-- `WebSign.connect({ executable })` or `WEBSIGN_EXECUTABLE` pins the binary;
+- `Signlocal.connect({ executable })` or `SIGNLOCAL_EXECUTABLE` pins the binary;
   otherwise `findExecutable()` searches `PATH` and the per-OS install
   locations.
 - One connection serves one caller and one window at a time. The app exits when
@@ -96,10 +96,10 @@ catch (error) {
 
 - API guide: [`docs/architecture/desktop-api.md`](../../docs/architecture/desktop-api.md) §7.
 - Contract: [`SPEC.md`](SPEC.md). Types in `src/generated` come from
-  `crates/websign-protocol` (`cargo xtask gen`).
+  `crates/signlocal-protocol` (`cargo xtask gen`).
 - Scripts: `bun run typecheck`, `bun run test`, `bun run build`, `bun run smoke`
   (imports the built package as ESM and CJS).
 - Example: [`examples/desktop/node-cli`](../../examples/desktop/node-cli).
-- Tests drive a scripted fake `websign connect` (`test/fixtures/fake-websign.mjs`)
+- Tests drive a scripted fake `signlocal connect` (`test/fixtures/fake-signlocal.mjs`)
   for misbehaving apps, and the public fake for well-behaved ones.
 - License: **Apache-2.0** ([`LICENSE`](LICENSE)).

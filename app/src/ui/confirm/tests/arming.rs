@@ -6,8 +6,8 @@
 use egui::accesskit::Role;
 use egui_kittest::kittest::{NodeT as _, Queryable as _};
 use secrecy::ExposeSecret;
-use websign_protocol::types::BrowserName;
-use websign_ui_model::confirm::UiEvent;
+use signlocal_protocol::types::BrowserName;
+use signlocal_ui_model::confirm::UiEvent;
 
 use super::fixtures::*;
 use super::support::Rig;

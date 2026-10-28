@@ -5,11 +5,11 @@ use std::io::Read;
 use std::sync::mpsc::{Receiver, Sender, channel};
 use std::sync::{Arc, Mutex};
 
-use websign_host::ports::{Outbound, OutboundError};
-use websign_protocol::framing::write_frame;
-use websign_protocol::messages::{ClientMessage, SignDigest};
-use websign_protocol::types::Base64Bytes;
-use websign_protocol::{
+use signlocal_host::ports::{Outbound, OutboundError};
+use signlocal_protocol::framing::write_frame;
+use signlocal_protocol::messages::{ClientMessage, SignDigest};
+use signlocal_protocol::types::Base64Bytes;
+use signlocal_protocol::{
     AppEnvelope, AppMessage, ClientEnvelope, PROTOCOL_VERSION, RequestId, to_json,
 };
 

@@ -1,4 +1,4 @@
-//! `websign install` / `websign uninstall`: what an installer runs once, and
+//! `signlocal install` / `signlocal uninstall`: what an installer runs once, and
 //! what the app repeats silently on every start (`docs/architecture/desktop-api.md`).
 //!
 //! Registration is files and registry keys only: nothing is started at
@@ -10,14 +10,14 @@ mod steps;
 
 use std::process::ExitCode;
 
-use websign_registration::{Action, Outcome};
+use signlocal_registration::{Action, Outcome};
 
 use super::options::BrowserArg;
 use super::report::Report;
 
 pub use steps::manifests as manifest_steps;
 
-/// `websign install`.
+/// `signlocal install`.
 #[derive(Debug, clap::Args)]
 pub struct InstallArgs {
     /// Browsers to register with (repeatable). Default: all.
@@ -35,7 +35,7 @@ pub struct InstallArgs {
     pub json: bool,
 }
 
-/// `websign uninstall`.
+/// `signlocal uninstall`.
 #[derive(Debug, clap::Args)]
 pub struct UninstallArgs {
     /// Also delete settings, remembered sites and logs.
@@ -109,7 +109,7 @@ pub fn repair_silently() {
     log_summary(&silent_report(false));
 }
 
-/// What `websign:activate` does for store builds, which run no installer:
+/// What `signlocal:activate` does for store builds, which run no installer:
 /// the manifests and the extension pre-registration, silently.
 pub fn activate_silently() {
     log_summary(&silent_report(true));

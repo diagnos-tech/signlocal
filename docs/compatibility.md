@@ -6,10 +6,10 @@ is recorded here.
 
 How to fill it in, with the installed app (see [`install.md`](install.md)):
 
-1. Plug in the device and run `websign doctor --json > doctor.json`. It lists the key stores,
+1. Plug in the device and run `signlocal doctor --json > doctor.json`. It lists the key stores,
    drivers, readers and certificates the app sees, without asking for a PIN.
 2. Sign once per algorithm through the test page on the website (`/test`) or from a terminal, for
-   example `websign sign --hash SHA-256 --digest <64 hex digits> --algorithm RSASSA-PSS`; this
+   example `signlocal sign --hash SHA-256 --digest <64 hex digits> --algorithm RSASSA-PSS`; this
    also exercises the PIN, the wrong-PIN and the lockout paths.
 3. Fill in one row per device and path, and attach `doctor.json` to the PR. The report contains
    no name, CPF/CNPJ, or serial number; still read it before you attach it.
@@ -40,15 +40,15 @@ Behavior that only real devices can confirm; tick each one in the PR that record
 
 - [ ] Windows: asking a minidriver card for its reader (`PP_SMARTCARD_READER`, silent) shows no UI and adds
   no noticeable delay to listing — SafeNet, SafeSign, ePass2003, Watchdata
-  (`crates/websign-keystores/src/windows/reader.rs`, SPEC §4.3).
+  (`crates/signlocal-keystores/src/windows/reader.rs`, SPEC §4.3).
 - [ ] macOS CryptoTokenKit: a blocked PIN is reported as "PIN locked", not "wrong PIN" — which `userInfo`
-  entry carries the attempts left (`crates/websign-keystores/src/macos/errors.rs`, SPEC §5.4).
+  entry carries the attempts left (`crates/signlocal-keystores/src/macos/errors.rs`, SPEC §5.4).
 
 ## Browsers (native messaging)
 
 ### Cross-browser core, automated
 
-What the automated run proves, per browser: `websign register --browser <name>` writes the registration a person's
+What the automated run proves, per browser: `signlocal register --browser <name>` writes the registration a person's
 install writes (the real folder or `HKCU` key, never a test-only one), the extension (unpacked development build;
 Firefox: temporary add-on) finds the app, signs with an EC key (ECDSA SHA-256) and an RSA key (PKCS#1 v1.5 SHA-256,
 PSS SHA-384) with every signature verified outside the app, the person's Cancel reaches the page as
@@ -87,7 +87,7 @@ published yet). Where each browser reads its registration, and how that was esta
 | Windows 11 | Firefox | MSIX (alias) | | | | |
 | Windows 10 22H2 | Chrome | MSIX (alias) | | | | |
 | macOS 15 | Chrome | sandboxed app | | | | |
-| macOS 15 | Safari | `WebeSign.app` (direct, unsigned) with its appex; see [Safari](#safari-macos) | | | | |
+| macOS 15 | Safari | `signlocal.app` (direct, unsigned) with its appex; see [Safari](#safari-macos) | | | | |
 | Ubuntu 24.04 | Chrome (deb) | .deb | | | | |
 | Ubuntu 24.04 | Firefox (Snap, portal) | .deb | | | | |
 | Fedora | Firefox (rpm) | .rpm | | | | |
@@ -103,8 +103,8 @@ What CI proves on every push (`.github/workflows/safari.yml`):
 - The relay (`safari/Relay`) with fake hosts on macOS and Linux: framing, strict message shapes, sessions,
   polling, profiles, host exit, broken framing, backlog and session limits, idle reaping, a host that
   ignores SIGTERM being killed, and the client message types equal to the generated protocol.
-- `cargo xtask package --target universal-apple-darwin` builds `WebeSign.app` with
-  `Contents/PlugIns/WebeSignExtension.appex`: both CPU slices of the app, the appex and its host copy;
+- `cargo xtask package --target universal-apple-darwin` builds `signlocal.app` with
+  `Contents/PlugIns/SignlocalExtension.appex`: both CPU slices of the app, the appex and its host copy;
   the Safari extension point, principal class and host keys in the appex's `Info.plist`; the WXT safari
   build as its resources (MV3, `nativeMessaging`, no Chromium key); a strict signature check of the
   whole bundle; the appex sandboxed with the smart-card entitlement, its host copy inheriting it, the
@@ -115,11 +115,11 @@ What CI proves on every push (`.github/workflows/safari.yml`):
 Manual script (a Mac with Safari 17 or later; takes about five minutes):
 
 1. Install the build under test with [`install.md`](install.md) (macOS), then follow its
-   [Safari](install.md#safari) steps 1–4. Record: WebeSign listed in **Settings → Extensions** after
+   [Safari](install.md#safari) steps 1–4. Record: signlocal listed in **Settings → Extensions** after
    opening the app once.
 2. Open the site's test page (`/test/`) in Safari. The page reports the extension and the app as
    ready. Record "Host starts".
-3. Sign with a Keychain certificate (a `.p12` imported into the login keychain): the WebeSign window
+3. Sign with a Keychain certificate (a `.p12` imported into the login keychain): the signlocal window
    opens in front, says "via Safari", shows the site and the verification code the page shows. Sign.
    The page verifies the signature. Record "Signs (Keychain)".
 4. Repeat with a token that macOS sees through CryptoTokenKit, then with a PKCS#11-only driver if you
@@ -128,7 +128,7 @@ Manual script (a Mac with Safari 17 or later; takes about five minutes):
 6. Leave the page idle for two minutes, then sign again (the session was closed and reopens).
 7. Quit Safari, reopen it: the extension is off until **Allow unsigned extensions** is turned on again;
    then sign once more.
-8. Run `websign doctor --json` and attach it, as for the other rows.
+8. Run `signlocal doctor --json` and attach it, as for the other rows.
 
 | macOS | Safari | Build | Listed after opening the app | Host starts | Signs (Keychain) | Signs (CTK token) | PKCS#11 token | Remember site | After idle / relaunch | Date · who |
 |---|---|---|---|---|---|---|---|---|---|---|

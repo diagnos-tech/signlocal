@@ -7,7 +7,7 @@ reference: every key, with translator notes), `pt-BR`, `pt-PT`, `es`, `fr`,
 
 Used by:
 
-- the app, through [`crates/websign-i18n`](../crates/websign-i18n/) (embedded
+- the app, through [`crates/signlocal-i18n`](../crates/signlocal-i18n/) (embedded
   at build time; a misspelled key does not compile);
 - the extension: `cargo xtask gen` writes `[popup]`, `[store]` and
   `[extension]` into `extension/public/_locales/<xx_YY>/messages.json`.

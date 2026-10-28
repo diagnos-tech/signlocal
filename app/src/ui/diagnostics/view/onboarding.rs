@@ -5,8 +5,8 @@
 //! there it turns into "You're ready to sign" with [Test your setup].
 
 use egui::{Align, Frame, Layout, Margin, Stroke, Ui, Vec2};
-use websign_i18n::k;
-use websign_ui_model::diagnostics::onboarding::{Onboarding, Step, StepState};
+use signlocal_i18n::k;
+use signlocal_ui_model::diagnostics::onboarding::{Onboarding, Step, StepState};
 
 use super::Screen;
 use super::action::Trailing;
@@ -156,7 +156,7 @@ fn done_marks(ui: &mut Ui, screen: &Screen<'_>, done: &[Step]) {
     });
 }
 
-fn done_key(step: Step) -> websign_i18n::Key {
+fn done_key(step: Step) -> signlocal_i18n::Key {
     match step {
         Step::App => k::ONBOARDING_STEP_APP,
         Step::Extension => k::ONBOARDING_STEP_EXTENSION,

@@ -1,23 +1,23 @@
 [package]
-name = "websign-client"
-description = "Call the WebeSign app from any Rust program: choose a certificate and sign a digest through `websign connect`, with the same flow as the web SDK."
+name = "signlocal-client"
+description = "Call the signlocal app from any Rust program: choose a certificate and sign a digest through `signlocal connect`, with the same flow as the web SDK."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license = "Apache-2.0"
 repository.workspace = true
-# Publishing is a release decision; websign-protocol and websign-project must
+# Publishing is a release decision; signlocal-protocol and signlocal-project must
 # be published first (both are self-contained).
 publish.workspace = true
 keywords = ["signature", "pkcs11", "smartcard", "pades", "icp-brasil"]
 categories = ["cryptography", "api-bindings"]
 readme = "README.md"
-documentation = "https://docs.rs/websign-client"
+documentation = "https://docs.rs/signlocal-client"
 # Only what a consumer needs: no tests, no fixtures of the misbehaving fake app.
 exclude = ["/tests", "/examples", "/SPEC.md", "/SUMMARY.md", "**/SUMMARY.md"]
 
 [features]
-# `websign_client::testing::FakeApp`: an in-process stand-in for the app, so
+# `signlocal_client::testing::FakeApp`: an in-process stand-in for the app, so
 # tests of your program need neither the app nor a person. Off by default.
 testing = []
 
@@ -28,8 +28,8 @@ all-features = true
 targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
-websign-protocol.workspace = true
-websign-project.workspace = true
+signlocal-protocol.workspace = true
+signlocal-project.workspace = true
 thiserror.workspace = true
 
 [dev-dependencies]

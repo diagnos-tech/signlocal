@@ -3,7 +3,7 @@
 //! * `summaries` — every folder has a `SUMMARY.md` listing every entry
 //!   exactly once (`docs/architecture/repository-layout.md` §SUMMARY.md);
 //! * `i18n` — every locale has exactly the reference keys and placeholders
-//!   (`websign_i18n::check`);
+//!   (`signlocal_i18n::check`);
 //! * `generated` — `cargo xtask gen` would change nothing;
 //! * `release` — versions agree, notices exist, the install scripts carry the
 //!   project.toml identifiers, and the release binary does not contain the

@@ -5,8 +5,8 @@
 use std::io::Write;
 use std::process::ExitCode;
 
-use websign_i18n::{Catalog, Key, k};
-use websign_protocol::{AppMessage, ErrorCode, WireError};
+use signlocal_i18n::{Catalog, Key, k};
+use signlocal_protocol::{AppMessage, ErrorCode, WireError};
 
 /// Exit status for success.
 pub const SUCCESS: u8 = 0;
@@ -49,7 +49,7 @@ pub fn finish(message: &AppMessage, catalog: &Catalog) -> ExitCode {
     print_json(&message_json(message));
     match message {
         AppMessage::Error(error) => {
-            eprintln!("websign: {}", person_text(error, catalog));
+            eprintln!("signlocal: {}", person_text(error, catalog));
             ExitCode::from(error.code.exit_code())
         }
         _ => ExitCode::from(SUCCESS),

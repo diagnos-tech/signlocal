@@ -6,11 +6,11 @@ use std::collections::HashMap;
 
 use jiff::Timestamp;
 use jiff::tz::TimeZone;
-use websign_core::{Fingerprint, SourceKind};
-use websign_devices::hints::{DeviceDatabase, DeviceKind};
-use websign_keystores::inventory::Inventory;
-use websign_keystores::{DeviceLink, FoundKey};
-use websign_ui_model::certs::{
+use signlocal_core::{Fingerprint, SourceKind};
+use signlocal_devices::hints::{DeviceDatabase, DeviceKind};
+use signlocal_keystores::inventory::Inventory;
+use signlocal_keystores::{DeviceLink, FoundKey};
+use signlocal_ui_model::certs::{
     CertCandidate, DeviceLabel, KeySource, ListContext, PinMode, build_cert_list,
 };
 
@@ -37,7 +37,7 @@ pub fn collect(
             .alternates
             .iter()
             .filter_map(|&index| inventory.entries.get(index))
-            .map(|alternate| websign_ui_model::certs::KeyPath {
+            .map(|alternate| signlocal_ui_model::certs::KeyPath {
                 source: key_source(&alternate.key),
                 pin: PinMode::System,
             })

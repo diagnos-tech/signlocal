@@ -1,10 +1,10 @@
 //! A certificate row's words (`docs/ux.md` §5.1–5.7): the model's row
 //! turned into the localized texts the shared row widget draws.
 
-use websign_core::present::document::DocumentLabel;
-use websign_i18n::dates::format_date;
-use websign_i18n::{Catalog, k};
-use websign_ui_model::certs::{Badge, CertRow, DisabledReason, Place, RowStatus, ValidityLabel};
+use signlocal_core::present::document::DocumentLabel;
+use signlocal_i18n::dates::format_date;
+use signlocal_i18n::{Catalog, k};
+use signlocal_ui_model::certs::{Badge, CertRow, DisabledReason, Place, RowStatus, ValidityLabel};
 
 use super::words::tr;
 use crate::ui::diagnostics::facts::ShownReason;

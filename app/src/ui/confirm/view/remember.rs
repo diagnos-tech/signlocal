@@ -4,10 +4,10 @@
 //! certificate is already in the caller's consent.
 
 use egui::{Response, Ui};
-use websign_i18n::k;
-use websign_ui_model::confirm::port::CallerView;
-use websign_ui_model::confirm::view::RememberBox;
-use websign_ui_model::confirm::{ConfirmView, UserInput};
+use signlocal_i18n::k;
+use signlocal_ui_model::confirm::port::CallerView;
+use signlocal_ui_model::confirm::view::RememberBox;
+use signlocal_ui_model::confirm::{ConfirmView, UserInput};
 
 use super::{Screen, checkbox};
 

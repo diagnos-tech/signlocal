@@ -35,7 +35,7 @@ mod tests {
 
     fn scratch_dir(name: &str) -> std::path::PathBuf {
         let dir =
-            std::env::temp_dir().join(format!("websign-fileid-{name}-{}", std::process::id()));
+            std::env::temp_dir().join(format!("signlocal-fileid-{name}-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         dir

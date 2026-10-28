@@ -6,10 +6,10 @@ use std::sync::mpsc::channel;
 use std::time::Duration;
 
 use egui::{Context, RawInput, ViewportCommand, ViewportEvent, ViewportId, ViewportInfo};
-use websign_i18n::{Catalog, Locale};
-use websign_protocol::types::BrowserName;
-use websign_ui_model::confirm::UiCommand;
-use websign_ui_model::confirm::port::Finish;
+use signlocal_i18n::{Catalog, Locale};
+use signlocal_protocol::types::BrowserName;
+use signlocal_ui_model::confirm::UiCommand;
+use signlocal_ui_model::confirm::port::Finish;
 
 use super::fixtures::{KEY, SIGN, request, web};
 use crate::ui::confirm::clock::{Clock, ManualTime};

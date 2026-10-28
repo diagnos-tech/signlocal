@@ -85,7 +85,7 @@ mod tests {
     fn the_repository_project_file_has_every_identifier() {
         let root = crate::root::repo_root().unwrap();
         let (project, version) = load(&root).unwrap();
-        assert_eq!(project.slug, "websign");
+        assert_eq!(project.slug, "signlocal");
         assert!(version.split('.').count() == 3);
     }
 

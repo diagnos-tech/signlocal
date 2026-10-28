@@ -1,7 +1,7 @@
 //! Bringing the confirmation window to the front (`docs/ux.md` §4.1).
 //!
 //! The host is a child of the browser (or of the program that ran
-//! `websign connect`), which has the focus, so the OS normally lets it take
+//! `signlocal connect`), which has the focus, so the OS normally lets it take
 //! the foreground. When it refuses (Windows gives foreground only to
 //! processes the person is interacting with), the window stays topmost and
 //! flashes, and nothing more is attempted: no simulated input, no attaching

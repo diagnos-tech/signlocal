@@ -1,4 +1,4 @@
-//! Finding and building the `websign` binary for a target.
+//! Finding and building the `signlocal` binary for a target.
 
 use std::path::PathBuf;
 use std::process::Command;
@@ -6,8 +6,8 @@ use std::process::Command;
 use super::Context;
 use super::tool::run;
 
-/// `websign-app`'s binary name.
-const BINARY: &str = "websign";
+/// `signlocal-app`'s binary name.
+const BINARY: &str = "signlocal";
 
 fn target_dir(context: &Context) -> PathBuf {
     std::env::var_os("CARGO_TARGET_DIR").map_or_else(|| context.root.join("target"), PathBuf::from)
@@ -19,7 +19,7 @@ pub fn binary(context: &Context, triple: &str) -> Result<PathBuf, String> {
         let cargo = std::env::var("CARGO").unwrap_or_else(|_| "cargo".to_owned());
         run(
             Command::new(cargo)
-                .args(["build", "--release", "--locked", "-p", "websign-app"])
+                .args(["build", "--release", "--locked", "-p", "signlocal-app"])
                 .args(["--target", triple])
                 .current_dir(&context.root),
             "install Rust (rustup)",
@@ -35,7 +35,7 @@ pub fn binary(context: &Context, triple: &str) -> Result<PathBuf, String> {
         Ok(path)
     } else {
         Err(format!(
-            "{} does not exist; build it with `cargo build --release -p websign-app --target {triple}`",
+            "{} does not exist; build it with `cargo build --release -p signlocal-app --target {triple}`",
             path.display()
         ))
     }

@@ -4,7 +4,7 @@
 
 use egui::accesskit::Role;
 use egui::{Frame, Label, Margin, Sense, Stroke, Ui, WidgetInfo, WidgetType, vec2};
-use websign_i18n::{Catalog, Key, k};
+use signlocal_i18n::{Catalog, Key, k};
 
 use super::words::tr;
 use crate::ui::diagnostics::state::Action;

@@ -12,7 +12,7 @@ version = 2
 yanked = "deny"
 ignore = [
   # Marvin: timing side channel in RSA *decryption and signing* with a private
-  # key, no fixed release yet. `rsa` is used only by websign-core's verifier
+  # key, no fixed release yet. `rsa` is used only by signlocal-core's verifier
   # (src/verify/rsa_verify.rs) with public keys from certificates; signing
   # happens inside the token or OS key store, never with this crate.
   { id = "RUSTSEC-2023-0071", reason = "rsa is used for public-key signature verification only; no private-key operations" },

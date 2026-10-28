@@ -3,8 +3,8 @@
 //! Everything resets with the request, and the PIN is wiped whenever the
 //! model forgets its length.
 
-use websign_core::Fingerprint;
-use websign_ui_model::confirm::port::RequestKey;
+use signlocal_core::Fingerprint;
+use signlocal_ui_model::confirm::port::RequestKey;
 use zeroize::{Zeroize, Zeroizing};
 
 use super::view::fit::Fit;

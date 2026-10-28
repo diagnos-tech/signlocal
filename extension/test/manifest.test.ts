@@ -107,6 +107,6 @@ describe("channelFromEnv", () => {
   });
 
   it("fails loudly on a typo instead of shipping the wrong ID", () => {
-    expect(() => channelFromEnv("stroe")).toThrow(/WEBSIGN_CHANNEL/);
+    expect(() => channelFromEnv("stroe")).toThrow(/SIGNLOCAL_CHANNEL/);
   });
 });

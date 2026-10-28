@@ -1,6 +1,6 @@
 /**
  * Numbers and names both sides of the extension must agree on. The ones the
- * app shares come from websign-protocol through limits.gen.ts; the rest are
+ * app shares come from signlocal-protocol through limits.gen.ts; the rest are
  * the extension's own policy.
  */
 

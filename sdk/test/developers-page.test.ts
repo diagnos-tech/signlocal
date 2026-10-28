@@ -7,14 +7,14 @@ import fr from "../../site/locales/fr.json?raw";
 import it_ from "../../site/locales/it.json?raw";
 import ptBR from "../../site/locales/pt-BR.json?raw";
 import ptPT from "../../site/locales/pt-PT.json?raw";
-import { WebSignError } from "../src/errors";
+import { SignlocalError } from "../src/errors";
 import { ERROR_CODES } from "./helpers/fixtures";
 
-// WebSignError.docsUrl (and the desktop clients' errors) link to site/developers.html#error-<Code>.
+// SignlocalError.docsUrl (and the desktop clients' errors) link to site/developers.html#error-<Code>.
 describe("site/developers.html, the page docsUrl points to", () => {
   for (const code of ERROR_CODES) {
     it(`has the anchor of ${code}`, () => {
-      const anchor = new URL(new WebSignError(code, "").docsUrl).hash.slice(1);
+      const anchor = new URL(new SignlocalError(code, "").docsUrl).hash.slice(1);
       expect(anchor).toBe(`error-${code}`);
       expect(page).toContain(`id="${anchor}"`);
     });

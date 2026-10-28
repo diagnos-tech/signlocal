@@ -4,9 +4,9 @@
 //! certificates, a compact row that expands into the same card.
 
 use egui::{Align, Layout, Rect, Response, Sense, Stroke, Ui, Vec2, WidgetInfo, WidgetType, pos2};
-use websign_i18n::{Catalog, k};
-use websign_ui_model::confirm::UserInput;
-use websign_ui_model::possible::PossibleCard;
+use signlocal_i18n::{Catalog, k};
+use signlocal_ui_model::confirm::UserInput;
+use signlocal_ui_model::possible::PossibleCard;
 
 use super::{Action, Screen};
 use crate::ui::confirm::words;

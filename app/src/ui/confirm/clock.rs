@@ -1,6 +1,6 @@
 //! Where the window reads the time.
 //!
-//! The model takes every instant as an argument (`websign-ui-model`), so the
+//! The model takes every instant as an argument (`signlocal-ui-model`), so the
 //! window only has to pick the source: the system clock, or a hand-moved one
 //! that lets tests cross the 600 ms arming and the 150 ms skeleton delay
 //! without sleeping.

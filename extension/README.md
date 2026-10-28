@@ -1,6 +1,6 @@
-# WebeSign extension
+# signlocal extension
 
-The bridge between pages using `@websign/sdk` and the WebeSign app, over
+The bridge between pages using `@signlocal/sdk` and the signlocal app, over
 native messaging. It announces itself to pages, validates every request,
 attaches the origin the browser reports, and keeps the connection to the app
 open while in use. Its only UI is the toolbar popup. Built with WXT (MV3) for
@@ -12,7 +12,7 @@ Chrome, Edge, Firefox and Safari.
   `bun run zip`, `bun run typecheck`, `bun run test`, `bun run size` (popup
   budget, after a build), `bun scripts/screenshots.ts` (every popup state into
   `docs/screenshots/popup/`). `bun install` runs `wxt prepare` (generates `.wxt/`).
-- Channels (`WEBSIGN_CHANNEL`): `direct` (default) is the release zip people
+- Channels (`SIGNLOCAL_CHANNEL`): `direct` (default) is the release zip people
   load unpacked; its Chromium builds carry `project.toml`'s `dev_key`, so the
   extension ID equals `dev_id`, the ID the app's native host manifest allows.
   `store` (`bun run zip:store`) leaves the key out: the stores assign the ID.

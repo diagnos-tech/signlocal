@@ -51,7 +51,7 @@ export async function launchFirefox(
   env: E2eEnvironment,
   confirm: Confirm,
 ): Promise<FirefoxSession> {
-  if (env.browser === undefined) throw new Error("WEBSIGN_E2E_BROWSER must name firefox");
+  if (env.browser === undefined) throw new Error("SIGNLOCAL_E2E_BROWSER must name firefox");
   const installed = await install(env, "firefox");
   const prefs = Object.entries(PREFS).map(
     ([key, value]) => `user_pref(${JSON.stringify(key)}, ${JSON.stringify(value)});`,

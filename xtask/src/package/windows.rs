@@ -1,4 +1,4 @@
-//! The Windows zip: `websign.exe`, `README.txt` and the licenses, flat, so
+//! The Windows zip: `signlocal.exe`, `README.txt` and the licenses, flat, so
 //! `install.ps1` can expand it straight into the install folder.
 
 use std::path::PathBuf;

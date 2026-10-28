@@ -1,4 +1,4 @@
-# PKCS#11: where the modules are and how `websign-probe` finds them
+# PKCS#11: where the modules are and how `signlocal-probe` finds them
 
 Research for proof 4 (Linux) and for the app's list of known paths. It covers p11-kit registration
 (format, directories, exclusion rules), the modules' installation paths by vendor × operating
@@ -69,7 +69,7 @@ remote: |ssh host p11-kit remote /path/module.so
 | Directories read, from lowest to highest precedence | `/usr/share/p11-kit/modules`, `/etc/pkcs11/modules`, `$XDG_CONFIG_HOME/pkcs11/modules` (or `~/.config/pkcs11/modules`). On macOS, also the Homebrew prefixes (`/opt/homebrew`, `/usr/local`). Windows: none. (L, D) |
 | Same file name in more than one directory | the one from the highest-precedence directory wins. A **blank** `module:` in the user directory turns off the system module (D) |
 | Relative `module:` | looked up in `/usr/lib/<multiarch>/pkcs11`, `/usr/lib64/pkcs11`, `/usr/lib/pkcs11`, `/usr/local/lib/pkcs11` (and `/opt/homebrew/lib/pkcs11` on macOS). p11-kit uses the directory compiled into it (`pkg-config`); the probe does not call `pkg-config` (L) |
-| `disable-in` / `enable-in` | compared with `websign` and with the current executable's base name (`websign-probe`, or the app's name later). Covers the `p11-kit-proxy` case: `disable-in: p11-kit-proxy` does **not** exclude the probe (D) |
+| `disable-in` / `enable-in` | compared with `signlocal` and with the current executable's base name (`signlocal-probe`, or the app's name later). Covers the `p11-kit-proxy` case: `disable-in: p11-kit-proxy` does **not** exclude the probe (D) |
 | `trust-policy: yes` or `remote:` | ignored: the trust module never has a private key, and `remote:` has no file to load |
 | Global `pkcs11.conf` (`user-config`, `managed`) | **not read.** A module that p11-kit marks as `critical` or `managed: no` is treated like the others |
 

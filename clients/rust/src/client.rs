@@ -2,11 +2,11 @@
 
 use std::time::Instant;
 
-use websign_protocol::messages::{
+use signlocal_protocol::messages::{
     Cancel, Choose, ClientMessage, DiagnosticsTab, Done, OpenDiagnostics, Status, StatusReply,
 };
-use websign_protocol::types::{Certificate, CertificateFilter, SignatureAlgorithmName};
-use websign_protocol::{AppMessage, ClientEnvelope, ErrorCode, RequestId};
+use signlocal_protocol::types::{Certificate, CertificateFilter, SignatureAlgorithmName};
+use signlocal_protocol::{AppMessage, ClientEnvelope, ErrorCode, RequestId};
 
 use crate::error::ClientError;
 use crate::handshake;
@@ -14,18 +14,18 @@ use crate::options::{ConnectOptions, unique};
 use crate::session::{Expect, Session, Wait};
 use crate::timing::Timing;
 
-/// A running `websign connect` child and its negotiated protocol.
+/// A running `signlocal connect` child and its negotiated protocol.
 ///
 /// Calls block until the app answers; the person's decision time is limited
 /// by the app itself (300 s), so no call waits forever on a healthy app.
 /// Dropping the client ends the session and reaps the child.
 ///
 /// ```no_run
-/// use websign_client::Client;
+/// use signlocal_client::Client;
 ///
 /// let mut client = Client::connect()?;
-/// println!("WebeSign {}", client.status()?.app.version);
-/// # Ok::<(), websign_client::ClientError>(())
+/// println!("signlocal {}", client.status()?.app.version);
+/// # Ok::<(), signlocal_client::ClientError>(())
 /// ```
 #[derive(Debug)]
 pub struct Client {
@@ -42,7 +42,7 @@ impl Client {
     /// ([`ClientError::App`]) when no protocol version is common.
     ///
     /// ```no_run
-    /// use websign_client::{Client, ClientError, ErrorCode};
+    /// use signlocal_client::{Client, ClientError, ErrorCode};
     ///
     /// match Client::connect() {
     ///     Ok(_client) => println!("ready"),
@@ -58,11 +58,11 @@ impl Client {
     /// Starts the app and says `hello`, with `options`.
     ///
     /// ```no_run
-    /// use websign_client::{Client, ConnectOptions};
+    /// use signlocal_client::{Client, ConnectOptions};
     ///
     /// let options = ConnectOptions::new().client_name("my-invoicing-app");
     /// let client = Client::connect_with(options)?;
-    /// # Ok::<(), websign_client::ClientError>(())
+    /// # Ok::<(), signlocal_client::ClientError>(())
     /// ```
     pub fn connect_with(options: ConnectOptions) -> Result<Client, ClientError> {
         Client::connect_timed(options, Timing::DEFAULT)
@@ -99,10 +99,10 @@ impl Client {
     /// [`certificates`](Client::certificates) will not open one either.
     ///
     /// ```no_run
-    /// # let mut client = websign_client::Client::connect()?;
+    /// # let mut client = signlocal_client::Client::connect()?;
     /// let status = client.status()?;
-    /// println!("WebeSign {} (remembered: {})", status.app.version, status.remembered);
-    /// # Ok::<(), websign_client::ClientError>(())
+    /// println!("signlocal {} (remembered: {})", status.app.version, status.remembered);
+    /// # Ok::<(), signlocal_client::ClientError>(())
     /// ```
     pub fn status(&mut self) -> Result<StatusReply, ClientError> {
         let id = self.send_request(ClientMessage::Status(Status::default()))?;
@@ -120,14 +120,14 @@ impl Client {
     /// `UserCancelled` when they closed the window.
     ///
     /// ```no_run
-    /// use websign_client::{HashName, SignOptions, SignatureAlgorithmName};
+    /// use signlocal_client::{HashName, SignOptions, SignatureAlgorithmName};
     ///
-    /// # let mut client = websign_client::Client::connect()?;
+    /// # let mut client = signlocal_client::Client::connect()?;
     /// let chosen = client.certificates(&[SignatureAlgorithmName::Ecdsa])?;
     /// // Later signatures skip the choice:
     /// let options = SignOptions::new(HashName::Sha256).certificate(&chosen[0]);
     /// # let _ = options;
-    /// # Ok::<(), websign_client::ClientError>(())
+    /// # Ok::<(), signlocal_client::ClientError>(())
     /// ```
     pub fn certificates(
         &mut self,
@@ -153,11 +153,11 @@ impl Client {
     /// to help a person whose token is not listed.
     ///
     /// ```no_run
-    /// use websign_client::DiagnosticsTab;
+    /// use signlocal_client::DiagnosticsTab;
     ///
-    /// # let mut client = websign_client::Client::connect()?;
+    /// # let mut client = signlocal_client::Client::connect()?;
     /// client.open_diagnostics(Some(DiagnosticsTab::Devices))?;
-    /// # Ok::<(), websign_client::ClientError>(())
+    /// # Ok::<(), signlocal_client::ClientError>(())
     /// ```
     pub fn open_diagnostics(&mut self, tab: Option<DiagnosticsTab>) -> Result<(), ClientError> {
         let id = self.send_request(ClientMessage::OpenDiagnostics(OpenDiagnostics { tab }))?;

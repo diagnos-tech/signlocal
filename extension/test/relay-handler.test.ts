@@ -35,7 +35,7 @@ const tabSender = (over: Partial<Sender> = {}): Sender => ({
   ...over,
 });
 const request = (message: unknown = { type: "choose" }, over: Record<string, unknown> = {}) => ({
-  kind: "websign-request",
+  kind: "signlocal-request",
   document: DOC,
   id: "p1",
   message,
@@ -96,7 +96,7 @@ describe("relay handler: web context", () => {
     await flush();
     expect(fakeBrowser.tabs.sendMessage).toHaveBeenCalledWith(
       7,
-      { kind: "websign-origin" },
+      { kind: "signlocal-origin" },
       { frameId: 0 },
     );
     expect(conn.sent).toMatchObject([{ web: { topOrigin: "https://top.example" } }]);
@@ -112,7 +112,7 @@ describe("relay handler: web context", () => {
         [
           7,
           {
-            kind: "websign-reply",
+            kind: "signlocal-reply",
             document: DOC,
             id: "p1",
             message: { type: "error", code: "InsecureOrigin", message: expect.any(String) },
@@ -140,7 +140,7 @@ describe("relay handler: replies and goodbyes", () => {
       [
         7,
         {
-          kind: "websign-reply",
+          kind: "signlocal-reply",
           document: DOC,
           id: "p1",
           message: { type: "choose.result", certificates: [] },
@@ -153,7 +153,7 @@ describe("relay handler: replies and goodbyes", () => {
   it("cancels the requests of a document that went away", async () => {
     handle(request(), tabSender() as never);
     await flush();
-    handle({ kind: "websign-gone", document: DOC }, tabSender() as never);
+    handle({ kind: "signlocal-gone", document: DOC }, tabSender() as never);
     expect(conn.sentOfType("cancel").map((m) => m.id)).toEqual(["7.0.p1"]);
   });
 
@@ -161,7 +161,7 @@ describe("relay handler: replies and goodbyes", () => {
     handle(request(), tabSender() as never);
     await flush();
     handle(
-      { kind: "websign-gone", document: DOC },
+      { kind: "signlocal-gone", document: DOC },
       tabSender({ tab: { id: 8, url: PAGE } }) as never,
     );
     expect(conn.sentOfType("cancel")).toEqual([]);

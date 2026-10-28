@@ -48,7 +48,7 @@ pub struct Colors {
 }
 
 /// Identicon colors `id-0` … `id-7`, indexed by
-/// `websign_protocol::code::VerificationCode::color_index`. The same in both
+/// `signlocal_protocol::code::VerificationCode::color_index`. The same in both
 /// themes so the app and the website draw the same picture.
 pub const IDENTICON: [Color32; 8] = [
     rgb(0xD6453A),

@@ -4,44 +4,44 @@
 Cargo.toml  rust-toolchain.toml  rustfmt.toml  deny.toml  .cargo/config.toml
 package.json  bun.lock  biome.json  tsconfig.base.json
 LICENSE  LICENSE-CC0  README.md  CONTRIBUTING.md  SECURITY.md
-project.toml            provisional names and IDs (single source, D6; GPL-3.0-or-later OR Apache-2.0)
+project.toml              names and IDs (single source, D6; GPL-3.0-or-later OR Apache-2.0)
 devices.json  devices.schema.json  (CC0-1.0)
-i18n/                   en (reference), pt-BR, pt-PT, es, fr, it, de (GPL-3.0-or-later OR Apache-2.0)
+i18n/                     en (reference), pt-BR, pt-PT, es, fr, it, de (GPL-3.0-or-later OR Apache-2.0)
 crates/
-  websign-core/         pure: algorithms, encodings, certificate summary, verify, dedup, display rules
-  websign-protocol/     wire types, framing, errors, verification code (Apache-2.0)
-  websign-project/      project.toml constants (Apache-2.0)
-  websign-i18n/         keys, locales, plurals, dates
-  websign-ui-model/     pure view logic of both windows
-  websign-keystores/    CNG/CAPI, Keychain/CTK, PKCS#11 + contract suite
-  websign-devices/      USB, PC/SC, live events, devices.json hints
-  websign-host/         session engine, flows, queue, stores, runtime
-  websign-registration/ browser manifests, URL scheme, pre-registration
-app/                    the `websign` binary: CLI, host process, ui/, platform/
-clients/rust/           websign-client (Apache-2.0)
-clients/node/           @websign/desktop (Apache-2.0)
-sdk/                    @websign/sdk (Apache-2.0)
-extension/              WXT MV3 extension (chrome, edge, firefox, safari)
-safari/                 Swift appex relay + XcodeGen spec (store channel)
-packaging/              linux/, windows/, macos/ packaging definitions
-scripts/install/        install.sh, install.ps1
-e2e/                    Playwright suites
-xtask/                  cargo xtask gen|check|package|screenshots
-site/                   static website, deployed to GitHub Pages by .github/workflows/pages.yml
-.github/workflows/      ci, e2e, release, pages, scheduled; prototypes and ui-spike by hand only
-docs/                   plan.md, ux.md, architecture/, prototypes/, research/, screenshots/
+  signlocal-core/         pure: algorithms, encodings, certificate summary, verify, dedup, display rules
+  signlocal-protocol/     wire types, framing, errors, verification code (Apache-2.0)
+  signlocal-project/      project.toml constants (Apache-2.0)
+  signlocal-i18n/         keys, locales, plurals, dates
+  signlocal-ui-model/     pure view logic of both windows
+  signlocal-keystores/    CNG/CAPI, Keychain/CTK, PKCS#11 + contract suite
+  signlocal-devices/      USB, PC/SC, live events, devices.json hints
+  signlocal-host/         session engine, flows, queue, stores, runtime
+  signlocal-registration/ browser manifests, URL scheme, pre-registration
+app/                      the `signlocal` binary: CLI, host process, ui/, platform/
+clients/rust/             signlocal-client (Apache-2.0)
+clients/node/             @signlocal/desktop (Apache-2.0)
+sdk/                      @signlocal/sdk (Apache-2.0)
+extension/                WXT MV3 extension (chrome, edge, firefox, safari)
+safari/                   Swift appex relay + XcodeGen spec (store channel)
+packaging/                linux/, windows/, macos/ packaging definitions
+scripts/install/          install.sh, install.ps1
+e2e/                      Playwright suites
+xtask/                    cargo xtask gen|check|package|screenshots
+site/                     static website, deployed to GitHub Pages by .github/workflows/pages.yml
+.github/workflows/        ci, e2e, release, pages, scheduled; prototypes and ui-spike by hand only
+docs/                     plan.md, ux.md, architecture/, prototypes/, research/, screenshots/
 ```
 
 Deviations from the first sketch in the old plan, and why:
 
-- **`crates/websign-project`**: every crate that names the product, the
+- **`crates/signlocal-project`**: every crate that names the product, the
   native host or extension IDs reads them from one place generated from
   `project.toml`; Apache-2.0 so the Rust client can use it.
-- **`crates/websign-ui-model`**: the confirmation state machine, list rules
+- **`crates/signlocal-ui-model`**: the confirmation state machine, list rules
   and diagnostics report are pure; outside the app crate they are
   blind-TDD'able without compiling egui/wgpu, and the host can share the list
   rules (initial selection) with the window.
-- **`crates/websign-i18n` as a crate** (not inside `app/`): the key generator,
+- **`crates/signlocal-i18n` as a crate** (not inside `app/`): the key generator,
   plural rules and the locale checker are used by the app and by `xtask`.
 - **`i18n/` at the root** (not `app/i18n`): the extension and the SDK are
   generated from the same files.
@@ -71,7 +71,7 @@ enforced by `cargo xtask check summaries`.
 ### Format
 
 ```markdown
-# <folder path from the repository root, e.g. crates/websign-core/src/cert>
+# <folder path from the repository root, e.g. crates/signlocal-core/src/cert>
 
 <Optional paragraph, at most 3 lines: what this folder is and why it exists.>
 

@@ -28,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        crate: [websign-core, websign-ui-model]
+        crate: [signlocal-core, signlocal-ui-model]
     steps:
       - uses: actions/checkout@v5
       - name: Install the pinned toolchain

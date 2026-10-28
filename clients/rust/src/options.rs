@@ -3,16 +3,16 @@
 
 use std::path::PathBuf;
 
-use websign_protocol::types::{Certificate, FingerprintHex, HashName, SignatureAlgorithmName};
+use signlocal_protocol::types::{Certificate, FingerprintHex, HashName, SignatureAlgorithmName};
 
 /// How to start the app. Every field is optional; the builder methods read
 /// left to right.
 ///
 /// ```
-/// use websign_client::ConnectOptions;
+/// use signlocal_client::ConnectOptions;
 ///
 /// let options = ConnectOptions::new()
-///     .executable("/opt/websign/websign")
+///     .executable("/opt/signlocal/signlocal")
 ///     .client_name("my-invoicing-app")
 ///     .client_version("2.1.0");
 /// assert_eq!(options.client_name.as_deref(), Some("my-invoicing-app"));
@@ -21,7 +21,7 @@ use websign_protocol::types::{Certificate, FingerprintHex, HashName, SignatureAl
 pub struct ConnectOptions {
     /// Use this executable instead of [`crate::find_executable`].
     pub executable: Option<PathBuf>,
-    /// Sent in `hello` (logs only); defaults to `"websign-client"` and this
+    /// Sent in `hello` (logs only); defaults to `"signlocal-client"` and this
     /// crate's version.
     pub client_name: Option<String>,
     /// Sent in `hello` (logs only); defaults to this crate's version.
@@ -29,7 +29,7 @@ pub struct ConnectOptions {
 }
 
 impl ConnectOptions {
-    /// All defaults: find the app, identify as `websign-client`.
+    /// All defaults: find the app, identify as `signlocal-client`.
     pub fn new() -> ConnectOptions {
         ConnectOptions::default()
     }
@@ -56,7 +56,7 @@ impl ConnectOptions {
 /// What to sign: the SDK's `{ hash, algorithm, certificate }`.
 ///
 /// ```
-/// use websign_client::{HashName, SignOptions, SignatureAlgorithmName};
+/// use signlocal_client::{HashName, SignOptions, SignatureAlgorithmName};
 ///
 /// let options = SignOptions::new(HashName::Sha256)
 ///     .algorithms([SignatureAlgorithmName::Ecdsa, SignatureAlgorithmName::RsaPss]);
@@ -120,7 +120,7 @@ impl SignOptions {
 /// Passed to `prepare` with the certificate: what the signature will be.
 ///
 /// ```
-/// use websign_client::{HashName, PrepareContext, SignatureAlgorithmName};
+/// use signlocal_client::{HashName, PrepareContext, SignatureAlgorithmName};
 ///
 /// fn algorithm_oid_hint(context: PrepareContext) -> &'static str {
 ///     match context.algorithm {

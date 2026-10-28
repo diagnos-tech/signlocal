@@ -19,7 +19,7 @@ public enum RelayRequest: Equatable {
     public static let version = 1
 
     /// The protocol's client message types (`ClientMessage` in
-    /// `websign-protocol`); a test keeps this list equal to the generated one.
+    /// `signlocal-protocol`); a test keeps this list equal to the generated one.
     public static let clientTypes: Set<String> = [
         "hello", "status", "choose", "sign.begin", "sign.digest", "cancel", "diagnostics.open",
     ]

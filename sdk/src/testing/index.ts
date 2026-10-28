@@ -1,8 +1,8 @@
 /**
- * @websign/sdk/testing — a FAKE WebeSign extension and app for your unit and
+ * @signlocal/sdk/testing — a FAKE signlocal extension and app for your unit and
  * end-to-end tests, and for demos without the real thing installed.
  *
- * Install it on `window` and the real `@websign/sdk` talks to it unchanged:
+ * Install it on `window` and the real `@signlocal/sdk` talks to it unchanged:
  * `status()`, `certificates()` and `sign()` work, `prepare` runs, and the
  * signatures are real ECDSA P-256 / RSA-2048 made with public test keys, so
  * your code can verify them. Scripted outcomes cover every state a visitor's
@@ -13,16 +13,16 @@
  * console every time it installs.
  *
  * @example
- * import { installFakeWebSign } from "@websign/sdk/testing";
- * import { sign } from "@websign/sdk";
+ * import { installFakeSignlocal } from "@signlocal/sdk/testing";
+ * import { sign } from "@signlocal/sdk";
  *
- * const fake = await installFakeWebSign();
+ * const fake = await installFakeSignlocal();
  * const result = await sign({ hash: "SHA-256", prepare: (_, { hash }) => crypto.subtle.digest(hash, data) });
  * expect(await fake.verify(result, data)).toBe(true);
  * fake.uninstall();
  *
  * @packageDocumentation
- * @module @websign/sdk/testing
+ * @module @signlocal/sdk/testing
  */
 
 import { toCertificate } from "../convert.js";
@@ -39,10 +39,10 @@ import { verifySignature } from "./verify.js";
 export type { CertificatePick, FakeCertificateOptions, FakeRequest, FakeScenario };
 
 /**
- * Options of {@link installFakeWebSign}; all optional.
+ * Options of {@link installFakeSignlocal}; all optional.
  *
  * @example
- * await installFakeWebSign({ scenario: "ready", certificates: [{ key: "RSA" }], latencyMs: 300 });
+ * await installFakeSignlocal({ scenario: "ready", certificates: [{ key: "RSA" }], latencyMs: 300 });
  */
 export interface FakeOptions {
   /** The state of the visitor's computer. Default `"ready"`. */
@@ -62,12 +62,12 @@ export interface FakeOptions {
  * your page asked.
  *
  * @example
- * const fake = await installFakeWebSign();
+ * const fake = await installFakeSignlocal();
  * fake.failNext("PinLocked");
  * await expect(sign(options)).rejects.toMatchObject({ code: "PinLocked" });
  * expect(fake.requests.at(-1)).toMatchObject({ type: "sign", hash: "SHA-256" });
  */
-export interface FakeWebSign {
+export interface FakeSignlocal {
   /** The certificates, as `sign()` and `certificates()` return them. */
   readonly certificates: readonly Certificate[];
   /** Every request your page made, oldest first. */
@@ -111,7 +111,7 @@ export interface FakeWebSign {
 
 const DEFAULT_CERTIFICATES: readonly FakeCertificateOptions[] = [{ key: "EC" }, { key: "RSA" }];
 
-let installed: FakeWebSign | undefined;
+let installed: FakeSignlocal | undefined;
 
 /**
  * Installs the fake on the current `window` (replacing an earlier fake) and
@@ -120,21 +120,21 @@ let installed: FakeWebSign | undefined;
  *
  * @example
  * // In a unit test (Vitest/Jest with a DOM environment):
- * let fake: FakeWebSign;
- * beforeEach(async () => (fake = await installFakeWebSign()));
+ * let fake: FakeSignlocal;
+ * beforeEach(async () => (fake = await installFakeSignlocal()));
  * afterEach(() => fake.uninstall());
  *
  * @example
  * // In your app, only in development: the import is dropped from production builds.
- * if (import.meta.env.DEV) await (await import("@websign/sdk/testing")).installFakeWebSign();
+ * if (import.meta.env.DEV) await (await import("@signlocal/sdk/testing")).installFakeSignlocal();
  *
  * @throws {Error} without a `window`, or on a non-local origin without `allowAnyOrigin`.
  */
-export async function installFakeWebSign(options: FakeOptions = {}): Promise<FakeWebSign> {
+export async function installFakeSignlocal(options: FakeOptions = {}): Promise<FakeSignlocal> {
   const win = (globalThis as { window?: Window }).window;
   if (win === undefined) {
     throw new Error(
-      "installFakeWebSign() needs a window: run it in a browser, jsdom or happy-dom.",
+      "installFakeSignlocal() needs a window: run it in a browser, jsdom or happy-dom.",
     );
   }
   assertTestOrigin(win, options.allowAnyOrigin === true);
@@ -159,7 +159,7 @@ export async function installFakeWebSign(options: FakeOptions = {}): Promise<Fak
   warnInstalled();
   if (scenario !== "extension-missing") transport.announce();
 
-  const fake: FakeWebSign = {
+  const fake: FakeSignlocal = {
     certificates: credentials.map((c) => toCertificate(c.wire)),
     requests: engine.requests,
     setScenario(next) {

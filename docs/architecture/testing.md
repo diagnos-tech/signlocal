@@ -4,8 +4,8 @@ How every part is proven, and what CI requires before anything merges.
 
 ## 1. Blind TDD for pure logic
 
-For every pure crate or module family (`websign-core`, `websign-protocol`,
-`websign-i18n`, `websign-ui-model`, the host engine, the SDK/extension/client
+For every pure crate or module family (`signlocal-core`, `signlocal-protocol`,
+`signlocal-i18n`, `signlocal-ui-model`, the host engine, the SDK/extension/client
 pure modules):
 
 1. **Specification** (Opus): public API in code with `todo!()` bodies (this
@@ -25,7 +25,7 @@ stay green.
 Rules for tests:
 
 - Vectors come from standards and `docs/ux.md` §16, or from OpenSSL-generated
-  fixtures (`crates/websign-core/tests/fixtures`), never from the
+  fixtures (`crates/signlocal-core/tests/fixtures`), never from the
   implementation's output.
 - One test file per spec section; names describe behavior
   (`rejects_a_digest_of_the_wrong_length`).
@@ -38,12 +38,12 @@ Adapters that talk to an OS or a driver cannot be blind-TDD'd; they share a
 
 | Contract | Suite | Runs against |
 |---|---|---|
-| `Keystore` | `websign_keystores::contract::run` | Linux: SoftHSM2 directly and via p11-kit; Windows: CNG software KSP, legacy CSP keys (A1-like), SoftHSM2 for Windows; macOS: temporary keychain, SoftHSM2 (Homebrew) |
-| Registration | `crates/websign-registration/tests` | real user folders in a throwaway `HOME`/`HKCU` sandbox per OS |
+| `Keystore` | `signlocal_keystores::contract::run` | Linux: SoftHSM2 directly and via p11-kit; Windows: CNG software KSP, legacy CSP keys (A1-like), SoftHSM2 for Windows; macOS: temporary keychain, SoftHSM2 (Homebrew) |
+| Registration | `crates/signlocal-registration/tests` | real user folders in a throwaway `HOME`/`HKCU` sandbox per OS |
 | Caller identity | `app/tests/caller.rs` | spawns itself through signed and unsigned helper binaries |
-| Device monitor | `crates/websign-devices/tests` | `pcscd` without readers (Linux); reader emulation is manual |
+| Device monitor | `crates/signlocal-devices/tests` | `pcscd` without readers (Linux); reader emulation is manual |
 
-The contract checks (`crates/websign-keystores/SPEC.md` §7) include: `list`
+The contract checks (`crates/signlocal-keystores/SPEC.md` §7) include: `list`
 never prompts (Windows runs with `silent`, macOS with a keychain set to
 never ask, PKCS#11 without a PIN), every listed key signs every
 supported hash × algorithm and verifies, wrong PIN → `WrongPin` and the
@@ -51,11 +51,11 @@ count-low flag, sessions stay logged in until `end_sessions` (D5),
 `CKA_ALWAYS_AUTHENTICATE` asks every time.
 
 Real tokens are covered by the manual matrix ([compatibility.md](compatibility.md))
-using `websign doctor` and the e2e build.
+using `signlocal doctor` and the e2e build.
 
 ## 3. UI tests
 
-- **State machines** (`websign-ui-model`): blind TDD, no egui.
+- **State machines** (`signlocal-ui-model`): blind TDD, no egui.
 - **Rendering** (`app/src/ui`): `egui_kittest` tests query the AccessKit tree
   ("Sign button disabled during the first 600 ms", "PIN field value not
   exposed", "focus starts on the selected row") and take snapshots of every
@@ -77,7 +77,7 @@ Evidence: [`docs/prototypes/5-ui-screenshots.md`](../prototypes/5-ui-screenshots
   and Linux.
 - Contract (`app/src/ui/renderer.rs`): the app uses **wgpu**; if wgpu cannot
   start on macOS or Linux, the process **re-executes itself** with
-  `WEBSIGN_RENDERER=glow` (a second winit event loop in one process is only
+  `SIGNLOCAL_RENDERER=glow` (a second winit event loop in one process is only
   proven on X11). No glow fallback on Windows.
 - `egui_kittest` headless rendering (wgpu, software adapters) works on all 7
   systems, including bare containers without X libraries.
@@ -87,18 +87,18 @@ Evidence: [`docs/prototypes/5-ui-screenshots.md`](../prototypes/5-ui-screenshots
 `e2e/` (Playwright) drives: fixture page → SDK → extension (unpacked, loaded
 in Chromium) → app built with `--features e2e` → software keys. The `e2e`
 feature (never in release builds; `cargo xtask check release` fails if the
-release binary contains the marker `WEBSIGN_E2E_BUILD`) makes the
+release binary contains the marker `SIGNLOCAL_E2E_BUILD`) makes the
 confirmation window:
 
 - act by itself once armed — after the real 600 ms, through accessibility
   actions on its own widgets, the same code path as a click
-  (`WEBSIGN_E2E_CONFIRM`): `sign` and `choose` press the primary button at
+  (`SIGNLOCAL_E2E_CONFIRM`): `sign` and `choose` press the primary button at
   every step (Continue, Use certificate, Sign); `remember` ticks "Remember
   this site" first, then does the same; `cancel` presses Cancel; unset, the
   window waits for the page (abort, tab closed);
-- type `WEBSIGN_E2E_PIN` into our PIN field for PKCS#11 keys;
+- type `SIGNLOCAL_E2E_PIN` into our PIN field for PKCS#11 keys;
 - save a PNG of every state it shows, light then dark, once per app process
-  (`WEBSIGN_E2E_SCREENSHOTS=<dir>`), via `ViewportCommand::Screenshot`, named
+  (`SIGNLOCAL_E2E_SCREENSHOTS=<dir>`), via `ViewportCommand::Screenshot`, named
   `<window>-<state>-<theme>.png`: `window` is `confirm` or `diagnostics`;
   `state` is the confirmation state in kebab case (`continue-new-site`,
   `preparing`, `ready`, `pin-error`, `error-<code>`, `success`,
@@ -116,8 +116,8 @@ independent verifier, `node:crypto`):
 3. D11: new site cancels before Continue → the page received no certificate;
 4. switch certificate → new `need_digest`, stale digest ignored — **not in
    the e2e suite**: the driver has no "select another row" step yet; covered
-   by `crates/websign-host/tests/engine_sign_switch.rs` and the
-   `websign-ui-model` state-machine tests;
+   by `crates/signlocal-host/tests/engine_sign_switch.rs` and the
+   `signlocal-ui-model` state-machine tests;
 5. cancel in the window → `UserCancelled`; the page cancels (its
    `AbortSignal`, closing the tab, navigating to another site) → `Aborted`
    and the window shows "site cancelled" (`docs/ux.md` §4.8);
@@ -125,14 +125,14 @@ independent verifier, `node:crypto`):
    `AppOutdated` (a fake old app, `e2e/fixtures/old-app.mjs`, answers `hello`
    as 0.0.1 in place of the app; the popup's outdated card for that probe is
    unit-tested, since Playwright cannot open the toolbar popup);
-7. desktop: `websign sign` and `@websign/desktop` against the same keys;
+7. desktop: `signlocal sign` and `@signlocal/desktop` against the same keys;
 8. log audit: the run's log contains none of the fixture holder names and
    certificate fingerprints.
 
 Isolation: every browser runs in a new temporary profile, and the app is
 registered only in that profile (Linux, macOS) or with a manifest in it
 (Windows, HKCU key removed afterwards). On Linux the app's settings, consent
-records and log live in a temporary `WEBSIGN_E2E_HOME` (XDG folders),
+records and log live in a temporary `SIGNLOCAL_E2E_HOME` (XDG folders),
 removed after the run unless given. On Windows and macOS the app uses the
 account's own settings folder, so run the suite on CI or a throwaway account.
 
@@ -171,13 +171,13 @@ are regenerated by the same command.
 | Rust tests | `cargo test --workspace` on the three OSes |
 | Keystore contract | per-OS jobs with software keys |
 | Licenses/advisories | `cargo deny check` |
-| Coverage | `cargo llvm-cov` ≥ 90 % lines for `websign-core`, `websign-protocol`, `websign-host`, `websign-ui-model` |
-| Mutation (weekly) | `cargo mutants` on `websign-core` and `websign-ui-model`, ≥ 85 % killed |
+| Coverage | `cargo llvm-cov` ≥ 90 % lines for `signlocal-core`, `signlocal-protocol`, `signlocal-host`, `signlocal-ui-model` |
+| Mutation (weekly) | `cargo mutants` on `signlocal-core` and `signlocal-ui-model`, ≥ 85 % killed |
 | Fuzzing (nightly, 10 min each) | `cargo fuzz` on the DER reader, framing, `parse_client_message` |
 | TypeScript | `bun run typecheck`, `bunx biome check .`, `bun run test` |
 | Sizes | SDK < 5 KB gzip; popup (HTML+CSS+JS+SVG) < 15 KB |
 | Generated files | `cargo xtask check generated` |
 | i18n | `cargo xtask check i18n` |
 | SUMMARY.md | `cargo xtask check summaries` |
-| Release hygiene | `cargo xtask check release --binary <release websign>` |
+| Release hygiene | `cargo xtask check release --binary <release signlocal>` |
 | E2E | the matrix above on every PR touching app/extension/sdk/protocol (macOS and containers nightly) |

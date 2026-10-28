@@ -1,11 +1,11 @@
 <#
 .SYNOPSIS
-  WebeSign installer for Windows (PowerShell 5.1 and 7).
+  signlocal installer for Windows (PowerShell 5.1 and 7).
 .DESCRIPTION
   Downloads the zip and SHA256SUMS of release v<Version>, verifies the hash
   (a mismatch aborts before anything is installed), installs to
-  %LOCALAPPDATA%\Programs\WebeSign, adds the folder to the user PATH, creates
-  the Start menu shortcut and runs `websign install`. No administrator rights.
+  %LOCALAPPDATA%\Programs\signlocal, adds the folder to the user PATH, creates
+  the Start menu shortcut and runs `signlocal install`. No administrator rights.
   Contract: docs/architecture/packaging-and-release.md, scripts/install/README.md.
 .EXAMPLE
   powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Version 0.1.0
@@ -14,14 +14,14 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$Version = $env:WEBSIGN_VERSION,
+    [string]$Version = $env:SIGNLOCAL_VERSION,
     [switch]$Uninstall,
     [switch]$NoRegister,
     [switch]$DryRun,
-    # Where to install; default %LOCALAPPDATA%\Programs\WebeSign.
+    # Where to install; default %LOCALAPPDATA%\Programs\signlocal.
     [string]$InstallDir,
     # A folder that already holds the release files (tests, offline installs).
-    [string]$ReleaseDir = $env:WEBSIGN_RELEASE_DIR,
+    [string]$ReleaseDir = $env:SIGNLOCAL_RELEASE_DIR,
     # Leave the user PATH / the Start menu alone (tests, managed machines).
     [switch]$NoPath,
     [switch]$NoShortcut
@@ -33,9 +33,9 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
 # Identifiers come from project.toml; `cargo xtask check release` keeps them equal.
-$Script:Slug = 'websign'
-$Script:AppName = 'WebeSign'
-$Script:Repo = if ($env:WEBSIGN_REPO) { $env:WEBSIGN_REPO } else { 'diagnos-tech/web-esign' }
+$Script:Slug = 'signlocal'
+$Script:AppName = 'signlocal'
+$Script:Repo = if ($env:SIGNLOCAL_REPO) { $env:SIGNLOCAL_REPO } else { 'diagnos-tech/signlocal' }
 
 function Say([string]$Message) { [Console]::Error.WriteLine($Message) }
 
@@ -48,7 +48,7 @@ function Invoke-Step([string]$Description, [scriptblock]$Action) {
 
 # 'x64' or 'arm64' from PROCESSOR_ARCHITECTURE-style values. A 32-bit
 # PowerShell on 64-bit Windows reports the real CPU in PROCESSOR_ARCHITEW6432.
-function Get-WebsignArch([string]$Native, [string]$Emulated) {
+function Get-SignlocalArch([string]$Native, [string]$Emulated) {
     $value = if ($Emulated) { $Emulated } else { $Native }
     switch ($value.ToUpperInvariant()) {
         'AMD64' { return 'x64' }
@@ -88,8 +88,8 @@ function Get-ReleaseFile([string]$Name, [string]$Dest) {
     }
     # Windows PowerShell 5.1 may not offer TLS 1.2 by default.
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
-    if ($env:WEBSIGN_GITHUB_TOKEN) {
-        $headers = @{ Authorization = "Bearer $($env:WEBSIGN_GITHUB_TOKEN)"; Accept = 'application/vnd.github+json' }
+    if ($env:SIGNLOCAL_GITHUB_TOKEN) {
+        $headers = @{ Authorization = "Bearer $($env:SIGNLOCAL_GITHUB_TOKEN)"; Accept = 'application/vnd.github+json' }
         $api = "https://api.github.com/repos/$($Script:Repo)/releases"
         $release = Invoke-RestMethod -Headers $headers -Uri "$api/tags/v$Version"
         $asset = $release.assets | Where-Object { $_.name -eq $Name } | Select-Object -First 1
@@ -102,7 +102,7 @@ function Get-ReleaseFile([string]$Name, [string]$Dest) {
     try {
         Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $target
     } catch {
-        throw "cannot download $Name (private repository? run 'gh auth login' or set WEBSIGN_GITHUB_TOKEN): $($_.Exception.Message)"
+        throw "cannot download $Name (private repository? run 'gh auth login' or set SIGNLOCAL_GITHUB_TOKEN): $($_.Exception.Message)"
     }
 }
 
@@ -181,7 +181,7 @@ function Unblock-Tree([string]$Dir) {
     if (-not $IsLinux) { Get-ChildItem -LiteralPath $Dir -Recurse -File | Unblock-File }
 }
 
-function Install-Websign {
+function Install-Signlocal {
     if (-not $Version) { throw '-Version is required: prereleases are not "latest" (see docs/install.md)' }
     $Script:Version = $Version.TrimStart('v')
     # The version goes into file names, paths and URLs: strict SemVer only.
@@ -189,11 +189,11 @@ function Install-Websign {
     $ident = '[0-9A-Za-z-]+'
     $semver = "\A(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-$ident(\.$ident)*)?(\+$ident(\.$ident)*)?\z"
     if ($Script:Version -notmatch $semver) { throw '-Version must be a release version such as 1.2.3 or 1.2.3-rc.1' }
-    $arch = Get-WebsignArch $env:PROCESSOR_ARCHITECTURE $env:PROCESSOR_ARCHITEW6432
+    $arch = Get-SignlocalArch $env:PROCESSOR_ARCHITECTURE $env:PROCESSOR_ARCHITEW6432
     $zipName = "$($Script:Slug)-$($Script:Version)-windows-$arch.zip"
     $dir = Get-InstallDir
     if (-not (Test-OwnedDir $dir)) { throw "$dir is not empty and has no $($Script:Slug).exe: refusing to replace it" }
-    $work = Join-Path ([IO.Path]::GetTempPath()) ("websign-install-" + [Guid]::NewGuid().ToString('N'))
+    $work = Join-Path ([IO.Path]::GetTempPath()) ("signlocal-install-" + [Guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory -Path $work | Out-Null
     try {
         Get-ReleaseFile 'SHA256SUMS' $work
@@ -224,15 +224,15 @@ function Install-Websign {
     Say ''
     Say "$($Script:AppName) is installed. Last step: install the browser extension."
     Say "Steps per browser: https://github.com/$($Script:Repo)/blob/main/docs/install.md#browser-extension"
-    Say "(download websign-extension-$($Script:Version)-chromium.zip or -firefox.zip from the same release)."
+    Say "(download signlocal-extension-$($Script:Version)-chromium.zip or -firefox.zip from the same release)."
 }
 
-function Uninstall-Websign {
+function Uninstall-Signlocal {
     $dir = Get-InstallDir
     $exe = Join-Path $dir "$($Script:Slug).exe"
     if (Test-Path -LiteralPath $exe) {
         Invoke-Step "$exe uninstall" {
-            try { & $exe uninstall } catch { Say "websign uninstall failed: $($_.Exception.Message)" }
+            try { & $exe uninstall } catch { Say "signlocal uninstall failed: $($_.Exception.Message)" }
         }
     }
     if (-not $NoShortcut) { Invoke-Step 'remove the Start menu shortcut' { Remove-Item -LiteralPath (Get-StartMenuLink) -Force -ErrorAction SilentlyContinue } }
@@ -247,5 +247,5 @@ function Uninstall-Websign {
 
 # Dot-sourcing (the self-test) loads the functions without running anything.
 if ($MyInvocation.InvocationName -ne '.') {
-    if ($Uninstall) { Uninstall-Websign } else { Install-Websign }
+    if ($Uninstall) { Uninstall-Signlocal } else { Install-Signlocal }
 }

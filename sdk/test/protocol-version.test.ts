@@ -8,7 +8,7 @@ useFakeEnvironment();
 
 // The SDK speaks page-message protocol version 1. An extension whose range starts above 1
 // needs a newer SDK: requests are refused locally with ClientOutdated (the site must update
-// @websign/sdk) and nothing but `discover` is ever posted (SPEC §2, T9).
+// @signlocal/sdk) and nothing but `discover` is ever posted (SPEC §2, T9).
 const UNKNOWN: [string, { min: number; max: number }][] = [
   ["only newer versions", { min: 2, max: 2 }],
   ["a far newer range", { min: 5, max: 9 }],

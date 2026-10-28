@@ -1,5 +1,5 @@
 //! The confirmation window's e2e driver: screenshots of every state it
-//! shows, and the person's part (`WEBSIGN_E2E_CONFIRM`) as accessibility
+//! shows, and the person's part (`SIGNLOCAL_E2E_CONFIRM`) as accessibility
 //! actions on the real widgets, so arming, the D11 Continue step and the
 //! PIN field all run as they do for a person.
 
@@ -8,8 +8,8 @@ use std::time::{Duration, Instant};
 
 use egui::accesskit::{Action, Role};
 use egui::{Context, Event, FullOutput, RawInput, Ui};
-use websign_i18n::k;
-use websign_ui_model::confirm::UserInput;
+use signlocal_i18n::k;
+use signlocal_ui_model::confirm::UserInput;
 
 use super::capture::Capture;
 use super::tree::{self, Widgets};
@@ -54,7 +54,7 @@ impl Labels {
     fn load() -> Labels {
         let tr = crate::ui::i18n::catalog();
         let text =
-            |keys: &[websign_i18n::Key]| keys.iter().map(|key| tr.tr(*key).to_string()).collect();
+            |keys: &[signlocal_i18n::Key]| keys.iter().map(|key| tr.tr(*key).to_string()).collect();
         Labels {
             primary: text(&[k::ACTION_SIGN, k::ACTION_CONTINUE, k::ACTION_USE_CERT]),
             cancel: text(&[k::COMMON_CANCEL]),
@@ -197,7 +197,7 @@ impl ConfirmDriver {
 
 impl egui::Plugin for ConfirmDriver {
     fn debug_name(&self) -> &'static str {
-        "websign-e2e-confirm"
+        "signlocal-e2e-confirm"
     }
 
     fn input_hook(&mut self, ctx: &Context, input: &mut RawInput) {

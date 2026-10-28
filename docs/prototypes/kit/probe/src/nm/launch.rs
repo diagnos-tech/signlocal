@@ -20,7 +20,7 @@ pub enum BrowserFamily {
     /// Chrome, Chromium, Edge, Brave, Vivaldi, Opera.
     Chromium,
     Firefox,
-    /// Started by hand with `websign-probe host`.
+    /// Started by hand with `signlocal-probe host`.
     Manual,
 }
 
@@ -57,7 +57,7 @@ pub struct BrowserLaunch {
 }
 
 impl BrowserLaunch {
-    /// The launch record for `websign-probe host` typed into a terminal.
+    /// The launch record for `signlocal-probe host` typed into a terminal.
     pub fn manual() -> Self {
         Self {
             origin: "manual".to_owned(),

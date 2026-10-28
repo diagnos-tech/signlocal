@@ -1,4 +1,4 @@
-//! Protocol types for TypeScript, exported by ts-rs from `websign-protocol`.
+//! Protocol types for TypeScript, exported by ts-rs from `signlocal-protocol`.
 //!
 //! The Rust types are the single definition of the wire; three packages get
 //! the same files so none of them can drift from it.
@@ -25,7 +25,7 @@ pub fn plan(root: &Path) -> Result<Plan, String> {
     }
     if types.is_empty() {
         return Err(
-            "ts-rs exported no types; is the `typescript` feature of websign-protocol intact?"
+            "ts-rs exported no types; is the `typescript` feature of signlocal-protocol intact?"
                 .into(),
         );
     }
@@ -55,7 +55,7 @@ fn package_plan(types: &[(String, String)]) -> Plan {
 /// Specifiers carry `.js` so the barrel is valid Node ESM, which (unlike a
 /// bundler) does not guess extensions.
 fn barrel(types: &[(String, String)], has_project: bool) -> String {
-    let mut out = ts_header("crates/websign-protocol");
+    let mut out = ts_header("crates/signlocal-protocol");
     for (name, _) in types {
         out.push_str(&format!("export type {{ {name} }} from \"./{name}.js\";\n"));
     }
@@ -67,9 +67,9 @@ fn barrel(types: &[(String, String)], has_project: bool) -> String {
 
 fn summary_for(dir: &str, has_project: bool) -> String {
     let description = if has_project {
-        "protocol types from crates/websign-protocol and `project.ts` from project.toml (`index.ts` re-exports them)"
+        "protocol types from crates/signlocal-protocol and `project.ts` from project.toml (`index.ts` re-exports them)"
     } else {
-        "protocol types generated from crates/websign-protocol (`index.ts` re-exports them)"
+        "protocol types generated from crates/signlocal-protocol (`index.ts` re-exports them)"
     };
     summary(dir, &[("*.ts", description)])
 }
@@ -89,7 +89,7 @@ fn export_bindings(root: &Path, out: &Path) -> Result<(), String> {
             "test",
             "--quiet",
             "-p",
-            "websign-protocol",
+            "signlocal-protocol",
             "--features",
             "typescript",
         ])

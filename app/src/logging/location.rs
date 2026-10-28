@@ -6,11 +6,11 @@
 
 use std::path::PathBuf;
 
-/// `%LOCALAPPDATA%\websign\logs` (Windows), `~/Library/Logs/websign`
-/// (macOS), `$XDG_STATE_HOME/websign` or `~/.local/state/websign` (Linux).
+/// `%LOCALAPPDATA%\signlocal\logs` (Windows), `~/Library/Logs/signlocal`
+/// (macOS), `$XDG_STATE_HOME/signlocal` or `~/.local/state/signlocal` (Linux).
 /// `None` when the environment names no such folder.
 pub fn log_dir() -> Option<PathBuf> {
-    let slug = websign_project::SLUG;
+    let slug = signlocal_project::SLUG;
     let var = |name: &str| {
         std::env::var_os(name)
             .map(PathBuf::from)

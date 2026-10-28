@@ -1,6 +1,6 @@
 # safari/Tests
 
-- `BundledHostTests.swift` — the real `websign` from a packaged app answers `hello` through the relay (skipped without it)
+- `BundledHostTests.swift` — the real `signlocal` from a packaged app answers `hello` through the relay (skipped without it)
 - `FrameTests.swift` — framing byte order, chunking, oversized headers
 - `HostProcessTests.swift` — a stubborn host is killed; closing stdin ends a good one
 - `RelayRequestTests.swift` — exact shapes, bounds, and the client types against the generated protocol

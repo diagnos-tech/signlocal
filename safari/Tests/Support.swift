@@ -2,7 +2,7 @@
 
 import Foundation
 import XCTest
-@testable import WebeSignRelay
+@testable import SignlocalRelay
 
 /// Fake hosts: standard tools that behave like a host in one way each.
 enum FakeHost {
@@ -14,7 +14,7 @@ enum FakeHost {
     }
 
     static let missing = HostCommand(
-        executable: URL(fileURLWithPath: "/nonexistent/websign"), arguments: [])
+        executable: URL(fileURLWithPath: "/nonexistent/signlocal"), arguments: [])
 }
 
 /// A protocol-shaped message; the relay checks only its shape.

@@ -14,17 +14,17 @@ fn main() {
     let project: toml::Table = text.parse().expect("project.toml is not valid TOML");
 
     let exports = [
-        ("WEBSIGN_PRODUCT_NAME", "product", "name"),
-        ("WEBSIGN_SLUG", "product", "slug"),
-        ("WEBSIGN_NATIVE_HOST", "ids", "native_host"),
-        ("WEBSIGN_FIREFOX_ID", "extension", "firefox_id"),
-        ("WEBSIGN_EXTENSION_DEV_ID", "extension", "dev_id"),
+        ("SIGNLOCAL_PRODUCT_NAME", "product", "name"),
+        ("SIGNLOCAL_SLUG", "product", "slug"),
+        ("SIGNLOCAL_NATIVE_HOST", "ids", "native_host"),
+        ("SIGNLOCAL_FIREFOX_ID", "extension", "firefox_id"),
+        ("SIGNLOCAL_EXTENSION_DEV_ID", "extension", "dev_id"),
         (
-            "WEBSIGN_CHROME_WEB_STORE_ID",
+            "SIGNLOCAL_CHROME_WEB_STORE_ID",
             "extension",
             "chrome_web_store_id",
         ),
-        ("WEBSIGN_EDGE_ADDONS_ID", "extension", "edge_addons_id"),
+        ("SIGNLOCAL_EDGE_ADDONS_ID", "extension", "edge_addons_id"),
     ];
     for (var, table, key) in exports {
         let value = project[table][key]

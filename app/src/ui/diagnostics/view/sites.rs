@@ -1,9 +1,9 @@
 //! "Allowed sites" and "Allowed programs" (`docs/ux.md` §8.3): what the
-//! person asked WebeSign to remember, with "Revoke". Revoking asks for an
+//! person asked signlocal to remember, with "Revoke". Revoking asks for an
 //! inline confirmation: the button turns into "Confirm revoke" for 4 s.
 
 use egui::Ui;
-use websign_i18n::{Key, k};
+use signlocal_i18n::{Key, k};
 
 use super::Screen;
 use super::action::Trailing;

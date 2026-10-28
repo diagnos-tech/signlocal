@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { WebSignError } from "../src/index";
+import { SignlocalError } from "../src/index";
 import {
   type FakeApp,
   type FakeCertificate,
@@ -22,8 +22,8 @@ const digest = (length: number) => new Uint8Array(length).fill(9);
 describe("fakeApp", () => {
   it("lets the public API run end to end with no installed app", async () => {
     const app = start();
-    const websign = await app.connect();
-    const result = await websign.sign({ hash: "SHA-256", prepare: () => digest(32) });
+    const signlocal = await app.connect();
+    const result = await signlocal.sign({ hash: "SHA-256", prepare: () => digest(32) });
     expect(result.certificate.displayName).toBe(SAMPLE_CERTIFICATE.displayName);
     expect(result.algorithm).toBe("ECDSA");
     // The fake echoes the digest: it is a stand-in, never a valid signature.
@@ -33,11 +33,11 @@ describe("fakeApp", () => {
 
   it("answers status, certificates and diagnostics", async () => {
     const app = start({ remembered: true });
-    const websign = await app.connect();
-    expect((await websign.status()).remembered).toBe(true);
-    const [certificate] = await websign.certificates();
+    const signlocal = await app.connect();
+    expect((await signlocal.status()).remembered).toBe(true);
+    const [certificate] = await signlocal.certificates();
     expect(certificate?.fingerprint).toBe(SAMPLE_CERTIFICATE.fingerprint);
-    await expect(websign.openDiagnostics("help")).resolves.toBeUndefined();
+    await expect(signlocal.openDiagnostics("help")).resolves.toBeUndefined();
   });
 
   it("offers your certificates and honours the algorithm filter", async () => {
@@ -48,10 +48,10 @@ describe("fakeApp", () => {
       algorithms: ["RSASSA-PKCS1-v1_5"],
     };
     const app = start({ certificates: [SAMPLE_CERTIFICATE, rsa] });
-    const websign = await app.connect();
-    const chosen = await websign.certificates({ algorithm: "RSASSA-PKCS1-v1_5" });
+    const signlocal = await app.connect();
+    const chosen = await signlocal.certificates({ algorithm: "RSASSA-PKCS1-v1_5" });
     expect(chosen.map((c) => c.fingerprint)).toEqual([rsa.fingerprint]);
-    const signed = await websign.sign({
+    const signed = await signlocal.sign({
       hash: "SHA-256",
       certificate: rsa.fingerprint,
       prepare: () => digest(32),
@@ -61,11 +61,11 @@ describe("fakeApp", () => {
 
   it("reports the failure you ask for, with code, hint and docs link", async () => {
     const app = start({ failWith: { code: "UserCancelled" } });
-    const websign = await app.connect();
-    const error = await websign
+    const signlocal = await app.connect();
+    const error = await signlocal
       .sign({ hash: "SHA-256", prepare: () => digest(32) })
       .catch((e) => e);
-    expect(error).toBeInstanceOf(WebSignError);
+    expect(error).toBeInstanceOf(SignlocalError);
     expect(error).toMatchObject({ code: "UserCancelled" });
     expect(error.hint).toMatch(/Cancel/);
     expect(error.docsUrl).toMatch(/^https:\/\//);
@@ -73,9 +73,9 @@ describe("fakeApp", () => {
 
   it("can fail after prepare, like a blocked PIN", async () => {
     const app = start({ failWith: { code: "PinLocked", when: "confirm" } });
-    const websign = await app.connect();
+    const signlocal = await app.connect();
     let prepared = 0;
-    const error = await websign
+    const error = await signlocal
       .sign({
         hash: "SHA-256",
         prepare: () => {
@@ -90,8 +90,8 @@ describe("fakeApp", () => {
 
   it("enforces the digest length like the app", async () => {
     const app = start();
-    const websign = await app.connect();
-    const error = await websign
+    const signlocal = await app.connect();
+    const error = await signlocal
       .sign({ hash: "SHA-384", prepare: () => digest(32) })
       .catch((e) => e);
     expect(error).toMatchObject({ code: "InvalidRequest" });
@@ -99,15 +99,15 @@ describe("fakeApp", () => {
 
   it("reports NoCertificates when nothing matches", async () => {
     const app = start();
-    const websign = await app.connect();
-    const error = await websign.certificates({ algorithm: "RSASSA-PSS" }).catch((e) => e);
+    const signlocal = await app.connect();
+    const error = await signlocal.certificates({ algorithm: "RSASSA-PSS" }).catch((e) => e);
     expect(error).toMatchObject({ code: "NoCertificates" });
   });
 
   it("removes its scratch files on close and closes its connections", async () => {
     const app = start();
-    const websign = await app.connect();
+    const signlocal = await app.connect();
     await app.close();
-    await expect(websign.status()).rejects.toBeInstanceOf(WebSignError);
+    await expect(signlocal.status()).rejects.toBeInstanceOf(SignlocalError);
   });
 });

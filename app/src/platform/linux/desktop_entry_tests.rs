@@ -86,7 +86,7 @@ fn launcher(name: &str, exec: &str) -> String {
 
 fn scratch(test: &str) -> PathBuf {
     let dir = std::env::temp_dir().join(format!(
-        "websign-desktop-entry-{}-{test}",
+        "signlocal-desktop-entry-{}-{test}",
         std::process::id()
     ));
     let _ = std::fs::remove_dir_all(&dir);

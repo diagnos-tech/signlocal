@@ -96,7 +96,7 @@ test certificates with `--cert`.
 | `com.apple.security.app-sandbox` | Mandatory in the store. **Its own, without `com.apple.security.inherit`**: the host is started by the browser, not by a sandboxed parent | Bitwarden `entitlements.desktop_proxy.plist` (app-sandbox + app group, no inherit) |
 | `com.apple.security.smartcard` | `TKSmartCardSlotManager` and PC/SC (readers and ATR in diagnostics) and PKCS#11 modules that talk to the card from inside our process. Token items in the keychain do **not** need it | web-eid-app `web-eid-safari.entitlements`; Apple docs: *"requires this entitlement for sandboxed applications that access smart cards using legacy PCSC framework APIs"*; SafeSign (proof 3) requires it of the host app |
 | `com.apple.security.device.usb` | USB listing (VID:PID) in diagnostics (`nusb`) | Bitwarden MAS |
-| `com.apple.security.application-groups` = `TEAMID.dev.websign` | Socket of the Safari bridge (§5) and of the complement, if one exists | Bitwarden (IPC socket in the group container); web-eid (shared app↔appex group) |
+| `com.apple.security.application-groups` = `TEAMID.health.diagnos.signlocal` | Socket of the Safari bridge (§5) and of the complement, if one exists | Bitwarden (IPC socket in the group container); web-eid (shared app↔appex group) |
 | `…temporary-exception.files.home-relative-path.read-write` | Only the `NativeMessagingHosts` folders of Chrome (+Beta/Dev/Canary), Chromium, Edge (+Beta/Dev/Canary), Brave (+Beta/Nightly), Vivaldi, Opera (+Developer), and `Mozilla/` | Bitwarden MAS (same technique; it does not list Brave or Opera); Brave and Vivaldi checked in KeePassXC; Opera by Chromium's rule (`<user data dir>/NativeMessagingHosts`), **to be confirmed** |
 | `com.apple.application-identifier`, `com.apple.developer.team-identifier` | Required by the store; `TEAMID` is `TODO(gustavo)` | Bitwarden MAS |
 
@@ -116,12 +116,12 @@ That is why the kit's `nm/register`, on macOS, takes the home from the user data
 
 ## 3. The sandbox experiment (`sandbox-test.sh`)
 
-It builds `WebeSign.app` with `websign-probe` inside, signs it **ad hoc** with the entitlements above
+It builds `signlocal.app` with `signlocal-probe` inside, signs it **ad hoc** with the entitlements above
 (except those that require a provisioning profile) and, from inside the sandbox:
 
 | ID | Experiment | YES means |
 |---|---|---|
-| `sandbox` | Runs `--version` | macOS created `~/Library/Containers/dev.websign.app`: the sandbox was applied |
+| `sandbox` | Runs `--version` | macOS created `~/Library/Containers/health.diagnos.signlocal`: the sandbox was applied |
 | `register:<browser>` | `register --browser chrome --browser edge --browser brave --browser firefox` (browser folders created beforehand, to simulate an installation) | The manifest appeared in the **real** folder and points to the sandboxed binary |
 | `host-stdio` | Starts the binary the way Chrome does (`chrome-extension://<dev_id>/` + messages with a 4-byte prefix) and sends `ping` and `list` | The sandboxed host answered both |
 | `keychain-list`, `keychain-sign` | Test keychain in `~/Library/Keychains`, in the search list; `list` and `sign` (PKCS#1, PSS, ECDSA) | The sandbox sees keychains in the search list and uses the keys (the result also shows the same test outside the sandbox, to isolate the cause) |
@@ -144,7 +144,7 @@ container if it created it.
 
 ## 4. What was proven in CI
 
-Run [36629289998](https://github.com/diagnos-tech/web-esign/actions/runs/36629289998), job `macos`,
+Run [36629289998](https://github.com/diagnos-tech/signlocal/actions/runs/36629289998), job `macos`,
 on 2026-09-29: **macOS 26.6.2 (25G83), arm64**, ad hoc signed binary.
 
 **Keychain** (`ci-macos.sh`, disposable keychain with 3 test identities; all signatures
@@ -161,7 +161,7 @@ All required checks passed.
 
 | Experiment | Result | Detail |
 |---|---|---|
-| sandbox applied | **YES** | macOS created the container `~/Library/Containers/dev.websign.app/Data` |
+| sandbox applied | **YES** | macOS created the container `~/Library/Containers/health.diagnos.signlocal/Data` |
 | `register` writes to the real home (Chrome, Edge, Brave, Firefox) | **YES** | the four manifests in `~/Library/Application Support/<browser>/NativeMessagingHosts/` point to the sandboxed binary; browsers without a folder are skipped |
 | sandboxed host started the way Chrome starts it (origin + stdio) | **YES** | answered `pong` and `certificates`; host log inside the container |
 | keychain listed inside the sandbox | **YES** | both test identities |
@@ -192,10 +192,10 @@ page ──SDK──▶ content script ──▶ extension service worker (Safar
                                    │ browser.runtime.sendNativeMessage({...,"origin": sender.origin})
                                    ▼
                    SafariWebExtensionHandler (.appex, sandboxed, no UI)
-                                   │ Unix socket in ~/Library/Group Containers/TEAMID.dev.websign/
+                                   │ Unix socket in ~/Library/Group Containers/TEAMID.health.diagnos.signlocal/
                                    │ (same framing as native messaging: 4 bytes + JSON)
                                    ▼
-                   WebeSign.app (Rust) — same handler as the Chrome host
+                   signlocal.app (Rust) — same handler as the Chrome host
                      confirmation window (egui) → SecKeyCreateSignature → system PIN
 ```
 
@@ -222,7 +222,7 @@ same for Chrome, Firefox, and Safari.
 **Bridge security.** Any non-sandboxed process of the user can try to connect to the socket.
 The app must check the peer: `getsockopt(LOCAL_PEERTOKEN)` → *audit token* →
 `SecCodeCopyGuestWithAttributes` → `SecCodeCheckValidity` with the requirement
-`anchor apple generic and certificate leaf[subject.OU] = "TEAMID" and identifier "dev.websign.app.extension"`.
+`anchor apple generic and certificate leaf[subject.OU] = "TEAMID" and identifier "health.diagnos.signlocal.extension"`.
 The site's origin comes from Safari (`sender.origin`/`sender.url` in the service worker), never from the
 page's payload, the same rule as Chrome.
 
@@ -248,16 +248,16 @@ import Foundation
 import SafariServices
 import os
 
-private let appBundleID = "dev.websign.app"
-private let appGroupID = "TEAMID.dev.websign"  // TODO(gustavo): real Team ID
+private let appBundleID = "health.diagnos.signlocal"
+private let appGroupID = "TEAMID.health.diagnos.signlocal"  // TODO(gustavo): real Team ID
 private let socketName = "s.host"  // short: sun_path holds 104 bytes
 private let startTimeout: TimeInterval = 10
 private let maxReplyBytes = 1 << 20  // native messaging's host-to-browser limit
-private let log = Logger(subsystem: "dev.websign.app.extension", category: "relay")
+private let log = Logger(subsystem: "health.diagnos.signlocal.extension", category: "relay")
 
 final class SafariWebExtensionHandler: NSObject, NSExtensionRequestHandling {
     /// One request at a time: the app shows one confirmation window at a time anyway.
-    private static let queue = DispatchQueue(label: "dev.websign.relay")
+    private static let queue = DispatchQueue(label: "health.diagnos.signlocal.relay")
 
     func beginRequest(with context: NSExtensionContext) {
         let item = context.inputItems.first as? NSExtensionItem
@@ -373,7 +373,7 @@ enum Relay {
 ```
 
 App side (Rust), outside the scope of this proof: a `UnixListener` at
-`~/Library/Group Containers/TEAMID.dev.websign/s.host` (the sandbox's `$HOME` does not work; same computation as
+`~/Library/Group Containers/TEAMID.health.diagnos.signlocal/s.host` (the sandbox's `$HOME` does not work; same computation as
 Bitwarden), the peer verification described above, and the **same** message loop as the stdio host.
 
 Risks to measure on the real Mac: Safari may terminate the appex if the request takes long (user typing
@@ -396,7 +396,7 @@ by the appex with `activates = false` must still bring the window to the front.
 Prerequisites: macOS 14 or 15 (note the exact version and the chip), Xcode Command Line Tools, Rust,
 Homebrew, Chrome and Firefox installed **and opened once** (so they create their folders).
 
-1. **Build:** `cd docs/prototypes/kit && cargo build --release -p websign-probe && export PROBE_EXE=$PWD/target/release/websign-probe`.
+1. **Build:** `cd docs/prototypes/kit && cargo build --release -p signlocal-probe && export PROBE_EXE=$PWD/target/release/signlocal-probe`.
 2. **Keychain with test keys:** `bash macos/ci-macos.sh` → it must end in "All required
    checks passed." (it uses a temporary keychain; it does not touch the login keychain).
 3. **Sandbox:** `bash macos/sandbox/sandbox-test.sh` → copy the `RESULT` table and the denials.
@@ -409,13 +409,13 @@ Homebrew, Chrome and Firefox installed **and opened once** (so they create their
    Note whether the permission dialog appears and what it says.
 6. **Chrome starting the sandboxed host:**
    `bash macos/sandbox/run-sandboxed.sh register --browser chrome` (the bundle lives in
-   `~/Library/Caches/dev.websign.sandbox-test/WebeSign.app`); check
-   `cat ~/Library/Application\ Support/Google/Chrome/NativeMessagingHosts/dev.websign.host.json`.
+   `~/Library/Caches/health.diagnos.signlocal.sandbox-test/signlocal.app`); check
+   `cat ~/Library/Application\ Support/Google/Chrome/NativeMessagingHosts/health.diagnos.signlocal.json`.
    Load the development extension (`kit/extension/`, fixed ID `nhnkdpljdgjflbflkhnkmfmcmodboeii`)
    in `chrome://extensions` (developer mode → "Load unpacked") and trigger `ping` and
    `list`. Evidence: response in the extension, the host log (in the sandbox `TMPDIR` also goes to the
-   container: `find ~/Library/Containers/dev.websign.app -name '*-probe-host.log'`) and
-   `log show --last 5m --predicate 'sender == "Sandbox"' --style compact | grep websign`.
+   container: `find ~/Library/Containers/health.diagnos.signlocal -name '*-probe-host.log'`) and
+   `log show --last 5m --predicate 'sender == "Sandbox"' --style compact | grep signlocal`.
 7. **Token via CryptoTokenKit:** see the script in [proof 3](3-tokens-mac.md#4-test-script-for-gustavo)
    and run `list`/`sign` outside and inside the sandbox (`run-sandboxed.sh`), and through Chrome (step 6).
 8. **Safari:** once `safari/` exists (Xcode project with the appex from §5): Safari → Settings →
@@ -430,7 +430,7 @@ Homebrew, Chrome and Firefox installed **and opened once** (so they create their
 - **A single binary in the Mac App Store** = native messaging host (Chrome, Edge, Brave, Vivaldi,
   Opera, Firefox) + windows + signer, with the entitlements from `entitlements.mas.plist`. `register`
   computes the real home (`getpwuid_r`), writes only into existing browser folders, and runs on every
-  app launch (and through the `websign://` scheme, since the store does not run an installer).
+  app launch (and through the `signlocal://` scheme, since the store does not run an installer).
 - **Keychain + CryptoTokenKit first**, through this kit's two queries. PKCS#11 inside the store app
   only if [proof 3](3-tokens-mac.md) shows it works **and** App Review accepts it; otherwise, a
   `.dmg` complement (Developer ID, notarized, Sparkle), called through the same app-group socket.

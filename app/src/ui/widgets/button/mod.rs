@@ -4,7 +4,7 @@
 //! **Arming.** An unarmed button looks disabled and ignores the pointer and
 //! the keyboard; when it becomes armed it fades to enabled over
 //! `motion-base`. The 600 ms clock and the "press after arming" rule live in
-//! `websign-ui-model` (`Arming`); this widget only shows the state it is
+//! `signlocal-ui-model` (`Arming`); this widget only shows the state it is
 //! given and never reports a click while unarmed.
 //!
 //! **Enter.** A focused button clicks on Space or a pointer click, never on

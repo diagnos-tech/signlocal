@@ -26,12 +26,12 @@ class TestWindow extends EventTarget {
 const win = new TestWindow();
 Object.assign(globalThis, { window: win, location: win.location });
 
-const { installFakeWebSign } = await import("@websign/sdk/testing");
+const { installFakeSignlocal } = await import("@signlocal/sdk/testing");
 const { samplePdf } = await import("./pdf");
 const { signPdf } = await import("./sign-pdf");
 
 const openssl = Bun.which("openssl");
-const dir = mkdtempSync(join(tmpdir(), "websign-pades-"));
+const dir = mkdtempSync(join(tmpdir(), "signlocal-pades-"));
 afterAll(() => rmSync(dir, { recursive: true, force: true }));
 beforeAll(() => {
   console.warn = () => {}; // the fake's "never ship me" warning
@@ -74,7 +74,7 @@ function verifyWithOpenSsl(pdf: Uint8Array, name: string) {
 
 describe.skipIf(!openssl)("PAdES with the fake", () => {
   it("ECDSA P-256: OpenSSL verifies the embedded CMS", async () => {
-    const fake = await installFakeWebSign();
+    const fake = await installFakeSignlocal();
     const signed = await signPdf(await samplePdf());
     expect(signed.certificate.key.type).toBe("EC");
     verifyWithOpenSsl(signed.pdf, "ecdsa");
@@ -82,7 +82,7 @@ describe.skipIf(!openssl)("PAdES with the fake", () => {
   });
 
   it("RSA PKCS#1 v1.5: OpenSSL verifies the embedded CMS", async () => {
-    const fake = await installFakeWebSign({ certificates: [{ key: "RSA" }] });
+    const fake = await installFakeSignlocal({ certificates: [{ key: "RSA" }] });
     const signed = await signPdf(await samplePdf());
     expect(signed.certificate.key.type).toBe("RSA");
     verifyWithOpenSsl(signed.pdf, "rsa");
@@ -90,7 +90,7 @@ describe.skipIf(!openssl)("PAdES with the fake", () => {
   });
 
   it("the person switching certificate still yields a valid signature for the second one", async () => {
-    const fake = await installFakeWebSign();
+    const fake = await installFakeSignlocal();
     fake.switchDuringNextSign(1);
     const signed = await signPdf(await samplePdf());
     expect(signed.certificate.fingerprint).toBe(fake.certificates[1]?.fingerprint ?? "");

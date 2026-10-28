@@ -1,4 +1,4 @@
-//! `websign-probe sign`: signs random digests and verifies every signature.
+//! `signlocal-probe sign`: signs random digests and verifies every signature.
 
 use std::process::ExitCode;
 
@@ -11,7 +11,7 @@ use super::view;
 use crate::keystores::inventory::{Entry, Inventory};
 use crate::keystores::{Options, PinPrompt, SignRequest};
 
-/// Arguments of `websign-probe sign`.
+/// Arguments of `signlocal-probe sign`.
 #[derive(Debug, clap::Args)]
 pub struct Args {
     #[command(flatten)]

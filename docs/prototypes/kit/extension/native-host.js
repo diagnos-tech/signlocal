@@ -7,13 +7,13 @@
 // silence. A dead port is replaced on the next request; requests in flight
 // when it dies get a typed error instead of hanging.
 //
-// Exposes `globalThis.WebsignHost.request(type, fields)`, which always
+// Exposes `globalThis.SignlocalHost.request(type, fields)`, which always
 // resolves (never rejects) with the host's reply or a local error reply of
 // the same shape: `{ ok: false, error: { code, message } }`.
 
 (() => {
   const api = globalThis.browser ?? globalThis.chrome;
-  const { nativeHost } = globalThis.WEBSIGN_CONFIG;
+  const { nativeHost } = globalThis.SIGNLOCAL_CONFIG;
 
   const PROTOCOL_VERSION = 1;
   const IDLE_CLOSE_MS = 60_000;
@@ -111,5 +111,5 @@
     });
   }
 
-  globalThis.WebsignHost = Object.freeze({ request });
+  globalThis.SignlocalHost = Object.freeze({ request });
 })();

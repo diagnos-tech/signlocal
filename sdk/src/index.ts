@@ -1,14 +1,14 @@
 /**
- * @websign/sdk — sign with the visitor's certificate (smart card, USB token or
+ * @signlocal/sdk — sign with the visitor's certificate (smart card, USB token or
  * a certificate installed on the computer) from a web page.
  *
- * The page never talks to the app: it posts messages to the WebeSign
+ * The page never talks to the app: it posts messages to the signlocal
  * extension, which adds the page's origin as the browser reports it and
  * forwards them to the app over native messaging. The person confirms every
  * signature in the app's own window.
  *
  * @example
- * import { sign } from "@websign/sdk";
+ * import { sign } from "@signlocal/sdk";
  *
  * const { signature, certificate } = await sign({
  *   hash: "SHA-256",
@@ -16,13 +16,13 @@
  * });
  *
  * @packageDocumentation
- * @module @websign/sdk
+ * @module @signlocal/sdk
  */
 
 export { certificates } from "./certificates.js";
 export { onChange } from "./change.js";
 export type { ErrorCode, ErrorDetails } from "./errors.js";
-export { isWebSignError, WebSignError } from "./errors.js";
+export { isSignlocalError, SignlocalError } from "./errors.js";
 export { fingerprint } from "./fingerprint.js";
 export { installUrl } from "./install.js";
 export { sign } from "./sign.js";

@@ -3,8 +3,8 @@
 //! signing: an origin with its registrable domain emphasized, or a program
 //! by its file name.
 
-use websign_core::present::origin::format_origin;
-use websign_host::store::ConsentRecord;
+use signlocal_core::present::origin::format_origin;
+use signlocal_host::store::ConsentRecord;
 
 /// One remembered caller.
 #[derive(Debug, Clone, PartialEq, Eq)]

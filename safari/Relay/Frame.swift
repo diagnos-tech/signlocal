@@ -4,7 +4,7 @@ import Foundation
 
 /// Native messaging framing, as the host speaks it on stdio: a `u32` length
 /// in little-endian order (every macOS CPU is little-endian, and
-/// `websign-protocol` writes the machine's order), then that many bytes of
+/// `signlocal-protocol` writes the machine's order), then that many bytes of
 /// UTF-8 JSON.
 public enum Frame {
     /// The frame for `body`; callers keep `body` within

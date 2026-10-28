@@ -1,7 +1,7 @@
 //! Every tab in light and dark, on the mockups' scenario, at the top and
 //! scrolled to the end (the last row must be reachable, not cut).
 
-use websign_protocol::messages::DiagnosticsTab;
+use signlocal_protocol::messages::DiagnosticsTab;
 
 use super::support::{Setup, THEMES, open, snapshot};
 

@@ -21,7 +21,7 @@
 
 softhsm_setup() {
   local dir=${1:-}
-  local pin=246810 so_pin=13579135 label=websign-test
+  local pin=246810 so_pin=13579135 label=signlocal-test
 
   local tool
   for tool in softhsm2-util pkcs11-tool openssl; do
@@ -32,7 +32,7 @@ softhsm_setup() {
   module=$(softhsm_module) || return 1
 
   if [[ -z $dir ]]; then
-    dir=$(mktemp -d "${TMPDIR:-/tmp}/websign-softhsm.XXXXXX")
+    dir=$(mktemp -d "${TMPDIR:-/tmp}/signlocal-softhsm.XXXXXX")
   fi
   mkdir -p "$dir/tokens"
   dir=$(cd "$dir" && pwd)
@@ -98,14 +98,14 @@ _softhsm_import() {
   # shellcheck disable=SC2086 # the options are a word list on purpose
   openssl genpkey $options -out "$work/key.pem" 2>/dev/null
   openssl req -new -x509 -key "$work/key.pem" -sha256 -days 3650 \
-    -subj "/C=BR/O=WebeSign Test/CN=WebeSign Test $name" \
+    -subj "/C=BR/O=signlocal Test/CN=signlocal Test $name" \
     -addext "basicConstraints=critical,CA:FALSE" \
     -addext "keyUsage=critical,digitalSignature,nonRepudiation" \
     -out "$work/cert.pem" 2>/dev/null
   openssl pkcs8 -topk8 -nocrypt -in "$work/key.pem" -outform DER -out "$work/key.der"
   openssl x509 -in "$work/cert.pem" -outform DER -out "$work/cert.der"
 
-  local common=(--module "$SOFTHSM_MODULE" --token-label websign-test --login --pin "$SOFTHSM_USER_PIN")
+  local common=(--module "$SOFTHSM_MODULE" --token-label signlocal-test --login --pin "$SOFTHSM_USER_PIN")
   pkcs11-tool "${common[@]}" --write-object "$work/key.der" --type privkey \
     --id "$id" --label "$name" --usage-sign "$@" >/dev/null
   pkcs11-tool "${common[@]}" --write-object "$work/cert.der" --type cert \

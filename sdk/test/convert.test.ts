@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fromBase64, toBase64, toCertificate } from "../src/convert";
-import { WebSignError } from "../src/errors";
+import { SignlocalError } from "../src/errors";
 import { b64, wireCertificate } from "./helpers/fixtures";
 
 const text = (s: string) => Uint8Array.from(s, (c) => c.charCodeAt(0));
@@ -68,7 +68,7 @@ describe("Base64 (RFC 4648 section 4, padded, strict)", () => {
   ];
   for (const [name, input] of invalid) {
     it(`rejects ${name} as Internal (only replies are decoded)`, () => {
-      expect(() => fromBase64(input)).toThrow(WebSignError);
+      expect(() => fromBase64(input)).toThrow(SignlocalError);
       expect(() => fromBase64(input)).toThrow(expect.objectContaining({ code: "Internal" }));
     });
   }

@@ -13,9 +13,9 @@
     "noEmit": true,
     "types": ["vite/client", "bun"],
     "paths": {
-      "@websign/sdk": ["../../sdk/src/index.ts"],
-      "@websign/sdk/messages": ["../../sdk/src/messages.ts"],
-      "@websign/sdk/testing": ["../../sdk/src/testing/index.ts"]
+      "@signlocal/sdk": ["../../sdk/src/index.ts"],
+      "@signlocal/sdk/messages": ["../../sdk/src/messages.ts"],
+      "@signlocal/sdk/testing": ["../../sdk/src/testing/index.ts"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", "**/*.vue"],

@@ -1,9 +1,9 @@
 //! The localized texts of one certificate row (`docs/ux.md` §5.1–§5.7) and
 //! its full sentence for screen readers (§14).
 
-use websign_core::present::document::DocumentLabel;
-use websign_i18n::{Catalog, dates, k};
-use websign_ui_model::certs::{Badge, CertRow, DisabledReason, Place, RowStatus, ValidityLabel};
+use signlocal_core::present::document::DocumentLabel;
+use signlocal_i18n::{Catalog, dates, k};
+use signlocal_ui_model::certs::{Badge, CertRow, DisabledReason, Place, RowStatus, ValidityLabel};
 
 use crate::ui::icons::{self, Icon};
 use crate::ui::widgets::cert_row::CertRowText;
@@ -178,7 +178,7 @@ fn status(tr: &Catalog, row: &CertRow) -> (String, Tone, Option<Icon>) {
     }
 }
 
-fn soon(tr: &Catalog, key: websign_i18n::Key) -> (String, Tone, Option<Icon>) {
+fn soon(tr: &Catalog, key: signlocal_i18n::Key) -> (String, Tone, Option<Icon>) {
     (
         tr.tr(key).to_string(),
         Tone::Danger,

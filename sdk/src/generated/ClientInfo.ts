@@ -6,7 +6,7 @@
  */
 export type ClientInfo = { 
 /**
- * `"websign-extension"`, `"@websign/desktop"`, `"websign-client"`, or a
+ * `"signlocal-extension"`, `"@signlocal/desktop"`, `"signlocal-client"`, or a
  * program's own name; at most 64 bytes.
  */
 name: string, 

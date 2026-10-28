@@ -11,7 +11,7 @@ import type { Certificate } from "./types.js";
  * never decode two ways: the text must be what encoding its bytes gives back.
  * Only replies are decoded, so a failure is the extension's or app's bug.
  *
- * @throws {WebSignError} `Internal` on anything but canonical Base64.
+ * @throws {SignlocalError} `Internal` on anything but canonical Base64.
  */
 export function fromBase64(text: string): Uint8Array<ArrayBuffer> {
   let binary: string | undefined;

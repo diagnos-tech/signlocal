@@ -8,8 +8,8 @@
 
 use std::sync::mpsc::{Receiver, TryRecvError};
 
-use websign_host::runtime::EventSender;
-use websign_ui_model::confirm::UiCommand;
+use signlocal_host::runtime::EventSender;
+use signlocal_ui_model::confirm::UiCommand;
 
 use super::clock::Clock;
 use super::viewport::{self, Shown};
@@ -24,7 +24,7 @@ pub fn run(
 ) -> Result<(), eframe::Error> {
     let options = viewport::native_options(renderer::choose());
     let result = eframe::run_native(
-        websign_project::PRODUCT_NAME,
+        signlocal_project::PRODUCT_NAME,
         options,
         Box::new(move |creation| {
             let installed = theme::install(creation, crate::platform::motion::reduce_motion());

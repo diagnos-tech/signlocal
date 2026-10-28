@@ -1,71 +1,71 @@
 import { describe, expect, it } from "vitest";
-import { WebSign, WebSignError } from "../src/index";
+import { Signlocal, SignlocalError } from "../src/index";
 import { Session } from "../src/session";
 import { VERSION } from "../src/version";
 import { eventually, fake, helloRule, isAlive, send } from "./support";
 
-const rejection = async (promise: Promise<unknown>): Promise<WebSignError> => {
+const rejection = async (promise: Promise<unknown>): Promise<SignlocalError> => {
   try {
     await promise;
   } catch (error) {
-    expect(error).toBeInstanceOf(WebSignError);
-    return error as WebSignError;
+    expect(error).toBeInstanceOf(SignlocalError);
+    return error as SignlocalError;
   }
   throw new Error("expected a rejection");
 };
 
-describe("WebSign.connect", () => {
+describe("Signlocal.connect", () => {
   it("spawns `connect` and sends hello with identity and protocol range", async () => {
     const app = fake({ rules: [helloRule()] });
-    const websign = await WebSign.connect({ executable: app.executable });
-    await websign.close();
+    const signlocal = await Signlocal.connect({ executable: app.executable });
+    await signlocal.close();
     expect(app.argv()).toEqual(["connect"]);
     expect(app.received()[0]).toEqual({
       v: 1,
       id: "n1",
       type: "hello",
-      client: { name: "@websign/desktop", version: VERSION },
+      client: { name: "@signlocal/desktop", version: VERSION },
       protocols: { min: 1, max: 1 },
     });
   });
 
   it("lets callers name themselves", async () => {
     const app = fake({ rules: [helloRule()] });
-    const websign = await WebSign.connect({
+    const signlocal = await Signlocal.connect({
       executable: app.executable,
       clientName: "invoice-tool",
       clientVersion: "9.9.9",
     });
-    await websign.close();
+    await signlocal.close();
     expect(app.received()[0]?.client).toEqual({ name: "invoice-tool", version: "9.9.9" });
   });
 
-  it("finds the executable through WEBSIGN_EXECUTABLE", async () => {
+  it("finds the executable through SIGNLOCAL_EXECUTABLE", async () => {
     const app = fake({ rules: [helloRule()] });
-    process.env.WEBSIGN_EXECUTABLE = app.executable;
+    process.env.SIGNLOCAL_EXECUTABLE = app.executable;
     try {
-      await (await WebSign.connect()).close();
+      await (await Signlocal.connect()).close();
     } finally {
-      delete process.env.WEBSIGN_EXECUTABLE;
+      delete process.env.SIGNLOCAL_EXECUTABLE;
     }
     expect(app.argv()).toEqual(["connect"]);
   });
 
   it("rejects with AppMissing when the executable does not exist", async () => {
-    const error = await rejection(WebSign.connect({ executable: "/nonexistent/websign" }));
+    const error = await rejection(Signlocal.connect({ executable: "/nonexistent/signlocal" }));
     expect(error.code).toBe("AppMissing");
   });
 
   it("rejects with AppMissing when the app exits at once", async () => {
     const app = fake({ rules: [{ on: "start", do: [{ exit: 3 }] }] });
-    expect((await rejection(WebSign.connect({ executable: app.executable }))).code).toBe(
+    expect((await rejection(Signlocal.connect({ executable: app.executable }))).code).toBe(
       "AppMissing",
     );
   });
 
   it("rejects with AppMissing when the app exits instead of answering hello", async () => {
     const app = fake({ rules: [{ on: "hello", do: [{ exit: 1 }] }] });
-    expect((await rejection(WebSign.connect({ executable: app.executable }))).code).toBe(
+    expect((await rejection(Signlocal.connect({ executable: app.executable }))).code).toBe(
       "AppMissing",
     );
   });
@@ -86,7 +86,7 @@ describe("WebSign.connect", () => {
         },
       ],
     });
-    const error = await rejection(WebSign.connect({ executable: app.executable }));
+    const error = await rejection(Signlocal.connect({ executable: app.executable }));
     expect(error.code).toBe("ClientOutdated");
     expect(error.message).toBe("upgrade");
     expect(error.details).toEqual({ installed: "0", required: "2" });
@@ -98,7 +98,7 @@ describe("WebSign.connect", () => {
       const app = fake({
         rules: [{ on: "hello", do: [send({ v: 1, type: "error", code, message: "refused" })] }],
       });
-      const error = await rejection(WebSign.connect({ executable: app.executable }));
+      const error = await rejection(Signlocal.connect({ executable: app.executable }));
       expect(error.code).toBe(code);
       expect(error.message).toBe("refused");
     },
@@ -110,7 +110,7 @@ describe("WebSign.connect", () => {
         { on: "hello", do: [send({ v: 2, type: "error", code: "ClientOutdated", message: "x" })] },
       ],
     });
-    expect((await rejection(WebSign.connect({ executable: app.executable }))).code).toBe(
+    expect((await rejection(Signlocal.connect({ executable: app.executable }))).code).toBe(
       "Internal",
     );
     await eventually(() => isAlive(app.pid()) === false);
@@ -118,7 +118,7 @@ describe("WebSign.connect", () => {
 
   it("rejects with ClientOutdated when the app picks a protocol we do not speak", async () => {
     const app = fake({ rules: [helloRule(2)] });
-    expect((await rejection(WebSign.connect({ executable: app.executable }))).code).toBe(
+    expect((await rejection(Signlocal.connect({ executable: app.executable }))).code).toBe(
       "ClientOutdated",
     );
     await eventually(() => isAlive(app.pid()) === false);
@@ -126,7 +126,7 @@ describe("WebSign.connect", () => {
 
   it("rejects with Internal when the first reply is not a hello", async () => {
     const app = fake({ rules: [{ on: "hello", do: [send({ type: "done" })] }] });
-    expect((await rejection(WebSign.connect({ executable: app.executable }))).code).toBe(
+    expect((await rejection(Signlocal.connect({ executable: app.executable }))).code).toBe(
       "Internal",
     );
     await eventually(() => isAlive(app.pid()) === false);
@@ -136,7 +136,7 @@ describe("WebSign.connect", () => {
     const app = fake({
       rules: [{ on: "hello", do: [send({ type: "error", code: "Mystery", message: "?" })] }],
     });
-    expect((await rejection(WebSign.connect({ executable: app.executable }))).code).toBe(
+    expect((await rejection(Signlocal.connect({ executable: app.executable }))).code).toBe(
       "Internal",
     );
   });
@@ -157,7 +157,7 @@ describe("WebSign.connect", () => {
         },
       ],
     });
-    await (await WebSign.connect({ executable: app.executable })).close();
+    await (await Signlocal.connect({ executable: app.executable })).close();
   });
 });
 
@@ -173,19 +173,19 @@ describe("misbehaving apps", () => {
     ["an envelope without an id", { sendRaw: rawFrame({ v: 1, type: "hello" }) }],
   ])("kills the app and rejects with Internal on %s", async (_name, action) => {
     const app = fake({ rules: [{ on: "hello", do: [action] }] });
-    const error = await rejection(WebSign.connect({ executable: app.executable }));
+    const error = await rejection(Signlocal.connect({ executable: app.executable }));
     expect(error.code).toBe("Internal");
     await eventually(() => isAlive(app.pid()) === false);
   });
 
   it("fails open requests with Internal when the app dies mid-session", async () => {
     const app = fake({ rules: [helloRule(), { on: "status", do: [{ exit: 9 }] }] });
-    const websign = await WebSign.connect({ executable: app.executable });
-    const error = await rejection(websign.status());
+    const signlocal = await Signlocal.connect({ executable: app.executable });
+    const error = await rejection(signlocal.status());
     expect(error.code).toBe("Internal");
     expect(error.message).toMatch(/exited/);
-    expect((await rejection(websign.status())).code).toBe("Internal");
-    await websign.close();
+    expect((await rejection(signlocal.status())).code).toBe("Internal");
+    await signlocal.close();
   });
 
   it("ignores replies to ids it never used", async () => {
@@ -201,9 +201,9 @@ describe("misbehaving apps", () => {
         },
       ],
     });
-    const websign = await WebSign.connect({ executable: app.executable });
-    expect((await websign.status()).remembered).toBe(true);
-    await websign.close();
+    const signlocal = await Signlocal.connect({ executable: app.executable });
+    expect((await signlocal.status()).remembered).toBe(true);
+    await signlocal.close();
   });
 });
 
@@ -229,24 +229,24 @@ describe("Session timing and cleanup", () => {
 
   it("close is idempotent and lets a well-behaved app exit on its own", async () => {
     const app = fake({ rules: [helloRule()] });
-    const websign = await WebSign.connect({ executable: app.executable });
-    await Promise.all([websign.close(), websign.close()]);
-    await websign.close();
+    const signlocal = await Signlocal.connect({ executable: app.executable });
+    await Promise.all([signlocal.close(), signlocal.close()]);
+    await signlocal.close();
     expect(isAlive(app.pid())).toBe(false);
   });
 
   it("rejects requests in flight when closed", async () => {
     const app = fake({ rules: [helloRule()] });
-    const websign = await WebSign.connect({ executable: app.executable });
-    const pending = rejection(websign.status());
-    await websign.close();
+    const signlocal = await Signlocal.connect({ executable: app.executable });
+    const pending = rejection(signlocal.status());
+    await signlocal.close();
     expect((await pending).code).toBe("Internal");
   });
 
   it("does not leave a listener on process exit after close", async () => {
     const before = process.listenerCount("exit");
     const app = fake({ rules: [helloRule()] });
-    await (await WebSign.connect({ executable: app.executable })).close();
+    await (await Signlocal.connect({ executable: app.executable })).close();
     expect(process.listenerCount("exit")).toBe(before);
   });
 });

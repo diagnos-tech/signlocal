@@ -4,9 +4,9 @@
 //! footer hint.
 
 use egui::{Id, Response, Sense, Ui, Vec2};
-use websign_i18n::k;
-use websign_ui_model::confirm::view::{PinBlock, PinError};
-use websign_ui_model::confirm::{ConfirmState, ConfirmView, UserInput};
+use signlocal_i18n::k;
+use signlocal_ui_model::confirm::view::{PinBlock, PinError};
+use signlocal_ui_model::confirm::{ConfirmState, ConfirmView, UserInput};
 
 use super::Screen;
 use crate::ui::confirm::failure_text::failure_text;

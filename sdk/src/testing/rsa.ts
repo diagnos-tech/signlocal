@@ -46,7 +46,7 @@ async function mgf1(seed: Uint8Array, length: number, name: HashAlgorithm): Prom
  */
 async function pss(digest: Uint8Array, name: HashAlgorithm, modBits: number): Promise<Uint8Array> {
   const emLength = Math.ceil((modBits - 1) / 8);
-  const salt = await hash(name, concat(new TextEncoder().encode("websign-fake-salt"), digest));
+  const salt = await hash(name, concat(new TextEncoder().encode("signlocal-fake-salt"), digest));
   const h = await hash(name, concat(new Uint8Array(8), digest, salt));
   const db = concat(new Uint8Array(emLength - salt.length - h.length - 2), Uint8Array.of(1), salt);
   const mask = await mgf1(h, db.length, name);

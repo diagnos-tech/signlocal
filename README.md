@@ -2,7 +2,7 @@
 
 <img src="site/assets/icon.svg" alt="" width="72" height="72">
 
-# WebeSign
+# signlocal
 
 **Use your smart card, USB token, or OS certificate to sign on any website.**<br>
 Works with Chrome, Edge, Firefox, Opera, Brave and Safari on Windows, macOS, and Linux.<br>
@@ -12,7 +12,7 @@ Free and Open Source for everyone.
 [![License: Apache-2.0](https://img.shields.io/badge/SDK%20%26%20clients-Apache--2.0-green)](sdk/LICENSE)
 [![License: CC0-1.0](https://img.shields.io/badge/device%20data-CC0--1.0-lightgrey)](LICENSE-CC0)
 
-[Install](docs/install.md) · [Website](https://diagnos-tech.github.io/web-esign/) ·
+[Install](docs/install.md) · [Website](https://signlocal.diagnos.health/) ·
 [For developers](#for-developers) · [Compatibility](docs/compatibility.md) · [Security](SECURITY.md)
 
 </div>
@@ -20,7 +20,7 @@ Free and Open Source for everyone.
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/macos/confirm-ready-dark.png">
-    <img src="docs/screenshots/macos/confirm-ready-light.png" alt="The WebeSign confirmation window: the requesting site, the verification code, the certificate to sign with, and the Sign button" width="300">
+    <img src="docs/screenshots/macos/confirm-ready-light.png" alt="The signlocal confirmation window: the requesting site, the verification code, the certificate to sign with, and the Sign button" width="300">
   </picture>
   <img src="docs/screenshots/windows/diagnostics-certificates-light.png" alt="The diagnostics window on Windows, listing the certificates this computer offers" width="380">
   <img src="docs/screenshots/ubuntu-24.04/diagnostics-devices-dark.png" alt="The diagnostics window on Ubuntu in dark mode, showing the smart card service, tokens and token drivers" width="380">
@@ -33,13 +33,13 @@ Free and Open Source for everyone.
 ## How it works
 
 ```
-website ──hash──▶ extension ──▶ WebeSign app ──▶ OS key store or token driver
+website ──hash──▶ extension ──▶ signlocal app ──▶ OS key store or token driver
    ▲                           (you confirm)     (signs; the PIN is typed here)
    └──────────── raw signature + certificate ◀──────────────┘
 ```
 
 1. The **website** prepares the document and sends only its **hash** (a short fingerprint).
-2. The **browser extension** passes the request to the **WebeSign app** on your computer.
+2. The **browser extension** passes the request to the **signlocal app** on your computer.
 3. The app opens its own window: who is asking, a **verification code** to compare with the site, and
    the certificate. You choose and confirm.
 4. **Windows, macOS or the token driver (PKCS#11) signs.** The raw signature (RSA, or ECDSA r‖s) and your
@@ -48,7 +48,7 @@ website ──hash──▶ extension ──▶ WebeSign app ──▶ OS key st
 
 **Your PIN never leaves your computer**: it is typed in the app or in the operating system's own window,
 never in a web page or in the extension. Desktop programs use the same app through
-[`@websign/desktop`](clients/node/) (Node, Bun, Electron) or [`websign-client`](clients/rust/) (Rust).
+[`@signlocal/desktop`](clients/node/) (Node, Bun, Electron) or [`signlocal-client`](clients/rust/) (Rust).
 
 ## Browsers and systems
 
@@ -64,7 +64,7 @@ Fedora 42, Rocky Linux 9 and Arch Linux; browsers CI cannot drive are checked by
 browsers, tokens and smart cards, including what is still untested, are in
 [`docs/compatibility.md`](docs/compatibility.md).
 
-**Safari** needs no separate download: its extension ships inside `WebeSign.app`. Until the app is signed by
+**Safari** needs no separate download: its extension ships inside `signlocal.app`. Until the app is signed by
 Apple, Safari loads it only with **Allow unsigned extensions** (a developer setting it turns off on every
 quit; [steps](docs/install.md#safari)). Keychain certificates and tokens that work with macOS behave as in
 other browsers; tokens with only a PKCS#11 driver may not work from Safari's sandbox.
@@ -72,7 +72,7 @@ other browsers; tokens with only a PKCS#11 driver may not work from Safari's san
 ## Install
 
 Two parts: the **app** and the **browser extension**. Pick your system in
-[`docs/install.md`](docs/install.md) or on the [download page](https://diagnos-tech.github.io/web-esign/download.html):
+[`docs/install.md`](docs/install.md) or on the [download page](https://signlocal.diagnos.health/download.html):
 
 - **Windows** (x64, arm64): PowerShell installer script, or the zip.
 - **macOS** (Apple silicon and Intel): installer script, or the universal zip.
@@ -86,10 +86,10 @@ in `SHA256SUMS` and the install scripts verify it ([why](docs/install.md#why-uns
 
 ## For developers
 
-Add signing to a web page with [`@websign/sdk`](sdk/): TypeScript, zero dependencies, under 5 KB.
+Add signing to a web page with [`@signlocal/sdk`](sdk/): TypeScript, zero dependencies, under 5 KB.
 
 ```ts
-import { sign } from "@websign/sdk";
+import { sign } from "@signlocal/sdk";
 
 const { signature, certificate } = await sign({
   hash: "SHA-256",
@@ -118,11 +118,11 @@ privately as described in [`SECURITY.md`](SECURITY.md).
 
 | Folder | What | License |
 |---|---|---|
-| [`app/`](app/) | The `websign` desktop app (Rust): native messaging host, desktop API, confirmation and diagnostics windows | GPL-3.0-or-later |
+| [`app/`](app/) | The `signlocal` desktop app (Rust): native messaging host, desktop API, confirmation and diagnostics windows | GPL-3.0-or-later |
 | [`extension/`](extension/) | Browser extension linking pages to the app | GPL-3.0-or-later |
 | [`safari/`](safari/) | Swift bridge Apple requires for the Safari extension | GPL-3.0-or-later |
-| [`sdk/`](sdk/) | `@websign/sdk` for websites | Apache-2.0 |
-| [`clients/`](clients/) | `@websign/desktop` (Node) and `websign-client` (Rust) for desktop programs | Apache-2.0 |
+| [`sdk/`](sdk/) | `@signlocal/sdk` for websites | Apache-2.0 |
+| [`clients/`](clients/) | `@signlocal/desktop` (Node) and `signlocal-client` (Rust) for desktop programs | Apache-2.0 |
 | [`crates/`](crates/) | The app's libraries; the protocol and project-settings crates are Apache-2.0 | GPL-3.0-or-later / Apache-2.0 |
 | [`devices.json`](devices.json) | Driver hints per device (USB and ATR), community-maintained | CC0-1.0 |
 | [`i18n/`](i18n/) | Texts in en, pt-BR, pt-PT, es, fr, it, de | GPL-3.0-or-later OR Apache-2.0 |
@@ -131,7 +131,7 @@ privately as described in [`SECURITY.md`](SECURITY.md).
 
 The app's GPL does not reach websites or programs that call it: they talk through messages, not
 linking, and everything they embed is Apache-2.0. The license includes an additional permission for
-app-store distribution ([`LICENSE`](LICENSE)). Provisional names and identifiers all live in
+app-store distribution ([`LICENSE`](LICENSE)). Names and identifiers all live in
 [`project.toml`](project.toml).
 
 ## Contributing

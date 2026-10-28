@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { WebSignError } from "../src/errors";
+import { SignlocalError } from "../src/errors";
 import { fingerprint } from "../src/fingerprint";
 
 const fromHex = (hex: string) =>
@@ -16,7 +16,7 @@ const rowsOf = (cells: readonly boolean[]) =>
 const sha = async (name: string, data: string) =>
   new Uint8Array(await crypto.subtle.digest(name, new TextEncoder().encode(data)));
 
-// Vectors of crates/websign-protocol/SPEC.md section 8.
+// Vectors of crates/signlocal-protocol/SPEC.md section 8.
 describe("fingerprint() verification code", () => {
   const vectors: [string, string, string, number, string][] = [
     [
@@ -104,8 +104,8 @@ describe("fingerprint() verification code", () => {
         fingerprint(new Uint8Array(length));
         expect.unreachable("should throw");
       } catch (error) {
-        expect(error).toBeInstanceOf(WebSignError);
-        expect((error as WebSignError).code).toBe("InvalidRequest");
+        expect(error).toBeInstanceOf(SignlocalError);
+        expect((error as SignlocalError).code).toBe("InvalidRequest");
       }
     });
   }

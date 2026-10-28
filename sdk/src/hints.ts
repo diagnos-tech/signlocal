@@ -11,10 +11,10 @@ import type { ErrorCode } from "./generated/index.js";
 
 export const HINTS: Readonly<Record<ErrorCode, string>> = {
   ExtensionMissing: "Link the person to installUrl().",
-  AppMissing: "The person installs the WebeSign app; the extension guides them.",
-  AppOutdated: "The person updates the WebeSign app (versions in details).",
+  AppMissing: "The person installs the signlocal app; the extension guides them.",
+  AppOutdated: "The person updates the signlocal app (versions in details).",
   ExtensionOutdated: "The person restarts the browser to update the extension.",
-  ClientOutdated: "Update @websign/sdk.",
+  ClientOutdated: "Update @signlocal/sdk.",
   InsecureOrigin: "Serve the page over https.",
   Aborted: "Your signal fired or prepare() threw (see cause).",
   UserCancelled: "The person closed the window: show nothing.",
@@ -28,6 +28,6 @@ export const HINTS: Readonly<Record<ErrorCode, string>> = {
   PinLocked: "The person unlocks the PIN with the PUK.",
   TokenRemoved: "The person plugs the token back in, then retries.",
   DriverFailure: "Retry; details.native has the driver status.",
-  Busy: "Retry once the open WebeSign window closes.",
+  Busy: "Retry once the open signlocal window closes.",
   Internal: "Report it with the app's diagnostics.",
 };

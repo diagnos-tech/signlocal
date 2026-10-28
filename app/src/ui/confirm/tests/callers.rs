@@ -4,8 +4,8 @@
 
 use egui::accesskit::Role;
 use egui_kittest::kittest::{NodeT as _, Queryable as _};
-use websign_protocol::types::BrowserName;
-use websign_ui_model::confirm::port::Finish;
+use signlocal_protocol::types::BrowserName;
+use signlocal_ui_model::confirm::port::Finish;
 
 use super::fixtures::*;
 use super::support::Rig;

@@ -1,4 +1,4 @@
-//! Shared helpers: the fake `websign connect` and a way to start it.
+//! Shared helpers: the fake `signlocal connect` and a way to start it.
 
 #![allow(dead_code)]
 
@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 
-use websign_client::{Client, ClientError, ConnectOptions};
+use signlocal_client::{Client, ClientError, ConnectOptions};
 
 static COUNTER: AtomicUsize = AtomicUsize::new(0);
 
@@ -21,7 +21,7 @@ pub struct Fake {
 }
 
 impl Fake {
-    /// Links the `fake_websign` example as `fake-<scenario>`: the fake reads
+    /// Links the `fake_signlocal` example as `fake-<scenario>`: the fake reads
     /// its scenario from its own file name. Cargo builds examples before it
     /// runs integration tests, next to the `deps` directory.
     pub fn new(scenario: &str) -> Fake {
@@ -29,10 +29,10 @@ impl Fake {
         let profile_dir = test_exe.parent().unwrap().parent().unwrap();
         let example = profile_dir
             .join("examples")
-            .join(format!("fake_websign{}", std::env::consts::EXE_SUFFIX));
+            .join(format!("fake_signlocal{}", std::env::consts::EXE_SUFFIX));
         let unique = COUNTER.fetch_add(1, Ordering::SeqCst);
         let dir = std::env::temp_dir().join(format!(
-            "websign-client-fake-{}-{unique}",
+            "signlocal-client-fake-{}-{unique}",
             std::process::id()
         ));
         fs::create_dir_all(&dir).unwrap();
@@ -57,7 +57,7 @@ impl Fake {
     /// Connects with the waits shortened to `QUICK_HELLO` and `QUICK_GRACE`,
     /// for the scenarios that exercise them.
     pub fn connect_quickly(&self) -> Result<Client, ClientError> {
-        websign_client::__testing::connect_with_waits(self.options(), QUICK_HELLO, QUICK_GRACE)
+        signlocal_client::__testing::connect_with_waits(self.options(), QUICK_HELLO, QUICK_GRACE)
     }
 }
 

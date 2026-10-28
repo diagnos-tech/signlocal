@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # App Sandbox experiment, evidence for docs/prototypes/2-mac.md and
-# 3-tokens-mac.md. Wraps websign-probe in an .app signed ad hoc with the Mac
+# 3-tokens-mac.md. Wraps signlocal-probe in an .app signed ad hoc with the Mac
 # App Store entitlements and, from inside the sandbox:
 #   (a) registers the native messaging host and checks that the manifests
 #       reach the browsers' real folders, then talks to the sandboxed host
@@ -30,10 +30,10 @@ here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source-path=SCRIPTDIR source=../lib/bundle.sh
 . "$here/../lib/bundle.sh"
 
-: "${PROBE_EXE:?set PROBE_EXE to the websign-probe binary}"
+: "${PROBE_EXE:?set PROBE_EXE to the signlocal-probe binary}"
 
-readonly P12_PASSWORD=websign-sandbox
-readonly KEYCHAIN_NAME=websign-sandbox.keychain
+readonly P12_PASSWORD=signlocal-sandbox
+readonly KEYCHAIN_NAME=signlocal-sandbox.keychain
 readonly TOKEN_PIN=1234
 readonly TIMEOUT_SECONDS=120
 readonly ISOLATE=(--no-known-modules --no-p11-kit)
@@ -74,7 +74,7 @@ run() {
 cleanup() {
     local path backup
     for path in ${created_files[@]+"${created_files[@]}"}; do rm -f "$path"; done
-    for backup in ${backups[@]+"${backups[@]}"}; do mv -f "$backup.websign-backup" "$backup"; done
+    for backup in ${backups[@]+"${backups[@]}"}; do mv -f "$backup.signlocal-backup" "$backup"; done
     # Deepest first, and only if still empty: never remove a user's folder.
     local i
     for ((i = ${#created_dirs[@]} - 1; i >= 0; i--)); do rmdir "${created_dirs[$i]}" 2>/dev/null; done
@@ -146,7 +146,7 @@ protect_manifests() {
         [[ -d $hosts ]] && existing+=("$hosts")
         created_files+=("$manifest")
         if [[ -e $manifest ]]; then
-            mv -f "$manifest" "$manifest.websign-backup" && backups+=("$manifest")
+            mv -f "$manifest" "$manifest.signlocal-backup" && backups+=("$manifest")
         fi
         planned+=("$manifest")
     done < <(planned_manifests)
@@ -174,7 +174,7 @@ test_register() {
         manifest="$support/$dir/NativeMessagingHosts/$name"
         if [[ -f $manifest ]]; then
             # The path may start with /private/var or /var: compare the end.
-            if grep -qF "/WebeSign.app/Contents/MacOS/websign-probe\"" "$manifest"; then
+            if grep -qF "/signlocal.app/Contents/MacOS/signlocal-probe\"" "$manifest"; then
                 result "register:$label" SIM "$manifest points to the sandboxed binary"
             else
                 result "register:$label" NÃO "$manifest exists but does not point to $exe"
@@ -204,7 +204,7 @@ test_host() {
     section "(a) sandboxed host started the way Chrome starts it"
     local origin replies
     origin="chrome-extension://$(project_value dev_id)/"
-    echo "> websign-probe $origin  (stdin: ping, list)"
+    echo "> signlocal-probe $origin  (stdin: ping, list)"
     replies=$(nm_frames '{"v":1,"id":"ping-1","type":"ping"}' '{"v":1,"id":"list-1","type":"list"}' |
         with_timeout "$TIMEOUT_SECONDS" "$exe" "$origin" 2>"$work/host.stderr" | nm_replies)
     printf '%s\n' "$replies" | cut -c1-300 | sed 's/^/  /'
@@ -223,14 +223,14 @@ test_host() {
 test_keychain() {
     section "(b) keychain from inside the sandbox"
     keychain_create "$KEYCHAIN_NAME" "$P12_PASSWORD"
-    make_identity "$work" "WebeSign Sandbox RSA" rsa2048
-    make_identity "$work" "WebeSign Sandbox P-256" p256
-    keychain_import "$work/WebeSign Sandbox RSA.p12"
-    keychain_import "$work/WebeSign Sandbox P-256.p12"
+    make_identity "$work" "signlocal Sandbox RSA" rsa2048
+    make_identity "$work" "signlocal Sandbox P-256" p256
+    keychain_import "$work/signlocal Sandbox RSA.p12"
+    keychain_import "$work/signlocal Sandbox P-256.p12"
     keychain_allow "$app" "$PROBE_EXE"
     local rsa ec
-    rsa=$(cert_fingerprint "$work/WebeSign Sandbox RSA.cert.pem")
-    ec=$(cert_fingerprint "$work/WebeSign Sandbox P-256.cert.pem")
+    rsa=$(cert_fingerprint "$work/signlocal Sandbox RSA.cert.pem")
+    ec=$(cert_fingerprint "$work/signlocal Sandbox P-256.cert.pem")
 
     run "$PROBE_EXE" list "${ISOLATE[@]}"
     local outside=NÃO
@@ -271,28 +271,28 @@ make_softhsm_token() { # DIR
     printf 'directories.tokendir = %s\nobjectstore.backend = file\nlog.level = INFO\n' \
         "$dir/tokens" >"$dir/softhsm2.conf" || return 1
     export SOFTHSM2_CONF=$dir/softhsm2.conf
-    softhsm2-util --init-token --free --label websign-sandbox --so-pin 5678 --pin "$TOKEN_PIN" >/dev/null &&
-        make_identity "$work" "WebeSign Sandbox PKCS11" rsa2048 &&
-        "$OPENSSL" pkcs8 -topk8 -nocrypt -in "$work/WebeSign Sandbox PKCS11.key.pem" -out "$work/p11.key" &&
-        "$OPENSSL" x509 -in "$work/WebeSign Sandbox PKCS11.cert.pem" -outform DER -out "$work/p11.der" &&
-        softhsm2-util --import "$work/p11.key" --token websign-sandbox --label websign-p11 --id 01 \
+    softhsm2-util --init-token --free --label signlocal-sandbox --so-pin 5678 --pin "$TOKEN_PIN" >/dev/null &&
+        make_identity "$work" "signlocal Sandbox PKCS11" rsa2048 &&
+        "$OPENSSL" pkcs8 -topk8 -nocrypt -in "$work/signlocal Sandbox PKCS11.key.pem" -out "$work/p11.key" &&
+        "$OPENSSL" x509 -in "$work/signlocal Sandbox PKCS11.cert.pem" -outform DER -out "$work/p11.der" &&
+        softhsm2-util --import "$work/p11.key" --token signlocal-sandbox --label signlocal-p11 --id 01 \
             --pin "$TOKEN_PIN" >/dev/null &&
-        pkcs11-tool --module "$MODULE" --token-label websign-sandbox --login --pin "$TOKEN_PIN" \
-            --write-object "$work/p11.der" --type cert --id 01 --label websign-p11 >/dev/null
+        pkcs11-tool --module "$MODULE" --token-label signlocal-sandbox --login --pin "$TOKEN_PIN" \
+            --write-object "$work/p11.der" --type cert --id 01 --label signlocal-p11 >/dev/null
 }
 
 # (c) A PKCS#11 module loaded by the sandboxed process. SUFFIX names the
 # signing variant in the result IDs.
 test_pkcs11() { # SUFFIX
     local fingerprint
-    fingerprint=$(cert_fingerprint "$work/WebeSign Sandbox PKCS11.cert.pem")
+    fingerprint=$(cert_fingerprint "$work/signlocal Sandbox PKCS11.cert.pem")
     run "$exe" list --module "$MODULE" "${ISOLATE[@]}"
     if grep -qF "$fingerprint" <<<"$OUT"; then
         result "pkcs11-load:$1" SIM "dlopen and C_Initialize worked; the token's certificate is listed"
     else
         result "pkcs11-load:$1" NÃO "$(grep -m1 -i 'pkcs11' <<<"$OUT" || echo "certificate not listed")"
     fi
-    run env WEBSIGN_PIN="$TOKEN_PIN" "$exe" sign --cert "$fingerprint" --pin-env WEBSIGN_PIN \
+    run env SIGNLOCAL_PIN="$TOKEN_PIN" "$exe" sign --cert "$fingerprint" --pin-env SIGNLOCAL_PIN \
         --hash sha256 --module "$MODULE" "${ISOLATE[@]}"
     if [[ $STATUS -eq 0 ]] && grep -qE '^ +OK .* via C_Sign' <<<"$OUT"; then
         result "pkcs11-sign:$1" SIM "C_Login and C_Sign worked inside the sandbox"
@@ -303,7 +303,7 @@ test_pkcs11() { # SUFFIX
 
 test_pkcs11_variants() {
     section "(c) PKCS#11 module inside the sandbox"
-    local token_dir=$container/websign-softhsm
+    local token_dir=$container/signlocal-softhsm
     if [[ $sandboxed == false ]] || ! make_softhsm_token "$token_dir"; then
         result pkcs11-setup NÃO "could not prepare SoftHSM2 inside the container; retrying outside it"
         token_dir=$work/softhsm
@@ -330,7 +330,7 @@ test_pkcs11_variants() {
 print_denials() {
     section "Sandbox denials logged during the run"
     log show --style compact --start "$started" \
-        --predicate 'sender == "Sandbox" AND eventMessage CONTAINS "websign-probe"' 2>/dev/null |
+        --predicate 'sender == "Sandbox" AND eventMessage CONTAINS "signlocal-probe"' 2>/dev/null |
         tail -n 80 || echo "(log show failed)"
 }
 

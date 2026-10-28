@@ -4,7 +4,7 @@
 use std::path::{Path, PathBuf};
 
 use egui::{Context, ViewportCommand};
-use websign_host::store::Settings;
+use signlocal_host::store::Settings;
 
 use super::pick::{Outcome, Purpose};
 use super::state::{Action, NOTICE_SECONDS, Notice, REVOKE_CONFIRM_SECONDS};

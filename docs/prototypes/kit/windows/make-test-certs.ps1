@@ -2,11 +2,11 @@
 <#
 .SYNOPSIS
     Creates (or removes) software test certificates that exercise every
-    Windows signing path of websign-probe.
+    Windows signing path of signlocal-probe.
 
 .DESCRIPTION
     All certificates go to Cert:\CurrentUser\My with a subject that starts
-    with "CN=websign-probe test", so -Remove deletes exactly these (with their
+    with "CN=signlocal-probe test", so -Remove deletes exactly these (with their
     private keys) and nothing else.
 
       cng-rsa2048        RSA-2048 in the Microsoft Software KSP (CNG)
@@ -44,7 +44,7 @@ $PSNativeCommandUseErrorActionPreference = $false
 Set-StrictMode -Version Latest
 . "$PSScriptRoot/invoke-bounded.ps1"
 
-$SubjectPrefix = 'CN=websign-probe test'
+$SubjectPrefix = 'CN=signlocal-probe test'
 $Store = 'Cert:\CurrentUser\My'
 $Ksp = 'Microsoft Software Key Storage Provider'
 $AesCsp = 'Microsoft Enhanced RSA and AES Cryptographic Provider'

@@ -30,11 +30,11 @@ async function measure(entry: string): Promise<{ minified: number; gzipped: numb
 const main = await measure("./consumer.js");
 const verdict = main.gzipped < BUDGET_BYTES ? "ok" : "OVER BUDGET";
 console.log(
-  `@websign/sdk: ${main.minified} B minified, ${main.gzipped} B gzip (budget ${BUDGET_BYTES} B): ${verdict}`,
+  `@signlocal/sdk: ${main.minified} B minified, ${main.gzipped} B gzip (budget ${BUDGET_BYTES} B): ${verdict}`,
 );
 for (const [name, entry] of [
-  ["@websign/sdk/messages", "../dist/messages.js"],
-  ["@websign/sdk/testing", "../dist/testing/index.js"],
+  ["@signlocal/sdk/messages", "../dist/messages.js"],
+  ["@signlocal/sdk/testing", "../dist/testing/index.js"],
 ] as const) {
   const size = await measure(entry);
   console.log(`${name}: ${size.minified} B minified, ${size.gzipped} B gzip (not budgeted)`);

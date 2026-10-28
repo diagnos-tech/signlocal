@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { isTestOrigin } from "../../src/testing/guard";
 import { load } from "./dom";
 
-describe("@websign/sdk/testing cannot ship by accident", () => {
+describe("@signlocal/sdk/testing cannot ship by accident", () => {
   const local = [
     "http://localhost:5173/",
     "http://127.0.0.1:8080/",
@@ -15,15 +15,15 @@ describe("@websign/sdk/testing cannot ship by accident", () => {
   for (const url of local) {
     it(`installs on ${url}`, async () => {
       const { testing } = await load(url);
-      await expect(testing.installFakeWebSign()).resolves.toBeDefined();
+      await expect(testing.installFakeSignlocal()).resolves.toBeDefined();
     });
   }
 
   for (const url of ["https://bank.com/", "https://localhost.evil.com/", "http://10.0.0.8/"]) {
     it(`refuses ${url} unless allowAnyOrigin`, async () => {
       const { testing } = await load(url);
-      await expect(testing.installFakeWebSign()).rejects.toThrow(/public test keys/);
-      await expect(testing.installFakeWebSign({ allowAnyOrigin: true })).resolves.toBeDefined();
+      await expect(testing.installFakeSignlocal()).rejects.toThrow(/public test keys/);
+      await expect(testing.installFakeSignlocal({ allowAnyOrigin: true })).resolves.toBeDefined();
     });
   }
 
@@ -34,21 +34,21 @@ describe("@websign/sdk/testing cannot ship by accident", () => {
 
   it("warns on the console at every install", async () => {
     const { testing, warn } = await load();
-    await testing.installFakeWebSign();
-    await testing.installFakeWebSign();
+    await testing.installFakeSignlocal();
+    await testing.installFakeSignlocal();
     expect(warn).toHaveBeenCalledTimes(2);
-    expect(String(warn.mock.calls[0]?.[0])).toMatch(/FAKE WebeSign.*Never ship/s);
+    expect(String(warn.mock.calls[0]?.[0])).toMatch(/FAKE signlocal.*Never ship/s);
   });
 
   it("warns once when a real extension answers on the same page", async () => {
     const { win, testing, warn } = await load();
-    await testing.installFakeWebSign();
-    const real = { source: "websign-extension", kind: "announce", extension: {}, protocols: {} };
+    await testing.installFakeSignlocal();
+    const real = { source: "signlocal-extension", kind: "announce", extension: {}, protocols: {} };
     win.postMessage(real, win.location.origin);
     win.postMessage(real, win.location.origin);
     await vi.waitFor(() => expect(warn).toHaveBeenCalledTimes(2));
     await new Promise((resolve) => setTimeout(resolve, 10));
-    expect(String(warn.mock.calls[1]?.[0])).toMatch(/real WebeSign extension/);
+    expect(String(warn.mock.calls[1]?.[0])).toMatch(/real signlocal extension/);
     expect(warn).toHaveBeenCalledTimes(2);
   });
 
@@ -56,12 +56,12 @@ describe("@websign/sdk/testing cannot ship by accident", () => {
     vi.resetModules();
     vi.stubGlobal("window", undefined);
     const testing = await import("../../src/testing/index");
-    await expect(testing.installFakeWebSign()).rejects.toThrow(/needs a window/);
+    await expect(testing.installFakeSignlocal()).rejects.toThrow(/needs a window/);
     vi.unstubAllGlobals();
   });
 
   it("is not reachable from the main entry", async () => {
     const { sdk } = await load();
-    expect(Object.keys(sdk)).not.toContain("installFakeWebSign");
+    expect(Object.keys(sdk)).not.toContain("installFakeSignlocal");
   });
 });

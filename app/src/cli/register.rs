@@ -1,17 +1,17 @@
-//! `websign register`: native messaging manifests only; the kit's
-//! `websign-probe register`, kept for tests and support.
+//! `signlocal register`: native messaging manifests only; the kit's
+//! `signlocal-probe register`, kept for tests and support.
 
 use std::path::PathBuf;
 use std::process::ExitCode;
 
 use clap::ValueEnum;
-use websign_registration::{Action, Request, Scope};
+use signlocal_registration::{Action, Request, Scope};
 
 use super::install::manifest_steps;
 use super::options::BrowserArg;
 use super::report::Report;
 
-/// `websign register`.
+/// `signlocal register`.
 #[derive(Debug, clap::Args)]
 pub struct RegisterArgs {
     /// Browser to register with (repeatable). Default: all.
@@ -47,7 +47,7 @@ pub enum ScopeArg {
     System,
 }
 
-/// Runs `websign_registration::run` and prints one line (or JSON) per target.
+/// Runs `signlocal_registration::run` and prints one line (or JSON) per target.
 pub fn run(args: &RegisterArgs) -> ExitCode {
     let report = Report {
         command: "register",

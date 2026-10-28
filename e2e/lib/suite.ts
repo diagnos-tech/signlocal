@@ -19,7 +19,7 @@ export const signers: readonly TestKey[] = signingKeys(keys);
 export const HASHES: readonly HashName[] = ["SHA-256", "SHA-384", "SHA-512"];
 
 /** Why a window scenario is skipped without a display. */
-export const NEEDS_WINDOW = "needs the confirmation window (WEBSIGN_E2E_WINDOW=headless)";
+export const NEEDS_WINDOW = "needs the confirmation window (SIGNLOCAL_E2E_WINDOW=headless)";
 
 /** The first key of `type`; fails the test when the source has none. */
 export function keyOf(type: "RSA" | "EC"): TestKey {

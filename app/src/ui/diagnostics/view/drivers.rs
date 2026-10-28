@@ -10,7 +10,7 @@
 use std::path::PathBuf;
 
 use egui::{Align, Layout, Ui};
-use websign_i18n::{Catalog, k};
+use signlocal_i18n::{Catalog, k};
 
 use super::Screen;
 use super::action::Trailing;

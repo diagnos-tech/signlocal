@@ -5,11 +5,11 @@
 use std::time::{Duration, Instant};
 
 use egui::{Key, Ui};
-use websign_host::runtime::EventSender;
-use websign_i18n::Catalog;
-use websign_ui_model::confirm::port::Failure;
-use websign_ui_model::confirm::view::PinBlock;
-use websign_ui_model::confirm::{ConfirmModel, ConfirmState, ConfirmView, UiCommand, UserInput};
+use signlocal_host::runtime::EventSender;
+use signlocal_i18n::Catalog;
+use signlocal_ui_model::confirm::port::Failure;
+use signlocal_ui_model::confirm::view::PinBlock;
+use signlocal_ui_model::confirm::{ConfirmModel, ConfirmState, ConfirmView, UiCommand, UserInput};
 
 use super::clock::Clock;
 use super::session::{FocusTarget, Session};

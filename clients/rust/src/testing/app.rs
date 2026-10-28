@@ -4,8 +4,8 @@ use std::io;
 use std::sync::{Arc, Mutex, PoisonError};
 use std::thread;
 
-use websign_protocol::types::{Certificate, SignatureAlgorithmName};
-use websign_protocol::{ClientMessage, ErrorCode};
+use signlocal_protocol::types::{Certificate, SignatureAlgorithmName};
+use signlocal_protocol::{ClientMessage, ErrorCode};
 
 use super::sample::sample_certificate;
 use super::serve::serve;
@@ -50,7 +50,7 @@ impl Config {
     }
 }
 
-/// A stand-in for the WebeSign app that lives inside your test process.
+/// A stand-in for the signlocal app that lives inside your test process.
 ///
 /// [`FakeApp::connect`] returns a real [`Client`] wired to it over in-process
 /// pipes, speaking the real protocol: your code runs unchanged. It answers
@@ -59,8 +59,8 @@ impl Config {
 /// signature, so it never verifies: do not use it to test signature checks.
 ///
 /// ```
-/// use websign_client::testing::FakeApp;
-/// use websign_client::{HashName, SignOptions};
+/// use signlocal_client::testing::FakeApp;
+/// use signlocal_client::{HashName, SignOptions};
 ///
 /// let app = FakeApp::new();
 /// let mut client = app.connect()?;
@@ -68,7 +68,7 @@ impl Config {
 ///     Ok(vec![0; 32]) // your document's digest
 /// })?;
 /// assert_eq!(signed.certificate.display_name, "Test Holder");
-/// # Ok::<(), websign_client::ClientError>(())
+/// # Ok::<(), signlocal_client::ClientError>(())
 /// ```
 #[derive(Debug, Clone)]
 pub struct FakeApp {
@@ -114,7 +114,7 @@ impl FakeApp {
         let (config, requests) = (Arc::clone(&self.config), Arc::clone(&self.requests));
         // Detached: it ends when the client drops its end of the pipe.
         thread::Builder::new()
-            .name("websign-fake-app".into())
+            .name("signlocal-fake-app".into())
             .spawn(move || serve(config, requests, app_input, app_output))
             .map_err(|error| {
                 ClientError::Connection(Reason::caused_by("cannot start the fake app", error))
@@ -142,8 +142,8 @@ fn pipe() -> Result<(io::PipeReader, io::PipeWriter), ClientError> {
 /// Builder of a [`FakeApp`].
 ///
 /// ```
-/// use websign_client::testing::FakeApp;
-/// use websign_client::{ErrorCode, HashName, SignOptions};
+/// use signlocal_client::testing::FakeApp;
+/// use signlocal_client::{ErrorCode, HashName, SignOptions};
 ///
 /// let app = FakeApp::builder().fail_at_choose(ErrorCode::UserCancelled).build();
 /// let mut client = app.connect()?;
@@ -151,7 +151,7 @@ fn pipe() -> Result<(io::PipeReader, io::PipeWriter), ClientError> {
 ///     .sign(SignOptions::new(HashName::Sha256), |_, _| Ok(vec![0; 32]))
 ///     .unwrap_err();
 /// assert_eq!(error.code(), ErrorCode::UserCancelled);
-/// # Ok::<(), websign_client::ClientError>(())
+/// # Ok::<(), signlocal_client::ClientError>(())
 /// ```
 #[derive(Debug, Clone)]
 pub struct FakeAppBuilder {

@@ -1,4 +1,4 @@
-//! `websign:` URLs that arrive as OS events instead of arguments.
+//! `signlocal:` URLs that arrive as OS events instead of arguments.
 //!
 //! Windows and Linux start a new process with the URL as its only argument,
 //! which [`crate::launch`] reads. macOS never does: Launch Services starts

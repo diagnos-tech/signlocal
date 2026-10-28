@@ -9,8 +9,8 @@
 use egui::Rect;
 use egui::accesskit::Role;
 use egui_kittest::kittest::Queryable as _;
-use websign_protocol::types::BrowserName;
-use websign_ui_model::certs::{CertCandidate, PinMode};
+use signlocal_protocol::types::BrowserName;
+use signlocal_ui_model::certs::{CertCandidate, PinMode};
 
 use super::fixtures::*;
 use super::scenes::SCENES;

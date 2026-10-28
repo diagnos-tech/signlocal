@@ -27,7 +27,7 @@ async function topUrl(
   if (sender.frameId === 0) return sender.url;
   if (sender.tab?.url) return sender.tab.url;
   try {
-    const query: OriginQuery = { kind: "websign-origin" };
+    const query: OriginQuery = { kind: "signlocal-origin" };
     const origin: unknown = await browser.tabs.sendMessage(tabId, query, { frameId: 0 });
     return typeof origin === "string" ? origin : undefined;
   } catch {

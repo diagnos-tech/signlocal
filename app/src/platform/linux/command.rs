@@ -78,7 +78,7 @@ mod tests {
 
     #[test]
     fn output_is_none_for_missing_failing_or_slow_programs() {
-        assert_eq!(output("websign-no-such-program", &[]), None);
+        assert_eq!(output("signlocal-no-such-program", &[]), None);
         assert_eq!(output("false", &[]), None);
         let started = Instant::now();
         assert_eq!(output("sleep", &["5"]), None);
@@ -92,6 +92,6 @@ mod tests {
             let _ = done.send(());
         }));
         assert!(finished.recv_timeout(Duration::from_secs(5)).is_ok());
-        assert!(!launch("websign-no-such-program", &[], || {}));
+        assert!(!launch("signlocal-no-such-program", &[], || {}));
     }
 }

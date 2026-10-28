@@ -1,7 +1,7 @@
 /**
- * The installed browsers a run can target (WEBSIGN_E2E_BROWSER_NAME) and
+ * The installed browsers a run can target (SIGNLOCAL_E2E_BROWSER_NAME) and
  * where each keeps its default profile. A named browser is registered the
- * way `websign install` registers it for a person (`websign register
+ * way `signlocal install` registers it for a person (`signlocal register
  * --browser <name>`, no test-only folder), so a passing run proves the real
  * manifest location or registry key, not only the protocol.
  */
@@ -9,7 +9,7 @@
 import { homedir, platform } from "node:os";
 import { join } from "node:path";
 
-/** A `websign register --browser` value the suite can drive. */
+/** A `signlocal register --browser` value the suite can drive. */
 export type BrowserName =
   | "chrome"
   | "chromium"
@@ -58,7 +58,7 @@ const MACOS: Readonly<Record<BrowserName, string>> = {
 };
 
 /**
- * The folder whose existence tells `websign register` the browser is
+ * The folder whose existence tells `signlocal register` the browser is
  * installed, and the browser's default profile folder (Chromium browsers on
  * Linux and macOS read the host manifest next to their profile, and Brave and
  * Opera read a fixed folder whatever profile they run: Brave its default

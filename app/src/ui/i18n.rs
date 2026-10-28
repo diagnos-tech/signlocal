@@ -1,14 +1,14 @@
 //! The catalog the windows read their text from: the system locale, unless
-//! `WEBSIGN_LOCALE` overrides it.
+//! `SIGNLOCAL_LOCALE` overrides it.
 //!
 //! The override exists for people whose OS language differs from the one
 //! they want to read (a shared clinic computer), for support ("send me a
 //! screenshot in English") and for the per-locale screenshot tests.
 
-use websign_i18n::{Catalog, Locale};
+use signlocal_i18n::{Catalog, Locale};
 
 /// Environment variable naming a locale (`pt-BR`, `de`, `es_MX.UTF-8`, …).
-pub const LOCALE_ENV: &str = "WEBSIGN_LOCALE";
+pub const LOCALE_ENV: &str = "SIGNLOCAL_LOCALE";
 
 /// The catalog for the chosen locale.
 pub fn catalog() -> Catalog {

@@ -14,6 +14,6 @@ describe("public API", () => {
     ]) {
       expect(typeof (sdk as Record<string, unknown>)[name]).toBe("function");
     }
-    expect(typeof sdk.WebSignError).toBe("function");
+    expect(typeof sdk.SignlocalError).toBe("function");
   });
 });

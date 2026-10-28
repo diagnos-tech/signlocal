@@ -152,6 +152,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "signlocal-client"
+version = "0.1.0"
+dependencies = [
+ "signlocal-project",
+ "signlocal-protocol",
+ "thiserror",
+]
+
+[[package]]
+name = "signlocal-project"
+version = "0.1.0"
+
+[[package]]
+name = "signlocal-protocol"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "signlocal-rust-cli-example"
+version = "0.0.0"
+dependencies = [
+ "sha2",
+ "signlocal-client",
+]
+
+[[package]]
 name = "syn"
 version = "3.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -193,36 +223,6 @@ name = "unicode-ident"
 version = "1.0.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d245f478577f809a851594d02313b640fb437e0bb33866753cff937863096954"
-
-[[package]]
-name = "websign-client"
-version = "0.1.0"
-dependencies = [
- "thiserror",
- "websign-project",
- "websign-protocol",
-]
-
-[[package]]
-name = "websign-project"
-version = "0.1.0"
-
-[[package]]
-name = "websign-protocol"
-version = "0.1.0"
-dependencies = [
- "serde",
- "serde_json",
- "thiserror",
-]
-
-[[package]]
-name = "websign-rust-cli-example"
-version = "0.0.0"
-dependencies = [
- "sha2",
- "websign-client",
-]
 
 [[package]]
 name = "zmij"

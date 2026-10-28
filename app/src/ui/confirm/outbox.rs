@@ -5,10 +5,10 @@
 //! `C_Login`) and the field's buffer is wiped at once.
 
 use secrecy::SecretString;
-use websign_host::EngineEvent;
-use websign_host::runtime::EventSender;
-use websign_ui_model::confirm::port::RequestKey;
-use websign_ui_model::confirm::{Intent, UiEvent};
+use signlocal_host::EngineEvent;
+use signlocal_host::runtime::EventSender;
+use signlocal_ui_model::confirm::port::RequestKey;
+use signlocal_ui_model::confirm::{Intent, UiEvent};
 
 use super::session::Session;
 

@@ -1,10 +1,10 @@
-import { installUrl, type SignResult } from "@websign/sdk";
-import { errorText } from "@websign/sdk/messages";
+import { installUrl, type SignResult } from "@signlocal/sdk";
+import { errorText } from "@signlocal/sdk/messages";
 import { useState } from "react";
-import { useWebSign } from "./useWebSign";
+import { useSignlocal } from "./useSignlocal";
 
 export function App() {
-  const { status, signing, error, sign } = useWebSign();
+  const { status, signing, error, sign } = useSignlocal();
   const [text, setText] = useState("I agree to the terms.");
   const [result, setResult] = useState<SignResult>();
 
@@ -26,12 +26,12 @@ export function App() {
       <h1>Sign a text (React)</h1>
       <p className="muted" role="status">
         {!status
-          ? "Checking WebeSign…"
+          ? "Checking signlocal…"
           : setup
             ? `${setup.title}. ${setup.body}`
-            : "WebeSign is ready."}
+            : "signlocal is ready."}
       </p>
-      {status?.problem === "ExtensionMissing" && <a href={installUrl()}>Install WebeSign</a>}
+      {status?.problem === "ExtensionMissing" && <a href={installUrl()}>Install signlocal</a>}
       <label htmlFor="text">Text to sign</label>
       <textarea
         id="text"
@@ -42,7 +42,7 @@ export function App() {
       />
       <p>
         <button type="button" disabled={!status?.ready || signing} onClick={onSign}>
-          {signing ? "Confirm in the WebeSign window…" : "Sign with my certificate"}
+          {signing ? "Confirm in the signlocal window…" : "Sign with my certificate"}
         </button>
       </p>
       <div aria-live="polite">

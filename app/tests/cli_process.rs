@@ -5,8 +5,8 @@ use std::io::Write;
 use std::process::{Command, Output, Stdio};
 use std::time::{Duration, Instant};
 
-fn websign(home: &std::path::Path, args: &[&str]) -> Output {
-    Command::new(env!("CARGO_BIN_EXE_websign"))
+fn signlocal(home: &std::path::Path, args: &[&str]) -> Output {
+    Command::new(env!("CARGO_BIN_EXE_signlocal"))
         .args(args)
         .env("HOME", home)
         .env("XDG_CONFIG_HOME", home.join("config"))
@@ -14,7 +14,7 @@ fn websign(home: &std::path::Path, args: &[&str]) -> Output {
         .env("XDG_STATE_HOME", home.join("state"))
         .env("LOCALAPPDATA", home.join("local"))
         .env("APPDATA", home.join("roaming"))
-        .env("WEBSIGN_LOCALE", "en")
+        .env("SIGNLOCAL_LOCALE", "en")
         .stdin(Stdio::null())
         .output()
         .unwrap()
@@ -27,10 +27,10 @@ fn stdout(output: &Output) -> String {
 #[test]
 fn version_prints_text_or_app_info() {
     let home = tempfile::tempdir().unwrap();
-    let out = websign(home.path(), &["version"]);
+    let out = signlocal(home.path(), &["version"]);
     assert_eq!(out.status.code(), Some(0));
-    assert!(stdout(&out).starts_with("websign ") && stdout(&out).contains("(protocol 1)"));
-    let out = websign(home.path(), &["version", "--json"]);
+    assert!(stdout(&out).starts_with("signlocal ") && stdout(&out).contains("(protocol 1)"));
+    let out = signlocal(home.path(), &["version", "--json"]);
     let info: serde_json::Value = serde_json::from_str(&stdout(&out)).unwrap();
     assert_eq!(info["protocols"]["max"], 1);
     assert_eq!(info["channel"], "direct");
@@ -44,7 +44,7 @@ fn usage_errors_exit_2_with_nothing_on_stdout() {
         &["sign", "--hash", "SHA-256"],
         &["install", "--browser", "x"],
     ] {
-        let out = websign(home.path(), args);
+        let out = signlocal(home.path(), args);
         assert_eq!(out.status.code(), Some(2), "{args:?}");
         assert!(out.stdout.is_empty(), "{args:?}");
     }
@@ -53,7 +53,7 @@ fn usage_errors_exit_2_with_nothing_on_stdout() {
 #[test]
 fn a_bad_digest_is_one_json_error_and_exit_14() {
     let home = tempfile::tempdir().unwrap();
-    let out = websign(
+    let out = signlocal(
         home.path(),
         &["sign", "--hash", "SHA-256", "--digest", "abcd"],
     );
@@ -79,7 +79,7 @@ fn register_dry_run_reports_json_and_changes_nothing() {
         "--json",
         "--user-data-dir",
     ];
-    let out = websign(
+    let out = signlocal(
         home.path(),
         &[&args[..], &[profile.to_str().unwrap()]].concat(),
     );
@@ -100,7 +100,7 @@ fn register_dry_run_reports_json_and_changes_nothing() {
 fn install_then_uninstall_in_a_throwaway_home() {
     let home = tempfile::tempdir().unwrap();
     std::fs::create_dir_all(home.path().join("config/chromium")).unwrap();
-    let out = websign(home.path(), &["install", "--json"]);
+    let out = signlocal(home.path(), &["install", "--json"]);
     let report: serde_json::Value = serde_json::from_str(&stdout(&out)).unwrap();
     let written = report["steps"]
         .as_array()
@@ -109,9 +109,9 @@ fn install_then_uninstall_in_a_throwaway_home() {
         .any(|s| s["outcome"] == "written");
     assert!(written, "{report}");
     // Installing again changes nothing that matters and still succeeds.
-    let again = websign(home.path(), &["install", "--json"]);
+    let again = signlocal(home.path(), &["install", "--json"]);
     assert_eq!(again.status.code(), Some(0), "{}", stdout(&again));
-    let out = websign(home.path(), &["uninstall", "--purge", "--json"]);
+    let out = signlocal(home.path(), &["uninstall", "--purge", "--json"]);
     let report: serde_json::Value = serde_json::from_str(&stdout(&out)).unwrap();
     let removed = report["steps"]
         .as_array()
@@ -119,10 +119,10 @@ fn install_then_uninstall_in_a_throwaway_home() {
         .iter()
         .any(|s| s["outcome"] == "removed");
     assert!(removed, "{report}");
-    assert!(!home.path().join("config/websign").exists(), "{report}");
+    assert!(!home.path().join("config/signlocal").exists(), "{report}");
     // Uninstalling what is already gone is not a failure either. (Only the
     // log folder comes back: this very run logs before it purges.)
-    let again = websign(home.path(), &["uninstall", "--purge", "--json"]);
+    let again = signlocal(home.path(), &["uninstall", "--purge", "--json"]);
     let report: serde_json::Value = serde_json::from_str(&stdout(&again)).unwrap();
     assert_eq!(again.status.code(), Some(0), "{report}");
     let removed_again = report["steps"]
@@ -136,7 +136,7 @@ fn install_then_uninstall_in_a_throwaway_home() {
 #[test]
 fn foreign_extension_arguments_never_start_a_host() {
     let home = tempfile::tempdir().unwrap();
-    let out = websign(
+    let out = signlocal(
         home.path(),
         &["chrome-extension://abcdefghijklmnopabcdefghijklmnop/"],
     );
@@ -147,7 +147,7 @@ fn foreign_extension_arguments_never_start_a_host() {
 #[test]
 fn connect_ends_when_stdin_closes() {
     let home = tempfile::tempdir().unwrap();
-    let mut child = Command::new(env!("CARGO_BIN_EXE_websign"))
+    let mut child = Command::new(env!("CARGO_BIN_EXE_signlocal"))
         .arg("connect")
         .env("HOME", home.path())
         .env("XDG_CONFIG_HOME", home.path().join("config"))

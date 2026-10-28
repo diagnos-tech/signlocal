@@ -22,7 +22,7 @@ use std::ffi::OsString;
 use std::os::unix::ffi::OsStringExt;
 use std::path::PathBuf;
 
-use websign_core::present::caller::DesktopCaller;
+use signlocal_core::present::caller::DesktopCaller;
 
 use super::code_signature::{self, Guest};
 use super::{bundle, peer};

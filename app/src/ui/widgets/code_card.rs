@@ -13,7 +13,7 @@
 //! because screen readers would otherwise read "7F3A" as a word.
 
 use egui::{Frame, Label, Margin, Response, Stroke, Ui, Vec2, WidgetInfo, WidgetType};
-use websign_protocol::code::VerificationCode;
+use signlocal_protocol::code::VerificationCode;
 
 use super::badge::Badge;
 use super::identicon::Identicon;

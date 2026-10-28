@@ -7,7 +7,7 @@ import Darwin
 import Glibc
 #endif
 
-/// What to start for each session. In the appex: the `websign` binary
+/// What to start for each session. In the appex: the `signlocal` binary
 /// bundled next to it, with browser-launch arguments (`BundledHost.swift`).
 public struct HostCommand {
     public let executable: URL
@@ -19,7 +19,7 @@ public struct HostCommand {
     }
 }
 
-/// One `websign` process speaking native messaging on its stdio.
+/// One `signlocal` process speaking native messaging on its stdio.
 ///
 /// Everything it reports arrives on the relay's queue. Writes go through a
 /// queue of their own: a pipe blocks once the host stops reading, and that
@@ -28,7 +28,7 @@ final class HostProcess {
     private let process = Process()
     private let input = Pipe()
     private let output = Pipe()
-    private let writes = DispatchQueue(label: "dev.websign.relay.write")
+    private let writes = DispatchQueue(label: "health.diagnos.signlocal.relay.write")
     private let events: DispatchQueue
     private let grace: TimeInterval
 

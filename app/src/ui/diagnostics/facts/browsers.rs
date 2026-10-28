@@ -2,11 +2,11 @@
 //! connection (`docs/ux.md` §8.3). Detected from install locations, never
 //! from browser profiles.
 
-use websign_host::store::ConnectionRecord;
-use websign_protocol::types::BrowserName;
-use websign_registration::Browser;
-use websign_registration::detect::installed_browsers;
-use websign_registration::status::registration_state;
+use signlocal_host::store::ConnectionRecord;
+use signlocal_protocol::types::BrowserName;
+use signlocal_registration::Browser;
+use signlocal_registration::detect::installed_browsers;
+use signlocal_registration::status::registration_state;
 
 use super::BrowserFact;
 

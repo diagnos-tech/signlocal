@@ -2,9 +2,9 @@
 
 use jiff::Timestamp;
 use jiff::tz::TimeZone;
-use websign_i18n::dates::{format_date, format_time};
-use websign_i18n::{Catalog, Key, k};
-use websign_ui_model::time::{Relative, relative};
+use signlocal_i18n::dates::{format_date, format_time};
+use signlocal_i18n::{Catalog, Key, k};
+use signlocal_ui_model::time::{Relative, relative};
 
 /// The message of `key` with no arguments.
 pub fn tr(catalog: &Catalog, key: Key) -> String {

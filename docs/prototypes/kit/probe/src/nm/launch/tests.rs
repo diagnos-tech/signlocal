@@ -67,19 +67,19 @@ fn malformed_chromium_ids_are_not_launches() {
 #[test]
 fn firefox_passes_manifest_path_then_extension_id() {
     let launch = parse_launch(&args(&[
-        "/home/u/.mozilla/native-messaging-hosts/dev.websign.host.json",
-        "websign@dev.websign",
+        "/home/u/.mozilla/native-messaging-hosts/health.diagnos.signlocal.json",
+        "signlocal@diagnos.health",
     ]))
     .unwrap();
     assert_eq!(launch.family, BrowserFamily::Firefox);
-    assert_eq!(launch.extension_id, "websign@dev.websign");
-    assert_eq!(launch.origin, "websign@dev.websign");
+    assert_eq!(launch.extension_id, "signlocal@diagnos.health");
+    assert_eq!(launch.origin, "signlocal@diagnos.health");
 }
 
 #[test]
 fn firefox_on_windows_passes_a_backslash_path() {
     let launch = parse_launch(&args(&[
-        r"C:\Users\u\AppData\Local\websign\dev.websign.host.firefox.json",
+        r"C:\Users\u\AppData\Local\signlocal\health.diagnos.signlocal.firefox.json",
         "{e68418bc-f2b0-4459-a9ea-3e72b6751b07}",
     ]))
     .unwrap();

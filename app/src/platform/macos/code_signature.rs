@@ -21,7 +21,7 @@ use core_foundation::url::CFURL;
 use security_framework::os::macos::code_signing::{
     Flags, GuestAttributes, SecCode, SecRequirement, SecStaticCode,
 };
-use websign_core::present::caller::CodeSigner;
+use signlocal_core::present::caller::CodeSigner;
 
 use super::peer::AuditToken;
 

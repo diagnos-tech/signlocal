@@ -8,7 +8,7 @@ struct Scratch(PathBuf);
 
 impl Scratch {
     fn new(name: &str) -> Scratch {
-        let dir = env::temp_dir().join(format!("websign-client-{name}-{}", std::process::id()));
+        let dir = env::temp_dir().join(format!("signlocal-client-{name}-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
         Scratch(dir)
@@ -32,7 +32,7 @@ impl Drop for Scratch {
 fn override_wins_over_path() {
     let dir = Scratch::new("override");
     let chosen = dir.file("chosen/app");
-    let on_path = dir.file("bin/websign");
+    let on_path = dir.file("bin/signlocal");
     let inputs = SearchInputs {
         override_path: Some(chosen.clone().into()),
         path: Some(on_path.parent().unwrap().into()),
@@ -44,7 +44,7 @@ fn override_wins_over_path() {
 #[test]
 fn missing_override_falls_back_to_path() {
     let dir = Scratch::new("fallback");
-    let on_path = dir.file("bin/websign");
+    let on_path = dir.file("bin/signlocal");
     let inputs = SearchInputs {
         override_path: Some(dir.0.join("nowhere").into()),
         path: Some(on_path.parent().unwrap().into()),
@@ -62,14 +62,14 @@ fn relative_path_entries_are_ignored() {
 #[test]
 fn falls_back_to_the_install_locations() {
     let home = Scratch::new("home");
-    let installed = home.file(".local/bin/websign");
+    let installed = home.file(".local/bin/signlocal");
     let inputs = SearchInputs {
         home: Some(home.0.clone()),
         ..SearchInputs::default()
     };
-    // /usr/bin/websign may exist on a machine with the app installed.
+    // /usr/bin/signlocal may exist on a machine with the app installed.
     let found = search(&inputs, Platform::Linux).unwrap();
-    assert!(found == installed || found == Path::new("/usr/bin/websign"));
+    assert!(found == installed || found == Path::new("/usr/bin/signlocal"));
 }
 
 #[test]
@@ -87,26 +87,28 @@ fn locations_match_the_documentation() {
     assert_eq!(
         install_locations(&inputs, Platform::Linux),
         [
-            PathBuf::from("/usr/bin/websign"),
-            PathBuf::from("/h/.local/bin/websign")
+            PathBuf::from("/usr/bin/signlocal"),
+            PathBuf::from("/h/.local/bin/signlocal")
         ]
     );
     assert_eq!(
         install_locations(&inputs, Platform::MacOs),
         [
-            PathBuf::from("/Applications/WebeSign.app/Contents/MacOS/websign"),
-            PathBuf::from("/h/Applications/WebeSign.app/Contents/MacOS/websign"),
-            PathBuf::from("/h/.local/bin/websign"),
+            PathBuf::from("/Applications/signlocal.app/Contents/MacOS/signlocal"),
+            PathBuf::from("/h/Applications/signlocal.app/Contents/MacOS/signlocal"),
+            PathBuf::from("/h/.local/bin/signlocal"),
         ]
     );
     let base = PathBuf::from("/l");
     assert_eq!(
         install_locations(&inputs, Platform::Windows),
         [
-            base.join("Programs").join("WebeSign").join("websign.exe"),
+            base.join("Programs")
+                .join("signlocal")
+                .join("signlocal.exe"),
             base.join("Microsoft")
                 .join("WindowsApps")
-                .join("websign.exe"),
+                .join("signlocal.exe"),
         ]
     );
 }

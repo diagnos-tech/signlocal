@@ -6,7 +6,7 @@
 //! Enter never releases a certificate (Continue), never chooses one and, on
 //! a list row, only moves focus. So the buttons and rows here take Enter out
 //! of the frame's input before egui sees it and report it separately; the
-//! window decides what it means (`websign_ui_model::confirm::UserInput`).
+//! window decides what it means (`signlocal_ui_model::confirm::UserInput`).
 //! Space and pointer clicks keep working as clicks.
 
 use egui::{Event, Id, Key, Ui};

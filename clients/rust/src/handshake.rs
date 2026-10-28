@@ -1,8 +1,8 @@
 //! Starting the app and agreeing on a protocol version.
 
-use websign_protocol::messages::{ClientMessage, Hello};
-use websign_protocol::types::ClientInfo;
-use websign_protocol::{
+use signlocal_protocol::messages::{ClientMessage, Hello};
+use signlocal_protocol::types::ClientInfo;
+use signlocal_protocol::{
     AppMessage, ClientEnvelope, ErrorCode, ProtocolRange, RequestId, negotiate,
 };
 
@@ -22,7 +22,7 @@ pub(crate) fn connect(
         .executable
         .clone()
         .or_else(find_executable)
-        .ok_or_else(|| ClientError::AppMissing("no websign executable found".into()))?;
+        .ok_or_else(|| ClientError::AppMissing("no signlocal executable found".into()))?;
     let session = Session::start(&executable, timing)?;
     say_hello(session, options, timing)
 }
@@ -101,7 +101,7 @@ fn client_info(options: ConnectOptions) -> ClientInfo {
     ClientInfo {
         name: options
             .client_name
-            .unwrap_or_else(|| "websign-client".into()),
+            .unwrap_or_else(|| "signlocal-client".into()),
         version: options
             .client_version
             .unwrap_or_else(|| env!("CARGO_PKG_VERSION").into()),

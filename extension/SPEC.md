@@ -1,4 +1,4 @@
-# WebeSign extension — specification
+# signlocal extension — specification
 
 Role: the only bridge between pages and the app. No UI but the toolbar popup
 (`docs/ux.md` §9). Wire: [`protocol.md`](../docs/architecture/protocol.md);
@@ -17,7 +17,7 @@ MV3 for every target; permission `nativeMessaging` only (no
 `project.toml`, minimum 121; `default_locale: en` with `_locales` generated
 from `i18n/`; name, description and toolbar title are `__MSG_…__`.
 
-- Channel `WEBSIGN_CHANNEL` (`build/manifest.ts`): `direct` (default; the
+- Channel `SIGNLOCAL_CHANNEL` (`build/manifest.ts`): `direct` (default; the
   release zip people load unpacked) and every dev-server build carry
   `project.toml`'s `dev_key` on Chromium targets, which pins the extension
   ID to `dev_id`, the only ID the native host manifest allows. `store`
@@ -42,7 +42,7 @@ unchanged.
 - One native port per background lifetime, opened on first need and shared
   by every tab: `connect(reason = "page")` →
   `runtime.connectNative(NATIVE_HOST)`; first message `hello` with `client
-  {name:"websign-extension", version: manifest.version}`, `protocols
+  {name:"signlocal-extension", version: manifest.version}`, `protocols
   {min:1,max:1}`, `browser {name, version, reason}` (`reason` of the call
   that opened the port: `page`, `popup`, `installed`; the protocol's
   `startup` is unused). Concurrent and later callers get the same connection until it closes; the next call
@@ -68,7 +68,7 @@ unchanged.
 - `hello` deadline: 8 s until the app has answered once in this
   background's life (a first launch after install or update may be scanned
   by SmartScreen, Gatekeeper or an antivirus), then `APP_RESPONSE_TIMEOUT`
-  (3 s) from websign-protocol, via the generated `shared/limits.gen.ts`.
+  (3 s) from signlocal-protocol, via the generated `shared/limits.gen.ts`.
 - Idle close after 60 s without traffic and without open requests (a
   request is open from the message that starts it until `choose.result`,
   `sign.result`, `status`, `done` or `error` with its id).
@@ -110,7 +110,7 @@ unchanged.
     differs from the request's `topOrigin` (an unparseable URL counts as
     different) → those requests of that tab (`webNavigation` is not
     requested; the content-script matches give access to the URL);
-  - the content script's `websign-gone` on `pagehide` (reload, navigation,
+  - the content script's `signlocal-gone` on `pagehide` (reload, navigation,
     close, back-forward cache) → the requests of that tab, frame and
     document only, so a late goodbye never cancels the page that replaced
     it.
@@ -158,7 +158,7 @@ Chrome/Chromium/Edg → safari; else other). The background refines it for
 ### 3.1 Relay
 
 Accept `window` messages with `event.source === window`, `event.origin ===
-location.origin`, `data` a plain object with `source === "websign-page"`,
+location.origin`, `data` a plain object with `source === "signlocal-page"`,
 `kind` `discover` (→ §3.2) or `request` with a valid page id (§2.2). The
 request's `message` is rebuilt with `validatePageRequest` (§2.4); a refused
 one is answered locally with `InvalidRequest` and never sent. Other fields
@@ -169,10 +169,10 @@ Messages between content script and background (`src/shared/runtime-messages.ts`
 
 | Direction | Shape |
 |---|---|
-| content → background | `{kind: "websign-request", document, id, message}` |
-| content → background | `{kind: "websign-gone", document}` on `pagehide` |
-| background → content | `{kind: "websign-reply", document, id, message: PageReply}` |
-| background → top frame | `{kind: "websign-origin"}` → answered with `location.origin` |
+| content → background | `{kind: "signlocal-request", document, id, message}` |
+| content → background | `{kind: "signlocal-gone", document}` on `pagehide` |
+| background → content | `{kind: "signlocal-reply", document, id, message: PageReply}` |
+| background → top frame | `{kind: "signlocal-origin"}` → answered with `location.origin` |
 
 `document` is a random UUID per content-script instance (one per
 document). The background ignores messages from other extensions, from
@@ -180,8 +180,8 @@ senders without a tab, or without a valid `document`; it reads tab, frame
 and URLs only from `MessageSender`. The content script accepts only
 messages whose `sender.id` is its own extension, posts a reply only when its
 `document` is its own (a reply that races a navigation is dropped, never
-shown to the next page), and answers `websign-origin` only in the top
-frame. The popup talks to the background with `{kind: "websign-popup", op:
+shown to the next page), and answers `signlocal-origin` only in the top
+frame. The popup talks to the background with `{kind: "signlocal-popup", op:
 "probe" | "diagnostics"}` and is recognized by having no tab and an
 extension-page URL.
 

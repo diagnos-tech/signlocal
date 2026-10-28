@@ -2,13 +2,13 @@
 //! certificates: a device linked to a listed key has them; one of the
 //! "possible certificates" (§6.1) has none.
 
-use websign_devices::Snapshot;
-use websign_devices::anonymous_reader_name;
-use websign_devices::hints::{DeviceDatabase, DeviceHint, DeviceKind, PerOs};
-use websign_devices::pcsc::{CardState, Reader, ServiceState};
-use websign_devices::possible::{LinkedDevices, PossibleSource, possible_devices};
-use websign_devices::usb::UsbDevice;
-use websign_keystores::{DeviceLink, FoundKey};
+use signlocal_devices::Snapshot;
+use signlocal_devices::anonymous_reader_name;
+use signlocal_devices::hints::{DeviceDatabase, DeviceHint, DeviceKind, PerOs};
+use signlocal_devices::pcsc::{CardState, Reader, ServiceState};
+use signlocal_devices::possible::{LinkedDevices, PossibleSource, possible_devices};
+use signlocal_devices::usb::UsbDevice;
+use signlocal_keystores::{DeviceLink, FoundKey};
 
 use super::{CardFact, CertPresence, DevicesFact, HintFact, ReaderFact, TokenFact};
 

@@ -4,10 +4,10 @@
 //! learns in Choose mode.
 
 use egui::Ui;
-use websign_i18n::k;
-use websign_ui_model::confirm::ConfirmView;
-use websign_ui_model::confirm::port::Mode;
-use websign_ui_model::confirm::view::CodeCard as Slot;
+use signlocal_i18n::k;
+use signlocal_ui_model::confirm::ConfirmView;
+use signlocal_ui_model::confirm::port::Mode;
+use signlocal_ui_model::confirm::view::CodeCard as Slot;
 
 use super::Screen;
 use crate::ui::confirm::words;

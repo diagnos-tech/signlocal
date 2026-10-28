@@ -36,11 +36,11 @@ describe("nothing leaks to other frames or the console (T1, T4, T5, T10)", () =>
     expect(env.win.top.received).toEqual([]);
   });
 
-  it("only websign-page frames are posted, and only of kinds discover/request", async () => {
+  it("only signlocal-page frames are posted, and only of kinds discover/request", async () => {
     const { env } = await fullSignature();
     for (const { data } of env.win.posted) {
       const frame = data as { source: string; kind: string };
-      expect(frame.source).toBe("websign-page");
+      expect(frame.source).toBe("signlocal-page");
       expect(["discover", "request"]).toContain(frame.kind);
     }
   });
@@ -68,11 +68,11 @@ describe("nothing leaks to other frames or the console (T1, T4, T5, T10)", () =>
     const env = await loadSdk();
     expect(Object.keys(env.sdk).sort()).toEqual(
       [
-        "WebSignError",
+        "SignlocalError",
         "certificates",
         "fingerprint",
         "installUrl",
-        "isWebSignError",
+        "isSignlocalError",
         "onChange",
         "sign",
         "status",

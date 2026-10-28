@@ -3,7 +3,7 @@
 use std::io::Read;
 use std::path::Path;
 
-use websign_protocol::types::HashName;
+use signlocal_protocol::types::HashName;
 
 /// Read at most this much from a digest file: one byte more than the
 /// longest digest, so an oversized file is reported instead of truncated.
@@ -21,7 +21,7 @@ pub fn parse_text(text: &str, hash: HashName) -> Result<Vec<u8>, String> {
     let bytes = if is_hex {
         hex(&compact)?
     } else {
-        websign_protocol::base64::decode(text)
+        signlocal_protocol::base64::decode(text)
             .map_err(|_| "the digest is neither hex nor standard Base64".to_owned())?
     };
     check_len(bytes, hash)

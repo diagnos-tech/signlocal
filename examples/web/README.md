@@ -1,16 +1,16 @@
-# @websign/sdk web examples
+# @signlocal/sdk web examples
 
-Four ways to add WebeSign signing to a web page. Each runs **without the extension**: it installs the SDK's
-testing fake (`@websign/sdk/testing`), which signs with public test keys and has a panel in the corner to
+Four ways to add signlocal signing to a web page. Each runs **without the extension**: it installs the SDK's
+testing fake (`@signlocal/sdk/testing`), which signs with public test keys and has a panel in the corner to
 switch the visitor's setup (app missing, outdated…) and script the next outcome (the person cancels, the PIN
-is locked…). Add `?real` to the address to use the real WebeSign extension and app instead.
+is locked…). Add `?real` to the address to use the real signlocal extension and app instead.
 
 | Folder | Shows |
 |---|---|
 | [`vanilla/`](vanilla/index.html) | One HTML file, no framework: status, sign, errors |
-| [`react/`](react/) | A copy-paste `useWebSign()` hook: live status, `sign` with progress, error, cancel on unmount |
+| [`react/`](react/) | A copy-paste `useSignlocal()` hook: live status, `sign` with progress, error, cancel on unmount |
 | [`vue/`](vue/) | The same as a Vue composable |
-| [`pades/`](pades/) | Signing a PDF (PAdES B-B): pdf-lib reserves the signature, PKI.js builds the signed attributes and the CMS, WebeSign signs their hash, the raw signature goes back into the PDF |
+| [`pades/`](pades/) | Signing a PDF (PAdES B-B): pdf-lib reserves the signature, PKI.js builds the signed attributes and the CMS, signlocal signs their hash, the raw signature goes back into the PDF |
 
 ## Run
 
@@ -21,10 +21,10 @@ bun run dev        # http://localhost:5173/ lists the examples
 bun run check      # typecheck, the PAdES test (verified with OpenSSL), production build
 ```
 
-The examples import `@websign/sdk` from this repository's `sdk/src` (aliases in `vite.config.ts` and
-`tsconfig.json`). In your project, `bun add @websign/sdk` (or npm, pnpm, yarn) and import it as shown.
+The examples import `@signlocal/sdk` from this repository's `sdk/src` (aliases in `vite.config.ts` and
+`tsconfig.json`). In your project, `bun add @signlocal/sdk` (or npm, pnpm, yarn) and import it as shown.
 
-## Where the PDF library meets WebeSign
+## Where the PDF library meets signlocal
 
 [`pades/sign-pdf.ts`](pades/sign-pdf.ts) is the whole flow in 40 lines:
 
@@ -42,8 +42,8 @@ The examples import `@websign/sdk` from this repository's `sdk/src` (aliases in 
 
 ## Never ship the fake
 
-`@websign/sdk/testing` is loaded with a dynamic `import()` behind a check, so production bundles of the
+`@signlocal/sdk/testing` is loaded with a dynamic `import()` behind a check, so production bundles of the
 real flow never contain it. It also refuses non-local origins and warns on the console when installed.
 
 License: Apache-2.0, like the SDK. pdf-lib (MIT) and PKI.js (BSD-3-Clause) are dependencies of these
-examples only, never of `@websign/sdk`.
+examples only, never of `@signlocal/sdk`.

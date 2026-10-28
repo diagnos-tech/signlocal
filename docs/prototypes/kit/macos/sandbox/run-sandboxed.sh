@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Runs one websign-probe command inside the App Sandbox, for manual tests on
+# Runs one signlocal-probe command inside the App Sandbox, for manual tests on
 # a real Mac with real tokens and browsers:
 #
-#   PROBE_EXE=target/release/websign-probe \
+#   PROBE_EXE=target/release/signlocal-probe \
 #     bash macos/sandbox/run-sandboxed.sh list --module /usr/local/lib/libeTPkcs11.dylib
 #
-# The bundle is kept in WEBSIGN_SANDBOX_DIR (default
-# ~/Library/Caches/dev.websign.sandbox-test) so that a browser can start it
+# The bundle is kept in SIGNLOCAL_SANDBOX_DIR (default
+# ~/Library/Caches/health.diagnos.signlocal.sandbox-test) so that a browser can start it
 # after `register`. Set HARDENED=1 to sign it like a Developer ID build.
 # Sandbox denials of the run are printed at the end.
 
@@ -18,8 +18,8 @@ here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source-path=SCRIPTDIR source=../lib/bundle.sh
 . "$here/../lib/bundle.sh"
 
-: "${PROBE_EXE:?set PROBE_EXE to the websign-probe binary}"
-dir=${WEBSIGN_SANDBOX_DIR:-$HOME/Library/Caches/dev.websign.sandbox-test}
+: "${PROBE_EXE:?set PROBE_EXE to the signlocal-probe binary}"
+dir=${SIGNLOCAL_SANDBOX_DIR:-$HOME/Library/Caches/health.diagnos.signlocal.sandbox-test}
 flags=()
 [[ ${HARDENED:-0} == 1 ]] && flags=(--options runtime)
 
@@ -33,6 +33,6 @@ status=0
 
 echo "--- sandbox denials since $started ---" >&2
 log show --style compact --start "$started" \
-    --predicate 'sender == "Sandbox" AND eventMessage CONTAINS "websign-probe"' 2>/dev/null |
+    --predicate 'sender == "Sandbox" AND eventMessage CONTAINS "signlocal-probe"' 2>/dev/null |
     tail -n 50 >&2 || true
 exit "$status"

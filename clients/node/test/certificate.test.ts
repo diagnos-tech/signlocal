@@ -1,21 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { WebSign } from "../src/index";
+import { Signlocal } from "../src/index";
 import { CERTIFICATE, fake, helloRule, type Rule, send } from "./support";
 
 const withBytes = { ...CERTIFICATE, der: "MIIB", chain: ["AQID", "BAUG"] };
 
 async function connected(rules: Rule[]) {
   const app = fake({ rules: [helloRule(), ...rules] });
-  return { app, websign: await WebSign.connect({ executable: app.executable }) };
+  return { app, signlocal: await Signlocal.connect({ executable: app.executable }) };
 }
 
 describe("certificates are decoded at the boundary", () => {
   it("certificates() returns der and chain as bytes, validity as Date, other fields as sent", async () => {
-    const { websign } = await connected([
+    const { signlocal } = await connected([
       { on: "choose", do: [send({ type: "choose.result", certificates: [withBytes] })] },
     ]);
-    const [certificate] = await websign.certificates();
-    await websign.close();
+    const [certificate] = await signlocal.certificates();
+    await signlocal.close();
     expect(certificate?.der).toBeInstanceOf(Uint8Array);
     expect([...(certificate?.der ?? [])]).toEqual([0x30, 0x82, 0x01]);
     expect(certificate?.chain.map((c) => [...c])).toEqual([
@@ -29,7 +29,7 @@ describe("certificates are decoded at the boundary", () => {
   });
 
   it("prepare and the sign result get decoded certificates", async () => {
-    const { websign } = await connected([
+    const { signlocal } = await connected([
       {
         on: "sign.begin",
         do: [
@@ -56,14 +56,14 @@ describe("certificates are decoded at the boundary", () => {
       },
     ]);
     const seen: Uint8Array[] = [];
-    const signed = await websign.sign({
+    const signed = await signlocal.sign({
       hash: "SHA-256",
       prepare: (certificate) => {
         seen.push(certificate.der);
         return new Uint8Array(32);
       },
     });
-    await websign.close();
+    await signlocal.close();
     expect(seen.map((der) => [...der])).toEqual([[0x30, 0x82, 0x01]]);
     expect(signed.certificate.chain.map((c) => [...c])).toEqual([
       [1, 2, 3],
@@ -77,15 +77,15 @@ describe("certificates are decoded at the boundary", () => {
     ["a missing chain", { ...CERTIFICATE, chain: undefined }],
     ["a validity date that is not a number", { ...CERTIFICATE, notAfter: "soon" }],
   ])("certificates() rejects Internal on %s", async (_name, certificate) => {
-    const { websign } = await connected([
+    const { signlocal } = await connected([
       { on: "choose", do: [send({ type: "choose.result", certificates: [certificate] })] },
     ]);
-    await expect(websign.certificates()).rejects.toMatchObject({ code: "Internal" });
-    await websign.close();
+    await expect(signlocal.certificates()).rejects.toMatchObject({ code: "Internal" });
+    await signlocal.close();
   });
 
   it("cancels the signature when the digest request carries a garbled certificate", async () => {
-    const { app, websign } = await connected([
+    const { app, signlocal } = await connected([
       {
         on: "sign.begin",
         do: [
@@ -100,7 +100,7 @@ describe("certificates are decoded at the boundary", () => {
       },
     ]);
     let called = false;
-    const signing = websign.sign({
+    const signing = signlocal.sign({
       hash: "SHA-256",
       prepare: () => {
         called = true;
@@ -108,7 +108,7 @@ describe("certificates are decoded at the boundary", () => {
       },
     });
     await expect(signing).rejects.toMatchObject({ code: "Internal" });
-    await websign.close();
+    await signlocal.close();
     expect(called).toBe(false);
     expect(app.received().at(-1)).toMatchObject({ type: "cancel", id: "n2" });
   });

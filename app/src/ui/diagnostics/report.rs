@@ -1,14 +1,14 @@
 //! The "Copy diagnostics" text (`docs/ux.md` §8.7): the facts of a scan
-//! mapped onto `websign_ui_model::diagnostics::report`, which renders it.
+//! mapped onto `signlocal_ui_model::diagnostics::report`, which renders it.
 //!
 //! Only counts, versions, model IDs and codes cross over: the input types
 //! of the report cannot hold names, sites or serial numbers, and this module
 //! never reads certificate subjects.
 
 use jiff::Timestamp;
-use websign_host::store::ErrorRecord;
-use websign_registration::status::RegistrationState;
-use websign_ui_model::diagnostics::report::{
+use signlocal_host::store::ErrorRecord;
+use signlocal_registration::status::RegistrationState;
+use signlocal_ui_model::diagnostics::report::{
     BrowserLine, DeviceLine, ErrorLine, ModuleLine, ReportInput, render,
 };
 
@@ -49,7 +49,7 @@ impl Environment {
     }
 }
 
-/// The report of this machine for `websign doctor`: the window's collector,
+/// The report of this machine for `signlocal doctor`: the window's collector,
 /// without a window (nothing scaled, nothing rendered). Blocks while drivers
 /// load and readers answer.
 pub fn terminal_input() -> ReportInput {
@@ -73,7 +73,7 @@ pub fn input(facts: &Facts, environment: &Environment, now: Timestamp) -> Report
         app_version: environment.app_version.clone(),
         packaging: environment.packaging.clone(),
         arch: environment.arch.clone(),
-        protocol: websign_protocol::version::PROTOCOL_VERSION,
+        protocol: signlocal_protocol::version::PROTOCOL_VERSION,
         locale: environment.locale.clone(),
         scale_percent: environment.scale_percent,
         os: facts.os.clone(),

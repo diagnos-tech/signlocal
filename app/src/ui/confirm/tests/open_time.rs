@@ -6,7 +6,7 @@
 
 use std::time::{Duration, Instant};
 
-use websign_protocol::types::BrowserName;
+use signlocal_protocol::types::BrowserName;
 
 use super::fixtures::*;
 use super::support::Rig;

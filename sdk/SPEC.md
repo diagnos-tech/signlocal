@@ -1,4 +1,4 @@
-# @websign/sdk — specification
+# @signlocal/sdk — specification
 
 Surface and usage: [`docs/architecture/web-api.md`](../docs/architecture/web-api.md).
 Wire: [`protocol.md`](../docs/architecture/protocol.md) §9. Tests run in
@@ -9,7 +9,7 @@ script (`test/helpers`).
 
 - Zero runtime dependencies; ES2022; no globals written; tree-shakeable;
   published ESM with explicit `.js` import paths.
-- Every rejection is a `WebSignError` whose `code` is in the protocol
+- Every rejection is a `SignlocalError` whose `code` is in the protocol
   catalog; `status()` never rejects. Invalid options reject the returned
   promise (never a synchronous throw) before anything is posted.
 - Nothing is sent before the extension announced itself.
@@ -19,7 +19,7 @@ script (`test/helpers`).
   reject `ExtensionMissing`.
 - No console output from the main entry and `/messages`, ever (`/testing`
   warns on purpose, §14).
-- Every `WebSignError` carries `hint` (the next step, English, for developers;
+- Every `SignlocalError` carries `hint` (the next step, English, for developers;
   one per code, `src/hints.ts`) and `docsUrl` =
   `HOMEPAGE + "developers.html#error-" + code`; `site/developers.html` has an
   anchor for every code (tested).
@@ -27,18 +27,18 @@ script (`test/helpers`).
 ## 2. `channel` (internal, not exported from the package)
 
 - On import, listen for `message` events where `event.source === window`,
-  `event.origin === location.origin`, `data.source === "websign-extension"`,
+  `event.origin === location.origin`, `data.source === "signlocal-extension"`,
   a known `kind` and the fields the SDK acts on (announce: `extension
   {version, browser}` strings, `protocols {min, max}` integers with
   `1 ≤ min ≤ max`; `sign.need_digest`: integer `seq ≥ 1`, object
   `certificate`, string `hash`/`algorithm`; `error`: string `code` and
   `message`). Anything else, including the SDK's own looped-back
-  `websign-page` posts, is dropped silently. Unknown extra fields in a valid
+  `signlocal-page` posts, is dropped silently. Unknown extra fields in a valid
   frame are tolerated: strictness (D12) lives in the extension and the app.
 - Every post targets `location.origin`, never `"*"`, and only `window`
   itself: nothing is posted to `parent`, `top` or other frames.
 - `discover()`: if an `announce` was seen, resolve with it; else post
-  `{source:"websign-page", kind:"discover"}` and wait `DISCOVERY_TIMEOUT_MS`
+  `{source:"signlocal-page", kind:"discover"}` and wait `DISCOVERY_TIMEOUT_MS`
   (1000); resolve `null` on timeout. Concurrent callers share one discovery.
   The result, `null` included, is cached: later calls neither wait nor post
   until an `announce` replaces it (and fires `onChange`).
@@ -55,7 +55,7 @@ The SDK speaks page protocol 1. After discovery, `certificates()` and
 `sign()` refuse an announcement whose range excludes 1, posting nothing:
 
 - `min > 1` → `ClientOutdated`, details `{installed: "1", required: min}`:
-  the SDK is too old, the site must update `@websign/sdk`. (The catalog's
+  the SDK is too old, the site must update `@signlocal/sdk`. (The catalog's
   `ClientOutdated` is "a client speaks only older protocols"; the SDK is a
   client of the extension. `errorText` has no user text for it: the person
   cannot fix it.)
@@ -78,7 +78,7 @@ installed, `ready: false`, `problem: "ClientOutdated"` (or
 
 ## 5. Replies
 
-- `error` → `WebSignError(code, message, details)`; a code outside the
+- `error` → `SignlocalError(code, message, details)`; a code outside the
   catalog becomes `Internal`. `AppMissing`/`AppOutdated` also notify
   `onChange` subscribers.
 - A final reply of the wrong kind (e.g. `choose.result` to a sign), or one
@@ -169,14 +169,14 @@ Returns an idempotent unsubscribe.
 
 ## 11. `fingerprint(digest)`
 
-The verification code of `websign-protocol` SPEC §8, same vectors. Takes a
+The verification code of `signlocal-protocol` SPEC §8, same vectors. Takes a
 `Uint8Array` (its view only) or an `ArrayBuffer`. Fewer than 8 bytes, or not
-bytes → throws `WebSignError(InvalidRequest)` (the Rust API returns
+bytes → throws `SignlocalError(InvalidRequest)` (the Rust API returns
 `None`; a synchronous function has no promise to reject).
 
-## 12. `@websign/sdk/messages`
+## 12. `@signlocal/sdk/messages`
 
-`errorText(error, locale?)`: `error` is a code, a `WebSignError` or any
+`errorText(error, locale?)`: `error` is a code, a `SignlocalError` or any
 `{code, details?}`; `locale` defaults to `navigator.language`, else `en`.
 Closest locale (`pt` → pt-BR, `es-MX` → es, …, else en) from the generated
 `messages.gen.ts`; `{installed}`/`{required}` filled from `details` when
@@ -184,7 +184,7 @@ present, else left. `undefined` for `undefined` (so `status().problem` passes
 as is) and for `InvalidRequest`, `PinIncorrect`, `ClientOutdated` (site bugs
 or internal).
 
-`isWebSignError(error, ...codes)` (main entry): `instanceof WebSignError`
+`isSignlocalError(error, ...codes)` (main entry): `instanceof SignlocalError`
 and, when codes are given, one of them; narrows `code` in TypeScript.
 
 ## 13. Size
@@ -193,12 +193,12 @@ A consumer bundle of every export of the built main entry (Bun, minified) is
 < 5 KB gzip: `bun run build && bun run size` (exits 1 over budget; for CI).
 `/messages` and `/testing` are reported, not budgeted.
 
-## 14. `@websign/sdk/testing`
+## 14. `@signlocal/sdk/testing`
 
-`installFakeWebSign(options?)` answers the SDK's page frames on `window` as
+`installFakeSignlocal(options?)` answers the SDK's page frames on `window` as
 the content script, extension and app would (tests: `test/testing/`):
 
-- Frames arrive as `message` events whose data has `source: "websign-page"`;
+- Frames arrive as `message` events whose data has `source: "signlocal-page"`;
   answers are dispatched as `message` events with `source` = the window and
   `origin` = its origin (not `postMessage`: some test DOMs drop both), one
   microtask later or after `latencyMs`. It announces at install and on

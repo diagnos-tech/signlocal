@@ -1,12 +1,12 @@
 #!/bin/sh
-# Tests for install.sh against a fake release folder (WEBSIGN_RELEASE_DIR), so
+# Tests for install.sh against a fake release folder (SIGNLOCAL_RELEASE_DIR), so
 # no network and no real install happens. Runs on Linux and macOS:
 #   sh scripts/install/tests/install_sh_test.sh
 set -eu
 
 HERE=$(cd "$(dirname "$0")" && pwd)
 SCRIPT="$HERE/../install.sh"
-ROOT=$(mktemp -d "${TMPDIR:-/tmp}/websign-install-test.XXXXXX")
+ROOT=$(mktemp -d "${TMPDIR:-/tmp}/signlocal-install-test.XXXXXX")
 trap 'rm -rf "$ROOT"' EXIT INT TERM
 FAILED=0
 VERSION=9.9.9
@@ -30,7 +30,7 @@ sha256_of() {
     else shasum -a 256 "$1" | awk '{print $1}'; fi
 }
 
-# A fake `websign` that records its arguments in $FAKE_LOG.
+# A fake `signlocal` that records its arguments in $FAKE_LOG.
 write_fake_binary() {
     cat >"$1" <<'FAKE'
 #!/bin/sh
@@ -42,47 +42,47 @@ FAKE
 # Builds the release folder $1 with the Linux tarball and the macOS zip.
 make_release() {
     rel=$1
-    mkdir -p "$rel" "$ROOT/pkg/websign-$VERSION-linux-x64/bin" \
-        "$ROOT/pkg/websign-$VERSION-linux-x64/share/applications" \
-        "$ROOT/pkg/websign-$VERSION-linux-x64/share/doc/websign" \
-        "$ROOT/pkg/websign-$VERSION-linux-x64/share/icons/hicolor/48x48/apps" \
-        "$ROOT/app/WebeSign.app/Contents/MacOS"
-    write_fake_binary "$ROOT/pkg/websign-$VERSION-linux-x64/bin/websign"
-    printf '[Desktop Entry]\nExec=websign\n' >"$ROOT/pkg/websign-$VERSION-linux-x64/share/applications/websign.desktop"
-    echo license >"$ROOT/pkg/websign-$VERSION-linux-x64/share/doc/websign/LICENSE"
-    echo png >"$ROOT/pkg/websign-$VERSION-linux-x64/share/icons/hicolor/48x48/apps/websign.png"
-    echo deb >"$rel/websign_${VERSION}_amd64.deb"
-    tar -czf "$rel/websign-$VERSION-linux-x64.tar.gz" -C "$ROOT/pkg" "websign-$VERSION-linux-x64"
-    write_fake_binary "$ROOT/app/WebeSign.app/Contents/MacOS/websign"
-    (cd "$ROOT/app" && zip -q -r -y "$rel/websign-$VERSION-macos-universal.zip" WebeSign.app)
+    mkdir -p "$rel" "$ROOT/pkg/signlocal-$VERSION-linux-x64/bin" \
+        "$ROOT/pkg/signlocal-$VERSION-linux-x64/share/applications" \
+        "$ROOT/pkg/signlocal-$VERSION-linux-x64/share/doc/signlocal" \
+        "$ROOT/pkg/signlocal-$VERSION-linux-x64/share/icons/hicolor/48x48/apps" \
+        "$ROOT/app/signlocal.app/Contents/MacOS"
+    write_fake_binary "$ROOT/pkg/signlocal-$VERSION-linux-x64/bin/signlocal"
+    printf '[Desktop Entry]\nExec=signlocal\n' >"$ROOT/pkg/signlocal-$VERSION-linux-x64/share/applications/signlocal.desktop"
+    echo license >"$ROOT/pkg/signlocal-$VERSION-linux-x64/share/doc/signlocal/LICENSE"
+    echo png >"$ROOT/pkg/signlocal-$VERSION-linux-x64/share/icons/hicolor/48x48/apps/signlocal.png"
+    echo deb >"$rel/signlocal_${VERSION}_amd64.deb"
+    tar -czf "$rel/signlocal-$VERSION-linux-x64.tar.gz" -C "$ROOT/pkg" "signlocal-$VERSION-linux-x64"
+    write_fake_binary "$ROOT/app/signlocal.app/Contents/MacOS/signlocal"
+    (cd "$ROOT/app" && zip -q -r -y "$rel/signlocal-$VERSION-macos-universal.zip" signlocal.app)
     : >"$rel/SHA256SUMS"
-    for f in "$rel"/websign[-_]*; do
+    for f in "$rel"/signlocal[-_]*; do
         printf '%s  %s\n' "$(sha256_of "$f")" "$(basename "$f")" >>"$rel/SHA256SUMS"
     done
 }
 
 # Runs install.sh as Linux on a distro that has no package we can use.
 run_linux() {
-    WEBSIGN_RELEASE_DIR=$REL WEBSIGN_UNAME_S=Linux WEBSIGN_UNAME_M=x86_64 \
-        WEBSIGN_OS_RELEASE=$ROOT/os-release.arch HOME=$ROOT/home FAKE_LOG=$ROOT/log \
+    SIGNLOCAL_RELEASE_DIR=$REL SIGNLOCAL_UNAME_S=Linux SIGNLOCAL_UNAME_M=x86_64 \
+        SIGNLOCAL_OS_RELEASE=$ROOT/os-release.arch HOME=$ROOT/home FAKE_LOG=$ROOT/log \
         sh "$SCRIPT" "$@"
 }
 
 # ---- detection ------------------------------------------------------------
 
 # shellcheck source=/dev/null
-lib() { (WEBSIGN_INSTALL_LIB=1 . "$SCRIPT"; "$@"); }
+lib() { (SIGNLOCAL_INSTALL_LIB=1 . "$SCRIPT"; "$@"); }
 
 for pair in x86_64:x64 amd64:x64 aarch64:arm64 arm64:arm64; do
     m=${pair%:*}; want=${pair#*:}
-    got=$(WEBSIGN_UNAME_M=$m lib detect_arch)
+    got=$(SIGNLOCAL_UNAME_M=$m lib detect_arch)
     same "arch $m -> $want" "$want" "$got"
 done
-refuse "unknown arch is refused" env WEBSIGN_UNAME_M=riscv64 WEBSIGN_INSTALL_LIB=1 sh -c ". '$SCRIPT'; detect_arch"
+refuse "unknown arch is refused" env SIGNLOCAL_UNAME_M=riscv64 SIGNLOCAL_INSTALL_LIB=1 sh -c ". '$SCRIPT'; detect_arch"
 
 distro() { # name, content, expected
     printf '%s\n' "$2" >"$ROOT/os-release.$1"
-    got=$(WEBSIGN_OS_RELEASE=$ROOT/os-release.$1 lib detect_distro)
+    got=$(SIGNLOCAL_OS_RELEASE=$ROOT/os-release.$1 lib detect_distro)
     same "distro $1 -> $3" "$3" "$got"
 }
 distro ubuntu 'NAME="Ubuntu"
@@ -106,34 +106,34 @@ REL=$ROOT/release
 make_release "$REL"
 
 check "linux tarball install succeeds" run_linux --version "$VERSION" --yes --prefix "$ROOT/prefix"
-check "binary installed and executable" test -x "$ROOT/prefix/bin/websign"
-check "share tree installed" test -f "$ROOT/prefix/share/doc/websign/LICENSE"
-check "desktop entry points at the installed binary" grep -q "^Exec=\"$ROOT/prefix/bin/websign\"\$" "$ROOT/prefix/share/applications/websign.desktop"
-check "websign install was run" grep -q '^install$' "$ROOT/log"
+check "binary installed and executable" test -x "$ROOT/prefix/bin/signlocal"
+check "share tree installed" test -f "$ROOT/prefix/share/doc/signlocal/LICENSE"
+check "desktop entry points at the installed binary" grep -q "^Exec=\"$ROOT/prefix/bin/signlocal\"\$" "$ROOT/prefix/share/applications/signlocal.desktop"
+check "signlocal install was run" grep -q '^install$' "$ROOT/log"
 
 check "a leading v and a second run (upgrade) are fine" run_linux --version "v$VERSION" --yes --prefix "$ROOT/prefix"
 
 : >"$ROOT/log"
 run_linux --version "$VERSION" --yes --prefix "$ROOT/prefix2" --no-register >/dev/null 2>&1
-check "--no-register skips websign install" test ! -s "$ROOT/log"
+check "--no-register skips signlocal install" test ! -s "$ROOT/log"
 
 run_linux --version "$VERSION" --prefix "$ROOT/prefix3" --dry-run >/dev/null 2>&1
-check "--dry-run installs nothing" test ! -e "$ROOT/prefix3/bin/websign"
+check "--dry-run installs nothing" test ! -e "$ROOT/prefix3/bin/signlocal"
 
 # ---- fail closed ----------------------------------------------------------
 
 BAD=$ROOT/bad
 cp -R "$REL" "$BAD"
-printf 'tampered' >>"$BAD/websign-$VERSION-linux-x64.tar.gz"
-refuse "checksum mismatch fails" env REL="$BAD" WEBSIGN_RELEASE_DIR="$BAD" WEBSIGN_UNAME_S=Linux WEBSIGN_UNAME_M=x86_64 \
-    WEBSIGN_OS_RELEASE="$ROOT/os-release.arch" HOME="$ROOT/home" sh "$SCRIPT" --version "$VERSION" --yes --prefix "$ROOT/prefix4"
-check "nothing is installed after a mismatch" test ! -e "$ROOT/prefix4/bin/websign"
+printf 'tampered' >>"$BAD/signlocal-$VERSION-linux-x64.tar.gz"
+refuse "checksum mismatch fails" env REL="$BAD" SIGNLOCAL_RELEASE_DIR="$BAD" SIGNLOCAL_UNAME_S=Linux SIGNLOCAL_UNAME_M=x86_64 \
+    SIGNLOCAL_OS_RELEASE="$ROOT/os-release.arch" HOME="$ROOT/home" sh "$SCRIPT" --version "$VERSION" --yes --prefix "$ROOT/prefix4"
+check "nothing is installed after a mismatch" test ! -e "$ROOT/prefix4/bin/signlocal"
 
 UNLISTED=$ROOT/unlisted
 cp -R "$REL" "$UNLISTED"
 grep -v 'linux-x64' "$REL/SHA256SUMS" >"$UNLISTED/SHA256SUMS" || true
-refuse "a file missing from SHA256SUMS fails" env WEBSIGN_RELEASE_DIR="$UNLISTED" WEBSIGN_UNAME_S=Linux WEBSIGN_UNAME_M=x86_64 \
-    WEBSIGN_OS_RELEASE="$ROOT/os-release.arch" HOME="$ROOT/home" sh "$SCRIPT" --version "$VERSION" --yes --prefix "$ROOT/prefix5"
+refuse "a file missing from SHA256SUMS fails" env SIGNLOCAL_RELEASE_DIR="$UNLISTED" SIGNLOCAL_UNAME_S=Linux SIGNLOCAL_UNAME_M=x86_64 \
+    SIGNLOCAL_OS_RELEASE="$ROOT/os-release.arch" HOME="$ROOT/home" sh "$SCRIPT" --version "$VERSION" --yes --prefix "$ROOT/prefix5"
 
 refuse "--version is required" run_linux --yes --prefix "$ROOT/prefix6"
 for good in 1.2.3 0.1.0-rc.1 10.20.30-alpha-2.x+build.5; do
@@ -151,15 +151,15 @@ refuse "unknown options are refused" run_linux --frobnicate
 
 : >"$ROOT/log"
 run_linux --uninstall --yes --prefix "$ROOT/prefix" >/dev/null 2>&1
-check "uninstall ran websign uninstall" grep -q '^uninstall$' "$ROOT/log"
-check "uninstall removed the binary" test ! -e "$ROOT/prefix/bin/websign"
-check "uninstall removed the docs" test ! -e "$ROOT/prefix/share/doc/websign"
-check "uninstall removed the icons" test ! -e "$ROOT/prefix/share/icons/hicolor/48x48/apps/websign.png"
+check "uninstall ran signlocal uninstall" grep -q '^uninstall$' "$ROOT/log"
+check "uninstall removed the binary" test ! -e "$ROOT/prefix/bin/signlocal"
+check "uninstall removed the docs" test ! -e "$ROOT/prefix/share/doc/signlocal"
+check "uninstall removed the icons" test ! -e "$ROOT/prefix/share/icons/hicolor/48x48/apps/signlocal.png"
 check "a second uninstall is harmless" run_linux --uninstall --yes --prefix "$ROOT/prefix"
 
 # ---- system package (deb) -------------------------------------------------
 
-# Fake sudo, apt-get and websign on PATH record what the installer asks for.
+# Fake sudo, apt-get and signlocal on PATH record what the installer asks for.
 FAKEBIN=$ROOT/fakebin
 mkdir -p "$FAKEBIN"
 printf '#!/bin/sh\nexec "$@"\n' >"$FAKEBIN/sudo"
@@ -167,42 +167,42 @@ cat >"$FAKEBIN/apt-get" <<'FAKE'
 #!/bin/sh
 echo "apt-get $*" >>"$FAKE_LOG"
 FAKE
-write_fake_binary "$FAKEBIN/websign"
+write_fake_binary "$FAKEBIN/signlocal"
 chmod 0755 "$FAKEBIN/sudo" "$FAKEBIN/apt-get"
 # Only ever called through `check`, which shellcheck cannot follow: 0.9 reports
 # the body as unreachable (SC2317), 0.10+ the function as unused (SC2329).
 # shellcheck disable=SC2317,SC2329
 run_ubuntu() {
-    PATH="$FAKEBIN:$PATH" WEBSIGN_RELEASE_DIR=$REL WEBSIGN_UNAME_S=Linux WEBSIGN_UNAME_M=x86_64 \
-        WEBSIGN_OS_RELEASE=$ROOT/os-release.ubuntu HOME=$ROOT/home FAKE_LOG=$ROOT/log \
+    PATH="$FAKEBIN:$PATH" SIGNLOCAL_RELEASE_DIR=$REL SIGNLOCAL_UNAME_S=Linux SIGNLOCAL_UNAME_M=x86_64 \
+        SIGNLOCAL_OS_RELEASE=$ROOT/os-release.ubuntu HOME=$ROOT/home FAKE_LOG=$ROOT/log \
         sh "$SCRIPT" "$@" </dev/null
 }
 
 : >"$ROOT/log"
 check "--yes on Ubuntu installs the per-user tarball" run_ubuntu --version "$VERSION" --yes --prefix "$ROOT/prefix7"
 check "--yes never implies the system package" test ! -e "$ROOT/log" -o -z "$(grep apt-get "$ROOT/log")"
-check "the tarball landed" test -x "$ROOT/prefix7/bin/websign"
+check "the tarball landed" test -x "$ROOT/prefix7/bin/signlocal"
 
 : >"$ROOT/log"
 check "--system installs the verified deb" run_ubuntu --version "$VERSION" --yes --system
-check "the package manager got the deb" grep -q "^apt-get install -y .*/websign_${VERSION}_amd64.deb\$" "$ROOT/log"
+check "the package manager got the deb" grep -q "^apt-get install -y .*/signlocal_${VERSION}_amd64.deb\$" "$ROOT/log"
 
 refuse "--system without a usable package manager fails" run_linux --version "$VERSION" --system --prefix "$ROOT/prefix8"
-check "nothing is installed after --system fails" test ! -e "$ROOT/prefix8/bin/websign"
+check "nothing is installed after --system fails" test ! -e "$ROOT/prefix8/bin/signlocal"
 
 # ---- macOS ----------------------------------------------------------------
 
 if command -v unzip >/dev/null 2>&1 || command -v ditto >/dev/null 2>&1; then
     run_mac() {
-        WEBSIGN_RELEASE_DIR=$REL WEBSIGN_UNAME_S=Darwin WEBSIGN_UNAME_M=arm64 \
+        SIGNLOCAL_RELEASE_DIR=$REL SIGNLOCAL_UNAME_S=Darwin SIGNLOCAL_UNAME_M=arm64 \
             HOME=$ROOT/machome FAKE_LOG=$ROOT/maclog sh "$SCRIPT" "$@"
     }
     check "macOS app install succeeds" run_mac --version "$VERSION" --yes --prefix "$ROOT/Applications"
-    check "app bundle installed" test -x "$ROOT/Applications/WebeSign.app/Contents/MacOS/websign"
-    check "websign is linked into ~/.local/bin" test -L "$ROOT/machome/.local/bin/websign"
-    check "websign install was run (macOS)" grep -q '^install$' "$ROOT/maclog"
+    check "app bundle installed" test -x "$ROOT/Applications/signlocal.app/Contents/MacOS/signlocal"
+    check "signlocal is linked into ~/.local/bin" test -L "$ROOT/machome/.local/bin/signlocal"
+    check "signlocal install was run (macOS)" grep -q '^install$' "$ROOT/maclog"
     run_mac --uninstall --yes --prefix "$ROOT/Applications" >/dev/null 2>&1
-    check "macOS uninstall removes the app and the link" test ! -e "$ROOT/Applications/WebeSign.app" -a ! -L "$ROOT/machome/.local/bin/websign"
+    check "macOS uninstall removes the app and the link" test ! -e "$ROOT/Applications/signlocal.app" -a ! -L "$ROOT/machome/.local/bin/signlocal"
 else
     echo "skip macOS install tests (no unzip)"
 fi

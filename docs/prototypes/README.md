@@ -19,7 +19,7 @@ decision is proven (or refuted) with real code. Each proof has a document with t
 - [`kit/probe-core/`](kit/probe-core/): pure, tested logic (algorithms, signature encoding,
   certificate summaries with ICP-Brasil and eIDAS, verification, deduplication).
   Specification in [`SPEC.md`](kit/probe-core/SPEC.md). It will be promoted into the app.
-- [`kit/probe/`](kit/probe/): the `websign-probe` binary. It lists and signs through **every**
+- [`kit/probe/`](kit/probe/): the `signlocal-probe` binary. It lists and signs through **every**
   path the app will use (CNG/CAPI, Keychain/CryptoTokenKit, PKCS#11), checks each
   signature, and also works as a native messaging host.
 - `kit/extension/`, `kit/nm-e2e/`: minimal extension and end-to-end native messaging test.
@@ -32,10 +32,10 @@ proofs with software keys on all three systems when started by hand (Actions →
 
 ```sh
 cd docs/prototypes/kit
-cargo run -p websign-probe -- list                 # all certificates, by origin
-cargo run -p websign-probe -- sign --all --hash all --pss
-cargo run -p websign-probe -- devices              # USB devices and readers with ATR
-cargo run -p websign-probe -- report --run-signatures --all --out report.md
+cargo run -p signlocal-probe -- list                 # all certificates, by origin
+cargo run -p signlocal-probe -- sign --all --hash all --pss
+cargo run -p signlocal-probe -- devices              # USB devices and readers with ATR
+cargo run -p signlocal-probe -- report --run-signatures --all --out report.md
 ```
 
 The report contains no names, CPF/CNPJ, or serial numbers, so it is safe to paste here.

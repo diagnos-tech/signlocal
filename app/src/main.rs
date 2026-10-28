@@ -1,15 +1,15 @@
-//! `websign`: the WebeSign desktop app.
+//! `signlocal`: the signlocal desktop app.
 //!
 //! One binary, started four ways, told apart before any argument parsing
 //! ([`launch`]):
 //!
 //! 1. by a **browser** for our extension (native messaging: the arguments
 //!    are the extension origin or a manifest path) → host on stdio;
-//! 2. by the OS for a **`websign:` URL** (`websign:activate`) → register with
+//! 2. by the OS for a **`signlocal:` URL** (`signlocal:activate`) → register with
 //!    browsers and open diagnostics (on macOS the URL arrives as an Apple
 //!    Event instead, [`platform::url_events`]);
 //! 3. by a **program** or a person on the command line → [`cli`]
-//!    (`websign connect` is the desktop API on stdio);
+//!    (`signlocal connect` is the desktop API on stdio);
 //! 4. with **no arguments** (Start menu, Launchpad, app menu) → diagnostics.
 //!
 //! Nothing runs in the background and nothing is installed to start later:
@@ -37,7 +37,7 @@ use std::process::ExitCode;
 
 fn main() -> ExitCode {
     logging::init();
-    // macOS delivers `websign:` URLs as events, to a new or a running copy.
+    // macOS delivers `signlocal:` URLs as events, to a new or a running copy.
     platform::url_events::listen(cli::activate::on_url_event);
     match launch::detect() {
         launch::Launch::Browser(browser) => host_process::serve_browser(browser),

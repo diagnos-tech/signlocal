@@ -1,4 +1,4 @@
-//! `websign-probe report`: one Markdown file with everything a proof needs,
+//! `signlocal-probe report`: one Markdown file with everything a proof needs,
 //! and nothing personal — safe to paste into `docs/prototypes/`.
 
 use std::fmt::Write as _;
@@ -10,7 +10,7 @@ use super::{sign, view};
 use crate::devices;
 use crate::keystores::inventory::{Entry, Inventory};
 
-/// Arguments of `websign-probe report`.
+/// Arguments of `signlocal-probe report`.
 #[derive(Debug, clap::Args)]
 pub struct Args {
     #[command(flatten)]
@@ -76,7 +76,7 @@ fn without_home(text: &str, home: Option<std::path::PathBuf>) -> String {
 fn header(report: &mut String) {
     let _ = writeln!(
         report,
-        "## websign-probe {} — {} {}\n",
+        "## signlocal-probe {} — {} {}\n",
         env!("CARGO_PKG_VERSION"),
         std::env::consts::OS,
         std::env::consts::ARCH,

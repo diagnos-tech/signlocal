@@ -1,6 +1,6 @@
 # probe/src
 
-Source of `websign-probe`, organized by concept.
+Source of `signlocal-probe`, organized by concept.
 
 - `cli.rs` — command-line entry point; each subcommand owns its arguments
 - `commands/` — the subcommands that work across key sources
@@ -10,4 +10,4 @@ Source of `websign-probe`, organized by concept.
 - `main.rs` — program entry: dispatches to the CLI or to the native messaging host
 - `nm/` — native messaging: host loop, protocol, and browser registration
 - `platform/` — small OS facts kept apart from key handling
-- `trace.rs` — opt-in progress trace on stderr (`WEBSIGN_PROBE_TRACE=1`)
+- `trace.rs` — opt-in progress trace on stderr (`SIGNLOCAL_PROBE_TRACE=1`)

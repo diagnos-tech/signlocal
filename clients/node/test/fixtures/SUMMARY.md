@@ -1,3 +1,3 @@
 # clients/node/test/fixtures
 
-- `fake-websign.mjs` — scripted fake `websign connect` (rules from a JSON scenario)
+- `fake-signlocal.mjs` — scripted fake `signlocal connect` (rules from a JSON scenario)

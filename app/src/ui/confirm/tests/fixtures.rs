@@ -4,18 +4,18 @@
 
 use jiff::civil::date;
 use jiff::tz::TimeZone;
-use websign_core::present::caller::CallerLabel;
-use websign_core::present::origin::format_origin;
-use websign_core::{
+use signlocal_core::present::caller::CallerLabel;
+use signlocal_core::present::origin::format_origin;
+use signlocal_core::{
     CertInfo, DistinguishedName, Fingerprint, IcpBrasil, IcpLevel, KeyUsage, PublicKeyKind,
     Qualified, SignatureAlgorithm,
 };
-use websign_protocol::VerificationCode;
-use websign_protocol::code::verification_code;
-use websign_protocol::types::{BrowserName, HashName};
-use websign_ui_model::certs::{CertCandidate, DeviceLabel, KeySource, ListContext, PinMode};
-use websign_ui_model::confirm::port::{CallerView, Failure, Mode, OpenRequest, RequestKey};
-use websign_ui_model::possible::PossibleCard;
+use signlocal_protocol::VerificationCode;
+use signlocal_protocol::code::verification_code;
+use signlocal_protocol::types::{BrowserName, HashName};
+use signlocal_ui_model::certs::{CertCandidate, DeviceLabel, KeySource, ListContext, PinMode};
+use signlocal_ui_model::confirm::port::{CallerView, Failure, Mode, OpenRequest, RequestKey};
+use signlocal_ui_model::possible::PossibleCard;
 
 pub const KEY: RequestKey = RequestKey(7);
 pub const SIGN: Mode = Mode::Sign {

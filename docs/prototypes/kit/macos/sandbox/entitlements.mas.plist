@@ -14,7 +14,7 @@
 <plist version="1.0">
 <dict>
 	<key>com.apple.application-identifier</key>
-	<string>TEAMID.dev.websign.app</string>
+	<string>TEAMID.health.diagnos.signlocal</string>
 	<key>com.apple.developer.team-identifier</key>
 	<string>TEAMID</string>
 
@@ -40,7 +40,7 @@
 	-->
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>TEAMID.dev.websign</string>
+		<string>TEAMID.health.diagnos.signlocal</string>
 	</array>
 
 	<!--

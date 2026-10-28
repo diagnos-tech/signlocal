@@ -10,8 +10,8 @@ if (typeof importScripts === "function") {
 }
 
 const api = globalThis.browser ?? globalThis.chrome;
-const { minAppVersion, pages } = globalThis.WEBSIGN_CONFIG;
-const host = globalThis.WebsignHost;
+const { minAppVersion, pages } = globalThis.SIGNLOCAL_CONFIG;
+const host = globalThis.SignlocalHost;
 
 const HASHES = new Set(["SHA-256", "SHA-384", "SHA-512"]);
 const ALGORITHMS = new Set(["ECDSA", "RSASSA-PKCS1-v1_5", "RSASSA-PSS"]);
@@ -114,7 +114,7 @@ async function onPageRequest(message, sender) {
 }
 
 api.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message?.kind !== "websign-request") return false;
+  if (message?.kind !== "signlocal-request") return false;
   onPageRequest(message, sender).then(sendResponse, (error) =>
     sendResponse(localError("internal", String(error?.message ?? error))),
   );

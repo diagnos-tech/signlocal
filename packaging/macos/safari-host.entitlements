@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!--
-  The copy of websign inside the Safari appex: it runs in the appex's
+  The copy of signlocal inside the Safari appex: it runs in the appex's
   sandbox. Apple requires exactly these two keys for a helper started by a
   sandboxed process; any other key makes the helper crash at launch.
 -->

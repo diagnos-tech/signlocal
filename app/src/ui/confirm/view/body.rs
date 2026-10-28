@@ -2,8 +2,8 @@
 //! of `docs/ux.md` §4.8, sections 16 px apart.
 
 use egui::Ui;
-use websign_ui_model::confirm::ConfirmState;
-use websign_ui_model::confirm::port::Failure;
+use signlocal_ui_model::confirm::ConfirmState;
+use signlocal_ui_model::confirm::port::Failure;
 
 use super::fit::MustSee;
 use super::{Screen, code, empty, error, list, outcome, pin, remember};

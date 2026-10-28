@@ -11,7 +11,7 @@ describe("discovery", () => {
     const env = await loadSdk({ answerDiscover: false });
     const s = settle(env.sdk.status());
     await flush();
-    expect(env.script.discovers).toEqual([{ source: "websign-page", kind: "discover" }]);
+    expect(env.script.discovers).toEqual([{ source: "signlocal-page", kind: "discover" }]);
     expect(env.win.posted[0]?.targetOrigin).toBe(env.win.origin);
     await vi.advanceTimersByTimeAsync(998);
     expect(s.outcome()).toBeUndefined();

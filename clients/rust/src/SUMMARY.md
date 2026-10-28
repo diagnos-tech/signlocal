@@ -4,11 +4,11 @@
 - `error.rs` — What can go wrong: stable codes, hints and source chains.
 - `handshake.rs` — Starting the app, `hello` and version negotiation.
 - `hint.rs` — What a developer can do about each error code, and the docs link.
-- `lib.rs` — Call the WebeSign app from a Rust program.
-- `locate.rs` — Finding the `websign` executable.
+- `lib.rs` — Call the signlocal app from a Rust program.
+- `locate.rs` — Finding the `signlocal` executable.
 - `locate/` — unit tests of the executable search.
 - `options.rs` — What the caller asks for: connect options, sign options (algorithm set, preselection) and the `prepare` context.
-- `process.rs` — Spawning `websign connect` and reaping it within bounded waits.
+- `process.rs` — Spawning `signlocal connect` and reaping it within bounded waits.
 - `reader.rs` — The thread that turns the app's output into a channel of frames.
 - `session.rs` — The framed pipe to one child: which messages it expects, unusable after a failure, cleanup on drop.
 - `sign.rs` — `sign.begin` and the digest exchange: the app's request checked, `prepare`, cancellation.

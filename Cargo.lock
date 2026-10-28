@@ -3628,6 +3628,168 @@ dependencies = [
 ]
 
 [[package]]
+name = "signlocal-app"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "core-foundation 0.10.1",
+ "eframe",
+ "egui",
+ "egui-phosphor",
+ "egui_kittest",
+ "jiff",
+ "libc",
+ "log",
+ "png",
+ "secrecy",
+ "security-framework",
+ "serde",
+ "serde_json",
+ "signlocal-client",
+ "signlocal-core",
+ "signlocal-devices",
+ "signlocal-host",
+ "signlocal-i18n",
+ "signlocal-keystores",
+ "signlocal-project",
+ "signlocal-protocol",
+ "signlocal-registration",
+ "signlocal-ui-model",
+ "tempfile",
+ "thiserror 2.0.21",
+ "windows",
+ "zeroize",
+]
+
+[[package]]
+name = "signlocal-client"
+version = "0.1.0"
+dependencies = [
+ "serde_json",
+ "signlocal-project",
+ "signlocal-protocol",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "signlocal-core"
+version = "0.1.0"
+dependencies = [
+ "bp256",
+ "bp384",
+ "ecdsa",
+ "idna",
+ "p256",
+ "p384",
+ "p521",
+ "psl",
+ "rsa",
+ "sha2",
+ "signlocal-protocol",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "signlocal-devices"
+version = "0.1.0"
+dependencies = [
+ "log",
+ "nusb",
+ "pcsc",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "signlocal-host"
+version = "0.1.0"
+dependencies = [
+ "dirs",
+ "jiff",
+ "log",
+ "secrecy",
+ "serde",
+ "serde_json",
+ "signlocal-core",
+ "signlocal-devices",
+ "signlocal-keystores",
+ "signlocal-project",
+ "signlocal-protocol",
+ "signlocal-ui-model",
+ "tempfile",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "signlocal-i18n"
+version = "0.1.0"
+dependencies = [
+ "jiff",
+ "log",
+ "sys-locale",
+ "toml 0.9.12+spec-1.1.0",
+]
+
+[[package]]
+name = "signlocal-keystores"
+version = "0.1.0"
+dependencies = [
+ "core-foundation 0.10.1",
+ "cryptoki",
+ "cryptoki-sys",
+ "log",
+ "secrecy",
+ "security-framework",
+ "security-framework-sys",
+ "signlocal-core",
+ "signlocal-devices",
+ "signlocal-project",
+ "tempfile",
+ "thiserror 2.0.21",
+ "windows",
+ "zeroize",
+]
+
+[[package]]
+name = "signlocal-project"
+version = "0.1.0"
+
+[[package]]
+name = "signlocal-protocol"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "thiserror 2.0.21",
+ "ts-rs",
+]
+
+[[package]]
+name = "signlocal-registration"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "libc",
+ "serde_json",
+ "signlocal-project",
+ "tempfile",
+ "thiserror 2.0.21",
+ "windows",
+ "windows-registry",
+]
+
+[[package]]
+name = "signlocal-ui-model"
+version = "0.1.0"
+dependencies = [
+ "jiff",
+ "secrecy",
+ "signlocal-core",
+ "signlocal-protocol",
+]
+
+[[package]]
 name = "simd-adler32"
 version = "0.3.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4402,168 +4564,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "websign-app"
-version = "0.1.0"
-dependencies = [
- "clap",
- "core-foundation 0.10.1",
- "eframe",
- "egui",
- "egui-phosphor",
- "egui_kittest",
- "jiff",
- "libc",
- "log",
- "png",
- "secrecy",
- "security-framework",
- "serde",
- "serde_json",
- "tempfile",
- "thiserror 2.0.21",
- "websign-client",
- "websign-core",
- "websign-devices",
- "websign-host",
- "websign-i18n",
- "websign-keystores",
- "websign-project",
- "websign-protocol",
- "websign-registration",
- "websign-ui-model",
- "windows",
- "zeroize",
-]
-
-[[package]]
-name = "websign-client"
-version = "0.1.0"
-dependencies = [
- "serde_json",
- "thiserror 2.0.21",
- "websign-project",
- "websign-protocol",
-]
-
-[[package]]
-name = "websign-core"
-version = "0.1.0"
-dependencies = [
- "bp256",
- "bp384",
- "ecdsa",
- "idna",
- "p256",
- "p384",
- "p521",
- "psl",
- "rsa",
- "sha2",
- "thiserror 2.0.21",
- "websign-protocol",
-]
-
-[[package]]
-name = "websign-devices"
-version = "0.1.0"
-dependencies = [
- "log",
- "nusb",
- "pcsc",
- "serde",
- "serde_json",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "websign-host"
-version = "0.1.0"
-dependencies = [
- "dirs",
- "jiff",
- "log",
- "secrecy",
- "serde",
- "serde_json",
- "tempfile",
- "thiserror 2.0.21",
- "websign-core",
- "websign-devices",
- "websign-keystores",
- "websign-project",
- "websign-protocol",
- "websign-ui-model",
-]
-
-[[package]]
-name = "websign-i18n"
-version = "0.1.0"
-dependencies = [
- "jiff",
- "log",
- "sys-locale",
- "toml 0.9.12+spec-1.1.0",
-]
-
-[[package]]
-name = "websign-keystores"
-version = "0.1.0"
-dependencies = [
- "core-foundation 0.10.1",
- "cryptoki",
- "cryptoki-sys",
- "log",
- "secrecy",
- "security-framework",
- "security-framework-sys",
- "tempfile",
- "thiserror 2.0.21",
- "websign-core",
- "websign-devices",
- "websign-project",
- "windows",
- "zeroize",
-]
-
-[[package]]
-name = "websign-project"
-version = "0.1.0"
-
-[[package]]
-name = "websign-protocol"
-version = "0.1.0"
-dependencies = [
- "serde",
- "serde_json",
- "thiserror 2.0.21",
- "ts-rs",
-]
-
-[[package]]
-name = "websign-registration"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "libc",
- "serde_json",
- "tempfile",
- "thiserror 2.0.21",
- "websign-project",
- "windows",
- "windows-registry",
-]
-
-[[package]]
-name = "websign-ui-model"
-version = "0.1.0"
-dependencies = [
- "jiff",
- "secrecy",
- "websign-core",
- "websign-protocol",
-]
-
-[[package]]
 name = "weezl"
 version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5231,11 +5231,11 @@ dependencies = [
  "clap",
  "serde",
  "serde_json",
+ "signlocal-i18n",
+ "signlocal-protocol",
+ "signlocal-registration",
  "thiserror 2.0.21",
  "toml 0.9.12+spec-1.1.0",
- "websign-i18n",
- "websign-protocol",
- "websign-registration",
 ]
 
 [[package]]

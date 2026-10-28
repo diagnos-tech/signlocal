@@ -9,7 +9,7 @@
  * frame or window cannot answer in the extension's name.
  */
 
-import { abortedError, WebSignError } from "./errors.js";
+import { abortedError, SignlocalError } from "./errors.js";
 import type { ExtensionInfo, PageReply, PageRequest, ProtocolRange } from "./generated/index.js";
 import { FINAL_REPLY_TYPES, parseIncoming } from "./incoming.js";
 
@@ -19,7 +19,7 @@ export const DISCOVERY_TIMEOUT_MS = 1000;
 /** The protocol version this SDK speaks. */
 export const PROTOCOL_VERSION = 1;
 
-const PAGE_SOURCE = "websign-page";
+const PAGE_SOURCE = "signlocal-page";
 
 /** What the extension announced. */
 export interface Announcement {
@@ -126,7 +126,7 @@ export function send(
 ): { readonly id: string; readonly done: Promise<void> } {
   const st = current();
   if (st === undefined)
-    throw new WebSignError("ExtensionMissing", "There is no window to talk to.");
+    throw new SignlocalError("ExtensionMissing", "There is no window to talk to.");
   // Counter for order, random tail so two SDK copies bundled on one page never share an id.
   const id = `p${++st.counter}.${Math.random().toString(36).slice(2, 8).padEnd(6, "0")}`;
   const done = new Promise<void>((resolve, reject) => {

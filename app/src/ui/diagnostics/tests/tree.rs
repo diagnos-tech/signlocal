@@ -3,7 +3,7 @@
 //! is named in words and placed on screen.
 
 use egui_kittest::kittest::Queryable as _;
-use websign_protocol::messages::DiagnosticsTab;
+use signlocal_protocol::messages::DiagnosticsTab;
 
 use super::fixture;
 use super::support::{Setup, open};

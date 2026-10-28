@@ -4,8 +4,8 @@
 //! card service, the token's driver download, the `.pfx` import, the test
 //! page.
 
-use websign_i18n::{Catalog, k};
-use websign_ui_model::diagnostics::onboarding::{Step, StepState};
+use signlocal_i18n::{Catalog, k};
+use signlocal_ui_model::diagnostics::onboarding::{Step, StepState};
 
 use super::browsers::install_page;
 use super::devices::PCSCD_COMMAND;
@@ -29,13 +29,13 @@ pub struct Todo {
 /// The site's test page, which signs a sample message and shows the same
 /// verification code.
 pub fn test_page() -> String {
-    format!("{}test/", websign_project::HOMEPAGE)
+    format!("{}test/", signlocal_project::HOMEPAGE)
 }
 
 /// The site's page that starts the app from the browser and waits for the
 /// extension to connect (`docs/ux.md` §9).
 pub fn activate_page() -> String {
-    format!("{}activate/", websign_project::HOMEPAGE)
+    format!("{}activate/", signlocal_project::HOMEPAGE)
 }
 
 /// The row of `step`, which is not done.

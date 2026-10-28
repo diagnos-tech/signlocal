@@ -35,7 +35,7 @@ pub fn easing(t: f32) -> f32 {
 
 /// Where the reduce-motion flag lives in the context's temporary data.
 fn flag_id() -> Id {
-    Id::new("websign.theme.reduce_motion")
+    Id::new("signlocal.theme.reduce_motion")
 }
 
 /// Records the OS "reduce motion" preference on `ctx` and applies it to

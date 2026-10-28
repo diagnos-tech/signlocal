@@ -4,11 +4,11 @@
 //! PIN, else the primary button). No row gesture ever signs.
 
 use egui::{EventFilter, Id, Key, Ui};
-use websign_core::Fingerprint;
-use websign_i18n::k;
-use websign_ui_model::certs::{CertRow, RowStatus};
-use websign_ui_model::confirm::UserInput;
-use websign_ui_model::confirm::view::PinBlock;
+use signlocal_core::Fingerprint;
+use signlocal_i18n::k;
+use signlocal_ui_model::certs::{CertRow, RowStatus};
+use signlocal_ui_model::confirm::UserInput;
+use signlocal_ui_model::confirm::view::PinBlock;
 
 use super::{Screen, details};
 use crate::ui::confirm::row_text::RowText;

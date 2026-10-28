@@ -1,8 +1,8 @@
 {
-  "name": "websign-web-examples",
+  "name": "signlocal-web-examples",
   "private": true,
   "version": "0.0.0",
-  "description": "@websign/sdk examples: vanilla HTML, React, Vue and a PAdES (PDF) flow. They run without the extension, on the SDK's testing fake.",
+  "description": "@signlocal/sdk examples: vanilla HTML, React, Vue and a PAdES (PDF) flow. They run without the extension, on the SDK's testing fake.",
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {

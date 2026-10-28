@@ -1,4 +1,4 @@
-//! Identifying the program that started `websign connect`/`sign`/`choose`.
+//! Identifying the program that started `signlocal connect`/`sign`/`choose`.
 //!
 //! The caller is the **parent process**, found by the OS, never by anything
 //! the program sends:
@@ -23,11 +23,11 @@
 //! `cmd`, `powershell`) is reported as itself: the person started the
 //! command. Every script it runs shares that identity, so such a caller is
 //! never remembered and the window names it "a script run by {program}"
-//! (`websign_core::present::caller::runs_scripts`).
+//! (`signlocal_core::present::caller::runs_scripts`).
 //!
 //! Nothing here logs the executable path: it usually contains the user name.
 
-use websign_core::present::caller::DesktopCaller;
+use signlocal_core::present::caller::DesktopCaller;
 
 /// The calling program; `None` when the parent cannot be read (then the
 /// request is refused with `Internal`).

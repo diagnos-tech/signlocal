@@ -8,12 +8,12 @@ use std::time::Duration;
 
 use egui::Vec2;
 use egui_kittest::{Harness, SnapshotError, SnapshotOptions};
-use websign_host::EngineEvent;
-use websign_i18n::{Catalog, Locale};
-use websign_ui_model::certs::CertCandidate;
-use websign_ui_model::confirm::port::{Failure, Finish, OpenRequest};
-use websign_ui_model::confirm::{UiCommand, UiEvent};
-use websign_ui_model::possible::PossibleCard;
+use signlocal_host::EngineEvent;
+use signlocal_i18n::{Catalog, Locale};
+use signlocal_ui_model::certs::CertCandidate;
+use signlocal_ui_model::confirm::port::{Failure, Finish, OpenRequest};
+use signlocal_ui_model::confirm::{UiCommand, UiEvent};
+use signlocal_ui_model::possible::PossibleCard;
 
 use super::fixtures::{KEY, code, context, fingerprint};
 use crate::ui::confirm::clock::{Clock, ManualTime};

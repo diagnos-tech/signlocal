@@ -68,7 +68,7 @@ export function handlePopupMessage(
   respond: (result: ProbeResult) => void,
 ): boolean {
   const request = message as Partial<PopupRequest> | null;
-  if (request?.kind !== "websign-popup" || !fromPopup(sender)) return false;
+  if (request?.kind !== "signlocal-popup" || !fromPopup(sender)) return false;
   const work = request.op === "diagnostics" ? openDiagnostics() : probe();
   void work.then(respond);
   return true;

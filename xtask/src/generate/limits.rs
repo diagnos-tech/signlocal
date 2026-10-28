@@ -1,4 +1,4 @@
-//! `websign-protocol` numbers → `extension/src/shared/limits.gen.ts`.
+//! `signlocal-protocol` numbers → `extension/src/shared/limits.gen.ts`.
 //!
 //! The extension enforces the same version, message sources, lengths and
 //! timers as the app; reading them from the crate (not from a hand copy)
@@ -6,9 +6,9 @@
 
 use std::time::Duration;
 
-use websign_protocol::limits;
-use websign_protocol::page::{EXTENSION_SOURCE, PAGE_SOURCE};
-use websign_protocol::version::PROTOCOL_VERSION;
+use signlocal_protocol::limits;
+use signlocal_protocol::page::{EXTENSION_SOURCE, PAGE_SOURCE};
+use signlocal_protocol::version::PROTOCOL_VERSION;
 
 use super::text::ts_header;
 use crate::plan::Plan;
@@ -77,7 +77,7 @@ fn constants() -> [(&'static str, &'static str, Value); 8] {
 }
 
 pub fn plan() -> Result<Plan, String> {
-    let mut out = ts_header("crates/websign-protocol");
+    let mut out = ts_header("crates/signlocal-protocol");
     for (name, doc, value) in constants() {
         let literal = match value {
             Value::Number(digits) => group_digits(&digits),
@@ -124,6 +124,6 @@ mod tests {
         let content = &plan.files[0].content;
         assert!(content.contains("/** How long an idle native messaging port stays open. */\n"));
         assert!(content.contains("export const EXTENSION_IDLE_CLOSE_MS = 60_000;\n"));
-        assert!(content.contains("export const PAGE_SOURCE = \"websign-page\";\n"));
+        assert!(content.contains("export const PAGE_SOURCE = \"signlocal-page\";\n"));
     }
 }

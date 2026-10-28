@@ -1,4 +1,4 @@
-//! Opt-in progress trace on stderr, switched on by `WEBSIGN_PROBE_TRACE=1`.
+//! Opt-in progress trace on stderr, switched on by `SIGNLOCAL_PROBE_TRACE=1`.
 //!
 //! When a native call never returns (a provider waiting for a dialog nobody
 //! can see, a module stuck in `C_Initialize`), the last trace line says
@@ -11,7 +11,7 @@ use std::sync::OnceLock;
 use std::time::Instant;
 
 /// The environment variable that turns the trace on.
-pub const ENV: &str = "WEBSIGN_PROBE_TRACE";
+pub const ENV: &str = "SIGNLOCAL_PROBE_TRACE";
 
 /// Writes one trace line when the trace is on; formats nothing otherwise.
 macro_rules! trace {

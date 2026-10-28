@@ -13,7 +13,7 @@
 #
 # TODO(gustavo): code signing (Authenticode, Developer ID + notarization),
 # store uploads (Chrome Web Store, Edge Add-ons, AMO, Microsoft Store, Mac App
-# Store) and npm publication of @websign/sdk and @websign/desktop are by hand;
+# Store) and npm publication of @signlocal/sdk and @signlocal/desktop are by hand;
 # the npm tarballs are attached to the run as the `maintainer-npm` artifact.
 name: release
 
@@ -120,7 +120,7 @@ jobs:
         run: cargo xtask package --target ${{ matrix.target }} --out dist
       - name: Release binary has no e2e marker
         timeout-minutes: 10
-        run: cargo xtask check release --binary target/${{ matrix.target }}/release/websign
+        run: cargo xtask check release --binary target/${{ matrix.target }}/release/signlocal
       - uses: actions/upload-artifact@v4
         with:
           name: release-linux-${{ matrix.arch }}
@@ -161,7 +161,7 @@ jobs:
         if: matrix.target == 'universal-apple-darwin'
         working-directory: extension
         env:
-          WEBSIGN_CHANNEL: direct
+          SIGNLOCAL_CHANNEL: direct
         run: bunx wxt build -b safari
       - name: Install the pinned toolchain
         run: rustup toolchain install || rustup show
@@ -182,7 +182,7 @@ jobs:
             *) targets="${{ matrix.target }}" ;;
           esac
           for target in $targets; do
-            binary="target/$target/release/websign"
+            binary="target/$target/release/signlocal"
             [[ $target == *windows* ]] && binary="$binary.exe"
             cargo xtask check release --binary "$binary"
           done
@@ -215,7 +215,7 @@ jobs:
       - name: Extension zips (direct channel)
         working-directory: extension
         env:
-          WEBSIGN_CHANNEL: direct
+          SIGNLOCAL_CHANNEL: direct
         run: bun run zip
       - name: Install build dependencies
         timeout-minutes: 10
@@ -275,10 +275,10 @@ jobs:
       - name: Every artifact of the release table is present
         run: |
           v=$VERSION
-          expected="websign-$v-windows-x64.zip websign-$v-windows-arm64.zip websign-$v-macos-universal.zip
-            websign_${v}_amd64.deb websign_${v}_arm64.deb websign-$v-1.x86_64.rpm websign-$v-1.aarch64.rpm
-            websign-$v-linux-x64.tar.gz websign-$v-linux-arm64.tar.gz
-            websign-extension-$v-chromium.zip websign-extension-$v-firefox.zip"
+          expected="signlocal-$v-windows-x64.zip signlocal-$v-windows-arm64.zip signlocal-$v-macos-universal.zip
+            signlocal_${v}_amd64.deb signlocal_${v}_arm64.deb signlocal-$v-1.x86_64.rpm signlocal-$v-1.aarch64.rpm
+            signlocal-$v-linux-x64.tar.gz signlocal-$v-linux-arm64.tar.gz
+            signlocal-extension-$v-chromium.zip signlocal-extension-$v-firefox.zip"
           missing=0
           for file in $expected; do
             [[ -f dist/$file ]] || { echo "::error::missing $file"; missing=1; }
@@ -311,6 +311,6 @@ jobs:
             gh release edit "$TAG" --prerelease --notes-file notes.md
           else
             gh release create "$TAG" dist/* --draft --prerelease --verify-tag \
-              --title "WebeSign $VERSION" --notes-file notes.md
+              --title "signlocal $VERSION" --notes-file notes.md
             gh release edit "$TAG" --draft=false
           fi

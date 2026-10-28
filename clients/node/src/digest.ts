@@ -1,6 +1,6 @@
 /** The digest step of `sign()`: what the app asks for and what `prepare` returns. */
 
-import { WebSignError } from "./errors.js";
+import { SignlocalError } from "./errors.js";
 import type { NeedDigest } from "./generated/index.js";
 import type { HashAlgorithm, SignatureAlgorithm } from "./types.js";
 import { ALGORITHMS, DIGEST_LENGTH } from "./validate.js";
@@ -10,7 +10,7 @@ import { ALGORITHMS, DIGEST_LENGTH } from "./validate.js";
  * here rather than by the app so a wrong length (a SHA-1 digest, a hex
  * string) fails with a message that names the mistake.
  *
- * @throws {WebSignError} `InvalidRequest` for anything but a right-sized `Uint8Array`/`ArrayBuffer`.
+ * @throws {SignlocalError} `InvalidRequest` for anything but a right-sized `Uint8Array`/`ArrayBuffer`.
  */
 export function toDigestBytes(value: unknown, hash: HashAlgorithm): Uint8Array {
   const bytes = ArrayBuffer.isView(value)
@@ -19,11 +19,14 @@ export function toDigestBytes(value: unknown, hash: HashAlgorithm): Uint8Array {
       ? new Uint8Array(value)
       : undefined;
   if (bytes === undefined) {
-    throw new WebSignError("InvalidRequest", "prepare must return a Uint8Array or an ArrayBuffer");
+    throw new SignlocalError(
+      "InvalidRequest",
+      "prepare must return a Uint8Array or an ArrayBuffer",
+    );
   }
   const required = DIGEST_LENGTH[hash];
   if (bytes.length !== required) {
-    throw new WebSignError(
+    throw new SignlocalError(
       "InvalidRequest",
       `digest is ${bytes.length} bytes; ${hash} requires ${required}`,
     );
@@ -37,7 +40,7 @@ export function toDigestBytes(value: unknown, hash: HashAlgorithm): Uint8Array {
  * make the caller build signed attributes for a signature it never asked
  * for. `InvalidRequest` is the protocol's code for a broken signing sequence.
  *
- * @throws {WebSignError} `InvalidRequest`.
+ * @throws {SignlocalError} `InvalidRequest`.
  */
 export function checkNeed(
   need: Pick<NeedDigest, "hash" | "algorithm">,
@@ -45,13 +48,13 @@ export function checkNeed(
   algorithms: readonly SignatureAlgorithm[] | undefined,
 ): void {
   if (need.hash !== hash) {
-    throw new WebSignError(
+    throw new SignlocalError(
       "InvalidRequest",
       `the app asked for a ${String(need.hash)} digest; sign() asked for ${hash}`,
     );
   }
   if (!(algorithms ?? ALGORITHMS).includes(need.algorithm)) {
-    throw new WebSignError(
+    throw new SignlocalError(
       "InvalidRequest",
       `the app chose ${String(need.algorithm)}, which sign() did not accept`,
     );

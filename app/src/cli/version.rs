@@ -1,12 +1,12 @@
-//! `websign version`.
+//! `signlocal version`.
 
 use std::process::ExitCode;
 
-use websign_protocol::types::AppInfo;
+use signlocal_protocol::types::AppInfo;
 
 use super::output::{FAILURE, SUCCESS, print_json};
 
-/// `websign version`.
+/// `signlocal version`.
 #[derive(Debug, clap::Args)]
 pub struct VersionArgs {
     /// Print `AppInfo` as JSON (version, protocols, os, arch, channel).
@@ -14,7 +14,7 @@ pub struct VersionArgs {
     pub json: bool,
 }
 
-/// Prints `websign 1.4.0 (protocol 1)` or the JSON.
+/// Prints `signlocal 1.4.0 (protocol 1)` or the JSON.
 pub fn run(args: &VersionArgs) -> ExitCode {
     let info = crate::host_process::app_info();
     match render(&info, args.json) {
@@ -33,7 +33,7 @@ pub fn render(info: &AppInfo, json: bool) -> Option<String> {
     } else {
         Some(format!(
             "{} {} (protocol {})",
-            websign_project::SLUG,
+            signlocal_project::SLUG,
             info.version,
             info.protocols.max
         ))

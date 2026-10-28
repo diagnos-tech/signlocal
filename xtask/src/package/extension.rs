@@ -54,10 +54,10 @@ mod tests {
     #[test]
     fn picks_the_browser_zip_and_not_the_sources_zip() {
         let dir = TempDir::new();
-        dir.write("websign-extension-0.1.0-firefox.zip", "");
-        dir.write("websign-extension-0.1.0-sources.zip", "");
+        dir.write("signlocal-extension-0.1.0-firefox.zip", "");
+        dir.write("signlocal-extension-0.1.0-sources.zip", "");
         let path = find(dir.path(), "firefox").unwrap();
-        assert!(path.ends_with("websign-extension-0.1.0-firefox.zip"));
+        assert!(path.ends_with("signlocal-extension-0.1.0-firefox.zip"));
         assert!(find(dir.path(), "chrome").is_err());
     }
 }

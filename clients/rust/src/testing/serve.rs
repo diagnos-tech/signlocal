@@ -3,14 +3,14 @@
 use std::io::{PipeReader, PipeWriter};
 use std::sync::{Arc, Mutex, PoisonError};
 
-use websign_protocol::framing::{read_frame, write_frame};
-use websign_protocol::messages::{
+use signlocal_protocol::framing::{read_frame, write_frame};
+use signlocal_protocol::messages::{
     ChooseResult, Done, HelloReply, NeedDigest, SignBegin, SignResult, StatusReply,
 };
-use websign_protocol::types::{
+use signlocal_protocol::types::{
     AppInfo, Base64Bytes, Certificate, Channel, HashName, OsName, SignatureAlgorithmName,
 };
-use websign_protocol::{
+use signlocal_protocol::{
     AppEnvelope, AppMessage, ClientEnvelope, ClientMessage, ErrorCode, ProtocolRange, RequestId,
     WireError, parse_client_message, to_json,
 };

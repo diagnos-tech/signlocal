@@ -1,12 +1,12 @@
 #Requires -Version 7.2
 <#
 .SYNOPSIS
-    Proof of the Windows key store with software keys: websign-probe lists
+    Proof of the Windows key store with software keys: signlocal-probe lists
     and signs with CNG and legacy CAPI keys under every --ncrypt mode, and
     every outcome is checked against what is expected.
 
 .DESCRIPTION
-    Needs $env:PROBE_EXE (the websign-probe binary). When $env:REPORT_PATH is
+    Needs $env:PROBE_EXE (the signlocal-probe binary). When $env:REPORT_PATH is
     set, also writes the probe's Markdown report there. Test certificates are
     created by make-test-certs.ps1 and always removed at the end.
 
@@ -29,7 +29,7 @@
 
     Nothing can hang the job: every probe run has its own time limit
     (-ProbeTimeoutSeconds) after which it is killed and reported as TIMEOUT,
-    with WEBSIGN_PROBE_TRACE=1 its last trace line on stderr names the native
+    with SIGNLOCAL_PROBE_TRACE=1 its last trace line on stderr names the native
     call it was stuck in, and after $MaxTimeouts time-outs the remaining runs
     are skipped so the summary still gets printed.
 #>
@@ -48,10 +48,10 @@ Set-StrictMode -Version Latest
 . "$PSScriptRoot/invoke-bounded.ps1"
 
 if (-not $Probe -or -not (Test-Path -LiteralPath $Probe)) {
-    throw 'Set PROBE_EXE to the websign-probe binary.'
+    throw 'Set PROBE_EXE to the signlocal-probe binary.'
 }
 # Each step the probe takes, on stderr (no personal data): a hang names its call.
-if (-not $env:WEBSIGN_PROBE_TRACE) { $env:WEBSIGN_PROBE_TRACE = '1' }
+if (-not $env:SIGNLOCAL_PROBE_TRACE) { $env:SIGNLOCAL_PROBE_TRACE = '1' }
 $Isolate = '--no-known-modules', '--no-p11-kit', '--silent'
 $MaxTimeouts = 3
 $script:timeouts = 0
@@ -63,10 +63,10 @@ $rows = [Collections.Generic.List[object]]::new()
 # warnings go to stderr, which is echoed but never parsed.
 function Invoke-Probe([string[]] $Arguments) {
     $run = Invoke-Bounded -FilePath $Probe -Arguments $Arguments -TimeoutSeconds $ProbeTimeoutSeconds `
-        -Label "websign-probe $($Arguments -join ' ')"
+        -Label "signlocal-probe $($Arguments -join ' ')"
     if ($run.TimedOut) {
         $script:timeouts++
-        $failures.Add("TIMEOUT in websign-probe $($Arguments -join ' ') (killed after $ProbeTimeoutSeconds s)")
+        $failures.Add("TIMEOUT in signlocal-probe $($Arguments -join ' ') (killed after $ProbeTimeoutSeconds s)")
     }
     [pscustomobject]@{ ExitCode = $run.ExitCode; TimedOut = $run.TimedOut; Lines = $run.Stdout }
 }
@@ -154,7 +154,7 @@ function Write-Environment {
     $os = Get-CimInstance Win32_OperatingSystem
     Write-Host "OS: $($os.Caption) $($os.Version) (build $($os.BuildNumber))"
     Write-Host "PowerShell: $($PSVersionTable.PSVersion)"
-    Write-Host "Trace: WEBSIGN_PROBE_TRACE=$env:WEBSIGN_PROBE_TRACE"
+    Write-Host "Trace: SIGNLOCAL_PROBE_TRACE=$env:SIGNLOCAL_PROBE_TRACE"
     $version = Invoke-Bounded -FilePath $Probe -Arguments '--version' -TimeoutSeconds 30 -Quiet
     Write-Host "Probe: $($version.Stdout -join ' ')"
 }

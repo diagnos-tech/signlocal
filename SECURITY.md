@@ -1,6 +1,6 @@
 # Security policy
 
-WebeSign sits between websites or programs and the keys that make legally binding signatures, so we treat
+signlocal sits between websites or programs and the keys that make legally binding signatures, so we treat
 every report seriously. The threat model is [`docs/architecture/security.md`](docs/architecture/security.md).
 
 ## Reporting a vulnerability
@@ -11,7 +11,7 @@ Do **not** open a public issue, discussion or pull request.
    (GitHub private vulnerability reporting). Only the maintainers see it.
 2. If you cannot use GitHub, e-mail TODO(gustavo): security contact address.
 
-Please include the affected version (`websign version`), the operating system and browser, the steps to
+Please include the affected version (`signlocal version`), the operating system and browser, the steps to
 reproduce, and what an attacker gains. Never send a real PIN, a private key, or a certificate or document
 that identifies a person: reproduce with a test certificate (for example SoftHSM2 or a throwaway `.pfx`).
 
@@ -24,7 +24,7 @@ that identifies a person: reproduce with a test certificate (for example SoftHSM
 
 ## Scope
 
-In scope: the `websign` app, the browser extension, `@websign/sdk`, the Node and Rust clients, the install
+In scope: the `signlocal` app, the browser extension, `@signlocal/sdk`, the Node and Rust clients, the install
 scripts, the release artifacts and the website. Examples: a site or program obtaining a signature or a
 certificate without the person's confirmation, a PIN or personal data reaching logs or another process,
 bypassing the origin or caller checks, or tampering with installs or updates.

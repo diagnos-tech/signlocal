@@ -1,6 +1,6 @@
 //! The confirmation window (`docs/ux.md` §4–§6), 480 × 600, fixed.
 //!
-//! Renders `websign_ui_model::confirm::ConfirmView`; converts egui input to
+//! Renders `signlocal_ui_model::confirm::ConfirmView`; converts egui input to
 //! `UserInput`; turns `Intent`s into `UiEvent`s (adding the PIN from the
 //! field and zeroizing it). The model decides everything (states, arming,
 //! which button does what); this module only draws and reports.
@@ -28,9 +28,9 @@ mod tests;
 /// the backend of `renderer::choose()`. On `Err` the host keeps `commands`
 /// and fails the requests itself (`host_process::ui_thread`).
 pub fn run(
-    first: websign_ui_model::confirm::UiCommand,
-    commands: &std::sync::mpsc::Receiver<websign_ui_model::confirm::UiCommand>,
-    events: websign_host::runtime::EventSender,
+    first: signlocal_ui_model::confirm::UiCommand,
+    commands: &std::sync::mpsc::Receiver<signlocal_ui_model::confirm::UiCommand>,
+    events: signlocal_host::runtime::EventSender,
 ) -> Result<(), eframe::Error> {
     run::run(first, commands, events)
 }

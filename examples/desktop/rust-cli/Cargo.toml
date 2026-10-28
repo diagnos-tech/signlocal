@@ -1,6 +1,6 @@
 [package]
-name = "websign-rust-cli-example"
-description = "Sign a file's SHA-256 from the command line with websign-client."
+name = "signlocal-rust-cli-example"
+description = "Sign a file's SHA-256 from the command line with signlocal-client."
 version = "0.0.0"
 edition = "2024"
 rust-version = "1.90"
@@ -13,7 +13,7 @@ publish = false
 
 [dependencies]
 # `testing`: the fake app, so the example runs without the app installed.
-websign-client = { path = "../../../clients/rust", features = ["testing"] }
+signlocal-client = { path = "../../../clients/rust", features = ["testing"] }
 sha2 = "0.11"
 
 [lints.clippy]

@@ -1,7 +1,7 @@
 //! Value types shared by several commands.
 
 use clap::ValueEnum;
-use websign_protocol::types::{HashName, SignatureAlgorithmName};
+use signlocal_protocol::types::{HashName, SignatureAlgorithmName};
 
 /// `--hash`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
@@ -58,9 +58,9 @@ pub enum BrowserArg {
     Firefox,
 }
 
-impl From<BrowserArg> for websign_registration::BrowserChoice {
-    fn from(browser: BrowserArg) -> websign_registration::BrowserChoice {
-        use websign_registration::BrowserChoice as B;
+impl From<BrowserArg> for signlocal_registration::BrowserChoice {
+    fn from(browser: BrowserArg) -> signlocal_registration::BrowserChoice {
+        use signlocal_registration::BrowserChoice as B;
         match browser {
             BrowserArg::All => B::All,
             BrowserArg::Chrome => B::Chrome,

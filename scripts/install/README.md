@@ -5,14 +5,14 @@ release. Contract: [`docs/architecture/packaging-and-release.md`](../../docs/arc
 (§Install locations, §Install commands); user steps: [`docs/install.md`](../../docs/install.md).
 
 Behavior common to both: pick the artifact for the OS and CPU; download it and
-`SHA256SUMS` with `gh` (when logged in), else `WEBSIGN_GITHUB_TOKEN` as a bearer
+`SHA256SUMS` with `gh` (when logged in), else `SIGNLOCAL_GITHUB_TOKEN` as a bearer
 token, else anonymous HTTPS; **verify the hash before touching the system** (a
-mismatch or a missing line aborts); install; run `websign install`; print the
+mismatch or a missing line aborts); install; run `signlocal install`; print the
 extension step. Idempotent: a second run upgrades in place.
 
 | | `install.sh` | `install.ps1` |
 |---|---|---|
-| Version | `--version <v>` (or `WEBSIGN_VERSION`); strict SemVer, checked before any path or URL uses it | `-Version <v>`; same check |
+| Version | `--version <v>` (or `SIGNLOCAL_VERSION`); strict SemVer, checked before any path or URL uses it | `-Version <v>`; same check |
 | Remove | `--uninstall` | `-Uninstall` |
 | Skip registration | `--no-register` | `-NoRegister` |
 | Preview | `--dry-run` (downloads and verifies, changes nothing) | `-DryRun` |
@@ -23,18 +23,18 @@ Linux installs the tarball per user by default (no root). On a deb or rpm
 distribution it asks whether to use the system package instead; the default is
 no, and `--yes` never implies it, so an unattended run cannot escalate. macOS never needs `sudo`: `/Applications` when
 writable, else `~/Applications`; the quarantine flag is removed from
-`WebeSign.app` only. Windows needs no administrator rights; the Mark of the Web
+`signlocal.app` only. Windows needs no administrator rights; the Mark of the Web
 is removed from the installed files only, and a non-empty `-InstallDir` without
-`websign.exe` is never emptied or deleted.
+`signlocal.exe` is never emptied or deleted.
 
 The scripts cannot read `project.toml`, so their identifiers (`SLUG`,
 `APP_NAME`, `BUNDLE_ID`, the repository) are written out; `cargo xtask check
 release` fails when they differ from `project.toml`.
 
-Test hooks (also usable for offline installs): `WEBSIGN_RELEASE_DIR` (folder
-with the release files instead of downloading), `WEBSIGN_OS_RELEASE`,
-`WEBSIGN_UNAME_S`, `WEBSIGN_UNAME_M`, `WEBSIGN_INSTALL_LIB=1` (source
-`install.sh` without running it), `WEBSIGN_REPO`.
+Test hooks (also usable for offline installs): `SIGNLOCAL_RELEASE_DIR` (folder
+with the release files instead of downloading), `SIGNLOCAL_OS_RELEASE`,
+`SIGNLOCAL_UNAME_S`, `SIGNLOCAL_UNAME_M`, `SIGNLOCAL_INSTALL_LIB=1` (source
+`install.sh` without running it), `SIGNLOCAL_REPO`.
 
 ## Tests
 

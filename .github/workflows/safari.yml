@@ -1,6 +1,6 @@
 # The Safari web extension on macOS, as far as a runner can prove it
 # (docs/compatibility.md §Safari): the relay's unit tests with fake hosts, the
-# packaged WebeSign.app with its appex (layout, Info.plist keys, both CPU
+# packaged signlocal.app with its appex (layout, Info.plist keys, both CPU
 # slices, signatures and entitlements), and the real bundled host answering
 # `hello` through the relay. Loading the extension into Safari needs a person
 # (safaridriver cannot install extensions): the manual script is in
@@ -59,7 +59,7 @@ jobs:
       - name: Safari build of the extension (direct channel)
         working-directory: extension
         env:
-          WEBSIGN_CHANNEL: direct
+          SIGNLOCAL_CHANNEL: direct
         run: bunx wxt build -b safari
       - name: Install the pinned toolchain
         run: rustup toolchain install || rustup show
@@ -76,17 +76,17 @@ jobs:
       - name: Unpack
         run: |
           mkdir dist/unpacked
-          ditto -x -k dist/websign-*-macos-universal.zip dist/unpacked
+          ditto -x -k dist/signlocal-*-macos-universal.zip dist/unpacked
           find dist/unpacked -maxdepth 6 | sort
       - name: Bundle layout, Info.plist keys and CPU slices
         shell: bash
         run: |
           set -euo pipefail
-          app=dist/unpacked/WebeSign.app
-          appex="$app/Contents/PlugIns/WebeSignExtension.appex"
+          app=dist/unpacked/signlocal.app
+          appex="$app/Contents/PlugIns/SignlocalExtension.appex"
           info="$appex/Contents/Info.plist"
-          for binary in "$app/Contents/MacOS/websign" "$appex/Contents/MacOS/WebeSignExtension" \
-                        "$appex/Contents/MacOS/websign"; do
+          for binary in "$app/Contents/MacOS/signlocal" "$appex/Contents/MacOS/SignlocalExtension" \
+                        "$appex/Contents/MacOS/signlocal"; do
             test -x "$binary" || { echo "::error::missing $binary"; exit 1; }
             lipo "$binary" -verify_arch arm64 x86_64
           done
@@ -102,10 +102,10 @@ jobs:
           expect "$info" CFBundlePackageType 'XPC!'
           expect "$info" NSExtension.NSExtensionPointIdentifier com.apple.Safari.web-extension
           expect "$info" NSExtension.NSExtensionPrincipalClass SafariWebExtensionHandler
-          expect "$info" WebeSignHostExecutable websign
+          expect "$info" SignlocalHostExecutable signlocal
           # The principal class exists under its Objective-C name, and the
           # entry point is Foundation's extension main.
-          nm "$appex/Contents/MacOS/WebeSignExtension" > symbols.txt
+          nm "$appex/Contents/MacOS/SignlocalExtension" > symbols.txt
           grep -qF "_OBJC_CLASS_\$_SafariWebExtensionHandler" symbols.txt
           grep -q ' U _NSExtensionMain$' symbols.txt
           # The resources are the WXT safari build, with nothing Chromium-only.
@@ -120,8 +120,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          app=dist/unpacked/WebeSign.app
-          appex="$app/Contents/PlugIns/WebeSignExtension.appex"
+          app=dist/unpacked/signlocal.app
+          appex="$app/Contents/PlugIns/SignlocalExtension.appex"
           codesign --verify --deep --strict --verbose=2 "$app"
           entitlement() {
             codesign -d --entitlements - --xml "$1" 2>/dev/null > entitlements.plist
@@ -129,7 +129,7 @@ jobs:
           }
           [[ $(entitlement "$appex" com.apple.security.app-sandbox) == true ]]
           [[ $(entitlement "$appex" com.apple.security.smartcard) == true ]]
-          [[ $(entitlement "$appex/Contents/MacOS/websign" com.apple.security.inherit) == true ]]
+          [[ $(entitlement "$appex/Contents/MacOS/signlocal" com.apple.security.inherit) == true ]]
           # The app's own binary serves Chrome and Firefox outside any sandbox.
           codesign -d --entitlements - --xml "$app" > app-entitlements.plist 2>/dev/null || true
           if grep -q app-sandbox app-entitlements.plist; then
@@ -137,18 +137,18 @@ jobs:
           fi
       - name: The bundled host answers hello through the relay
         run: |
-          WEBSIGN_TEST_APPEX="$PWD/dist/unpacked/WebeSign.app/Contents/PlugIns/WebeSignExtension.appex" \
+          SIGNLOCAL_TEST_APPEX="$PWD/dist/unpacked/signlocal.app/Contents/PlugIns/SignlocalExtension.appex" \
             swift test --package-path safari --filter BundledHostTests
       # Informational: registration with PlugInKit needs a signed, launched
       # app on some macOS versions, so a runner's answer is not a verdict.
       - name: PlugInKit sees the appex (informational)
         continue-on-error: true
         run: |
-          pluginkit -a "dist/unpacked/WebeSign.app/Contents/PlugIns/WebeSignExtension.appex"
+          pluginkit -a "dist/unpacked/signlocal.app/Contents/PlugIns/SignlocalExtension.appex"
           pluginkit -m -v -p com.apple.Safari.web-extension
       - uses: actions/upload-artifact@v4
         with:
-          name: websign-macos-with-safari
-          path: dist/websign-*-macos-universal.zip
+          name: signlocal-macos-with-safari
+          path: dist/signlocal-*-macos-universal.zip
           if-no-files-found: error
           retention-days: 7

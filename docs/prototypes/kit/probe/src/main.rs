@@ -1,4 +1,4 @@
-//! `websign-probe`: lists every signing certificate the machine exposes and
+//! `signlocal-probe`: lists every signing certificate the machine exposes and
 //! signs a random digest with each, through every path the app will use —
 //! Windows CNG/CAPI, macOS Keychain/CryptoTokenKit and PKCS#11 — then checks
 //! the result. It also doubles as a native messaging host so browser
@@ -17,7 +17,7 @@ use std::process::ExitCode;
 
 fn main() -> ExitCode {
     trace::trace!(
-        "websign-probe {} started on {} {}",
+        "signlocal-probe {} started on {} {}",
         env!("CARGO_PKG_VERSION"),
         std::env::consts::OS,
         std::env::consts::ARCH

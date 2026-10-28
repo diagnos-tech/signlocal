@@ -1,8 +1,8 @@
 # Node command-line example
 
-Signs the SHA-256 of a file with `@websign/desktop`. By default it talks to the
-fake app from `@websign/desktop/testing`, so it runs anywhere (CI included);
-`--app` uses the installed WebeSign app and opens its window.
+Signs the SHA-256 of a file with `@signlocal/desktop`. By default it talks to the
+fake app from `@signlocal/desktop/testing`, so it runs anywhere (CI included);
+`--app` uses the installed signlocal app and opens its window.
 
 ```sh
 # from the repository root, once
@@ -18,4 +18,4 @@ Exit codes: 0 signed, 1 failure (code, message, hint and docs link on stderr),
 2 usage, 3 the person cancelled.
 
 In your own project install the package instead of the `file:` path:
-`npm install @websign/desktop`.
+`npm install @signlocal/desktop`.

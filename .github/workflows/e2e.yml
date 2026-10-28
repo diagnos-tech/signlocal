@@ -8,12 +8,12 @@
 # After the full suite, each runner (but Ubuntu 22.04) proves every browser
 # it can install — Chrome, Edge, Brave, Opera, Firefox (and ESR on Linux) —
 # with the cross-browser core (e2e/browsers/, e2e/run-browsers.sh): the host
-# registered as `websign install` does, results in the job summary and in
+# registered as `signlocal install` does, results in the job summary and in
 # docs/compatibility.md.
 #
 # Software keys per OS (e2e/lib/environment.ts): SoftHSM2 token on Linux
-# (WEBSIGN_E2E_SOFTHSM), CNG/CAPI software keys on Windows and a temporary
-# keychain on macOS, whose certificates the suite reads from WEBSIGN_E2E_CERTS.
+# (SIGNLOCAL_E2E_SOFTHSM), CNG/CAPI software keys on Windows and a temporary
+# keychain on macOS, whose certificates the suite reads from SIGNLOCAL_E2E_CERTS.
 name: e2e
 
 on:
@@ -22,9 +22,9 @@ on:
       - "app/**"
       - "extension/**"
       - "sdk/**"
-      - "crates/websign-protocol/**"
-      - "crates/websign-host/**"
-      - "crates/websign-registration/**"
+      - "crates/signlocal-protocol/**"
+      - "crates/signlocal-host/**"
+      - "crates/signlocal-registration/**"
       - "e2e/**"
       - ".github/workflows/e2e.yml"
   push:
@@ -33,9 +33,9 @@ on:
       - "app/**"
       - "extension/**"
       - "sdk/**"
-      - "crates/websign-protocol/**"
-      - "crates/websign-host/**"
-      - "crates/websign-registration/**"
+      - "crates/signlocal-protocol/**"
+      - "crates/signlocal-host/**"
+      - "crates/signlocal-registration/**"
       - "e2e/**"
       - ".github/workflows/e2e.yml"
   schedule:
@@ -101,7 +101,7 @@ jobs:
       - name: Build the app with the e2e feature
         id: build
         timeout-minutes: 30
-        run: cargo build -p websign-app --features e2e
+        run: cargo build -p signlocal-app --features e2e
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.3.11"
@@ -125,8 +125,8 @@ jobs:
         if: runner.os == 'Linux'
         timeout-minutes: 5
         run: |
-          bash crates/websign-keystores/tests/support/softhsm-fixture.sh "$RUNNER_TEMP/softhsm"
-          echo "WEBSIGN_E2E_SOFTHSM=$RUNNER_TEMP/softhsm" >> "$GITHUB_ENV"
+          bash crates/signlocal-keystores/tests/support/softhsm-fixture.sh "$RUNNER_TEMP/softhsm"
+          echo "SIGNLOCAL_E2E_SOFTHSM=$RUNNER_TEMP/softhsm" >> "$GITHUB_ENV"
       - name: Create CNG and CAPI software keys (Windows)
         if: runner.os == 'Windows'
         # make-test-certs.ps1 bounds every key creation itself; this is the
@@ -143,7 +143,7 @@ jobs:
             $cert = Get-Item -LiteralPath "Cert:\CurrentUser\My\$($c.Thumbprint)"
             Export-Certificate -Cert $cert -FilePath (Join-Path $certs "$($c.Name).cer") | Out-Null
           }
-          "WEBSIGN_E2E_CERTS=$certs" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "SIGNLOCAL_E2E_CERTS=$certs" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
       - name: Create a temporary keychain with software keys (macOS)
         if: runner.os == 'macOS'
         timeout-minutes: 10
@@ -151,26 +151,26 @@ jobs:
           set -euo pipefail
           source docs/prototypes/kit/macos/lib/common.sh
           find_openssl
-          P12_PASSWORD=websign-e2e
-          keychain_create websign-e2e.keychain websign-e2e
+          P12_PASSWORD=signlocal-e2e
+          keychain_create signlocal-e2e.keychain signlocal-e2e
           work=$(mktemp -d)
           certs="$RUNNER_TEMP/certs"
           mkdir -p "$certs"
           for key in rsa2048 p256 p384; do
-            make_identity "$work" "websign-e2e-$key" "$key"
-            keychain_import "$work/websign-e2e-$key.p12"
-            cp "$work/websign-e2e-$key.cert.pem" "$certs/$key.pem"
+            make_identity "$work" "signlocal-e2e-$key" "$key"
+            keychain_import "$work/signlocal-e2e-$key.p12"
+            cp "$work/signlocal-e2e-$key.cert.pem" "$certs/$key.pem"
           done
           # The partition list names the e2e binary by cdhash: built above.
-          keychain_allow "$GITHUB_WORKSPACE/target/debug/websign"
-          echo "WEBSIGN_E2E_CERTS=$certs" >> "$GITHUB_ENV"
+          keychain_allow "$GITHUB_WORKSPACE/target/debug/signlocal"
+          echo "SIGNLOCAL_E2E_CERTS=$certs" >> "$GITHUB_ENV"
       - name: Run the suite
         timeout-minutes: 20
         working-directory: e2e
         env:
-          WEBSIGN_E2E_APP: ${{ github.workspace }}/target/debug/websign${{ runner.os == 'Windows' && '.exe' || '' }}
-          WEBSIGN_E2E_EXTENSION: ${{ github.workspace }}/extension/.output/chrome-mv3
-          WEBSIGN_E2E_SCREENSHOTS: ${{ runner.temp }}/screenshots
+          SIGNLOCAL_E2E_APP: ${{ github.workspace }}/target/debug/signlocal${{ runner.os == 'Windows' && '.exe' || '' }}
+          SIGNLOCAL_E2E_EXTENSION: ${{ github.workspace }}/extension/.output/chrome-mv3
+          SIGNLOCAL_E2E_SCREENSHOTS: ${{ runner.temp }}/screenshots
         run: |
           if [[ $RUNNER_OS == Linux ]]; then
             xvfb-run -a -s "-screen 0 1600x900x24" bun run test:ci
@@ -269,9 +269,9 @@ jobs:
         if: ${{ !cancelled() && steps.build.outcome == 'success' && matrix.os != 'ubuntu-22.04' }}
         timeout-minutes: 45
         env:
-          WEBSIGN_E2E_APP: ${{ github.workspace }}/target/debug/websign${{ runner.os == 'Windows' && '.exe' || '' }}
-          WEBSIGN_E2E_SCREENSHOTS: ${{ runner.temp }}/browser-screenshots
-          WEBSIGN_E2E_BROWSER_RESULTS: ${{ runner.temp }}/browser-screenshots/results.md
+          SIGNLOCAL_E2E_APP: ${{ github.workspace }}/target/debug/signlocal${{ runner.os == 'Windows' && '.exe' || '' }}
+          SIGNLOCAL_E2E_SCREENSHOTS: ${{ runner.temp }}/browser-screenshots
+          SIGNLOCAL_E2E_BROWSER_RESULTS: ${{ runner.temp }}/browser-screenshots/results.md
         run: |
           touch "$RUNNER_TEMP/browsers.txt"
           bash e2e/run-browsers.sh "$RUNNER_TEMP/browsers.txt"
@@ -282,17 +282,17 @@ jobs:
           path: ${{ runner.temp }}/browser-screenshots/
           if-no-files-found: ignore
       # A native crash prints nothing; the OS crash report is its only trace.
-      # `websign doctor` runs the diagnostics scan without a window, which
+      # `signlocal doctor` runs the diagnostics scan without a window, which
       # tells a crash in the scan from one in the window.
       - name: Keep the app's crash reports (macOS)
         if: failure() && runner.os == 'macOS'
         run: |
           mkdir -p target/e2e-results/crash-reports
           status=0
-          target/debug/websign doctor >/dev/null || status=$?
-          echo "websign doctor exited with $status"
+          target/debug/signlocal doctor >/dev/null || status=$?
+          echo "signlocal doctor exited with $status"
           sleep 5
-          cp "$HOME"/Library/Logs/DiagnosticReports/websign-* target/e2e-results/crash-reports/ 2>/dev/null || true
+          cp "$HOME"/Library/Logs/DiagnosticReports/signlocal-* target/e2e-results/crash-reports/ 2>/dev/null || true
       # Traces of failed scenarios (fixture page and test keys only).
       - uses: actions/upload-artifact@v4
         if: failure()
@@ -316,7 +316,7 @@ jobs:
         run: ./docs/prototypes/kit/windows/make-test-certs.ps1 -Remove
       - name: Delete the temporary keychain (macOS)
         if: always() && runner.os == 'macOS'
-        run: security delete-keychain "$HOME/Library/Keychains/websign-e2e.keychain-db" || true
+        run: security delete-keychain "$HOME/Library/Keychains/signlocal-e2e.keychain-db" || true
 
   container:
     name: e2e (${{ matrix.image }})
@@ -394,7 +394,7 @@ jobs:
           key: e2e-${{ matrix.os }}
       - name: Build the app with the e2e feature
         timeout-minutes: 40
-        run: cargo build -p websign-app --features e2e
+        run: cargo build -p signlocal-app --features e2e
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.3.11"
@@ -411,16 +411,16 @@ jobs:
         timeout-minutes: 5
         run: |
           (cd clients/node && bun run build)
-          bash crates/websign-keystores/tests/support/softhsm-fixture.sh "$RUNNER_TEMP/softhsm"
-          echo "WEBSIGN_E2E_SOFTHSM=$RUNNER_TEMP/softhsm" >> "$GITHUB_ENV"
+          bash crates/signlocal-keystores/tests/support/softhsm-fixture.sh "$RUNNER_TEMP/softhsm"
+          echo "SIGNLOCAL_E2E_SOFTHSM=$RUNNER_TEMP/softhsm" >> "$GITHUB_ENV"
       - name: Run the suite with the distribution Chromium
         timeout-minutes: 20
         working-directory: e2e
         env:
-          WEBSIGN_E2E_APP: ${{ github.workspace }}/target/debug/websign
-          WEBSIGN_E2E_EXTENSION: ${{ github.workspace }}/extension/.output/chrome-mv3
-          WEBSIGN_E2E_SCREENSHOTS: ${{ runner.temp }}/screenshots
-          WEBSIGN_E2E_BROWSER: ${{ matrix.browser }}
+          SIGNLOCAL_E2E_APP: ${{ github.workspace }}/target/debug/signlocal
+          SIGNLOCAL_E2E_EXTENSION: ${{ github.workspace }}/extension/.output/chrome-mv3
+          SIGNLOCAL_E2E_SCREENSHOTS: ${{ runner.temp }}/screenshots
+          SIGNLOCAL_E2E_BROWSER: ${{ matrix.browser }}
         run: xvfb-run -a -s "-screen 0 1600x900x24" bun run test:ci
       - uses: actions/upload-artifact@v4
         if: failure()

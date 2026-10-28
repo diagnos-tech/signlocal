@@ -1,6 +1,6 @@
 //! The certificate the fake app offers unless told otherwise.
 
-use websign_protocol::types::{
+use signlocal_protocol::types::{
     Base64Bytes, Certificate, CertificateProfile, CurveName, FingerprintHex, KeyDescription,
     KeyStorage, SignatureAlgorithmName,
 };
@@ -9,7 +9,7 @@ use websign_protocol::types::{
 /// Start from it and override fields to build your own.
 ///
 /// ```
-/// use websign_client::testing::sample_certificate;
+/// use signlocal_client::testing::sample_certificate;
 ///
 /// let mut certificate = sample_certificate();
 /// certificate.display_name = "Ana Test".into();

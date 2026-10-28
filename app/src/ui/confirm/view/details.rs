@@ -3,10 +3,10 @@
 
 use egui::{Grid, Margin, Ui};
 use jiff::Timestamp;
-use websign_core::{CertInfo, Curve, PublicKeyKind};
-use websign_i18n::{Catalog, dates, k};
-use websign_ui_model::certs::{CertRow, KeySource};
-use websign_ui_model::confirm::UserInput;
+use signlocal_core::{CertInfo, Curve, PublicKeyKind};
+use signlocal_i18n::{Catalog, dates, k};
+use signlocal_ui_model::certs::{CertRow, KeySource};
+use signlocal_ui_model::confirm::UserInput;
 
 use super::{Action, Screen};
 use crate::ui::icons;

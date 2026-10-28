@@ -90,7 +90,7 @@ function Test-Alias {
         Add-Result 'alias exists' $exists $detail -Observed:(-not $entry.Required)
     }
     $run = Invoke-Program $shared @('--version')
-    Add-Result 'alias runs' ($run.ExitCode -eq 0 -and ($run.Lines -join ' ') -match 'websign-probe') `
+    Add-Result 'alias runs' ($run.ExitCode -eq 0 -and ($run.Lines -join ' ') -match 'signlocal-probe') `
         "exit $($run.ExitCode): $($run.Lines -join ' ')"
     $shared
 }

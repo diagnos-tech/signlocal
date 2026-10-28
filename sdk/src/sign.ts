@@ -1,7 +1,7 @@
 import { follow } from "./channel.js";
 import { fromBase64, toBase64, toCertificate } from "./convert.js";
 import { checkNeed, toDigestBytes } from "./digest.js";
-import { WebSignError } from "./errors.js";
+import { SignlocalError } from "./errors.js";
 import type {
   HashName,
   NeedDigest,
@@ -38,7 +38,7 @@ import { checkAlgorithms, checkFingerprint, checkHash } from "./validate.js";
  *     crypto.subtle.digest(hash, signedAttributesFor(certificate, algorithm)),
  * });
  *
- * @throws {WebSignError} `InvalidRequest` (bad options or digest length),
+ * @throws {SignlocalError} `InvalidRequest` (bad options or digest length),
  * `Aborted` (signal fired or `prepare` threw; the original is `cause`),
  * `ExtensionMissing`, `AppMissing`, `UserCancelled`, `PinLocked`, `Timeout`…
  * Each error's `hint` says what to do.
@@ -48,7 +48,7 @@ export async function sign<
   A extends SignatureAlgorithm = SignatureAlgorithm,
 >(options: SignOptions<H, A>): Promise<SignResult<H, A>> {
   if (typeof options !== "object" || options === null) {
-    throw new WebSignError(
+    throw new SignlocalError(
       "InvalidRequest",
       "sign() needs an options object with hash and prepare.",
     );
@@ -57,7 +57,7 @@ export async function sign<
   const algorithms = checkAlgorithms(options.algorithm);
   const certificate = checkFingerprint(options.certificate);
   if (typeof options.prepare !== "function") {
-    throw new WebSignError(
+    throw new SignlocalError(
       "InvalidRequest",
       "prepare must be a function returning the digest to sign.",
     );
@@ -143,7 +143,7 @@ async function callPrepare(
   try {
     return await prepare(certificate, context);
   } catch (cause) {
-    const error = new WebSignError(
+    const error = new SignlocalError(
       "Aborted",
       "prepare() threw, so the request was cancelled; see cause.",
     );

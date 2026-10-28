@@ -4,10 +4,10 @@
 //! polite live region so screen readers say how it ended.
 
 use egui::{Align, Layout, Ui, Vec2, WidgetInfo, WidgetType};
-use websign_i18n::k;
-use websign_ui_model::confirm::ConfirmState;
-use websign_ui_model::confirm::port::Mode;
-use websign_ui_model::confirm::view::Expiry;
+use signlocal_i18n::k;
+use signlocal_ui_model::confirm::ConfirmState;
+use signlocal_ui_model::confirm::port::Mode;
+use signlocal_ui_model::confirm::view::Expiry;
 
 use super::Screen;
 use crate::ui::confirm::words;

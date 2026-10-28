@@ -5,7 +5,7 @@
 use egui::accesskit::Role;
 use egui::{Key, Modifiers};
 use egui_kittest::kittest::{NodeT as _, Queryable as _};
-use websign_protocol::messages::DiagnosticsTab;
+use signlocal_protocol::messages::DiagnosticsTab;
 
 use super::fixture;
 use super::support::{Setup, open};
@@ -16,7 +16,7 @@ fn tabs_form_a_tab_list_with_their_lights() {
     let list = window.harness.get_by_role(Role::TabList);
     assert_eq!(
         list.accesskit_node().label().as_deref(),
-        Some("Diagnostics — WebeSign")
+        Some("Diagnostics — signlocal")
     );
     let browsers = window
         .harness
@@ -125,7 +125,7 @@ fn rows_read_as_one_sentence() {
 fn row_actions_reach_the_os() {
     let mut window = open(Setup::default());
     let mut facts = fixture::facts();
-    facts.browsers[1].registration = websign_registration::status::RegistrationState::Missing;
+    facts.browsers[1].registration = signlocal_registration::status::RegistrationState::Missing;
     window.window().set_facts(facts);
     window.harness.run();
     window

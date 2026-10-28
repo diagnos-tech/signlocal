@@ -75,8 +75,8 @@ Decisions and reasons:
   `desktop6:FileSystemWriteVirtualization` turned off (without this, writes to HKCU and to
   `%LOCALAPPDATA%` would go to the package's private copy and no browser would see them);
   `uap5:AppExecutionAlias` with `desktop4:Subsystem="console"` (same pattern as the Microsoft
-  Store Python, which works with stdin/stdout); `websign:` protocol that runs `register` (the store does not run an
-  install script). Identity separate from the future app (`WebeSign.Probe`) and a test publisher.
+  Store Python, which works with stdin/stdout); `signlocal:` protocol that runs `register` (the store does not run an
+  install script). Identity separate from the future app (`signlocal.Probe`) and a test publisher.
 - `build-msix.ps1`: layout, generated PNGs, `makeappx pack` (validates the manifest), self-signed
   certificate with Subject = Publisher, `signtool`, trust in `LocalMachine\TrustedPeople`,
   `Add-AppxPackage`.
@@ -85,13 +85,13 @@ Decisions and reasons:
   written path (if missing, it looks for the virtualized copy to diagnose), (c) `path` = alias and the
   alias runs; (d) optional: `node nm-e2e/run.mjs --probe <alias> --no-register`.
 - `msix_alias_path()` (`probe/src/platform/windows.rs`): with package identity
-  (`GetCurrentPackageFamilyName`), returns `%LOCALAPPDATA%\Microsoft\WindowsApps\<family>\websign-probe.exe`
+  (`GetCurrentPackageFamilyName`), returns `%LOCALAPPDATA%\Microsoft\WindowsApps\<family>\signlocal-probe.exe`
   if it exists (it cannot be taken over by another package with the same alias), otherwise the one at the `WindowsApps` root.
 
 ## CI evidence (software keys)
 
 Workflow: `.github/workflows/prototypes.yml`, job `windows` (`windows-latest`).
-Run: [36635313691](https://github.com/diagnos-tech/web-esign/actions/runs/36635313691) · Commit: `bdfa98f` · Runner: Windows Server 2025 Datacenter 10.0.26100, PowerShell 7.6.6
+Run: [36635313691](https://github.com/diagnos-tech/signlocal/actions/runs/36635313691) · Commit: `bdfa98f` · Runner: Windows Server 2025 Datacenter 10.0.26100, PowerShell 7.6.6
 
 ### Cases and expectations (`windows/ci-windows.ps1`)
 
@@ -134,17 +134,17 @@ Probe report: `report-windows` artifact of the same run (no names or serial numb
 
 The step is `continue-on-error`: the result is evidence in both directions.
 
-Run [36637051578](https://github.com/diagnos-tech/web-esign/actions/runs/36637051578) (Windows Server 2025),
+Run [36637051578](https://github.com/diagnos-tech/signlocal/actions/runs/36637051578) (Windows Server 2025),
 test package signed with a self-signed certificate and installed with `Add-AppxPackage`:
 
 | Check | Result |
 |---|---|
 | `makeappx` accepts the manifest (rescap `runFullTrust` + `unvirtualizedResources`, desktop6 without virtualization, console alias) | ✅ |
 | `Add-AppxPackage` installs | ✅ |
-| alias exists (`WindowsApps` root and family folder) and runs with stdout captured | ✅ `websign-probe 0.1.0` |
+| alias exists (`WindowsApps` root and family folder) and runs with stdout captured | ✅ `signlocal-probe 0.1.0` |
 | (a) keys in the **real** HKCU: Chrome, Edge, Firefox, Chromium, Brave, Vivaldi | ✅ all 6 |
-| (b) manifests at the real path (`%LOCALAPPDATA%\websign\NativeMessagingHosts\`) | ✅ Chromium and Firefox |
-| (c) `path` = family-folder alias (`WindowsApps\WebeSign.Probe_…\websign-probe.exe`), and it runs | ✅ |
+| (b) manifests at the real path (`%LOCALAPPDATA%\signlocal\NativeMessagingHosts\`) | ✅ Chromium and Firefox |
+| (c) `path` = family-folder alias (`WindowsApps\signlocal.Probe_…\signlocal-probe.exe`), and it runs | ✅ |
 | (d) Chromium starts the host **through the MSIX alias** and exchanges a message | ✅ `NM-E2E: PASS`: ping, list, digest validation; host log with `family=chromium` |
 
 Reading: **the Microsoft Store path works technically**. A packaged app with
@@ -176,21 +176,21 @@ once per token, and then enter the right one, so it does not lock.
 ### 0. Preparation
 
 1. Windows 10 22H2 **and** Windows 11 (24H2 or newer), regular user. Note the `winver` output.
-2. Binary: download `websign-probe.exe` from CI or build it (`cargo build --release -p websign-probe`
+2. Binary: download `signlocal-probe.exe` from CI or build it (`cargo build --release -p signlocal-probe`
    in `docs/prototypes/kit`). Open a terminal (Windows Terminal or `cmd`) in its folder.
 3. Per token: model, installed middleware and version (Control Panel → Programs).
 4. With the token connected:
    ```powershell
-   .\websign-probe.exe devices
-   .\websign-probe.exe report --out report-<token>.md
+   .\signlocal-probe.exe devices
+   .\signlocal-probe.exe report --out report-<token>.md
    ```
    The report has no personal data; attach it here.
 
 ### 1. List without a PIN
 
 ```powershell
-.\websign-probe.exe list
-.\websign-probe.exe list --every-path
+.\signlocal-probe.exe list
+.\signlocal-probe.exe list --every-path
 ```
 
 Note: does the certificate appear? Which `provider` (`[CNG]` or `[CAPI type …]`)? `hardware`? **Did
@@ -200,7 +200,7 @@ PKCS#11 as an alternative path?
 ### 2. Sign through the path the app uses
 
 ```powershell
-.\websign-probe.exe sign --cert <8+ digits of the thumbprint> --hash all --pss
+.\signlocal-probe.exe sign --cert <8+ digits of the thumbprint> --hash all --pss
 ```
 
 Note per case: OK/FAIL, `via NCryptSignHash` or `via CryptSignHash`, time. And about the PIN:
@@ -216,8 +216,8 @@ comes back). Then sign with the right PIN.
 ### 4. The other ways of opening the key
 
 ```powershell
-.\websign-probe.exe sign --cert <fp> --hash all --pss --ncrypt prefer
-.\websign-probe.exe sign --cert <fp> --hash all --pss --ncrypt only
+.\signlocal-probe.exe sign --cert <fp> --hash all --pss --ncrypt prefer
+.\signlocal-probe.exe sign --cert <fp> --hash all --pss --ncrypt only
 ```
 
 Note whether the path changed (CAPI → CNG), whether PSS started working, and whether the dialog changed.
@@ -225,7 +225,7 @@ Note whether the path changed (CAPI → CNG), whether PSS started working, and w
 ### 5. The same token through PKCS#11
 
 ```powershell
-.\websign-probe.exe sign --cert <fp> --hash all --pss --every-path --module <dll>
+.\signlocal-probe.exe sign --cert <fp> --hash all --pss --every-path --module <dll>
 ```
 
 Usual DLLs (confirm the path on the machine): SafeNet `C:\Windows\System32\eTPKCS11.dll`;
@@ -247,7 +247,7 @@ Note whether the PIN was asked in the terminal (expected, PKCS#11) and whether e
 In PowerShell 7 **as administrator**, in the `docs/prototypes/kit` folder:
 
 ```powershell
-$env:PROBE_EXE = "<path>\websign-probe.exe"
+$env:PROBE_EXE = "<path>\signlocal-probe.exe"
 ./msix/build-msix.ps1
 ./msix/test-msix.ps1
 ```
@@ -259,15 +259,15 @@ Note the final table. Then, **without** administrator privileges:
    (developer mode) and as a temporary add-on in Firefox (`about:debugging`).
 2. From the extension's test page/action, ask for the version, the list, and a signature. Note in each
    browser: did it connect? did the message come back? **did the PIN dialog open in front of the browser?**
-3. In Settings → Apps → App execution aliases, **turn off** the WebeSign Probe alias and repeat: does the host still open (the manifest points to the copy in the package's
+3. In Settings → Apps → App execution aliases, **turn off** the signlocal Probe alias and repeat: does the host still open (the manifest points to the copy in the package's
    family folder)?
-4. Uninstall (`Get-AppxPackage WebeSign.Probe | Remove-AppxPackage`) and note what is left in
-   `HKCU\Software\Google\Chrome\NativeMessagingHosts` and in `%LOCALAPPDATA%\websign`.
+4. Uninstall (`Get-AppxPackage signlocal.Probe | Remove-AppxPackage`) and note what is left in
+   `HKCU\Software\Google\Chrome\NativeMessagingHosts` and in `%LOCALAPPDATA%\signlocal`.
 
 ### 8. egui over RDP
 
 The kit does not have a window yet. Until the app has the confirmation window, use a minimal eframe example
-with `wgpu` (TODO(gustavo): decide whether a `websign-probe window` command goes into the kit) and measure, in an RDP
+with `wgpu` (TODO(gustavo): decide whether a `signlocal-probe window` command goes into the kit) and measure, in an RDP
 session and on a VM without a GPU, the time until the window appears and whether the software fallback (WARP) works.
 
 ### Table to fill in
@@ -306,7 +306,7 @@ session and on a VM without a GPU, the time until the window appears and whether
 - **Uninstalling the MSIX leaves the HKCU keys and the manifests behind** (without virtualization Windows does not
   clean them). The host disappears, the browser reports "host not found", and the extension shows "app missing".
   The app recreates everything at each start.
-- **Alias collision:** another package with `websign-probe.exe`/`websign.exe` takes the root alias;
+- **Alias collision:** another package with `signlocal-probe.exe`/`signlocal.exe` takes the root alias;
   that is why the manifest uses the family-folder copy when it exists.
 - **`unvirtualizedResources` is a restricted capability:** Microsoft may reject it in certification.
   It needs a justification in Partner Center (native messaging integration, precedents of apps

@@ -1,7 +1,7 @@
 use egui::Vec2;
 use egui::accesskit::Role;
 use egui_kittest::kittest::{NodeT as _, Queryable as _};
-use websign_protocol::code::verification_code;
+use signlocal_protocol::code::verification_code;
 
 use super::support::{THEMES, harness, snapshot};
 use crate::ui::widgets::code_card::{CodeCard, CodeState};

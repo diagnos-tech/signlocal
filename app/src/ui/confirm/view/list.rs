@@ -5,9 +5,9 @@
 //! certificate (§6.2). A filter appears above long lists (§5.13).
 
 use egui::{ScrollArea, Ui, Vec2, WidgetInfo, WidgetType};
-use websign_i18n::k;
-use websign_ui_model::certs::{FILTER_THRESHOLD, RowStatus, matches_filter};
-use websign_ui_model::confirm::port::Mode;
+use signlocal_i18n::k;
+use signlocal_ui_model::certs::{FILTER_THRESHOLD, RowStatus, matches_filter};
+use signlocal_ui_model::confirm::port::Mode;
 
 use super::{Screen, pin, possible, rows};
 use crate::ui::icons;
@@ -98,7 +98,7 @@ pub fn show(ui: &mut Ui, s: &mut Screen<'_>) -> Option<f32> {
 fn disabled_group(
     ui: &mut Ui,
     s: &mut Screen<'_>,
-    disabled: &[websign_ui_model::certs::CertRow],
+    disabled: &[signlocal_ui_model::certs::CertRow],
     more_below: bool,
 ) {
     let title =

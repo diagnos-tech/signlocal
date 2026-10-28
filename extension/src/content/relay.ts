@@ -1,7 +1,7 @@
 /**
  * Page ↔ background relay: accepts only same-window, same-origin messages
- * with source "websign-page", rebuilds the request field by field, and posts
- * replies back with source "websign-extension" to the page's own origin.
+ * with source "signlocal-page", rebuilds the request field by field, and posts
+ * replies back with source "signlocal-extension" to the page's own origin.
  * The background trusts none of this (it validates again and reads the
  * origin from the browser); this layer keeps page inventions from travelling.
  */
@@ -35,7 +35,7 @@ function forward(id: string, payload: unknown): void {
     postToPage(id, { type: "error", code: "InvalidRequest", message: "the request is malformed" });
     return;
   }
-  const request: RelayRequest = { kind: "websign-request", document: DOCUMENT, id, message };
+  const request: RelayRequest = { kind: "signlocal-request", document: DOCUMENT, id, message };
   browser.runtime.sendMessage(request).catch(() => {
     postToPage(id, { type: "error", code: "Internal", message: "the extension is not available" });
   });
@@ -61,9 +61,9 @@ function onExtensionMessage(
     return false;
   }
   const { kind, document, id, message: reply } = message as Record<string, unknown>;
-  if (kind === "websign-reply" && document === DOCUMENT && isPageId(id) && isObject(reply)) {
+  if (kind === "signlocal-reply" && document === DOCUMENT && isPageId(id) && isObject(reply)) {
     postToPage(id, reply as PageReply);
-  } else if (kind === "websign-origin" && window === window.top) {
+  } else if (kind === "signlocal-origin" && window === window.top) {
     respond(location.origin);
   }
   return false;
@@ -76,7 +76,7 @@ export function startRelay(): void {
   // A document that goes away (reload, navigation, close, back-forward cache)
   // must not leave its window open in the app.
   window.addEventListener("pagehide", () => {
-    const gone: RelayGone = { kind: "websign-gone", document: DOCUMENT };
+    const gone: RelayGone = { kind: "signlocal-gone", document: DOCUMENT };
     browser.runtime.sendMessage(gone).catch(() => {});
   });
 }

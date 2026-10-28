@@ -65,8 +65,8 @@ export function createTransport(options: TransportOptions): Transport {
   const listener = (event: MessageEvent) => {
     const data = event.data as { source?: unknown; kind?: unknown } | null;
     if (typeof data !== "object" || data === null) return;
-    if (data.source === "websign-page") options.onFrame(data as PageFrame);
-    else if (data.source === "websign-extension" && !own.has(data) && !warned) {
+    if (data.source === "signlocal-page") options.onFrame(data as PageFrame);
+    else if (data.source === "signlocal-extension" && !own.has(data) && !warned) {
       warned = true;
       options.onForeignExtension();
     }
@@ -75,7 +75,7 @@ export function createTransport(options: TransportOptions): Transport {
 
   return {
     announce: () => send(options.announcement()),
-    reply: (id, message) => send({ source: "websign-extension", kind: "message", id, message }),
+    reply: (id, message) => send({ source: "signlocal-extension", kind: "message", id, message }),
     stop: () => {
       stopped = true;
       win.removeEventListener("message", listener);

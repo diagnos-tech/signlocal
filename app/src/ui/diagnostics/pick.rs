@@ -5,7 +5,7 @@
 
 use std::sync::mpsc::{Receiver, TryRecvError, channel};
 
-use websign_i18n::{Catalog, k};
+use signlocal_i18n::{Catalog, k};
 
 use super::services::{Os, Owner};
 use crate::platform::file_picker::{FileRequest, Picked};

@@ -1,10 +1,10 @@
 import { viewOf } from "./convert.js";
-import { WebSignError } from "./errors.js";
+import { SignlocalError } from "./errors.js";
 import type { Bytes, VerificationCode } from "./types.js";
 
 /**
  * The verification code of `digest`, identical to the one the app shows
- * (same algorithm as websign-protocol `verification_code`). Show it next to
+ * (same algorithm as signlocal-protocol `verification_code`). Show it next to
  * your own Sign button so people can compare what they are about to sign
  * with what the app displays.
  *
@@ -12,12 +12,12 @@ import type { Bytes, VerificationCode } from "./types.js";
  * const { text } = fingerprint(await crypto.subtle.digest("SHA-256", signedAttributes));
  * code.textContent = text; // "7F3A 9C21 E0B4 55D8"
  *
- * @throws {WebSignError} `InvalidRequest` when `digest` has fewer than 8 bytes.
+ * @throws {SignlocalError} `InvalidRequest` when `digest` has fewer than 8 bytes.
  */
 export function fingerprint(digest: Bytes): VerificationCode {
   const bytes = viewOf(digest) ?? new Uint8Array();
   if (bytes.length < 8) {
-    throw new WebSignError(
+    throw new SignlocalError(
       "InvalidRequest",
       `Digest is ${bytes.length} bytes; a verification code needs at least 8.`,
     );

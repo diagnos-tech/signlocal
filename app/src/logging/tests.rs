@@ -170,11 +170,11 @@ fn a_pin_is_never_in_a_line_whatever_its_label() {
 fn what_logs_are_for_stays_readable() {
     let line = logged("m7", || {
         log::warn!(
-            "m7 C_Sign failed: CKR_PIN_INCORRECT (0x000000A0) after 1500 ms, 3 keys, frame of 1048576 bytes, v1.4.0 on 2026-09-30 at 12:30:45 in websign_host::engine from /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so and C:\\Users\\Public\\x.dll"
+            "m7 C_Sign failed: CKR_PIN_INCORRECT (0x000000A0) after 1500 ms, 3 keys, frame of 1048576 bytes, v1.4.0 on 2026-09-30 at 12:30:45 in signlocal_host::engine from /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so and C:\\Users\\Public\\x.dll"
         )
     });
     assert!(
-        line.contains("C_Sign failed: CKR_PIN_INCORRECT (0x000000A0) after 1500 ms, 3 keys, frame of 1048576 bytes, v1.4.0 on 2026-09-30 at 12:30:45 in websign_host::engine from /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so and C:\\Users\\Public\\x.dll"),
+        line.contains("C_Sign failed: CKR_PIN_INCORRECT (0x000000A0) after 1500 ms, 3 keys, frame of 1048576 bytes, v1.4.0 on 2026-09-30 at 12:30:45 in signlocal_host::engine from /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so and C:\\Users\\Public\\x.dll"),
         "{line}"
     );
 }

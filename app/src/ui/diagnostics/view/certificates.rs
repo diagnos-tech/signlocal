@@ -3,8 +3,8 @@
 //! and a collapsed "Can't sign (n)" group with each one's reason.
 
 use egui::{Label, Sense, Ui};
-use websign_i18n::{Catalog, Key, k};
-use websign_ui_model::certs::{CertRow, KeySource};
+use signlocal_i18n::{Catalog, Key, k};
+use signlocal_ui_model::certs::{CertRow, KeySource};
 
 use super::Screen;
 use super::cert_text::RowWords;

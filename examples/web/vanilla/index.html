@@ -3,13 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>WebeSign: vanilla example</title>
+    <title>signlocal: vanilla example</title>
     <link rel="stylesheet" href="../shared/example.css" />
   </head>
   <body>
     <h1>Sign a text</h1>
-    <p id="setup" class="muted" role="status">Checking WebeSign…</p>
-    <p><a id="install" href="https://diagnos-tech.github.io/web-esign/download.html" hidden>Install WebeSign</a></p>
+    <p id="setup" class="muted" role="status">Checking signlocal…</p>
+    <p><a id="install" href="https://signlocal.diagnos.health/download.html" hidden>Install signlocal</a></p>
 
     <label for="text">Text to sign</label>
     <textarea id="text" rows="3" style="width: 100%">I agree to the terms.</textarea>
@@ -19,31 +19,31 @@
 
     <script type="module">
       // Everything this example needs is in this file. In your project:
-      //   bun add @websign/sdk   (or npm/pnpm/yarn), then import as below.
-      import { installUrl, onChange, sign, status, WebSignError } from "@websign/sdk";
-      import { errorText } from "@websign/sdk/messages";
+      //   bun add @signlocal/sdk   (or npm/pnpm/yarn), then import as below.
+      import { installUrl, onChange, SignlocalError, sign, status } from "@signlocal/sdk";
+      import { errorText } from "@signlocal/sdk/messages";
 
       const $ = (id) => document.getElementById(id);
 
       // Without the extension, use the SDK's fake (add ?real to the address for the real one).
-      // Never ship @websign/sdk/testing: the dynamic import keeps it out of real pages.
+      // Never ship @signlocal/sdk/testing: the dynamic import keeps it out of real pages.
       if (!new URLSearchParams(location.search).has("real")) {
-        const { installFakeWebSign } = await import("@websign/sdk/testing");
-        await installFakeWebSign({ latencyMs: 600 });
+        const { installFakeSignlocal } = await import("@signlocal/sdk/testing");
+        await installFakeSignlocal({ latencyMs: 600 });
       }
 
-      // 1. Is WebeSign ready? status() never opens a window and never rejects.
+      // 1. Is signlocal ready? status() never opens a window and never rejects.
       let ready = false;
       function showSetup(s) {
         ready = s.ready;
         $("sign").disabled = !ready;
         const text = errorText(s.problem); // undefined when ready
-        $("setup").textContent = text ? `${text.title}. ${text.body}` : "WebeSign is ready.";
+        $("setup").textContent = text ? `${text.title}. ${text.body}` : "signlocal is ready.";
         $("install").hidden = s.problem !== "ExtensionMissing";
         $("install").href = installUrl(); // the extension store of this browser
       }
       showSetup(await status());
-      onChange(showSetup); // the person installs or updates WebeSign while the page is open
+      onChange(showSetup); // the person installs or updates signlocal while the page is open
 
       // 2. Sign: prepare() returns the digest once the person has chosen a certificate.
       $("sign").addEventListener("click", async () => {
@@ -62,7 +62,7 @@
           );
         } catch (error) {
           // 3. Errors: a stable code, a hint for you, a localized text for the person.
-          if (!(error instanceof WebSignError)) throw error;
+          if (!(error instanceof SignlocalError)) throw error;
           console.info(`${error.code}: ${error.message}\n${error.hint}\n${error.docsUrl}`);
           if (error.code !== "UserCancelled") {
             const text = errorText(error) ?? { title: "Signing failed", body: error.message };

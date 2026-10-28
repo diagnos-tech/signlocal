@@ -2,7 +2,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { WebSign } from "../client.js";
+import { Signlocal } from "../client.js";
 import type { ErrorCode, Certificate as WireCertificate } from "../generated/index.js";
 import type { ConnectOptions } from "../types.js";
 import { SAMPLE_CERTIFICATE } from "./sample-certificate.js";
@@ -40,12 +40,12 @@ export interface FakeAppOptions {
   readonly remembered?: boolean;
 }
 
-/** A fake `websign connect` and what it heard. */
+/** A fake `signlocal connect` and what it heard. */
 export interface FakeApp {
-  /** Pass to `WebSign.connect(...)` (or call {@link FakeApp.connect}). */
+  /** Pass to `Signlocal.connect(...)` (or call {@link FakeApp.connect}). */
   readonly options: ConnectOptions;
   /** Starts a real connection to the fake; closed by {@link FakeApp.close}. */
-  connect(extra?: ConnectOptions): Promise<WebSign>;
+  connect(extra?: ConnectOptions): Promise<Signlocal>;
   /** The messages the client sent, in order (`hello`, `sign.begin`, ...). */
   requests(): Array<Record<string, unknown>>;
   /** Closes every connection made through {@link FakeApp.connect} and deletes the scratch files. */
@@ -53,20 +53,20 @@ export interface FakeApp {
 }
 
 /**
- * A stand-in for the WebeSign app, so tests of your program need neither the
+ * A stand-in for the signlocal app, so tests of your program need neither the
  * app nor a person. It is a real child process speaking the real protocol:
- * your code runs unchanged through `WebSign.connect`. It answers `hello`,
+ * your code runs unchanged through `Signlocal.connect`. It answers `hello`,
  * `status`, `choose`, `sign` and `diagnostics.open`, enforces the same
  * digest-length rule as the app, and answers `sign` with the digest itself as
  * `signature` (so it never verifies: do not use it to test signature checks).
  *
  * @example
  * ```ts
- * import { fakeApp } from "@websign/desktop/testing";
+ * import { fakeApp } from "@signlocal/desktop/testing";
  *
  * const app = fakeApp();
- * const websign = await app.connect();
- * const result = await websign.sign({ hash: "SHA-256", prepare: () => new Uint8Array(32) });
+ * const signlocal = await app.connect();
+ * const result = await signlocal.sign({ hash: "SHA-256", prepare: () => new Uint8Array(32) });
  * expect(result.certificate.displayName).toBe("Test Holder");
  * await app.close();
  * ```
@@ -79,7 +79,7 @@ export interface FakeApp {
  * ```
  */
 export function fakeApp(options: FakeAppOptions = {}): FakeApp {
-  const directory = mkdtempSync(join(tmpdir(), "websign-fake-"));
+  const directory = mkdtempSync(join(tmpdir(), "signlocal-fake-"));
   const log = join(directory, "requests.jsonl");
   const config = join(directory, "config.json");
   writeFileSync(log, "");
@@ -99,13 +99,13 @@ export function fakeApp(options: FakeAppOptions = {}): FakeApp {
     executable: process.execPath,
     executableArgs: [PROCESS, config],
   };
-  const open: WebSign[] = [];
+  const open: Signlocal[] = [];
   return {
     options: connectOptions,
     async connect(extra = {}) {
-      const websign = await WebSign.connect({ ...connectOptions, ...extra });
-      open.push(websign);
-      return websign;
+      const signlocal = await Signlocal.connect({ ...connectOptions, ...extra });
+      open.push(signlocal);
+      return signlocal;
     },
     requests: () =>
       readFileSync(log, "utf8")
@@ -113,7 +113,7 @@ export function fakeApp(options: FakeAppOptions = {}): FakeApp {
         .filter(Boolean)
         .map((line) => JSON.parse(line) as Record<string, unknown>),
     async close() {
-      await Promise.all(open.splice(0).map((websign) => websign.close()));
+      await Promise.all(open.splice(0).map((signlocal) => signlocal.close()));
       rmSync(directory, { recursive: true, force: true });
     },
   };

@@ -4,8 +4,8 @@
 
 use egui::accesskit::Role;
 use egui::{Align, CornerRadius, Layout, Sense, Ui, UiBuilder, Vec2, vec2};
-use websign_i18n::k;
-use websign_protocol::messages::DiagnosticsTab;
+use signlocal_i18n::k;
+use signlocal_protocol::messages::DiagnosticsTab;
 
 use super::Screen;
 use super::words::tr;
@@ -55,7 +55,7 @@ fn brand(ui: &mut Ui, screen: &Screen<'_>) {
             ui.spacing_mut().item_spacing.y = 0.0;
             ui.label(
                 typography::TITLE
-                    .rich(websign_project::PRODUCT_NAME)
+                    .rich(signlocal_project::PRODUCT_NAME)
                     .color(c.fg),
             );
             ui.label(
@@ -163,7 +163,7 @@ fn footer(ui: &mut Ui, screen: &Screen<'_>, actions: &mut Vec<Action>) {
 }
 
 /// A tab's icon and name.
-pub fn identity(tab: DiagnosticsTab) -> (Icon, websign_i18n::Key) {
+pub fn identity(tab: DiagnosticsTab) -> (Icon, signlocal_i18n::Key) {
     match tab {
         DiagnosticsTab::Browsers => (icons::BROWSERS, k::DIAG_TAB_BROWSERS),
         DiagnosticsTab::Devices => (icons::TOKEN, k::DIAG_TAB_DEVICES),

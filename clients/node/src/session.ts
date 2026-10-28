@@ -1,12 +1,12 @@
 /**
- * One `websign connect` child process and the request bookkeeping on top of
+ * One `signlocal connect` child process and the request bookkeeping on top of
  * its framed stdin/stdout. Everything that can go wrong with the process
  * (missing binary, early exit, garbage, silence) ends here as a
- * {@link WebSignError}, so the API layer only sees replies and failures.
+ * {@link SignlocalError}, so the API layer only sees replies and failures.
  */
 
 import { type ChildProcess, spawn } from "node:child_process";
-import { fromWire, WebSignError } from "./errors.js";
+import { fromWire, SignlocalError } from "./errors.js";
 import { encodeFrame, FrameDecoder } from "./framing.js";
 import type { AppEnvelope } from "./generated/index.js";
 import { type ClientIdentity, helloFields, negotiatedVersion, PROTOCOL } from "./hello.js";
@@ -29,13 +29,13 @@ export interface Exchange {
   /** Continuation on the same id (`sign.digest`, `cancel`). Ignored once settled. */
   send(type: string, fields?: Record<string, unknown>): void;
   /** Ends the exchange locally with `error` and tells the app to `cancel`. */
-  fail(error: WebSignError): void;
+  fail(error: SignlocalError): void;
 }
 
 interface Pending {
   readonly onEvent: ((event: AppEnvelope) => void) | undefined;
   readonly resolve: (message: AppEnvelope) => void;
-  readonly reject: (error: WebSignError) => void;
+  readonly reject: (error: SignlocalError) => void;
 }
 
 export class Session {
@@ -45,7 +45,7 @@ export class Session {
   private version = PROTOCOL;
   private ready = false;
   private exited = false;
-  private ending: WebSignError | undefined;
+  private ending: SignlocalError | undefined;
   private closing: Promise<void> | undefined;
   private readonly forgetExit: () => void;
 
@@ -56,15 +56,15 @@ export class Session {
     child.stdout?.on("data", (chunk: Buffer) => this.receive(chunk));
     child.stdin?.on("error", () => {});
     child.on("error", (error) => {
-      this.end(new WebSignError("AppMissing", `could not start the app: ${error.message}`), true);
+      this.end(new SignlocalError("AppMissing", `could not start the app: ${error.message}`), true);
     });
     child.on("close", () => {
       this.exited = true;
       this.forgetExit();
       this.end(
         this.ready
-          ? new WebSignError("Internal", "the app exited")
-          : new WebSignError("AppMissing", "the app exited before answering hello"),
+          ? new SignlocalError("Internal", "the app exited")
+          : new SignlocalError("AppMissing", "the app exited before answering hello"),
         false,
       );
     });
@@ -84,7 +84,7 @@ export class Session {
     });
     const session = new Session(child, timings);
     const timer = setTimeout(() => {
-      session.end(new WebSignError("Timeout", "the app did not answer hello in time"), true);
+      session.end(new SignlocalError("Timeout", "the app did not answer hello in time"), true);
     }, timings.helloMs);
     try {
       const reply = await session.request("hello", helloFields(client)).result;
@@ -93,7 +93,7 @@ export class Session {
       return session;
     } catch (error) {
       session.end(
-        error instanceof WebSignError ? error : new WebSignError("Internal", "hello failed"),
+        error instanceof SignlocalError ? error : new SignlocalError("Internal", "hello failed"),
         true,
       );
       throw error;
@@ -146,7 +146,7 @@ export class Session {
 
   private async shutdown(): Promise<void> {
     if (this.exited) return;
-    this.end(new WebSignError("Internal", "the connection was closed"), false);
+    this.end(new SignlocalError("Internal", "the connection was closed"), false);
     holdEventLoop(this.child, true);
     const exit = new Promise<void>((resolve) => this.child.once("close", () => resolve()));
     this.child.stdin?.end();
@@ -163,7 +163,7 @@ export class Session {
     try {
       this.child.stdin.write(encodeFrame({ v: this.version, ...message }));
     } catch (error) {
-      if (error instanceof WebSignError && typeof message.id === "string") {
+      if (error instanceof SignlocalError && typeof message.id === "string") {
         this.pending.get(message.id)?.reject(error);
         this.pending.delete(message.id);
         this.holdWhileBusy();
@@ -178,13 +178,13 @@ export class Session {
     try {
       messages = this.decoder.push(chunk);
     } catch (error) {
-      this.end(error as WebSignError, true);
+      this.end(error as SignlocalError, true);
       return;
     }
     for (const message of messages) {
       if (!this.route(message)) {
         this.end(
-          new WebSignError("Internal", "the app sent a message without an id or type"),
+          new SignlocalError("Internal", "the app sent a message without an id or type"),
           true,
         );
         return;
@@ -205,7 +205,7 @@ export class Session {
     }
     if (!this.ready && envelope.type === "error" && envelope.v !== this.version) {
       this.end(
-        new WebSignError("Internal", "the app refused hello at another protocol version"),
+        new SignlocalError("Internal", "the app refused hello at another protocol version"),
         true,
       );
       return true;
@@ -222,7 +222,7 @@ export class Session {
   }
 
   /** Fails everything in flight; optionally kills the child (it is misbehaving or unwanted). */
-  private end(error: WebSignError, kill: boolean): void {
+  private end(error: SignlocalError, kill: boolean): void {
     this.ending ??= error;
     for (const open of this.pending.values()) open.reject(this.ending);
     this.pending.clear();

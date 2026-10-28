@@ -19,12 +19,12 @@ mod system;
 
 use std::collections::HashMap;
 
-use websign_core::Fingerprint;
-use websign_host::store::{ConnectionRecord, ErrorRecord};
-use websign_registration::Browser;
-use websign_registration::detect::BrowserPackaging;
-use websign_registration::status::RegistrationState;
-use websign_ui_model::certs::{CertList, CertRow};
+use signlocal_core::Fingerprint;
+use signlocal_host::store::{ConnectionRecord, ErrorRecord};
+use signlocal_registration::Browser;
+use signlocal_registration::detect::BrowserPackaging;
+use signlocal_registration::status::RegistrationState;
+use signlocal_ui_model::certs::{CertList, CertRow};
 
 #[cfg(test)]
 pub use certificates::from_candidates;

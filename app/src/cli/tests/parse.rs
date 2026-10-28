@@ -8,7 +8,7 @@ use crate::cli::register::ScopeArg;
 use crate::cli::{Cli, Command};
 
 fn parse(args: &[&str]) -> Result<Option<Command>, clap::Error> {
-    Cli::try_parse_from(std::iter::once("websign").chain(args.iter().copied()))
+    Cli::try_parse_from(std::iter::once("signlocal").chain(args.iter().copied()))
         .map(|cli| cli.command)
 }
 

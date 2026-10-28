@@ -1,7 +1,7 @@
 import type { ErrorCode } from "./generated/index.js";
 
-/** The project site; the same base as `@websign/sdk`'s `docsUrl`. */
-const HOMEPAGE = "https://diagnos-tech.github.io/web-esign/";
+/** The project site; the same base as `@signlocal/sdk`'s `docsUrl`. */
+const HOMEPAGE = "https://signlocal.diagnos.health/";
 
 /** The code's section on the project site (a stable anchor, shared with the web SDK). */
 export function docsUrlFor(code: ErrorCode): string {
@@ -17,11 +17,12 @@ export const HINTS: Readonly<Record<ErrorCode, string>> = {
   ExtensionMissing:
     "This code is for web pages; desktop programs do not use the browser extension.",
   AppMissing:
-    "Install the WebeSign app, or pass its path with `WebSign.connect({ executable })` or WEBSIGN_EXECUTABLE. To test without the app, use `@websign/desktop/testing`.",
-  AppOutdated: "The installed app is too old for this request: ask the user to update WebeSign.",
+    "Install the signlocal app, or pass its path with `Signlocal.connect({ executable })` or SIGNLOCAL_EXECUTABLE. To test without the app, use `@signlocal/desktop/testing`.",
+  AppOutdated: "The installed app is too old for this request: ask the user to update signlocal.",
   ExtensionOutdated:
     "This code is for web pages; update the app and the browser extension together.",
-  ClientOutdated: "The app speaks a newer protocol than this library: upgrade `@websign/desktop`.",
+  ClientOutdated:
+    "The app speaks a newer protocol than this library: upgrade `@signlocal/desktop`.",
   InsecureOrigin:
     "This code is for web pages; desktop programs are never refused for their origin.",
   Aborted:

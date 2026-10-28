@@ -101,7 +101,7 @@ jobs:
         if: runner.os == 'Linux'
         timeout-minutes: 20
         env:
-          WEBSIGN_REQUIRE_SOFTHSM: "1"
+          SIGNLOCAL_REQUIRE_SOFTHSM: "1"
         run: cargo test --workspace
       - name: Test
         if: runner.os != 'Linux'
@@ -166,7 +166,7 @@ jobs:
       - name: Line coverage of the core crates (at least 90 % each)
         timeout-minutes: 45
         run: |
-          for crate in websign-core websign-protocol websign-host websign-ui-model; do
+          for crate in signlocal-core signlocal-protocol signlocal-host signlocal-ui-model; do
             echo "::group::$crate"
             cargo llvm-cov --package "$crate" --summary-only --fail-under-lines 90
             echo "::endgroup::"
@@ -186,7 +186,7 @@ jobs:
           save-if: ${{ env.SAVE_CACHE }}
       - name: Build the contract test
         timeout-minutes: 30
-        run: cargo test -p websign-keystores --test contract_os --no-run
+        run: cargo test -p signlocal-keystores --test contract_os --no-run
       - name: Contract against CNG and CAPI software keys
         # make-test-certs.ps1 bounds every key creation itself; this is the
         # backstop for a provider dialog nobody can answer.
@@ -194,9 +194,9 @@ jobs:
         shell: pwsh
         run: |
           $c = ./docs/prototypes/kit/windows/make-test-certs.ps1
-          $env:WEBSIGN_CONTRACT_SOURCE = 'windows'
-          $env:WEBSIGN_CONTRACT_EXPECTED = ($c.Sha256 -join ',')
-          cargo test -p websign-keystores --test contract_os -- --nocapture
+          $env:SIGNLOCAL_CONTRACT_SOURCE = 'windows'
+          $env:SIGNLOCAL_CONTRACT_EXPECTED = ($c.Sha256 -join ',')
+          cargo test -p signlocal-keystores --test contract_os -- --nocapture
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Remove the test certificates
         if: always()
@@ -223,26 +223,26 @@ jobs:
           set -euo pipefail
           # The partition list names the test binary by cdhash, so it must be
           # built before the keys are allowed and run directly afterwards.
-          BIN=$(cargo test -p websign-keystores --test contract_os --no-run --message-format=json \
+          BIN=$(cargo test -p signlocal-keystores --test contract_os --no-run --message-format=json \
             | jq -r 'select(.reason == "compiler-artifact" and .target.name == "contract_os" and .executable != null) | .executable' \
             | tail -n1)
           [[ -x $BIN ]] || { echo "contract_os test binary not found" >&2; exit 1; }
           source docs/prototypes/kit/macos/lib/common.sh
           find_openssl
-          P12_PASSWORD=websign-ci
-          keychain_create websign-ci.keychain websign-ci
+          P12_PASSWORD=signlocal-ci
+          keychain_create signlocal-ci.keychain signlocal-ci
           trap keychain_destroy EXIT
           work=$(mktemp -d)
           expected=()
           for key in rsa2048 p256 p384; do
-            make_identity "$work" "websign-ci-$key" "$key"
-            keychain_import "$work/websign-ci-$key.p12"
+            make_identity "$work" "signlocal-ci-$key" "$key"
+            keychain_import "$work/signlocal-ci-$key.p12"
             # Full SHA-256: the kit's cert_fingerprint keeps only 16 digits.
-            expected+=("$("$OPENSSL" x509 -in "$work/websign-ci-$key.cert.pem" -outform DER | shasum -a 256 | cut -d' ' -f1)")
+            expected+=("$("$OPENSSL" x509 -in "$work/signlocal-ci-$key.cert.pem" -outform DER | shasum -a 256 | cut -d' ' -f1)")
           done
           keychain_allow "$BIN"
-          WEBSIGN_CONTRACT_SOURCE=macos:keychain \
-          WEBSIGN_CONTRACT_EXPECTED=$(IFS=,; echo "${expected[*]}") \
+          SIGNLOCAL_CONTRACT_SOURCE=macos:keychain \
+          SIGNLOCAL_CONTRACT_EXPECTED=$(IFS=,; echo "${expected[*]}") \
             with_timeout 300 "$BIN" --nocapture
 
   xtask:
@@ -281,11 +281,11 @@ jobs:
       - name: Build the release binary
         if: runner.os == 'Linux' && startsWith(github.ref, 'refs/tags/v')
         timeout-minutes: 30
-        run: cargo build --release -p websign-app
+        run: cargo build --release -p signlocal-app
       - name: Release hygiene (versions match the tag, no e2e marker)
         if: runner.os == 'Linux' && startsWith(github.ref, 'refs/tags/v')
         timeout-minutes: 10
-        run: cargo xtask check release --binary target/release/websign
+        run: cargo xtask check release --binary target/release/signlocal
 
   ts:
     name: typescript
@@ -352,7 +352,7 @@ jobs:
           bun run size
       - uses: actions/upload-artifact@v4
         with:
-          name: websign-extension-zips
+          name: signlocal-extension-zips
           path: extension/.output/*.zip
           if-no-files-found: error
           # `.output` is a dot folder, which upload-artifact skips by default.
@@ -415,7 +415,7 @@ jobs:
           workspaces: examples/desktop/rust-cli
           key: examples
           save-if: ${{ env.SAVE_CACHE }}
-      # examples/web aliases @websign/sdk to sdk/src but has its own lockfile.
+      # examples/web aliases @signlocal/sdk to sdk/src but has its own lockfile.
       - name: Web examples (typecheck, PAdES test, build)
         timeout-minutes: 10
         working-directory: examples/web

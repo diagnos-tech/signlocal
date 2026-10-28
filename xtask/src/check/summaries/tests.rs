@@ -62,8 +62,8 @@ fn duplicate_literal_rows_are_reported() {
 
 #[test]
 fn component_roots_include_crates_and_clients_children() {
-    assert!(is_component_root("crates/websign-core"));
+    assert!(is_component_root("crates/signlocal-core"));
     assert!(is_component_root("sdk"));
-    assert!(!is_component_root("crates/websign-core/src"));
+    assert!(!is_component_root("crates/signlocal-core/src"));
     assert!(!is_component_root("docs"));
 }

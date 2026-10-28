@@ -12,9 +12,9 @@
 //! press and release together.
 
 use egui::{Align, Layout, Rect, Ui, UiBuilder, Vec2, pos2};
-use websign_i18n::k;
-use websign_ui_model::confirm::view::{FooterHint, PinBlock, PrimaryButton};
-use websign_ui_model::confirm::{ConfirmState, UserInput};
+use signlocal_i18n::k;
+use signlocal_ui_model::confirm::view::{FooterHint, PinBlock, PrimaryButton};
+use signlocal_ui_model::confirm::{ConfirmState, UserInput};
 
 use super::Screen;
 use crate::ui::confirm::session::FocusTarget;

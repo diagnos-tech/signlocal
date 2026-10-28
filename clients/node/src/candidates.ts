@@ -1,5 +1,5 @@
 /**
- * Where `websign` may live, as a pure function of the environment so every
+ * Where `signlocal` may live, as a pure function of the environment so every
  * operating system's search order is testable from any host.
  */
 
@@ -51,7 +51,7 @@ function windowsStat(path: string) {
 
 /** First existing executable in the documented order, or `undefined`. */
 export function search(environment: Environment): string | undefined {
-  const override = environment.env.WEBSIGN_EXECUTABLE;
+  const override = environment.env.SIGNLOCAL_EXECUTABLE;
   const ordered = [
     ...(override ? [override] : []),
     ...onPath(environment),
@@ -66,7 +66,7 @@ function onPath({ env, platform }: Environment): string[] {
   const variable = windows ? Object.keys(env).find((k) => k.toLowerCase() === "path") : "PATH";
   const value = variable === undefined ? undefined : env[variable];
   if (!value) return [];
-  const name = windows ? "websign.exe" : "websign";
+  const name = windows ? "signlocal.exe" : "signlocal";
   return value
     .split(path.delimiter)
     .map((directory) => directory.replaceAll('"', ""))
@@ -80,17 +80,17 @@ function installLocations({ env, platform, home }: Environment): string[] {
       const local = env.LOCALAPPDATA;
       if (!local) return [];
       return [
-        win32.join(local, "Programs", "WebeSign", "websign.exe"),
-        win32.join(local, "Microsoft", "WindowsApps", "websign.exe"),
+        win32.join(local, "Programs", "signlocal", "signlocal.exe"),
+        win32.join(local, "Microsoft", "WindowsApps", "signlocal.exe"),
       ];
     }
     case "darwin":
       return [
-        "/Applications/WebeSign.app/Contents/MacOS/websign",
-        posix.join(home, "Applications", "WebeSign.app", "Contents", "MacOS", "websign"),
-        posix.join(home, ".local", "bin", "websign"),
+        "/Applications/signlocal.app/Contents/MacOS/signlocal",
+        posix.join(home, "Applications", "signlocal.app", "Contents", "MacOS", "signlocal"),
+        posix.join(home, ".local", "bin", "signlocal"),
       ];
     default:
-      return ["/usr/bin/websign", posix.join(home, ".local", "bin", "websign")];
+      return ["/usr/bin/signlocal", posix.join(home, ".local", "bin", "signlocal")];
   }
 }

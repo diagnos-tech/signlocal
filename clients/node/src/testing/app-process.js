@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// A well-behaved stand-in for `websign connect`, started by `fakeApp()`.
+// A well-behaved stand-in for `signlocal connect`, started by `fakeApp()`.
 // Usage: node app-process.js <config.json> connect
 //
 // It is plain JavaScript (not TypeScript) so `node` can run it from src/ and

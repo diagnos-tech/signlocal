@@ -137,7 +137,7 @@ mod tests {
 
     fn scratch_dir(name: &str) -> PathBuf {
         let dir =
-            std::env::temp_dir().join(format!("websign-p11kit-{name}-{}", std::process::id()));
+            std::env::temp_dir().join(format!("signlocal-p11kit-{name}-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         dir
@@ -159,7 +159,7 @@ mod tests {
         let found = registered_modules(
             &[system, user],
             std::slice::from_ref(&libs),
-            &programs(&["websign"]),
+            &programs(&["signlocal"]),
         );
         assert_eq!(found, [PathBuf::from("/abs/other.so"), libs.join("new.so")]);
         let _ = std::fs::remove_dir_all(&root);
@@ -175,14 +175,14 @@ mod tests {
         .unwrap();
         std::fs::write(
             root.join("mine.module"),
-            "module: /abs/mine.so\ndisable-in: websign\n",
+            "module: /abs/mine.so\ndisable-in: signlocal\n",
         )
         .unwrap();
         std::fs::write(root.join("empty.module"), "").unwrap();
         let found = registered_modules(
             &[root.clone(), root.join("does-not-exist")],
             &[],
-            &programs(&["websign"]),
+            &programs(&["signlocal"]),
         );
         assert!(found.is_empty(), "{found:?}");
         let _ = std::fs::remove_dir_all(&root);

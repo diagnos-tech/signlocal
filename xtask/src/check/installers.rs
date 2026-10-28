@@ -32,7 +32,7 @@ fn expected_lines(project: &Project) -> Result<[(&'static str, Vec<String>); 2],
                 format!("SLUG={}", project.slug),
                 format!("APP_NAME={}", project.name),
                 format!("BUNDLE_ID={}", project.bundle_id),
-                format!("REPO=${{WEBSIGN_REPO:-{repo}}}"),
+                format!("REPO=${{SIGNLOCAL_REPO:-{repo}}}"),
             ],
         ),
         (
@@ -41,7 +41,7 @@ fn expected_lines(project: &Project) -> Result<[(&'static str, Vec<String>); 2],
                 format!("$Script:Slug = '{}'", project.slug),
                 format!("$Script:AppName = '{}'", project.name),
                 format!(
-                    "$Script:Repo = if ($env:WEBSIGN_REPO) {{ $env:WEBSIGN_REPO }} else {{ '{repo}' }}"
+                    "$Script:Repo = if ($env:SIGNLOCAL_REPO) {{ $env:SIGNLOCAL_REPO }} else {{ '{repo}' }}"
                 ),
             ],
         ),
@@ -77,11 +77,11 @@ mod tests {
         let script = read_text(&root.join("scripts/install/install.sh")).unwrap();
         copy.write(
             "scripts/install/install.sh",
-            &script.replace("SLUG=websign", "SLUG=oldname"),
+            &script.replace("SLUG=signlocal", "SLUG=oldname"),
         );
         let problems = check(copy.path()).unwrap();
         assert_eq!(problems.len(), 1, "{problems:?}");
-        assert!(problems[0].contains("install.sh") && problems[0].contains("SLUG=websign"));
+        assert!(problems[0].contains("install.sh") && problems[0].contains("SLUG=signlocal"));
     }
 
     #[test]

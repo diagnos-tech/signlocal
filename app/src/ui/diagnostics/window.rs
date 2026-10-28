@@ -5,9 +5,9 @@
 
 use jiff::Timestamp;
 use jiff::tz::TimeZone;
-use websign_host::store::{Settings, Stores};
-use websign_i18n::Catalog;
-use websign_protocol::messages::DiagnosticsTab;
+use signlocal_host::store::{Settings, Stores};
+use signlocal_i18n::Catalog;
+use signlocal_protocol::messages::DiagnosticsTab;
 
 use super::facts::{Facts, ScanInput};
 use super::lights::Lights;

@@ -67,7 +67,7 @@ fn names(device: &UsbDevice) -> String {
     }
 }
 
-/// The terminal output of `websign-probe devices`.
+/// The terminal output of `signlocal-probe devices`.
 pub fn text(snapshot: &Snapshot) -> String {
     let mut out = String::from("USB smart card readers and tokens:\n");
     match &snapshot.usb.problem {

@@ -6,11 +6,11 @@ use std::path::PathBuf;
 
 use jiff::Timestamp;
 use jiff::tz::TimeZone;
-use websign_devices::Snapshot;
-use websign_devices::hints::DeviceDatabase;
-use websign_host::store::{DiskStores, Stores};
-use websign_keystores::inventory::Inventory;
-use websign_keystores::{FoundKey, Options};
+use signlocal_devices::Snapshot;
+use signlocal_devices::hints::DeviceDatabase;
+use signlocal_host::store::{DiskStores, Stores};
+use signlocal_keystores::inventory::Inventory;
+use signlocal_keystores::{FoundKey, Options};
 
 use super::{Facts, browsers, certificates, devices, drivers, home, system};
 
@@ -30,7 +30,7 @@ impl ScanInput {
     /// The current user's input now: the data folder, and the drivers they
     /// added from the settings store.
     pub fn current() -> ScanInput {
-        let data_dir = websign_host::store::data_dir();
+        let data_dir = signlocal_host::store::data_dir();
         let user_modules = data_dir
             .as_ref()
             .and_then(|dir| DiskStores::new(dir).settings().get().ok())
@@ -75,8 +75,8 @@ pub fn collect(input: &ScanInput) -> Facts {
 fn records(
     data_dir: Option<&PathBuf>,
 ) -> (
-    Vec<websign_host::store::ConnectionRecord>,
-    Vec<websign_host::store::ErrorRecord>,
+    Vec<signlocal_host::store::ConnectionRecord>,
+    Vec<signlocal_host::store::ErrorRecord>,
 ) {
     let Some(dir) = data_dir else {
         return (Vec::new(), Vec::new());

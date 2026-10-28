@@ -33,7 +33,7 @@ function replier(
   id: string,
 ): (message: PageReply) => void {
   return (message) => {
-    const reply: RelayReply = { kind: "websign-reply", document, id, message };
+    const reply: RelayReply = { kind: "signlocal-reply", document, id, message };
     browser.tabs.sendMessage(tabId, reply, { frameId }).catch(() => {
       // The frame is gone; nobody is left to tell.
     });
@@ -53,7 +53,7 @@ async function relay(
     reply({
       type: "error",
       code: "InsecureOrigin",
-      message: "WebeSign only works on https sites and on localhost",
+      message: "signlocal only works on https sites and on localhost",
     });
     return;
   }
@@ -74,9 +74,9 @@ export function handleContentMessage(
   const { kind, document, id, message: payload } = message as Record<string, unknown>;
   const tabId = sender.tab?.id;
   if (sender.id !== browser.runtime.id || tabId === undefined || !isDocument(document)) return;
-  if (kind === "websign-gone") {
+  if (kind === "signlocal-gone") {
     cancelDocument(tabId, sender.frameId ?? 0, document);
-  } else if (kind === "websign-request" && isPageId(id)) {
+  } else if (kind === "signlocal-request" && isPageId(id)) {
     void relay(id, document, payload, sender);
   }
 }

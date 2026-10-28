@@ -22,7 +22,7 @@ export function assertTestOrigin(win: Window, allowAnyOrigin: boolean): void {
   const location = (win as { location?: Location }).location;
   if (allowAnyOrigin || isTestOrigin(location)) return;
   throw new Error(
-    `installFakeWebSign() refused to run on ${location?.origin}: the fake signs with public test keys. ` +
+    `installFakeSignlocal() refused to run on ${location?.origin}: the fake signs with public test keys. ` +
       "Use it only in tests and local development, or pass { allowAnyOrigin: true } for a staging server.",
   );
 }
@@ -31,14 +31,14 @@ export function assertTestOrigin(win: Window, allowAnyOrigin: boolean): void {
 // a fake that slipped into a build is noticed at once.
 export function warnInstalled(): void {
   console.warn(
-    "[@websign/sdk/testing] A FAKE WebeSign extension is active on this page. Its signatures use " +
-      "public test keys and prove nothing. Never ship @websign/sdk/testing to production.",
+    "[@signlocal/sdk/testing] A FAKE signlocal extension is active on this page. Its signatures use " +
+      "public test keys and prove nothing. Never ship @signlocal/sdk/testing to production.",
   );
 }
 
 export function warnRealExtension(): void {
   console.warn(
-    "[@websign/sdk/testing] The real WebeSign extension also answers on this page; answers will mix. " +
+    "[@signlocal/sdk/testing] The real signlocal extension also answers on this page; answers will mix. " +
       "Disable the extension for this site, or do not install the fake.",
   );
 }

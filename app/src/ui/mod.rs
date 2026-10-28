@@ -1,6 +1,6 @@
 //! The two windows (egui): confirmation and diagnostics.
 //!
-//! This layer only renders what `websign-ui-model` decides and turns egui
+//! This layer only renders what `signlocal-ui-model` decides and turns egui
 //! input into model input. Look and feel come from [`theme`] (the tokens of
 //! `docs/ux.md` §11), [`fonts`] (Inter and JetBrains Mono, embedded),
 //! [`icons`] (Phosphor) and [`widgets`] (one custom widget per file).

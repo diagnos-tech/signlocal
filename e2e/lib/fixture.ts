@@ -69,25 +69,25 @@ export async function ready(page: Tab): Promise<void> {
 }
 
 export function status(page: Tab): Promise<StatusReply> {
-  return page.evaluate(() => (window as unknown as E2eWindow).websignE2e.status());
+  return page.evaluate(() => (window as unknown as E2eWindow).signlocalE2e.status());
 }
 
 export function sign(page: Tab, request: SignRequest): Promise<SignReply> {
-  return page.evaluate((r) => (window as unknown as E2eWindow).websignE2e.sign(r), request);
+  return page.evaluate((r) => (window as unknown as E2eWindow).signlocalE2e.sign(r), request);
 }
 
 export function certificates(page: Tab): Promise<CertificatesReply> {
-  return page.evaluate(() => (window as unknown as E2eWindow).websignE2e.certificates());
+  return page.evaluate(() => (window as unknown as E2eWindow).signlocalE2e.certificates());
 }
 
 /** Starts a signature without waiting for it. */
 export async function start(page: Tab, request: SignRequest): Promise<void> {
-  await page.evaluate((r) => (window as unknown as E2eWindow).websignE2e.start(r), request);
+  await page.evaluate((r) => (window as unknown as E2eWindow).signlocalE2e.start(r), request);
 }
 
 /** The reply of the signature `start` began. */
 export function result(page: Tab): Promise<SignReply> {
-  return page.evaluate(() => (window as unknown as E2eWindow).websignE2e.result());
+  return page.evaluate(() => (window as unknown as E2eWindow).signlocalE2e.result());
 }
 
 /**
@@ -95,7 +95,11 @@ export function result(page: Tab): Promise<SignReply> {
  * digest.
  */
 export async function prepareCalled(page: Tab): Promise<void> {
-  await until(page, () => (window as unknown as E2eWindow).websignE2e.preparedCount() > 0, 60_000);
+  await until(
+    page,
+    () => (window as unknown as E2eWindow).signlocalE2e.preparedCount() > 0,
+    60_000,
+  );
 }
 
 /**
@@ -112,11 +116,11 @@ export async function until(page: Tab, condition: () => boolean, timeout: number
 
 /** Withdraws the started signature through its AbortSignal. */
 export async function abort(page: Tab): Promise<void> {
-  await page.evaluate(() => (window as unknown as E2eWindow).websignE2e.abort());
+  await page.evaluate(() => (window as unknown as E2eWindow).signlocalE2e.abort());
 }
 
 interface E2eWindow {
-  readonly websignE2e: {
+  readonly signlocalE2e: {
     status(): Promise<StatusReply>;
     sign(request: SignRequest): Promise<SignReply>;
     certificates(): Promise<CertificatesReply>;

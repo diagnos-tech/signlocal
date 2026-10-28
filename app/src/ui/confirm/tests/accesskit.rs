@@ -5,8 +5,8 @@
 use egui::Key;
 use egui::accesskit::{Live, Role, Toggled};
 use egui_kittest::kittest::{NodeT as _, Queryable as _};
-use websign_protocol::types::BrowserName;
-use websign_ui_model::confirm::port::Failure;
+use signlocal_protocol::types::BrowserName;
+use signlocal_ui_model::confirm::port::Failure;
 
 use super::fixtures::*;
 use super::support::Rig;
@@ -123,7 +123,7 @@ fn the_pin_hint_names_the_key_store_never_the_running_os() {
         .get_by_label("Windows will ask for your PIN in its own window.");
     let mut rig = Rig::new(false);
     open_site(&mut rig, true);
-    let driver = ana_token(websign_ui_model::certs::PinMode::System);
+    let driver = ana_token(signlocal_ui_model::certs::PinMode::System);
     rig.list(vec![driver], Vec::new());
     assert!(
         rig.harness

@@ -4,7 +4,7 @@ import { promisify } from "node:util";
 
 import { expect, test } from "@playwright/test";
 
-import { WebSign } from "../../clients/node/dist/index.js";
+import { Signlocal } from "../../clients/node/dist/index.js";
 import { appEnv } from "../lib/app.ts";
 import { newMessage } from "../lib/fixture.ts";
 import { env, keyOf } from "../lib/suite.ts";
@@ -13,20 +13,20 @@ import { verifies } from "../lib/verify.ts";
 const run = promisify(execFile);
 
 // Scenario 7 (docs/architecture/testing.md §5): programs on this computer
-// sign with the same keys and window, through `websign connect`.
+// sign with the same keys and window, through `signlocal connect`.
 test.describe("desktop callers", () => {
-  test("@websign/desktop signs through websign connect", async () => {
+  test("@signlocal/desktop signs through signlocal connect", async () => {
     const key = keyOf("EC");
     const message = Buffer.from(newMessage(), "hex");
-    // The client starts `websign connect` with this process's environment.
+    // The client starts `signlocal connect` with this process's environment.
     const saved = { ...process.env };
     Object.assign(process.env, appEnv(env, "sign"));
-    const websign = await WebSign.connect({ executable: env.app, clientName: "websign-e2e" });
+    const signlocal = await Signlocal.connect({ executable: env.app, clientName: "signlocal-e2e" });
     try {
-      const status = await websign.status();
+      const status = await signlocal.status();
       expect(status.app.version).toBeTruthy();
       const prepared: string[] = [];
-      const result = await websign.sign({
+      const result = await signlocal.sign({
         hash: "SHA-384",
         certificate: key.fingerprint,
         prepare: (certificate, { hash }) => {
@@ -40,12 +40,12 @@ test.describe("desktop callers", () => {
         verifies(key.certificate, "SHA-384", result.algorithm, message, result.signature),
       ).toBe(true);
     } finally {
-      await websign.close();
+      await signlocal.close();
       process.env = saved;
     }
   });
 
-  test("websign sign signs a digest from the command line", async () => {
+  test("signlocal sign signs a digest from the command line", async () => {
     const key = keyOf("RSA");
     const message = Buffer.from(newMessage(), "hex");
     const digest = createHash("sha256").update(message).digest("hex");

@@ -9,33 +9,33 @@ app is started.
 
 | Interface | For | Certificate-dependent digests (PAdES) |
 |---|---|---|
-| `websign sign` / `websign choose` | scripts, simple integrations | no: the digest is given up front |
-| `websign connect` | client libraries, any language | yes: `sign.need_digest` ↔ `sign.digest` |
-| `@websign/desktop` (Node, Bun, Electron) | JavaScript programs | yes (`prepare`) |
-| `websign-client` (Rust crate) | Rust programs | yes (`prepare` closure) |
+| `signlocal sign` / `signlocal choose` | scripts, simple integrations | no: the digest is given up front |
+| `signlocal connect` | client libraries, any language | yes: `sign.need_digest` ↔ `sign.digest` |
+| `@signlocal/desktop` (Node, Bun, Electron) | JavaScript programs | yes (`prepare`) |
+| `signlocal-client` (Rust crate) | Rust programs | yes (`prepare` closure) |
 
 The app is started on demand by the caller and exits when done: no daemon,
 no port.
 
 ## 2. Commands
 
-`websign` is on `PATH` after installation (Linux packages: `/usr/bin/websign`;
-Windows: the MSIX alias or `%LOCALAPPDATA%\Programs\WebeSign\websign.exe`;
-macOS: `/Applications/WebeSign.app/Contents/MacOS/websign` — see
+`signlocal` is on `PATH` after installation (Linux packages: `/usr/bin/signlocal`;
+Windows: the MSIX alias or `%LOCALAPPDATA%\Programs\signlocal\signlocal.exe`;
+macOS: `/Applications/signlocal.app/Contents/MacOS/signlocal` — see
 [packaging-and-release.md §Install locations](packaging-and-release.md#install-locations)).
 
 | Command | Purpose | Output |
 |---|---|---|
-| `websign` (no arguments) | open diagnostics (what the app menu entry runs) | window |
-| `websign install [--browser B]… [--system] [--dry-run] [--json]` | register with browsers, the `websign:` scheme, extension pre-registration (Windows), app-menu entry (Linux) | text or JSON report |
-| `websign uninstall [--purge] [--system] [--dry-run] [--json]` | undo `install` (`--purge` also deletes settings and remembered sites) | text or JSON |
-| `websign register [--browser B]… [--uninstall] [--scope user\|system] [--user-data-dir DIR] [--manifest-dir DIR] [--dry-run] [--json]` | manifests only (tests, support) | one line per target |
-| `websign doctor [--json]` | the "Copy diagnostics" report | text (docs/ux.md §8.7) or JSON |
-| `websign diagnostics [--tab browsers\|devices\|certificates\|help]` | open the diagnostics window | window |
-| `websign sign --hash H (--digest D \| --digest-file PATH\|-) [--algorithm A]… [--certificate FP]` | one signature | JSON (§3) |
-| `websign choose [--algorithm A]…` | let the person pick a certificate | JSON (§3) |
-| `websign connect` | framed protocol on stdin/stdout | frames |
-| `websign version [--json]` | version | `websign 1.4.0 (protocol 1)` or `AppInfo` JSON |
+| `signlocal` (no arguments) | open diagnostics (what the app menu entry runs) | window |
+| `signlocal install [--browser B]… [--system] [--dry-run] [--json]` | register with browsers, the `signlocal:` scheme, extension pre-registration (Windows), app-menu entry (Linux) | text or JSON report |
+| `signlocal uninstall [--purge] [--system] [--dry-run] [--json]` | undo `install` (`--purge` also deletes settings and remembered sites) | text or JSON |
+| `signlocal register [--browser B]… [--uninstall] [--scope user\|system] [--user-data-dir DIR] [--manifest-dir DIR] [--dry-run] [--json]` | manifests only (tests, support) | one line per target |
+| `signlocal doctor [--json]` | the "Copy diagnostics" report | text (docs/ux.md §8.7) or JSON |
+| `signlocal diagnostics [--tab browsers\|devices\|certificates\|help]` | open the diagnostics window | window |
+| `signlocal sign --hash H (--digest D \| --digest-file PATH\|-) [--algorithm A]… [--certificate FP]` | one signature | JSON (§3) |
+| `signlocal choose [--algorithm A]…` | let the person pick a certificate | JSON (§3) |
+| `signlocal connect` | framed protocol on stdin/stdout | frames |
+| `signlocal version [--json]` | version | `signlocal 1.4.0 (protocol 1)` or `AppInfo` JSON |
 
 Values: `--hash SHA-256|SHA-384|SHA-512`; `--algorithm ECDSA|RSASSA-PKCS1-v1_5|RSASSA-PSS`
 (repeatable, preference order); `--digest` accepts hex (any case, `:`
@@ -84,11 +84,11 @@ envelope; human text goes to stderr.
 | 14 | `InvalidRequest`, `InsecureOrigin` |
 | 15 | `AppOutdated`, `ClientOutdated`, `AppMissing`, `ExtensionMissing`, `ExtensionOutdated` |
 
-Defined once in `websign_protocol::ErrorCode::exit_code`.
+Defined once in `signlocal_protocol::ErrorCode::exit_code`.
 
-## 5. `websign connect`
+## 5. `signlocal connect`
 
-1. The program spawns `websign connect` with stdin/stdout as pipes (stderr may
+1. The program spawns `signlocal connect` with stdin/stdout as pipes (stderr may
    be inherited or discarded).
 2. Before reading, the app identifies the **parent process** (§6).
 3. The program sends `hello` (no `browser` field), then any requests without
@@ -116,7 +116,7 @@ The window shows the calling program instead of a web origin:
 - a script host (interpreters, shells and terminal hosts: `node`, `python`,
   `bash`, `zsh`, `cmd.exe`, `powershell`, `Terminal`, …) is shown as "a script
   run by {program}", because every script it runs shares its identity; the
-  list lives in `websign-core` `present/caller/script_hosts.rs`.
+  list lives in `signlocal-core` `present/caller/script_hosts.rs`.
 
 "Remember this program" stores consent under `app:<signer>` for signed
 programs (survives updates that move the binary) or `path:<executable>`
@@ -137,18 +137,18 @@ codes. Each checks every `sign.need_digest` before `prepare` runs: a hash
 other than the requested one, or an algorithm outside the requested set,
 cancels the request with `InvalidRequest`.
 
-### `@websign/desktop` (Apache-2.0, zero runtime deps)
+### `@signlocal/desktop` (Apache-2.0, zero runtime deps)
 
 ```ts
-import { WebSign } from "@websign/desktop";
+import { Signlocal } from "@signlocal/desktop";
 
-const websign = await WebSign.connect();            // AppMissing if not installed
-const result = await websign.sign({
+const signlocal = await Signlocal.connect();          // AppMissing if not installed
+const result = await signlocal.sign({
   hash: "SHA-256",
   algorithm: ["ECDSA", "RSASSA-PSS"],               // optional; one name or a list
   prepare: async (certificate, { algorithm }) => digestFor(certificate.der, algorithm),
 });
-await websign.close();
+await signlocal.close();
 ```
 
 Also `status()`, `certificates({ algorithm?, signal? })`,
@@ -157,21 +157,21 @@ Also `status()`, `certificates({ algorithm?, signal? })`,
 `HashAlgorithm`, `SignatureAlgorithm`): `Certificate.der`/`chain` and
 `SignResult.signature` are `Uint8Array`, `notBefore`/`notAfter` are `Date`.
 ESM, `require()` too, Node ≥ 20.19 (the first 20.x that loads ESM through
-`require()` without a flag). `WebSignError` has `code`, `message`, `hint`
+`require()` without a flag). `SignlocalError` has `code`, `message`, `hint`
 (what to do) and `docsUrl` (the code's anchor on the project site, like the web SDK). Every public API has TSDoc with
 an `@example`. Contract: [`clients/node/SPEC.md`](../../clients/node/SPEC.md).
 
-**Testing without the app**: `@websign/desktop/testing` exports `fakeApp()`,
+**Testing without the app**: `@signlocal/desktop/testing` exports `fakeApp()`,
 a real child process speaking the real protocol (answers `hello`, `status`,
 `choose`, `sign`, `diagnostics.open`, enforces the digest length), so the
 code under test runs unchanged:
 
 ```ts
-import { fakeApp } from "@websign/desktop/testing";
+import { fakeApp } from "@signlocal/desktop/testing";
 
 const app = fakeApp({ failWith: { code: "PinLocked", when: "confirm" } });
-const websign = await app.connect();          // or WebSign.connect(app.options)
-await websign.sign({ hash: "SHA-256", prepare }); // rejects with PinLocked, after prepare
+const signlocal = await app.connect();          // or Signlocal.connect(app.options)
+await signlocal.sign({ hash: "SHA-256", prepare }); // rejects with PinLocked, after prepare
 await app.close();
 ```
 
@@ -179,10 +179,10 @@ Options: `certificates`, `failWith { code, message?, when?: "choose" | "confirm"
 `signature`, `remembered`; `app.requests()` lists what the client sent. It
 answers `sign` with the digest as the signature, so it never verifies.
 
-### `websign-client` (Rust, Apache-2.0)
+### `signlocal-client` (Rust, Apache-2.0)
 
 ```rust
-use websign_client::{Client, HashName, SignOptions, SignatureAlgorithmName};
+use signlocal_client::{Client, HashName, SignOptions, SignatureAlgorithmName};
 
 let mut client = Client::connect()?;                 // ClientError::AppMissing if not installed
 let options = SignOptions::new(HashName::Sha256).algorithm(SignatureAlgorithmName::Ecdsa);
@@ -201,8 +201,8 @@ on arrival (`Certificate.der`/`chain` and `SignResult.signature` are
 `Base64Bytes`, `as_bytes() -> &[u8]`), `not_before`/`not_after` are Unix
 seconds. `Client` is `Send`; `ClientError` is `Send + Sync` with `code()`
 returning the protocol's `ErrorCode`. Blocking API over `std::process`;
-depends on the Apache-2.0 crates `websign-protocol` (the wire contract) and
-`websign-project` (product and executable names), both self-contained and
+depends on the Apache-2.0 crates `signlocal-protocol` (the wire contract) and
+`signlocal-project` (product and executable names), both self-contained and
 publishable. Every public item has rustdoc (runnable examples where the app
 is not needed, `no_run` where it is). `ClientError` implements
 `std::error::Error`: `source()` is the underlying I/O or protocol failure of
@@ -212,12 +212,12 @@ client; `ConnectOptions` has builders (`ConnectOptions::new().executable(..)
 [`clients/rust/SPEC.md`](../../clients/rust/SPEC.md).
 
 **Testing without the app**: the `testing` feature exposes
-`websign_client::testing::FakeApp`, an in-process stand-in over pipes (no
+`signlocal_client::testing::FakeApp`, an in-process stand-in over pipes (no
 child process, no installed app) with the same behavior as the Node fake:
 
 ```rust
-use websign_client::testing::FakeApp;
-use websign_client::{ErrorCode, HashName, SignOptions};
+use signlocal_client::testing::FakeApp;
+use signlocal_client::{ErrorCode, HashName, SignOptions};
 
 let app = FakeApp::builder().fail_at_confirm(ErrorCode::PinLocked).build();
 let mut client = app.connect()?;
@@ -232,13 +232,13 @@ under `[dev-dependencies]` only.
 ### Error codes
 
 `docsUrl` / `docs_url()` point at `developers.html#error-<Code>` on the project
-site, the same anchors as `@websign/sdk`. Both libraries branch on the protocol's stable code (`error.code` /
+site, the same anchors as `@signlocal/sdk`. Both libraries branch on the protocol's stable code (`error.code` /
 `ClientError::code()`); `message` is for developers and always English.
 
 | Code | What happened | What to do |
 |---|---|---|
-| `AppMissing` | The app is not installed, or exits at once | Install it, or pin the binary (`executable` / `WEBSIGN_EXECUTABLE`); test with the fake |
-| `AppOutdated` | The app is too old for the request | Ask the user to update WebeSign |
+| `AppMissing` | The app is not installed, or exits at once | Install it, or pin the binary (`executable` / `SIGNLOCAL_EXECUTABLE`); test with the fake |
+| `AppOutdated` | The app is too old for the request | Ask the user to update signlocal |
 | `ClientOutdated` | The app speaks a newer protocol than the library | Upgrade the library |
 | `Aborted` | Your code cancelled (`AbortSignal`, `prepare` failed) | Nothing; the cause is in `cause` (Node) or the message (Rust) |
 | `UserCancelled` | The person closed the window | Not a failure: offer to retry |
@@ -266,11 +266,11 @@ The hint texts live in `clients/node/src/hints.ts` and
 SHA-256 from the command line. Both use the fake app unless `--app` is given,
 so they run in CI.
 
-## 8. The `websign:` URL scheme
+## 8. The `signlocal:` URL scheme
 
-`websign:activate` (from the website's `/activate` page) registers the app
+`signlocal:activate` (from the website's `/activate` page) registers the app
 with every browser and opens diagnostics with "Getting started". It exists
-because store packages run no install scripts. Any other `websign:` URL
+because store packages run no install scripts. Any other `signlocal:` URL
 silently repairs the registrations that exist and opens diagnostics; URLs
 never carry data the app acts on. Both paths do the same work whether the URL
 arrives as an argument or as an event.

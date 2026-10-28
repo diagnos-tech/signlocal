@@ -1,6 +1,6 @@
-# Third-party assets in the WebeSign app
+# Third-party assets in the signlocal app
 
-The `websign` binary embeds the fonts and icons below. Their licenses travel with the binary; the app's
+The `signlocal` binary embeds the fonts and icons below. Their licenses travel with the binary; the app's
 About/notices view shows this file. Rust crates (code, not assets) are listed separately by `cargo about`.
 
 | Asset | Version | Copyright | License | License text |

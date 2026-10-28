@@ -1,7 +1,7 @@
 # e2e
 
 - `audit/` — checks that run after every scenario (the log audit)
-- `browsers/` — the cross-browser core, run once per installed browser (WEBSIGN_E2E_BROWSER_NAME)
+- `browsers/` — the cross-browser core, run once per installed browser (SIGNLOCAL_E2E_BROWSER_NAME)
 - `fixtures/` — pages the e2e tests load
 - `lib/` — e2e helpers: environment, keys, browser, app, page server, verifier
 - `tests/` — e2e scenarios

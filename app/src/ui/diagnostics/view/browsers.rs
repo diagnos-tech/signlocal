@@ -3,10 +3,10 @@
 //! (install the extension, repair the registration).
 
 use egui::Ui;
-use websign_i18n::k;
-use websign_registration::detect::BrowserPackaging;
-use websign_registration::status::RegistrationState;
-use websign_registration::{Browser, Family};
+use signlocal_i18n::k;
+use signlocal_registration::detect::BrowserPackaging;
+use signlocal_registration::status::RegistrationState;
+use signlocal_registration::{Browser, Family};
 
 use super::Screen;
 use super::action::Trailing;
@@ -24,7 +24,7 @@ use crate::ui::widgets::tone::Tone;
 /// Where "Install extension" leads. TODO(gustavo): the store pages, once
 /// the extension is published (`project.toml` store IDs).
 pub fn install_page() -> String {
-    format!("{}download.html", websign_project::HOMEPAGE)
+    format!("{}download.html", signlocal_project::HOMEPAGE)
 }
 
 pub fn show(ui: &mut Ui, screen: &Screen<'_>, facts: &Facts, actions: &mut Vec<Action>) {

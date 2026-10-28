@@ -1,25 +1,25 @@
 /**
  * Every example runs on the SDK's testing fake unless the URL has `?real`:
- * then it talks to the real WebeSign extension and app. The panel in the
+ * then it talks to the real signlocal extension and app. The panel in the
  * corner scripts what the "person" does next, so each state of your UI can
  * be seen without a token.
  */
 
-import type { ErrorCode } from "@websign/sdk";
-import type { FakeScenario, FakeWebSign } from "@websign/sdk/testing";
+import type { ErrorCode } from "@signlocal/sdk";
+import type { FakeScenario, FakeSignlocal } from "@signlocal/sdk/testing";
 
 /** Whether this page should use the real extension (`?real` in the URL). */
 export const useRealExtension = new URLSearchParams(location.search).has("real");
 
 /**
  * Installs the fake (unless `?real`) and shows its control panel. The
- * dynamic import keeps `@websign/sdk/testing` out of the bundle that talks to
+ * dynamic import keeps `@signlocal/sdk/testing` out of the bundle that talks to
  * the real extension.
  */
-export async function setUpFake(): Promise<FakeWebSign | undefined> {
+export async function setUpFake(): Promise<FakeSignlocal | undefined> {
   if (useRealExtension) return undefined;
-  const { installFakeWebSign } = await import("@websign/sdk/testing");
-  const fake = await installFakeWebSign({ latencyMs: 600 });
+  const { installFakeSignlocal } = await import("@signlocal/sdk/testing");
+  const fake = await installFakeSignlocal({ latencyMs: 600 });
   mountPanel(fake);
   return fake;
 }
@@ -42,12 +42,12 @@ function select(label: string, placeholder: string, values: readonly string[]) {
   return { wrapper, element };
 }
 
-function mountPanel(fake: FakeWebSign): void {
+function mountPanel(fake: FakeSignlocal): void {
   const panel = document.createElement("aside");
   panel.className = "fake-panel";
-  panel.setAttribute("aria-label", "Fake WebeSign controls");
+  panel.setAttribute("aria-label", "Fake signlocal controls");
   const title = document.createElement("strong");
-  title.textContent = "FAKE WebeSign";
+  title.textContent = "FAKE signlocal";
   const scenario = select("Computer:", "", SCENARIOS);
   scenario.element.addEventListener("change", () =>
     fake.setScenario(scenario.element.value as (typeof SCENARIOS)[number]),

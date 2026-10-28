@@ -140,7 +140,7 @@ Rules for the conversion:
 2. One `match.usb` per device (a list, because the same product has several revisions); the ATR only identifies
    cards inside generic readers, so it is `match.atr`.
 3. pcsc-tools' `..` ATR becomes a one-byte wildcard in `match`; the app compares in uppercase hex without separators
-   (the `websign-probe devices` format).
+   (the `signlocal-probe devices` format).
 4. `driver.pkcs11` uses the same first path as [known_paths](../prototypes/kit/probe/src/keystores/pkcs11/known_paths/).
    Where the manufacturer documents no path (Dexon, Longmai), the field stays empty: diagnostics keep
    offering "add module".
@@ -154,7 +154,7 @@ Rules for the conversion:
   or whether the CC requires `libIDPrimePKCS11.so`. Nexus's observation (`eTPKCS11.dll` does not expose the signing slot)
   suggests the CC needs the second one.
 - ATRs of the **real** ICP-Brasil tokens of each CA (CAs change chip supplier per batch): the
-  pcsc-tools list is a start, and `websign-probe devices` on each token confirms.
+  pcsc-tools list is a start, and `signlocal-probe devices` on each token confirms.
 
 ## How to update
 
@@ -162,7 +162,7 @@ Rules for the conversion:
 curl -O https://raw.githubusercontent.com/LudovicRousseau/pcsc-tools/master/smartcard_list.txt
 curl -O https://raw.githubusercontent.com/vcrhonek/hwdata/master/usb.ids
 # libccid: /usr/lib/pcsc/drivers/ifd-ccid.bundle/Contents/Info.plist (ifdVendorID, ifdProductID, ifdFriendlyName)
-websign-probe devices --all-usb          # what the machine sees
+signlocal-probe devices --all-usb          # what the machine sees
 ```
 
 All pages were accessed on 2026-09-29. `github.com` is blocked in the research environment; the raw files

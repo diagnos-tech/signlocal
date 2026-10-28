@@ -2,7 +2,7 @@
 
 import Foundation
 import XCTest
-@testable import WebeSignRelay
+@testable import SignlocalRelay
 
 final class HostProcessTests: XCTestCase {
     /// A host that ignores both its closed stdin and SIGTERM is still gone

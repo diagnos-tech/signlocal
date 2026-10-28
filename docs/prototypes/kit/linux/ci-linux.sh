@@ -2,7 +2,7 @@
 # Linux proof with software keys, run by .github/workflows/prototypes.yml from
 # docs/prototypes/kit and runnable by hand:
 #
-#   PROBE_EXE=target/release/websign-probe bash linux/ci-linux.sh
+#   PROBE_EXE=target/release/signlocal-probe bash linux/ci-linux.sh
 #
 # What it proves, against an isolated SoftHSM2 token (see softhsm-setup.sh):
 #   1. `list` sees the RSA and EC certificates and marks them as software;
@@ -19,7 +19,7 @@
 #   9. the browser path works end to end (nm-e2e), when Node and Chromium exist.
 #
 # Environment:
-#   PROBE_EXE    the websign-probe binary (required)
+#   PROBE_EXE    the signlocal-probe binary (required)
 #   REPORT_PATH  where to write the Markdown report (default: a temporary file)
 #   CHROMIUM     Chromium/Chrome executable for the native messaging test
 #                (default: the one playwright-core installed)
@@ -30,12 +30,12 @@ kit=$(dirname "$here")
 
 probe=${PROBE_EXE:-}
 if [[ -z $probe || ! -x $probe ]]; then
-  echo "Set PROBE_EXE to the websign-probe binary (got: '${probe}')." >&2
+  echo "Set PROBE_EXE to the signlocal-probe binary (got: '${probe}')." >&2
   exit 2
 fi
 probe=$(cd "$(dirname "$probe")" && pwd)/$(basename "$probe")
 
-work=$(mktemp -d "${TMPDIR:-/tmp}/websign-ci-linux.XXXXXX")
+work=$(mktemp -d "${TMPDIR:-/tmp}/signlocal-ci-linux.XXXXXX")
 cleanup() { rm -rf "$work"; }
 trap cleanup EXIT
 
@@ -59,7 +59,7 @@ fail() {
 # run_probe ARGS...: runs the probe, shows its output indented and keeps it in
 # $last_output / $last_status. A failing exit code is data, not an abort.
 run_probe() {
-  printf '\n> websign-probe %s\n' "$*"
+  printf '\n> signlocal-probe %s\n' "$*"
   set +e
   last_output=$("$probe" "$@" 2>&1)
   last_status=$?
@@ -108,9 +108,9 @@ step "SoftHSM2 token"
 source "$here/softhsm-setup.sh"
 softhsm_setup "$work/softhsm"
 echo "  module: $SOFTHSM_MODULE"
-export SOFTHSM2_CONF WEBSIGN_PROBE_PIN=$SOFTHSM_USER_PIN
+export SOFTHSM2_CONF SIGNLOCAL_PROBE_PIN=$SOFTHSM_USER_PIN
 
-pin_var=WEBSIGN_PROBE_PIN
+pin_var=SIGNLOCAL_PROBE_PIN
 # Only the SoftHSM module: what these steps prove is that module, not whatever
 # else this machine happens to have registered.
 isolate=(--no-known-modules --no-p11-kit --module "$SOFTHSM_MODULE")
@@ -131,7 +131,7 @@ for key in "RSA-2048" "EC P-256" "EC P-384" "EC P-521"; do
 done
 expect_output "software" "list (SoftHSM must be marked as software)"
 expect_output "PIN by app" "list (PKCS#11 PINs are collected by the app)"
-expect_no_output "websign-test" "list (the token label must not appear)"
+expect_no_output "signlocal-test" "list (the token label must not appear)"
 
 rsa_fingerprint=$(awk -F' [|] ' '/RSA-2048/ { print $NF; exit }' <<<"$last_output" | tr -d ' ')
 
@@ -160,8 +160,8 @@ mkdir -p "$modules" "$work/lib"
 # A copy of the library is a different file, so it is loaded next to the
 # system's own SoftHSM and its certificates are seen twice.
 cp "$SOFTHSM_MODULE" "$work/lib/libsofthsm2-registered.so"
-echo "module: $work/lib/libsofthsm2-registered.so" >"$modules/websign-test.module"
-echo "module: $work/lib/libsofthsm2-missing.so" >"$modules/websign-missing.module"
+echo "module: $work/lib/libsofthsm2-registered.so" >"$modules/signlocal-test.module"
+echo "module: $work/lib/libsofthsm2-missing.so" >"$modules/signlocal-missing.module"
 
 use_home "$home"
 run_probe list --every-path --no-known-modules
@@ -242,7 +242,7 @@ if [[ -s $report ]]; then
   sed 's/^/  | /' "$report"
   grep -q '^### Devices' "$report" || fail "report has no Devices section"
   grep -q '^### Signatures' "$report" || fail "report has no Signatures section"
-  if grep -Fq "websign-test" "$report"; then fail "report contains the token label"; fi
+  if grep -Fq "signlocal-test" "$report"; then fail "report contains the token label"; fi
   if grep -Fq "$SOFTHSM_USER_PIN" "$report"; then fail "report contains the PIN"; fi
 else
   fail "report was not written to $report"
@@ -263,7 +263,7 @@ else
   if [[ -n ${CHROMIUM:-} ]]; then e2e_args+=(--chromium "$CHROMIUM"); fi
   printf '\n> node nm-e2e/run.mjs %s\n' "${e2e_args[*]}"
   set +e
-  # The host inherits SOFTHSM2_CONF and WEBSIGN_PROBE_PIN through the browser.
+  # The host inherits SOFTHSM2_CONF and SIGNLOCAL_PROBE_PIN through the browser.
   e2e_output=$(cd "$e2e" && node run.mjs "${e2e_args[@]}" 2>&1)
   e2e_status=$?
   set -e

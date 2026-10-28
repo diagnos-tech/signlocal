@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { WebSignError } from "../src/errors";
+import { SignlocalError } from "../src/errors";
 import { errorText } from "../src/messages";
 import { ERROR_CODES } from "./helpers/fixtures";
 
@@ -8,7 +8,7 @@ const SILENT = ["InvalidRequest", "PinIncorrect", "ClientOutdated"];
 describe("errorText()", () => {
   it("returns the English title and body", () => {
     expect(errorText("ExtensionMissing", "en")).toEqual({
-      title: "Install the WebeSign extension",
+      title: "Install the signlocal extension",
       body: "To sign in this browser, install the free extension.",
     });
   });
@@ -31,7 +31,7 @@ describe("errorText()", () => {
   }
 
   it("pt-BR is Portuguese", () => {
-    expect(errorText("ExtensionMissing", "pt-BR")?.title).toBe("Instale a extensão WebeSign");
+    expect(errorText("ExtensionMissing", "pt-BR")?.title).toBe("Instale a extensão signlocal");
   });
 
   const closest: [string, string][] = [
@@ -64,7 +64,10 @@ describe("errorText()", () => {
 
 describe("errorText() with an error", () => {
   it("fills {installed} and {required} from details", () => {
-    const error = new WebSignError("AppOutdated", "old", { installed: "1.0.0", required: "1.2.0" });
+    const error = new SignlocalError("AppOutdated", "old", {
+      installed: "1.0.0",
+      required: "1.2.0",
+    });
     const text = errorText(error, "en");
     expect(text?.body).toContain("1.0.0");
     expect(text?.body).toContain("1.2.0");

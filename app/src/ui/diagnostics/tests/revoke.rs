@@ -4,8 +4,8 @@
 
 use egui::accesskit::Role;
 use egui_kittest::kittest::Queryable as _;
-use websign_host::store::{DiskStores, Stores};
-use websign_protocol::messages::DiagnosticsTab;
+use signlocal_host::store::{DiskStores, Stores};
+use signlocal_protocol::messages::DiagnosticsTab;
 
 use super::support::{Setup, open};
 
@@ -14,7 +14,7 @@ struct TempDir(std::path::PathBuf);
 
 impl TempDir {
     fn new(name: &str) -> TempDir {
-        let dir = std::env::temp_dir().join(format!("websign-{name}-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("signlocal-{name}-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         TempDir(dir)
     }

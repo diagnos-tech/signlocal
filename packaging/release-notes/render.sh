@@ -9,7 +9,7 @@ set -eu
 [ $# -ge 2 ] || { echo "usage: render.sh <version> <SHA256SUMS> [owner/repo]" >&2; exit 2; }
 version=${1#v}
 sums=$2
-repo=${3:-diagnos-tech/web-esign}
+repo=${3:-diagnos-tech/signlocal}
 template=$(dirname "$0")/template.md
 
 [ -s "$sums" ] || { echo "render.sh: $sums is missing or empty" >&2; exit 1; }

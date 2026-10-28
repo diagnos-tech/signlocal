@@ -19,7 +19,7 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 async function probe(sender: unknown = popup()) {
   const respond = vi.fn();
-  const handled = handle({ kind: "websign-popup", op: "probe" }, sender as never, respond);
+  const handled = handle({ kind: "signlocal-popup", op: "probe" }, sender as never, respond);
   await flush();
   return { handled, respond };
 }
@@ -82,7 +82,7 @@ describe("popup handler", () => {
     const conn = new FakeConnection(helloReply("9.0.0"));
     connectMock.mockResolvedValue(conn);
     const respond = vi.fn();
-    handle({ kind: "websign-popup", op: "diagnostics" }, popup() as never, respond);
+    handle({ kind: "signlocal-popup", op: "diagnostics" }, popup() as never, respond);
     await flush();
     const [sent] = conn.sentOfType("diagnostics.open");
     expect(sent?.id).toMatch(/^ext\.\d+$/);

@@ -1,39 +1,37 @@
-# Single source of truth for every provisional name and identifier.
+# Single source of truth for every name and identifier of the product.
 #
-# The final product name depends on a trademark search (INPI, EUIPO, USPTO).
 # Renaming the project must only require editing this file: build scripts,
 # the extension manifest and the packaging read their identifiers from here.
 #
-# Generated from here: Rust constants (crates/websign-project), the extension
+# Generated from here: Rust constants (crates/signlocal-project), the extension
 # manifest, native messaging manifests, packaging metadata.
-#
-# TODO(gustavo): final name, domain and IDs after the trademark search.
 
 [product]
-name = "WebeSign"
+# The brand is written in lowercase everywhere, also at the start of a sentence.
+name = "signlocal"
 # Lowercase ASCII: binary names, folders, log files.
-slug = "websign"
+slug = "signlocal"
 tagline = "Use your smart card, USB token, or OS certificate to sign on any website."
-repository = "https://github.com/diagnos-tech/web-esign"
-# TODO(gustavo): own GitHub Pages subdomain (CNAME file + DNS).
-homepage = "https://diagnos-tech.github.io/web-esign/"
+repository = "https://github.com/diagnos-tech/signlocal"
+# TODO(gustavo): DNS (CNAME) of signlocal.diagnos.health and the GitHub Pages custom domain.
+homepage = "https://signlocal.diagnos.health/"
 
 [ids]
 # Native messaging host name. Chrome only accepts [a-z0-9_.] here.
-native_host = "dev.websign.host"
+native_host = "health.diagnos.signlocal"
 # URL scheme the extension uses to open the app once so it can register
 # itself with the browsers (stores run no install scripts).
-url_scheme = "websign"
+url_scheme = "signlocal"
 # TODO(gustavo): Apple Team ID and Microsoft Store publisher.
-macos_bundle_id = "dev.websign.app"
-macos_app_group = "TEAMID.dev.websign"
-safari_extension_bundle_id = "dev.websign.app.extension"
-windows_package_name = "WebeSign"
+macos_bundle_id = "health.diagnos.signlocal"
+macos_app_group = "TEAMID.health.diagnos.signlocal"
+safari_extension_bundle_id = "health.diagnos.signlocal.extension"
+windows_package_name = "signlocal"
 windows_publisher = "CN=TODO"
 
 [extension]
 # Gecko ID: fixed by us, so it is known before publishing to AMO.
-firefox_id = "websign@dev.websign"
+firefox_id = "signlocal@diagnos.health"
 # Store IDs are assigned on first upload; empty until then.
 chrome_web_store_id = ""
 edge_addons_id = ""
@@ -50,6 +48,6 @@ dev_id = "nhnkdpljdgjflbflkhnkmfmcmodboeii"
 min_app_version = "0.1.0"
 
 [npm]
-scope = "@websign"
-sdk_package = "@websign/sdk"
-desktop_package = "@websign/desktop"
+scope = "@signlocal"
+sdk_package = "@signlocal/sdk"
+desktop_package = "@signlocal/desktop"

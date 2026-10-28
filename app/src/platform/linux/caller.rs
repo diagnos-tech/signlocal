@@ -3,7 +3,7 @@
 
 use std::path::PathBuf;
 
-use websign_core::present::caller::DesktopCaller;
+use signlocal_core::present::caller::DesktopCaller;
 
 use super::desktop_entry;
 

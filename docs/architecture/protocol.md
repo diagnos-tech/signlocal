@@ -1,11 +1,11 @@
 # Protocol
 
 The one message catalog every party speaks: the browser extension, desktop
-client libraries, `websign connect`, and the Safari relay. Defined once in Rust
-([`crates/websign-protocol`](../../crates/websign-protocol/)); the TypeScript
+client libraries, `signlocal connect`, and the Safari relay. Defined once in Rust
+([`crates/signlocal-protocol`](../../crates/signlocal-protocol/)); the TypeScript
 types of the SDK, the extension and the Node client are generated from it
 (`cargo xtask gen`), and CI fails when they are stale. The crate's
-[`SPEC.md`](../../crates/websign-protocol/SPEC.md) holds the parsing rules and
+[`SPEC.md`](../../crates/signlocal-protocol/SPEC.md) holds the parsing rules and
 test vectors; this page explains the design.
 
 ## Contents
@@ -26,9 +26,9 @@ test vectors; this page explains the design.
 | Transport | Who connects | Who starts the app | Framing | Caller identity |
 |---|---|---|---|---|
 | Native messaging | our extension (Chrome, Edge, Brave, Opera, Vivaldi, Firefox) | the browser, with the extension origin as argument | 4-byte length + UTF-8 JSON | page origin from the browser (`web` field), extension ID from the launch arguments |
-| `websign connect` | a desktop program (directly or through `@websign/desktop` / `websign-client`) | that program, as a child process | same | the parent process, identified by the OS |
-| Safari relay | our extension in Safari, through the app extension inside `WebeSign.app` (macOS 13+) | the appex, one bundled host per relay session, with `--safari-web-extension <appex bundle ID>` | the extension sends relay messages (`open`/`send`/`poll`/`close`, [`safari/SPEC.md`](../../safari/SPEC.md)) with `runtime.sendNativeMessage`; the appex speaks this framing to the host on stdio | page origin from Safari's `MessageSender` (`web` field), as for native messaging; extension ID = the appex bundle ID from the launch arguments, accepted only by the copy inside the `.appex` |
-| Page messages | a web page using `@websign/sdk` | — (the extension relays) | `window.postMessage` objects | none: the extension attaches it |
+| `signlocal connect` | a desktop program (directly or through `@signlocal/desktop` / `signlocal-client`) | that program, as a child process | same | the parent process, identified by the OS |
+| Safari relay | our extension in Safari, through the app extension inside `signlocal.app` (macOS 13+) | the appex, one bundled host per relay session, with `--safari-web-extension <appex bundle ID>` | the extension sends relay messages (`open`/`send`/`poll`/`close`, [`safari/SPEC.md`](../../safari/SPEC.md)) with `runtime.sendNativeMessage`; the appex speaks this framing to the host on stdio | page origin from Safari's `MessageSender` (`web` field), as for native messaging; extension ID = the appex bundle ID from the launch arguments, accepted only by the copy inside the `.appex` |
+| Page messages | a web page using `@signlocal/sdk` | — (the extension relays) | `window.postMessage` objects | none: the extension attaches it |
 
 **Framing.** Every message is a `u32` byte length followed by that many bytes
 of UTF-8 JSON (one object). Native messaging defines the length in native byte
@@ -57,12 +57,12 @@ Every message is a flat JSON object:
 | `type` | One of the catalog's types (§4). Unknown → `InvalidRequest`. |
 | everything else | The type's fields, camelCase. **Unknown fields are refused** (`InvalidRequest`). Optional fields are omitted, never `null`. |
 
-Parsing is strict (`websign_protocol::parse_client_message`): a hostile page
+Parsing is strict (`signlocal_protocol::parse_client_message`): a hostile page
 must not be able to smuggle data through fields the app ignores today and
 reads tomorrow. Every message has exactly one spelling: a repeated object key,
 `null` for an absent field, an array where an object belongs, or `1.0` for an
 integer is refused, so the extension and the app can never read the same bytes
-differently (`crates/websign-protocol/SPEC.md` §1). When a frame is malformed
+differently (`crates/signlocal-protocol/SPEC.md` §1). When a frame is malformed
 but has a readable `id`, the error reply goes to that id; without one, the app
 logs and closes the connection.
 
@@ -78,12 +78,12 @@ logs and closes the connection.
   within its own `protocols`; the app's reply has `v` equal to `protocol`.
 - An `error` answering the first frame (a refused `hello`, or a first message
   that is not `hello`) carries **that frame's `v`**
-  (`websign_protocol::refusal_version`), so the caller can always read it,
+  (`signlocal_protocol::refusal_version`), so the caller can always read it,
   even when the two ranges do not overlap. The `error` message's shape and the
   codes that can refuse `hello` (`InvalidRequest`, `ClientOutdated`,
   `AppOutdated`, `Internal`) never change between versions. Callers parse the
-  answer to `hello` with `websign_protocol::parse_hello_reply`.
-- Negotiation (`websign_protocol::negotiate`): the highest version in both
+  answer to `hello` with `signlocal_protocol::parse_hello_reply`.
+- Negotiation (`signlocal_protocol::negotiate`): the highest version in both
   ranges. `client.max < app.min` → `ClientOutdated` (reported to pages as
   `ExtensionOutdated`); `app.max < client.min` → `AppOutdated`.
 - Independently, the extension compares the app's semantic version with its
@@ -91,13 +91,13 @@ logs and closes the connection.
   This catches app bugs fixed without a protocol change.
 
 ```json
-→ {"v":1,"id":"h","type":"hello","client":{"name":"websign-extension","version":"1.4.2"},
+→ {"v":1,"id":"h","type":"hello","client":{"name":"signlocal-extension","version":"1.4.2"},
    "protocols":{"min":1,"max":1},
    "browser":{"name":"chrome","version":"129.0","reason":"page"}}
 ← {"v":1,"id":"h","type":"hello","protocol":1,
    "app":{"version":"1.4.0","protocols":{"min":1,"max":1},"os":"windows","arch":"x86_64","channel":"direct"}}
 
-→ {"v":1,"id":"h","type":"hello","client":{"name":"websign-client","version":"0.1.0"},"protocols":{"min":1,"max":1}}
+→ {"v":1,"id":"h","type":"hello","client":{"name":"signlocal-client","version":"0.1.0"},"protocols":{"min":1,"max":1}}
 ← {"v":1,"id":"h","type":"error","code":"ClientOutdated","message":"the app needs protocol 2 or newer",
    "details":{"installed":"1","required":"2"}}
 ```
@@ -126,7 +126,7 @@ reply of its own. *Event* = non-final message from the app.
 | `error` | ← | final | `code`, `message`, `details?` | — |
 
 `web` is required over native messaging for `status`, `choose` and
-`sign.begin`, and refused over `websign connect` (§6).
+`sign.begin`, and refused over `signlocal connect` (§6).
 
 ### 4.1 `status`
 
@@ -194,7 +194,7 @@ See §5 for the state machine.
 - `signature`: RSA → the modulus-length block; ECDSA → raw `r‖s`, each half
   left-padded to the curve size (the app converts DER from macOS).
 - Before replying, the app verifies the signature against the certificate
-  with `websign_core::verify` (all curves but brainpoolP512r1). A failure is
+  with `signlocal_core::verify` (all curves but brainpoolP512r1). A failure is
   `DriverFailure` — a driver returning garbage must not reach a PAdES file.
 
 ### 4.4 `cancel`
@@ -284,13 +284,13 @@ from the caller (P1, R4).
 | Transport | Identity | How it is established | Consent key |
 |---|---|---|---|
 | Native messaging | page origin, top-level origin, browser | the extension reads `MessageSender.url`/`origin` and the tab URL; the browser already verified the extension ID against the manifest (`allowed_origins`/`allowed_extensions`); the app re-checks the launch origin against `project.toml` IDs and re-validates the origin (`https`, or `http` only for localhost) | canonical origin (`https://app.example.com`) |
-| `websign connect` / `sign` / `choose` | executable path, product name, code signer | the app reads its **parent process** before the first frame (Windows: Toolhelp + `QueryFullProcessImageNameW` + Authenticode; macOS: `proc_pidpath` + code signature; Linux: `/proc/<ppid>/exe`) | `app:<signer>` for signed programs, `path:<executable>` otherwise |
+| `signlocal connect` / `sign` / `choose` | executable path, product name, code signer | the app reads its **parent process** before the first frame (Windows: Toolhelp + `QueryFullProcessImageNameW` + Authenticode; macOS: `proc_pidpath` + code signature; Linux: `/proc/<ppid>/exe`) | `app:<signer>` for signed programs, `path:<executable>` otherwise |
 
 Consequences:
 
 - A desktop caller cannot claim to be a website: `web` is refused on
-  `websign connect`.
-- A malicious local program can start `websign connect`, but the window names
+  `signlocal connect`.
+- A malicious local program can start `signlocal connect`, but the window names
   *that* program, and it is not remembered unless the person ticks
   "Remember this program" (never offered for script hosts such as `node`,
   `python`, `bash` or `powershell`, whose identity every script shares). Unsigned programs are shown with an "Unverified
@@ -301,8 +301,8 @@ Consequences:
 
 ## 7. Errors
 
-`error.code` values are stable strings (`websign_protocol::ErrorCode`), shared
-with the SDK's `WebSignError.code` and `docs/ux.md` §15:
+`error.code` values are stable strings (`signlocal_protocol::ErrorCode`), shared
+with the SDK's `SignlocalError.code` and `docs/ux.md` §15:
 
 | Code | Raised by | When |
 |---|---|---|
@@ -320,7 +320,7 @@ with the SDK's `WebSignError.code` and `docs/ux.md` §15:
 | `CertificateNotValid` | app | requested certificate expired/not yet valid |
 | `InvalidRequest` | app, extension | malformed message, wrong digest length, bad sequence |
 | `UnsupportedAlgorithm` | app | key/driver cannot produce the algorithm |
-| `PinIncorrect` | app | only surfaces through `websign sign` in unattended tests |
+| `PinIncorrect` | app | only surfaces through `signlocal sign` in unattended tests |
 | `PinLocked` | app | PIN blocked |
 | `TokenRemoved` | app | token left while signing |
 | `DriverFailure` | app | other key store failure; `details.native` has the code |
@@ -331,7 +331,7 @@ with the SDK's `WebSignError.code` and `docs/ux.md` §15:
 
 ## 8. Limits and timeouts
 
-All in `websign_protocol::limits`. Size limits a single frame decides
+All in `signlocal_protocol::limits`. Size limits a single frame decides
 (origin, `hello` texts, chain) are enforced by the parser; the others by the
 app or the extension:
 
@@ -347,7 +347,7 @@ app or the extension:
 | `hello` | 5 s after start | a process nobody talks to exits |
 | Digest | 60 s per `need_digest` | the site's `prepare` hangs → `Timeout` |
 | Decision | 300 s on screen | `docs/ux.md` §4.11 |
-| Desktop idle | 300 s without requests | a forgotten `websign connect` exits |
+| Desktop idle | 300 s without requests | a forgotten `signlocal connect` exits |
 | Extension idle close | 60 s | keeps drivers loaded between signatures, closes after |
 | App response (extension) | 3 s for `hello` | popup "The app didn't respond" |
 | Chain | 8 certificates | real chains are 2–4 |
@@ -359,22 +359,22 @@ content script relays them ([web-api.md](web-api.md) §3):
 
 ```js
 // SDK → content script
-{ source: "websign-page", kind: "discover" }
-{ source: "websign-page", kind: "request", id: "p1", message: { type: "sign.begin", hash: "SHA-256" } }
+{ source: "signlocal-page", kind: "discover" }
+{ source: "signlocal-page", kind: "request", id: "p1", message: { type: "sign.begin", hash: "SHA-256" } }
 // content script → SDK
-{ source: "websign-extension", kind: "announce", extension: { version: "1.4.2", browser: "chrome" },
+{ source: "signlocal-extension", kind: "announce", extension: { version: "1.4.2", browser: "chrome" },
   protocols: { min: 1, max: 1 } }
-{ source: "websign-extension", kind: "message", id: "p1", message: { type: "sign.need_digest", … } }
+{ source: "signlocal-extension", kind: "message", id: "p1", message: { type: "sign.need_digest", … } }
 ```
 
 Page requests are a subset of the catalog without `web`, `hello` or
-`diagnostics.open` (types `PageRequest`/`PageReply` in `websign_protocol::page`).
+`diagnostics.open` (types `PageRequest`/`PageReply` in `signlocal_protocol::page`).
 The extension maps `(tab, frame, page id)` to a connection-wide id, adds `web`
 from the browser, and answers `status` itself (its own version plus the app's).
 
 ## 10. Evolution rules
 
-1. Change the Rust types in `websign-protocol`, bump `PROTOCOL_VERSION`, keep
+1. Change the Rust types in `signlocal-protocol`, bump `PROTOCOL_VERSION`, keep
    the previous version parseable (a `v1` module per retired version).
 2. `cargo xtask gen`; commit the generated TypeScript.
 3. Add the new version's vectors to `SPEC.md` and the contract tests.

@@ -1,6 +1,6 @@
 //! The app's log: a size-capped file in the OS's per-user log folder
 //! ([`log_dir`]), because browsers discard a native host's stderr. Level
-//! from `WEBSIGN_LOG` (`off`, `error`…`trace`, default `info`).
+//! from `SIGNLOCAL_LOG` (`off`, `error`…`trace`, default `info`).
 //!
 //! Privacy rule for every `log::` call in the workspace: steps, API names,
 //! error codes, counts, sizes and module file names only — never a name,
@@ -23,7 +23,7 @@ use redact::Redactor;
 use sink::Sink;
 
 /// Environment variable with the level.
-pub const LEVEL_ENV: &str = "WEBSIGN_LOG";
+pub const LEVEL_ENV: &str = "SIGNLOCAL_LOG";
 
 /// Installs the file logger and a panic hook that logs the panic. Never
 /// fails: without a writable log folder the app runs unlogged.
@@ -51,7 +51,7 @@ pub fn redact_line(text: &str) -> String {
     Redactor::from_env().apply(text)
 }
 
-/// `WEBSIGN_LOG`'s level; anything unrecognized is the default.
+/// `SIGNLOCAL_LOG`'s level; anything unrecognized is the default.
 fn level_from(value: Option<&str>) -> LevelFilter {
     value
         .and_then(|v| v.trim().parse().ok())
@@ -95,7 +95,7 @@ impl Log for FileLogger {
     fn flush(&self) {}
 }
 
-/// `2026-09-30T12:00:00Z INFO 4242 websign_host::engine: <redacted message>`.
+/// `2026-09-30T12:00:00Z INFO 4242 signlocal_host::engine: <redacted message>`.
 /// The process id tells apart the lines of concurrent host processes.
 fn format_line(redactor: &Redactor, record: &Record<'_>) -> String {
     let message = redactor.apply(&record.args().to_string());

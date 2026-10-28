@@ -2,11 +2,11 @@
 
 import { parseArgs } from "node:util";
 
-const USAGE = `usage: node run.mjs --probe <websign-probe> [options]
+const USAGE = `usage: node run.mjs --probe <signlocal-probe> [options]
 
-  --probe <path>     the websign-probe binary to register and run as host (required)
+  --probe <path>     the signlocal-probe binary to register and run as host (required)
   --chromium <path>  Chromium/Chrome executable (default: the one playwright-core installed)
-  --no-register      skip \`websign-probe register\` (the registration already exists,
+  --no-register      skip \`signlocal-probe register\` (the registration already exists,
                      e.g. the Windows MSIX package wrote the registry keys)
   --expect-sign      fail unless a certificate is listed and signs a digest
   --headed           show the browser window instead of running headless

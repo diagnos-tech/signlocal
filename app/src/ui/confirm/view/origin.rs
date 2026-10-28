@@ -10,9 +10,9 @@ use std::sync::Arc;
 
 use egui::text::{Galley, LayoutJob, TextFormat};
 use egui::{Sense, Ui, WidgetInfo, WidgetType};
-use websign_core::present::origin::{FormattedOrigin, OriginWarning};
-use websign_i18n::{Catalog, k};
-use websign_ui_model::confirm::port::CallerView;
+use signlocal_core::present::origin::{FormattedOrigin, OriginWarning};
+use signlocal_i18n::{Catalog, k};
+use signlocal_ui_model::confirm::port::CallerView;
 
 use crate::ui::confirm::words;
 use crate::ui::fonts::{self, Weight};

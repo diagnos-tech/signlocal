@@ -79,7 +79,7 @@ Notes that weigh on the decision:
 ## 3. PKCS#11 inside the sandbox
 
 `kit/macos/sandbox/sandbox-test.sh` (CI) measures with Homebrew's SoftHSM2, with the token **inside the
-container** (`~/Library/Containers/dev.websign.app/Data/websign-softhsm`, via `SOFTHSM2_CONF`):
+container** (`~/Library/Containers/health.diagnos.signlocal/Data/signlocal-softhsm`, via `SOFTHSM2_CONF`):
 
 | ID | What it measures | Why |
 |---|---|---|
@@ -92,7 +92,7 @@ SoftHSM proves the sandbox rules for files and code, but not PC/SC: a real token
 still talks to the reader (through `com.apple.security.smartcard`), writes logs, and reads configuration in
 its own places. Only script §4 with the real token settles the question.
 
-Result in CI (run [36629289998](https://github.com/diagnos-tech/web-esign/actions/runs/36629289998),
+Result in CI (run [36629289998](https://github.com/diagnos-tech/signlocal/actions/runs/36629289998),
 macOS 26.6.2 arm64):
 
 | ID | Result | Evidence |
@@ -102,7 +102,7 @@ macOS 26.6.2 arm64):
 | `pkcs11-sign:store` | **NO** | consequence of the previous one |
 | `pkcs11-load:hardened` / `pkcs11-sign:hardened` | **NO** | same denial |
 
-Kernel log: `Sandbox: websign-probe(…) deny(1) file-read-data /opt/homebrew/Cellar/softhsm/2.7.0/lib/softhsm/libsofthsm2.so`.
+Kernel log: `Sandbox: signlocal-probe(…) deny(1) file-read-data /opt/homebrew/Cellar/softhsm/2.7.0/lib/softhsm/libsofthsm2.so`.
 
 **Reading:** the store app **cannot even open** a PKCS#11 module installed outside its own
 bundle. The only way out inside the store would be a `temporary-exception.files.absolute-path.read-only`
@@ -116,8 +116,8 @@ The question still to be answered with real tokens is which middlewares do **not
 One block per token. Note: token model, ATR, middleware + version + **where it came from** (vendor's
 or the CA's site), macOS version and chip.
 
-Preparation (once): `cd docs/prototypes/kit && cargo build --release -p websign-probe &&
-export PROBE_EXE=$PWD/target/release/websign-probe`.
+Preparation (once): `cd docs/prototypes/kit && cargo build --release -p signlocal-probe &&
+export PROBE_EXE=$PWD/target/release/signlocal-probe`.
 
 1. **System, without the probe** (token inserted):
    ```sh
@@ -133,14 +133,14 @@ export PROBE_EXE=$PWD/target/release/websign-probe`.
 4. **Sign via CTK:** `"$PROBE_EXE" sign --cert <16 hex> --hash all --pss`. The PIN is asked by the
    system/driver. Also test **Cancel** (expected: "cancelled by the user"). Do **not** test a wrong
    PIN more than once: the token locks.
-5. **Sign via PKCS#11:** `read -rs WEBSIGN_PIN && export WEBSIGN_PIN` and
-   `"$PROBE_EXE" sign --cert <16 hex> --every-path --pin-env WEBSIGN_PIN --hash sha256`.
+5. **Sign via PKCS#11:** `read -rs SIGNLOCAL_PIN && export SIGNLOCAL_PIN` and
+   `"$PROBE_EXE" sign --cert <16 hex> --every-path --pin-env SIGNLOCAL_PIN --hash sha256`.
 6. **Inside the sandbox** (what the store app would manage):
    ```sh
    bash macos/sandbox/run-sandboxed.sh list --every-path
    bash macos/sandbox/run-sandboxed.sh sign --cert <16 hex> --hash sha256
    bash macos/sandbox/run-sandboxed.sh list --module <dylib> --no-known-modules --no-p11-kit
-   bash macos/sandbox/run-sandboxed.sh sign --cert <16 hex> --every-path --pin-env WEBSIGN_PIN --module <dylib>
+   bash macos/sandbox/run-sandboxed.sh sign --cert <16 hex> --every-path --pin-env SIGNLOCAL_PIN --module <dylib>
    HARDENED=1 bash macos/sandbox/run-sandboxed.sh list --module <dylib>   # like the complement
    ```
    The script prints the sandbox denials at the end; copy all of them.

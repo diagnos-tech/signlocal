@@ -1,4 +1,4 @@
-# Web API — `@websign/sdk`
+# Web API — `@signlocal/sdk`
 
 What a website uses to sign with the visitor's certificate. Apache-2.0, zero
 runtime dependencies, < 5 KB gzipped. Source and contract:
@@ -11,9 +11,9 @@ Free functions rather than a client object: the extension is one per page,
 there is nothing to connect or close, and unused calls are tree-shaken.
 
 ```ts
-import { status, certificates, sign, installUrl, onChange, fingerprint, WebSignError, isWebSignError } from "@websign/sdk";
-import { errorText } from "@websign/sdk/messages"; // optional localized texts
-import { installFakeWebSign } from "@websign/sdk/testing"; // tests and local development only
+import { status, certificates, sign, installUrl, onChange, fingerprint, SignlocalError, isSignlocalError } from "@signlocal/sdk";
+import { errorText } from "@signlocal/sdk/messages"; // optional localized texts
+import { installFakeSignlocal } from "@signlocal/sdk/testing"; // tests and local development only
 
 status(): Promise<Status>                                  // never opens a window, never rejects
 certificates(options?: CertificateOptions): Promise<Certificate[]>
@@ -21,8 +21,8 @@ sign<H, A>(options: SignOptions<H, A>): Promise<SignResult<H, A>>  // literal ha
 installUrl(): string                                       // store page for this browser
 onChange(listener: (status: Status) => void): () => void   // returns unsubscribe
 fingerprint(digest: Uint8Array | ArrayBuffer): VerificationCode  // same code the app shows
-isWebSignError(error, ...codes): error is WebSignError     // narrows error.code
-errorText(error: ErrorCode | WebSignError | undefined, locale = navigator.language): { title; body } | undefined
+isSignlocalError(error, ...codes): error is SignlocalError     // narrows error.code
+errorText(error: ErrorCode | SignlocalError | undefined, locale = navigator.language): { title; body } | undefined
 ```
 
 ### Types
@@ -59,7 +59,7 @@ interface Status {
 
 interface VerificationCode { text: string; colorIndex: number; cells: boolean[] } // 25 cells, row-major
 
-class WebSignError extends Error {
+class SignlocalError extends Error {
   code: ErrorCode; message: string;   // what happened (English, for developers)
   hint: string;                       // what to do next (English, for developers)
   docsUrl: string;                    // <homepage>developers.html#error-<code>
@@ -68,7 +68,7 @@ class WebSignError extends Error {
 ```
 
 `ErrorCode` is the protocol's list ([protocol.md §7](protocol.md#7-errors)).
-Every rejection is a `WebSignError`; nothing else is thrown. Bytes the SDK
+Every rejection is a `SignlocalError`; nothing else is thrown. Bytes the SDK
 returns are `Uint8Array<ArrayBuffer>`, which WebCrypto takes as is.
 
 ## 2. Usage
@@ -96,7 +96,7 @@ window); keep it pure and fast. Throwing inside `prepare` aborts the request
 try {
   await sign({ hash: "SHA-256", prepare });
 } catch (error) {
-  if (!isWebSignError(error)) throw error;
+  if (!isSignlocalError(error)) throw error;
   if (error.code === "UserCancelled") return;
   console.warn(error.code, error.hint, error.docsUrl);
   const text = errorText(error); // title + next step, {installed}/{required} filled
@@ -108,7 +108,7 @@ the desktop clients link to the same rows.
 
 ### Test without the extension
 
-`@websign/sdk/testing` (`installFakeWebSign()`) answers the SDK on `window`
+`@signlocal/sdk/testing` (`installFakeSignlocal()`) answers the SDK on `window`
 like the extension and app: real ECDSA/RSA signatures with public test keys,
 scripted outcomes (`scenario`, `failNext`, `choose`, `switchDuringNextSign`),
 `requests` and `verify()` for assertions. Separate entry point, refuses
@@ -140,7 +140,7 @@ const ok = c.profile.icpBrasil?.match(/^A[34]$/) || (c.profile.eidas?.qualified 
   `ExtensionMissing`. The result is cached per page; `onChange` fires when a
   later announcement arrives (extension installed or updated).
 - **Messages** are plain objects on `window.postMessage(msg, location.origin)`
-  (never `"*"`) with `source: "websign-page"` (SDK) or `"websign-extension"`
+  (never `"*"`) with `source: "signlocal-page"` (SDK) or `"signlocal-extension"`
   (content script). Each side ignores messages from other windows, other
   origins, other sources or of an unexpected shape. Shapes: `PageToExtension`, `ExtensionToPage`
   ([protocol.md §9](protocol.md#9-page-messages)).
@@ -175,7 +175,7 @@ const ok = c.profile.icpBrasil?.match(/^A[34]$/) || (c.profile.eidas?.qualified 
   extension's background started, 3 s after): to the person it is a broken install with the same remedy, so
   it is not reported as `Internal`.
 - Protocol ranges: an extension that only speaks newer page protocols than
-  the SDK rejects with `ClientOutdated` (update `@websign/sdk`); one that only
+  the SDK rejects with `ClientOutdated` (update `@signlocal/sdk`); one that only
   speaks older ones with `ExtensionOutdated`. Nothing is posted in either case.
 - A reply the SDK cannot use (wrong kind, malformed, unknown error code) is
   `Internal`. `status()` gives up after 10 s without an answer: the
@@ -188,7 +188,7 @@ const ok = c.profile.icpBrasil?.match(/^A[34]$/) || (c.profile.eidas?.qualified 
   (`chrome_web_store_id`, `edge_addons_id`, `firefox_amo_slug`) is set in
   `project.toml`; until then it points to the download page. A guessed AMO
   slug is never used: an unpublished slug can be claimed by anyone.
-- `@websign/sdk/messages` `errorText(error, locale?)` returns title/body from
+- `@signlocal/sdk/messages` `errorText(error, locale?)` returns title/body from
   `i18n/*.toml` `[site.errors]` for the closest of en, pt-BR, pt-PT, es, fr,
   it, de.
 

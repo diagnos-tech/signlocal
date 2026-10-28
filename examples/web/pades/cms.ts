@@ -1,10 +1,10 @@
 /**
  * The CMS half of PAdES, with PKI.js: the signed attributes whose hash
- * WebeSign signs, and the SignedData that carries the returned signature.
+ * signlocal signs, and the SignedData that carries the returned signature.
  * Profile: PAdES baseline B-B (ETSI EN 319 142-1), detached, SHA-256.
  */
 
-import type { SignResult } from "@websign/sdk";
+import type { SignResult } from "@signlocal/sdk";
 import * as asn1js from "asn1js";
 import * as pkijs from "pkijs";
 
@@ -74,7 +74,7 @@ function compare(a: Uint8Array, b: Uint8Array): number {
 }
 
 /**
- * The DER ContentInfo to embed in the PDF. WebeSign returns ECDSA as raw r‖s
+ * The DER ContentInfo to embed in the PDF. signlocal returns ECDSA as raw r‖s
  * (like WebCrypto); CMS wants the DER Ecdsa-Sig-Value, which PKI.js builds.
  */
 export function signedData(result: SignResult, signed: SignedAttributes): Uint8Array {

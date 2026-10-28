@@ -3361,6 +3361,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "signlocal-probe"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "core-foundation 0.10.1",
+ "cryptoki",
+ "cryptoki-sys",
+ "getrandom 0.4.3",
+ "libc",
+ "nusb",
+ "pcsc",
+ "probe-core",
+ "rpassword",
+ "secrecy",
+ "security-framework",
+ "security-framework-sys",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.21",
+ "toml 0.9.12+spec-1.1.0",
+ "windows",
+ "windows-registry",
+ "zeroize",
+]
+
+[[package]]
 name = "simd-adler32"
 version = "0.3.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4081,33 +4108,6 @@ checksum = "5a6580f308b1fad9207618087a65c04e7a10bc77e02c8e84e9b00dd4b12fa0bb"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
-]
-
-[[package]]
-name = "websign-probe"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "clap",
- "core-foundation 0.10.1",
- "cryptoki",
- "cryptoki-sys",
- "getrandom 0.4.3",
- "libc",
- "nusb",
- "pcsc",
- "probe-core",
- "rpassword",
- "secrecy",
- "security-framework",
- "security-framework-sys",
- "serde",
- "serde_json",
- "thiserror 2.0.21",
- "toml 0.9.12+spec-1.1.0",
- "windows",
- "windows-registry",
- "zeroize",
 ]
 
 [[package]]

@@ -9,13 +9,13 @@
 import PackageDescription
 
 let package = Package(
-    name: "WebeSignSafari",
+    name: "SignlocalSafari",
     platforms: [.macOS(.v13)],
     targets: [
-        .target(name: "WebeSignRelay", path: "Relay", exclude: ["SUMMARY.md"]),
+        .target(name: "SignlocalRelay", path: "Relay", exclude: ["SUMMARY.md"]),
         .testTarget(
-            name: "WebeSignRelayTests",
-            dependencies: ["WebeSignRelay"],
+            name: "SignlocalRelayTests",
+            dependencies: ["SignlocalRelay"],
             path: "Tests",
             exclude: ["SUMMARY.md"]
         ),

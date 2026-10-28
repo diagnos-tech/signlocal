@@ -13,6 +13,6 @@ export type Hello = { client: ClientInfo,
  */
 protocols: ProtocolRange, 
 /**
- * Required over native messaging, refused over `websign connect`.
+ * Required over native messaging, refused over `signlocal connect`.
  */
 browser?: BrowserInfo, };

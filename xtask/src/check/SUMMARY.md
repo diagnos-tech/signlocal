@@ -4,7 +4,7 @@
 - `versions/` — unit tests of the version lockstep check
 - `generated.rs` — generated files equal a fresh `gen`
 - `glob.rs` — the `*` and `?` wildcards of SUMMARY.md rows
-- `i18n.rs` — every locale against en.toml with the websign-i18n checker
+- `i18n.rs` — every locale against en.toml with the signlocal-i18n checker
 - `installers.rs` — install.sh and install.ps1 identifiers equal project.toml
 - `listing.rs` — repository files as git sees them, grouped by folder
 - `mod.rs` — `cargo xtask check`: runs the selected checks and reports every problem

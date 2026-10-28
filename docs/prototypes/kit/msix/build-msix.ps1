@@ -1,7 +1,7 @@
 #Requires -Version 7.2
 <#
 .SYNOPSIS
-    Packages websign-probe as a signed MSIX and installs it, the way the
+    Packages signlocal-probe as a signed MSIX and installs it, the way the
     Microsoft Store would deliver the app.
 
 .DESCRIPTION
@@ -14,16 +14,16 @@
 
     Needs an elevated prompt (trusting the certificate) and the Windows SDK.
     The signing certificate never stays in CurrentUser\My, so it does not show
-    up in `websign-probe list`. Remove the package afterwards with:
-        Get-AppxPackage WebeSign.Probe | Remove-AppxPackage
+    up in `signlocal-probe list`. Remove the package afterwards with:
+        Get-AppxPackage signlocal.Probe | Remove-AppxPackage
 
 .PARAMETER ProbeExe
-    The websign-probe.exe to package. Default: $env:PROBE_EXE.
+    The signlocal-probe.exe to package. Default: $env:PROBE_EXE.
 #>
 [CmdletBinding()]
 param(
     [string] $ProbeExe = $env:PROBE_EXE,
-    [string] $OutDir = (Join-Path ([IO.Path]::GetTempPath()) 'websign-msix'),
+    [string] $OutDir = (Join-Path ([IO.Path]::GetTempPath()) 'signlocal-msix'),
     [string] $Version = '0.1.0.0'
 )
 
@@ -32,7 +32,7 @@ Set-StrictMode -Version Latest
 . "$PSScriptRoot/common.ps1"
 
 if (-not $ProbeExe -or -not (Test-Path -LiteralPath $ProbeExe)) {
-    throw 'Set PROBE_EXE (or -ProbeExe) to the websign-probe binary.'
+    throw 'Set PROBE_EXE (or -ProbeExe) to the signlocal-probe binary.'
 }
 if (-not (Test-Administrator)) {
     throw 'Run elevated: the signing certificate must be trusted in LocalMachine\TrustedPeople.'
@@ -97,7 +97,7 @@ function Invoke-Tool([string] $Tool, [string[]] $Arguments, [int] $TimeoutSecond
 # Signs the package with a throwaway certificate and trusts that certificate.
 function Protect-Package {
     $certificate = New-SelfSignedCertificate -Type Custom -Subject $package.Publisher `
-        -FriendlyName 'websign-probe MSIX test signing' -CertStoreLocation 'Cert:\CurrentUser\My' `
+        -FriendlyName 'signlocal-probe MSIX test signing' -CertStoreLocation 'Cert:\CurrentUser\My' `
         -KeyUsage DigitalSignature -KeyAlgorithm RSA -KeyLength 2048 -HashAlgorithm SHA256 `
         -KeyExportPolicy Exportable -NotAfter (Get-Date).AddDays(30) `
         -TextExtension @('2.5.29.37={text}1.3.6.1.5.5.7.3.3', '2.5.29.19={text}')

@@ -1,26 +1,26 @@
 //! A windowless confirmation for e2e builds only (feature `e2e`, never in
 //! releases; `tests/release_build.rs` checks the default binary has none of
-//! this). With `WEBSIGN_E2E_HEADLESS=1` the engine gets this port instead of
+//! this). With `SIGNLOCAL_E2E_HEADLESS=1` the engine gets this port instead of
 //! the window: it decides as a person would with the preselected
 //! certificate, so client libraries can be tested end to end on machines
 //! without a display (CI containers, SoftHSM2).
 //!
-//! `WEBSIGN_E2E_CONFIRM=cancel` cancels instead; `WEBSIGN_E2E_PIN` is the
+//! `SIGNLOCAL_E2E_CONFIRM=cancel` cancels instead; `SIGNLOCAL_E2E_PIN` is the
 //! PIN typed for PKCS#11 keys (`crate::e2e` documents both).
 
 use std::collections::BTreeMap;
 
 use secrecy::SecretString;
-use websign_host::EngineEvent;
-use websign_host::ports::ConfirmUi;
-use websign_host::runtime::EventSender;
-use websign_protocol::ErrorCode;
-use websign_ui_model::certs::build_cert_list;
-use websign_ui_model::confirm::port::{Failure, Mode, RequestKey};
-use websign_ui_model::confirm::{UiCommand, UiEvent};
+use signlocal_host::EngineEvent;
+use signlocal_host::ports::ConfirmUi;
+use signlocal_host::runtime::EventSender;
+use signlocal_protocol::ErrorCode;
+use signlocal_ui_model::certs::build_cert_list;
+use signlocal_ui_model::confirm::port::{Failure, Mode, RequestKey};
+use signlocal_ui_model::confirm::{UiCommand, UiEvent};
 
 /// Turns the headless port on.
-const HEADLESS_ENV: &str = "WEBSIGN_E2E_HEADLESS";
+const HEADLESS_ENV: &str = "SIGNLOCAL_E2E_HEADLESS";
 
 /// The scripted port, when the environment asks for it.
 pub fn from_env(events: EventSender) -> Option<Headless> {
@@ -28,8 +28,8 @@ pub fn from_env(events: EventSender) -> Option<Headless> {
     log::warn!("{}: headless confirmation active", crate::e2e::MARKER);
     Some(Headless {
         events,
-        cancel: std::env::var("WEBSIGN_E2E_CONFIRM").is_ok_and(|v| v == "cancel"),
-        pin: std::env::var("WEBSIGN_E2E_PIN").ok(),
+        cancel: std::env::var("SIGNLOCAL_E2E_CONFIRM").is_ok_and(|v| v == "cancel"),
+        pin: std::env::var("SIGNLOCAL_E2E_PIN").ok(),
         modes: BTreeMap::new(),
     })
 }

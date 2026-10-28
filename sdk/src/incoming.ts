@@ -8,7 +8,7 @@ import type { Announcement } from "./channel.js";
 import type { ExtensionInfo, PageReply } from "./generated/index.js";
 
 /** The `source` marker of the content script's messages. */
-export const EXTENSION_SOURCE = "websign-extension";
+export const EXTENSION_SOURCE = "signlocal-extension";
 
 /** A message from the content script that passed validation. */
 export type Incoming =

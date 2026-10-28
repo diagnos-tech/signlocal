@@ -3,7 +3,7 @@
 // The Safari web extension's native side. Safari hands every
 // browser.runtime.sendNativeMessage() of the extension's background to this
 // class; the relay (Relay/, compiled into the same module) turns those
-// one-shot messages into sessions with the bundled `websign` host
+// one-shot messages into sessions with the bundled `signlocal` host
 // (safari/SPEC.md). The host owns everything else: the confirmation window,
 // the signing, the OS PIN dialog.
 
@@ -11,7 +11,7 @@ import Foundation
 import SafariServices
 import os
 
-private let log = Logger(subsystem: "dev.websign.app.extension", category: "relay")
+private let log = Logger(subsystem: "health.diagnos.signlocal.extension", category: "relay")
 
 /// Named without the module prefix so `NSExtensionPrincipalClass` in the
 /// Info.plist template does not depend on how the appex module is called.

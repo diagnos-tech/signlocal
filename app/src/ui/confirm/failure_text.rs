@@ -1,7 +1,7 @@
 //! What the error notice says for each failure (`docs/ux.md` §15).
 
-use websign_i18n::{Catalog, k};
-use websign_ui_model::confirm::port::Failure;
+use signlocal_i18n::{Catalog, k};
+use signlocal_ui_model::confirm::port::Failure;
 
 use super::words;
 
@@ -60,7 +60,7 @@ fn pin_locked<'a>(
     tr: &'a Catalog,
     tool: &Option<String>,
     issuer: &str,
-) -> websign_i18n::Message<'a> {
+) -> signlocal_i18n::Message<'a> {
     match tool {
         Some(tool) if !issuer.is_empty() => tr
             .tr(k::PIN_LOCKED_BODY)

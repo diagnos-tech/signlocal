@@ -3,7 +3,7 @@
 use std::error::Error;
 use std::fmt;
 
-use websign_protocol::ErrorCode;
+use signlocal_protocol::ErrorCode;
 
 use crate::hint::{docs_url, hint};
 
@@ -62,7 +62,7 @@ impl From<&str> for Reason {
 /// `{:#}`-style printers show the whole chain.
 ///
 /// ```
-/// use websign_client::{ClientError, ErrorCode};
+/// use signlocal_client::{ClientError, ErrorCode};
 ///
 /// fn explain(error: &ClientError) -> String {
 ///     match error.code() {
@@ -74,7 +74,7 @@ impl From<&str> for Reason {
 /// ```
 #[derive(Debug)]
 pub enum ClientError {
-    /// The `websign` executable was not found or could not start.
+    /// The `signlocal` executable was not found or could not start.
     AppMissing(Reason),
     /// The app answered with an error (`UserCancelled`, `PinLocked`, …).
     App {
@@ -116,7 +116,7 @@ impl fmt::Display for ClientError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             ClientError::AppMissing(reason) => {
-                write!(f, "the WebeSign app is not installed: {reason}")
+                write!(f, "the signlocal app is not installed: {reason}")
             }
             ClientError::App { code, message } => write!(f, "{code:?}: {message}"),
             ClientError::Prepare(why) => write!(f, "prepare failed: {why}"),

@@ -57,7 +57,7 @@ function createFakeBrowser() {
     urlScheme: "chrome-extension",
     manifestVersion: "0.1.0",
     runtime: {
-      id: "websign-test-extension",
+      id: "signlocal-test-extension",
       onMessage: new FakeEvent<[unknown, unknown, (response?: unknown) => void]>(),
       onStartup: new FakeEvent<[]>(),
       onInstalled: new FakeEvent<[unknown]>(),
@@ -65,7 +65,7 @@ function createFakeBrowser() {
       sendMessage: vi.fn(async (_message: unknown): Promise<unknown> => undefined),
       getManifest: () => ({ version: fake.manifestVersion }),
       getPlatformInfo: vi.fn(async () => ({ os: "linux" })),
-      getURL: (path: string) => `${fake.urlScheme}://websign-test-extension${path}`,
+      getURL: (path: string) => `${fake.urlScheme}://signlocal-test-extension${path}`,
       sendNativeMessage: vi.fn(
         async (_application: string, _message: unknown): Promise<unknown> => undefined,
       ),
@@ -119,10 +119,10 @@ function createFakeBrowser() {
   return fake;
 }
 
-const shared = globalThis as { __websignFakeBrowser?: ReturnType<typeof createFakeBrowser> };
-shared.__websignFakeBrowser ??= createFakeBrowser();
+const shared = globalThis as { __signlocalFakeBrowser?: ReturnType<typeof createFakeBrowser> };
+shared.__signlocalFakeBrowser ??= createFakeBrowser();
 
 /** The fake `browser` namespace. Call `reset()` between tests. */
-export const fakeBrowser = shared.__websignFakeBrowser;
+export const fakeBrowser = shared.__signlocalFakeBrowser;
 
 Object.assign(globalThis, { browser: fakeBrowser, chrome: fakeBrowser });

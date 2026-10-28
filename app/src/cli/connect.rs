@@ -1,14 +1,14 @@
-//! `websign connect`: the framed protocol on stdin/stdout, identical to
+//! `signlocal connect`: the framed protocol on stdin/stdout, identical to
 //! native messaging except that the caller is the parent process.
 
 use std::process::ExitCode;
 
-use websign_protocol::framing::{read_frame, write_frame};
-use websign_protocol::{
+use signlocal_protocol::framing::{read_frame, write_frame};
+use signlocal_protocol::{
     AppEnvelope, ErrorCode, WireError, parse_client_message, refusal_version, to_json,
 };
 
-/// `websign connect`.
+/// `signlocal connect`.
 #[derive(Debug, clap::Args)]
 pub struct ConnectArgs {}
 
@@ -35,7 +35,7 @@ fn refuse_first_frame() -> ExitCode {
             let reply = AppEnvelope {
                 v: refusal_version(&frame),
                 id,
-                message: websign_protocol::AppMessage::Error(WireError {
+                message: signlocal_protocol::AppMessage::Error(WireError {
                     code: ErrorCode::Internal,
                     message: "the calling program could not be identified".to_owned(),
                     details: None,

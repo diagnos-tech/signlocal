@@ -7,7 +7,7 @@
 - `crash-report.ts` — The macOS crash report of an app process killed by a signal: exception, messages, crashed thread.
 - `environment.ts` — What an e2e run needs (app, extension, keys, screenshots) and how each OS receives its software keys.
 - `fixture.ts` — Typed calls into the fixture page, for a Playwright page or a Firefox tab.
-- `installed.ts` — Registration as a person's install does it (`websign register --browser <name>`) for a named browser.
+- `installed.ts` — Registration as a person's install does it (`signlocal register --browser <name>`) for a named browser.
 - `global-setup.ts` — Once per run: private app folders, no stale renderer marker, the SoftHSM2 token when nothing else provides keys.
 - `keys.ts` — The software keys of the run, known by their certificates.
 - `old-app.ts` — Puts the fake old app in place of the app's registration in a throwaway profile (AppOutdated).

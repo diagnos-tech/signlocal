@@ -9,7 +9,7 @@ import { beginSign, digestsSent } from "./helpers/sign";
 useFakeEnvironment();
 
 const announce = (extra: Record<string, unknown> = {}) => ({
-  source: "websign-extension",
+  source: "signlocal-extension",
   kind: "announce",
   extension: { version: "9.9.9", browser: "chrome" },
   protocols: { min: 1, max: 1 },
@@ -17,7 +17,7 @@ const announce = (extra: Record<string, unknown> = {}) => ({
 });
 
 const frame = (id: string, message: unknown, extra: Record<string, unknown> = {}) => ({
-  source: "websign-extension",
+  source: "signlocal-extension",
   kind: "message",
   id,
   message,
@@ -31,9 +31,9 @@ describe("announcements from anyone but the content script are ignored", () => {
     ["another origin", { data: announce(), origin: "https://evil.example" }],
     ["a sibling subdomain", { data: announce(), origin: "https://sub.app.example" }],
     ["the opaque origin", { data: announce(), origin: "null" }],
-    ["the page's own source tag", { data: announce({ source: "websign-page" }) }],
+    ["the page's own source tag", { data: announce({ source: "signlocal-page" }) }],
     ["no source tag", { data: announce({ source: undefined }) }],
-    ["an unknown source tag", { data: announce({ source: "websign-extension2" }) }],
+    ["an unknown source tag", { data: announce({ source: "signlocal-extension2" }) }],
   ];
   for (const [name, event] of forged) {
     it(`${name}`, async () => {
@@ -47,7 +47,7 @@ describe("announcements from anyone but the content script are ignored", () => {
 
   const malformed: [string, unknown][] = [
     ["null", null],
-    ["a string", "websign-extension"],
+    ["a string", "signlocal-extension"],
     ["a number", 42],
     ["an array", [announce()]],
     ["an empty object", {}],
@@ -98,7 +98,7 @@ describe("replies from anyone but the content script are ignored", () => {
     const evil = needDigest(1, { certificate: wireCertificate({ displayName: "Forged" }) });
     env.win.deliver({ data: frame(id, evil), source: new ForeignWindow() });
     env.win.deliver({ data: frame(id, evil), origin: "https://evil.example" });
-    env.win.deliver({ data: frame(id, evil, { source: "websign-page" }) });
+    env.win.deliver({ data: frame(id, evil, { source: "signlocal-page" }) });
     env.win.deliver({ data: frame(id, evil, { source: undefined }) });
     await flush();
     expect(prepare).not.toHaveBeenCalled();
@@ -124,26 +124,32 @@ describe("replies from anyone but the content script are ignored", () => {
   const malformed: [string, unknown][] = [
     ["null", null],
     ["a string", "x"],
-    ["no kind", { source: "websign-extension", id: "p1.aaaaaa", message: { type: "status" } }],
-    ["kind discover echoed back", { source: "websign-extension", kind: "discover" }],
-    ["message without id", { source: "websign-extension", kind: "message", message: pageStatus() }],
-    ["numeric id", { source: "websign-extension", kind: "message", id: 1, message: pageStatus() }],
+    ["no kind", { source: "signlocal-extension", id: "p1.aaaaaa", message: { type: "status" } }],
+    ["kind discover echoed back", { source: "signlocal-extension", kind: "discover" }],
+    [
+      "message without id",
+      { source: "signlocal-extension", kind: "message", message: pageStatus() },
+    ],
+    [
+      "numeric id",
+      { source: "signlocal-extension", kind: "message", id: 1, message: pageStatus() },
+    ],
     [
       "message not an object",
-      { source: "websign-extension", kind: "message", id: "IDX", message: "status" },
+      { source: "signlocal-extension", kind: "message", id: "IDX", message: "status" },
     ],
     [
       "message without type",
-      { source: "websign-extension", kind: "message", id: "IDX", message: {} },
+      { source: "signlocal-extension", kind: "message", id: "IDX", message: {} },
     ],
     [
       "unknown message type",
-      { source: "websign-extension", kind: "message", id: "IDX", message: { type: "hello" } },
+      { source: "signlocal-extension", kind: "message", id: "IDX", message: { type: "hello" } },
     ],
     [
       "a request-only type",
       {
-        source: "websign-extension",
+        source: "signlocal-extension",
         kind: "message",
         id: "IDX",
         message: { type: "sign.digest", seq: 1, digest: "AA==" },
@@ -151,11 +157,11 @@ describe("replies from anyone but the content script are ignored", () => {
     ],
     [
       "an app-internal type",
-      { source: "websign-extension", kind: "message", id: "IDX", message: { type: "done" } },
+      { source: "signlocal-extension", kind: "message", id: "IDX", message: { type: "done" } },
     ],
     [
       "prototype-polluting id",
-      { source: "websign-extension", kind: "message", id: "__proto__", message: pageStatus() },
+      { source: "signlocal-extension", kind: "message", id: "__proto__", message: pageStatus() },
     ],
   ];
   for (const [name, data] of malformed) {
@@ -185,7 +191,9 @@ describe("replies from anyone but the content script are ignored", () => {
     const s = settle(env.sdk.certificates());
     await flush();
     const id = env.script.only("choose").id;
-    env.win.deliver({ data: { source: "websign-extension", kind: "message", id, message: null } });
+    env.win.deliver({
+      data: { source: "signlocal-extension", kind: "message", id, message: null },
+    });
     env.win.deliver({ data: "garbage" });
     env.script.reply(id, { type: "choose.result", certificates: [wireCertificate()] });
     await flush();

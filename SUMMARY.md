@@ -1,23 +1,23 @@
-# web-esign
+# signlocal
 
-WebeSign: sign with your own certificate from any website or desktop program. Start with README.md.
+signlocal: sign with your own certificate from any website or desktop program. Start with README.md.
 
 - `.cargo/` — Cargo configuration shared by every build
 - `.gitattributes` — LF line endings everywhere and binary types
 - `.github/` — GitHub configuration
-- `app/` — the `websign` binary: host process, CLI, windows and OS glue
+- `app/` — the `signlocal` binary: host process, CLI, windows and OS glue
 - `clients/` — libraries desktop programs use to call the app (Apache-2.0)
 - `crates/` — the libraries of the app, one responsibility each
 - `design/` — design tokens (`tokens.css`), the single source for the app theme and the site
 - `docs/` — documentation
 - `e2e/` — end-to-end tests (Playwright)
 - `examples/` — runnable examples for web (SDK) and desktop (Node, Rust) integrators
-- `extension/` — the WebeSign browser extension (WXT, MV3)
+- `extension/` — the signlocal browser extension (WXT, MV3)
 - `i18n/` — translations: en (reference), pt-BR, pt-PT, es, fr, it, de
 - `packaging/` — release packaging definitions
 - `safari/` — the Safari web extension bridge (store channel)
 - `scripts/` — scripts shipped to users
-- `sdk/` — `@websign/sdk`: the web SDK (Apache-2.0)
+- `sdk/` — `@signlocal/sdk`: the web SDK (Apache-2.0)
 - `site/` — the project web site (static, seven languages)
 - `xtask/` — `cargo xtask`: repository automation
 - `.editorconfig` — editor settings (UTF-8, LF, indentation)
@@ -35,7 +35,7 @@ WebeSign: sign with your own certificate from any website or desktop program. St
 - `devices.json` — device hints: USB VID:PID and ATR → model → driver per OS (CC0-1.0)
 - `devices.schema.json` — JSON Schema that devices.json must satisfy
 - `package.json` — the bun workspace of the TypeScript packages
-- `project.toml` — provisional names and identifiers, the single source (D6)
+- `project.toml` — names and identifiers, the single source (D6)
 - `rust-toolchain.toml` — the pinned Rust toolchain and targets
 - `rustfmt.toml` — rustfmt settings
 - `tsconfig.base.json` — strict TypeScript settings every package extends

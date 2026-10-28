@@ -10,8 +10,8 @@ What remains:
 
 - **Maintainer actions** (§5): enable GitHub Pages for `site/`
   (`.github/workflows/pages.yml` is ready), the security contact in
-  [`SECURITY.md`](../SECURITY.md), final name and domain, store and npm
-  accounts.
+  [`SECURITY.md`](../SECURITY.md), DNS for `signlocal.diagnos.health`, store
+  and npm accounts.
 - **Wave C** (§3): code signing and notarization, store channels, the macOS
   PKCS#11 Add-on.
 - **Hardware verification**: real tokens and cards on each OS, following the
@@ -31,18 +31,18 @@ maintainer; D11–D20 were taken while defining the contracts.
 | D3 | English everywhere: code, comments, docs, commits (`<type>(<scope>): <imperative>`, header ≤ 100, DCO sign-off) | public international project |
 | D4 | No batch signing in v1 (the queue exists) | one confirmation per signature is the consent model |
 | D5 | PKCS#11 PIN cached per session (until token removal or idle close), except `CKA_ALWAYS_AUTHENTICATE` keys | same behavior as CNG/CryptoTokenKit middlewares |
-| D6 | Provisional names and IDs in `project.toml`, generated into Rust (`websign-project`), TypeScript and manifests | renaming = editing one file |
+| D6 | Names and IDs in `project.toml`, generated into Rust (`signlocal-project`), TypeScript and manifests | renaming = editing one file |
 | D7 | Commits carry the maintainer as author with `Signed-off-by`; the environment's SSH key is not his | re-sign on integration if needed |
 | D8 | Own tolerant DER reader (promoted `probe-core`): summarizes, never validates chains; fuzzed in CI | the `x509-cert` stack dropped real certificates |
 | D9 | Windows acquires legacy CAPI keys with `PREFER` (CNG bridge → PSS works), falling back to `ALLOW` per key when a third-party CSP refuses | proven for Microsoft CSPs in proof 1 |
 | D10 | Ship **direct** unsigned builds on every OS now; macOS store build and PKCS#11 Add-on later. The direct macOS build is not sandboxed, so PKCS#11 works there | proofs 2–3: the store sandbox blocks external PKCS#11 modules |
 | D11 | **Certificate release needs consent**: `sign.need_digest` (which discloses the certificate) is sent at once only for a remembered caller; otherwise after the person clicks **Continue** in the window | without it any site could call `sign()` and cancel to harvest names/CPFs, defeating D2. Costs one click for new sites only. **Needs UX sign-off** (adds `action.continue`, `code.continue_hint`) |
 | D12 | Protocol version = one integer; strict parsing (unknown fields refused); any catalog change bumps it; ranges negotiated in `hello` | strictness closes smuggling; ranges keep old peers working |
-| D13 | `websign-protocol`, `websign-project`, `websign-client`, `@websign/sdk`, `@websign/desktop` are Apache-2.0 and depend on nothing GPL; the verification-code algorithm lives in the protocol crate | the GPL must not reach programs that only talk to the app |
-| D14 | Pure view logic in `crates/websign-ui-model` (confirm state machine, list rules, diagnostics report); the app only renders | blind-TDD without egui; the host shares the list rules |
+| D13 | `signlocal-protocol`, `signlocal-project`, `signlocal-client`, `@signlocal/sdk`, `@signlocal/desktop` are Apache-2.0 and depend on nothing GPL; the verification-code algorithm lives in the protocol crate | the GPL must not reach programs that only talk to the app |
+| D14 | Pure view logic in `crates/signlocal-ui-model` (confirm state machine, list rules, diagnostics report); the app only renders | blind-TDD without egui; the host shares the list rules |
 | D15 | Renderer: wgpu everywhere (WARP/llvmpipe/Metal cover RDP and VMs); glow only as a re-exec fallback on macOS/Linux | proof 5 on 7 systems; glow fails on Windows |
 | D16 | Desktop caller = the parent process (path, product name, verified code signer); consent key `app:<signer>` or `path:<exe>`; unsigned callers flagged | the program cannot lie about itself |
-| D17 | `websign sign|choose` print the final protocol message (no envelope) as one JSON object; exit codes from `ErrorCode::exit_code` | one schema for every interface |
+| D17 | `signlocal sign|choose` print the final protocol message (no envelope) as one JSON object; exit codes from `ErrorCode::exit_code` | one schema for every interface |
 | D18 | CLI output and error messages are English only; windows, popup and SDK texts are localized (7 locales) | developer surfaces vs. end-user surfaces |
 | D19 | App, extension, SDK and desktop client versions move in lockstep with the `v*` tag | one compatibility story |
 | D20 | Brainpool P256r1/P384r1 verified with RustCrypto `bp256`/`bp384` 0.14; P512r1 signed but not self-verified (no maintained verifier) | European cards use brainpool; no unmaintained crypto |
@@ -59,7 +59,7 @@ for everything ([`testing.md`](architecture/testing.md)).
 - **Platform tracks** (`contract`): one Opus agent implements against the
   contract suite and the kit's proven code; an Opus reviewer checks unsafe
   code, handles, error mapping and the no-PIN-on-list rule.
-- **UI tracks**: Opus implements rendering on top of `websign-ui-model`;
+- **UI tracks**: Opus implements rendering on top of `signlocal-ui-model`;
   `egui_kittest` tests and snapshots; UX review against `docs/ux.md`.
 - Every track stays inside its **file boundary**, keeps files < ~200 lines,
   runs `cargo fmt`, `cargo clippy -D warnings` (all targets), tests, and for
@@ -77,20 +77,20 @@ O = Opus. Tracks of the same wave run in parallel; boundaries never overlap.
 
 | Track | Files (boundary) | Kind | Agents | Depends on | Acceptance |
 |---|---|---|---|---|---|
-| A1 Core | `crates/websign-core/**` | blind | S+S, O review | — | `SPEC.md` §4.1 (brainpool), §6.1a (DN attributes), §9–§13 implemented; all vectors of `docs/ux.md` §16.1–16.4 pass; the 391 promoted tests still pass; coverage ≥ 90 %; mutants killed ≥ 85 % |
-| A2 Protocol | `crates/websign-protocol/**`, `sdk/src/generated/**`, `extension/src/generated/**`, `clients/node/src/generated/**` | blind | S+S, O review | — | `SPEC.md` vectors pass (negotiation, ids, strict parsing, verification code §16.1); round-trip of every message; generated TS committed and fresh |
-| A3 i18n engine | `crates/websign-i18n/**` | blind | S+S, O review | — | plural rules for 7 locales, fallback chain, placeholder rendering, date formats, `check_locale` vectors |
+| A1 Core | `crates/signlocal-core/**` | blind | S+S, O review | — | `SPEC.md` §4.1 (brainpool), §6.1a (DN attributes), §9–§13 implemented; all vectors of `docs/ux.md` §16.1–16.4 pass; the 391 promoted tests still pass; coverage ≥ 90 %; mutants killed ≥ 85 % |
+| A2 Protocol | `crates/signlocal-protocol/**`, `sdk/src/generated/**`, `extension/src/generated/**`, `clients/node/src/generated/**` | blind | S+S, O review | — | `SPEC.md` vectors pass (negotiation, ids, strict parsing, verification code §16.1); round-trip of every message; generated TS committed and fresh |
+| A3 i18n engine | `crates/signlocal-i18n/**` | blind | S+S, O review | — | plural rules for 7 locales, fallback chain, placeholder rendering, date formats, `check_locale` vectors |
 | A4 Translations | `i18n/*.toml` except `en.toml` | tooling | S (one per locale), O review | A3 checker | every key translated; `cargo xtask check i18n` green; pt-BR texts taken from `docs/ux.md` §13/§15 |
-| A5 UI model | `crates/websign-ui-model/**` | blind | S+S, O review | A1 API | `docs/ux.md` §4.7, §4.8, §5, §6, §8.1–8.2, §8.7, §16.5–16.6 as tests; confirm machine scenario table passes |
-| A6 PKCS#11 + hub + contract | `crates/websign-keystores/src/{lib.rs,model.rs,hub.rs,contract.rs,inventory.rs,pkcs11/**}`, `crates/websign-keystores/tests/**` | contract | O, O review | A1 | contract suite green with SoftHSM2 on Linux/macOS/Windows; D5 sessions; `pin_state`; device links; list never logs in |
-| A7 Windows key store | `crates/websign-keystores/src/windows/**` | contract | O, O review | A6 trait | contract suite green on `windows-latest` (CNG, CAPI, A1 in `PROV_RSA_FULL`); D9 fallback; reader link; chain via `CertGetCertificateChain` |
-| A8 macOS key store | `crates/websign-keystores/src/macos/**` | contract | O, O review | A6 trait | contract suite green on `macos-latest` (temporary keychain); CTK token link; chain via `SecTrust`; calls serialized |
-| A9 Devices | `crates/websign-devices/**`, `devices.json`, `devices.schema.json` | blind (hints, possible) + contract (monitor) | S+S, O | — | `devices.json` seeded from `docs/research/tokens.md` and schema-valid; monitor events with `pcscd`; no serial numbers anywhere |
-| A10 Registration | `crates/websign-registration/**` | contract | O, O review | — | detect/status/url_scheme/preregister/system per `SPEC.md`; tests in throwaway HOME/HKCU on the three OSes |
-| A11 Host engine | `crates/websign-host/**` | blind (session, queue, flows, engine with fakes) + contract (runtime) | S+S, O | A1, A2, A5, A6 API | every scenario of `SPEC.md` §8 passes with fake ports; runtime serves stdio with the real key worker on Linux (SoftHSM2) |
+| A5 UI model | `crates/signlocal-ui-model/**` | blind | S+S, O review | A1 API | `docs/ux.md` §4.7, §4.8, §5, §6, §8.1–8.2, §8.7, §16.5–16.6 as tests; confirm machine scenario table passes |
+| A6 PKCS#11 + hub + contract | `crates/signlocal-keystores/src/{lib.rs,model.rs,hub.rs,contract.rs,inventory.rs,pkcs11/**}`, `crates/signlocal-keystores/tests/**` | contract | O, O review | A1 | contract suite green with SoftHSM2 on Linux/macOS/Windows; D5 sessions; `pin_state`; device links; list never logs in |
+| A7 Windows key store | `crates/signlocal-keystores/src/windows/**` | contract | O, O review | A6 trait | contract suite green on `windows-latest` (CNG, CAPI, A1 in `PROV_RSA_FULL`); D9 fallback; reader link; chain via `CertGetCertificateChain` |
+| A8 macOS key store | `crates/signlocal-keystores/src/macos/**` | contract | O, O review | A6 trait | contract suite green on `macos-latest` (temporary keychain); CTK token link; chain via `SecTrust`; calls serialized |
+| A9 Devices | `crates/signlocal-devices/**`, `devices.json`, `devices.schema.json` | blind (hints, possible) + contract (monitor) | S+S, O | — | `devices.json` seeded from `docs/research/tokens.md` and schema-valid; monitor events with `pcscd`; no serial numbers anywhere |
+| A10 Registration | `crates/signlocal-registration/**` | contract | O, O review | — | detect/status/url_scheme/preregister/system per `SPEC.md`; tests in throwaway HOME/HKCU on the three OSes |
+| A11 Host engine | `crates/signlocal-host/**` | blind (session, queue, flows, engine with fakes) + contract (runtime) | S+S, O | A1, A2, A5, A6 API | every scenario of `SPEC.md` §8 passes with fake ports; runtime serves stdio with the real key worker on Linux (SoftHSM2) |
 | A12 Web SDK | `sdk/**` except `src/generated` | blind | S+S, O review | A2 | `SPEC.md` behaviors; zero dependencies; < 5 KB gzip; typed errors |
 | A13 Extension | `extension/**` except `src/generated` | blind (pure modules) + ui (popup) | S+S, O review | A2, A4 | page relay and background validation per `SPEC.md`; popup's six states; < 15 KB popup; builds for chrome, edge, firefox, safari |
-| A14 Node client | `clients/node/**` except `src/generated` | blind | S, O review | A2 | framing, flow, locate; tests against a fake `websign connect` |
+| A14 Node client | `clients/node/**` except `src/generated` | blind | S, O review | A2 | framing, flow, locate; tests against a fake `signlocal connect` |
 | A15 Rust client | `clients/rust/**` | blind | S, O review | A2 | same, in Rust |
 | A16 xtask | `xtask/**` | tooling | S, O review | A2, A3 | `gen`, `check summaries|i18n|generated|release`, `screenshots` working |
 | A17 CI | `.github/workflows/**` (except `prototypes.yml`, `ui-spike.yml`) | tooling | O | A16 | all gates of `testing.md` §6 wired; e2e jobs stubbed until B6 |
@@ -132,6 +132,8 @@ decisions. Merging needs the CI gates of `testing.md` §6.
 - Security contact for [`SECURITY.md`](../SECURITY.md).
 - Enable GitHub Pages ("Source: GitHub Actions") so `pages.yml` can publish
   `site/`.
+- Point `signlocal.diagnos.health` at GitHub Pages (CNAME record) and set it as
+  the custom domain.
 - Confirm the license change: `project.toml` and `i18n/*.toml` are
   dual-licensed GPL-3.0-or-later or Apache-2.0 so the Apache-2.0 SDK and
   clients can ship what is generated from them ([`LICENSE`](../LICENSE)).

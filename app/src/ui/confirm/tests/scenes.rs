@@ -4,10 +4,10 @@
 
 use egui::accesskit::Role;
 use egui_kittest::kittest::Queryable as _;
-use websign_protocol::types::{BrowserName, SignatureAlgorithmName};
-use websign_ui_model::certs::PinMode;
-use websign_ui_model::confirm::UiCommand;
-use websign_ui_model::confirm::port::{Failure, Finish, Mode};
+use signlocal_protocol::types::{BrowserName, SignatureAlgorithmName};
+use signlocal_ui_model::certs::PinMode;
+use signlocal_ui_model::confirm::UiCommand;
+use signlocal_ui_model::confirm::port::{Failure, Finish, Mode};
 
 use super::fixtures::*;
 use super::support::Rig;

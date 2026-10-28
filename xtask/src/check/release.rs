@@ -9,7 +9,7 @@ use std::path::Path;
 use super::{installers, versions};
 
 /// Present in any binary built with `--features e2e`; it must never ship.
-const E2E_MARKER: &[u8] = b"WEBSIGN_E2E_BUILD";
+const E2E_MARKER: &[u8] = b"SIGNLOCAL_E2E_BUILD";
 /// Files every release carries: each part's license text.
 const LICENSES: [&str; 5] = [
     "LICENSE",
@@ -99,11 +99,11 @@ mod tests {
 
     #[test]
     fn finds_a_marker_split_across_reads() {
-        assert!(contains(Trickle(b"xxWEBSIGN_E2E_BUILDyy"), E2E_MARKER).unwrap());
+        assert!(contains(Trickle(b"xxSIGNLOCAL_E2E_BUILDyy"), E2E_MARKER).unwrap());
     }
 
     #[test]
     fn a_clean_binary_passes() {
-        assert!(!contains(Trickle(b"WEBSIGN_E2E_BUIL"), E2E_MARKER).unwrap());
+        assert!(!contains(Trickle(b"SIGNLOCAL_E2E_BUIL"), E2E_MARKER).unwrap());
     }
 }

@@ -7,7 +7,7 @@ vi.mock("wxt/browser", async () => ({ browser: (await import("./fakes/browser"))
 
 const ORIGIN = "https://app.example.com";
 const request = (over: Record<string, unknown> = {}) => ({
-  source: "websign-page",
+  source: "signlocal-page",
   kind: "request",
   id: "p1",
   message: { type: "sign.begin", hash: "SHA-256" },
@@ -45,7 +45,7 @@ describe("relay: what is forwarded", () => {
     await flush();
     expect(relayed()).toEqual([
       {
-        kind: "websign-request",
+        kind: "signlocal-request",
         document: expect.stringMatching(UUID),
         id: "p1",
         message: { type: "sign.begin", hash: "SHA-256" },
@@ -86,7 +86,7 @@ describe("relay: what is refused", () => {
 
   it.each([
     ["other source", request({ source: "someone-else" })],
-    ["extension source (echo)", request({ source: "websign-extension" })],
+    ["extension source (echo)", request({ source: "signlocal-extension" })],
     ["unknown kind", request({ kind: "hello" })],
     ["missing kind", request({ kind: undefined })],
     ["numeric id", request({ id: 7 })],
@@ -96,7 +96,7 @@ describe("relay: what is refused", () => {
     ["array message", request({ message: [] })],
     ["string message", request({ message: "status" })],
     ["null data", null],
-    ["string data", "websign-page"],
+    ["string data", "signlocal-page"],
     ["array data", [request()]],
   ])("does not relay: %s", async (_name, data) => {
     win.dispatchMessage(data);
@@ -120,7 +120,7 @@ describe("relay: what is refused", () => {
       {
         targetOrigin: ORIGIN,
         message: {
-          source: "websign-extension",
+          source: "signlocal-extension",
           kind: "message",
           id: "p1",
           message: { type: "error", code: "InvalidRequest", message: expect.any(String) },
@@ -130,14 +130,14 @@ describe("relay: what is refused", () => {
   });
 
   it("answers discover with an announcement instead of relaying it", async () => {
-    win.dispatchMessage({ source: "websign-page", kind: "discover" });
+    win.dispatchMessage({ source: "signlocal-page", kind: "discover" });
     await flush();
     expect(relayed()).toEqual([]);
     expect(win.fromExtension()).toMatchObject([{ kind: "announce" }]);
   });
 
   it("ignores a discover from another window", async () => {
-    win.dispatchMessage({ source: "websign-page", kind: "discover" }, { source: {} });
+    win.dispatchMessage({ source: "signlocal-page", kind: "discover" }, { source: {} });
     await flush();
     expect(win.posted).toEqual([]);
   });
@@ -181,11 +181,11 @@ describe("relay: replies", () => {
 
   it("posts a background reply to the page with source, id and the page's own origin", async () => {
     const document = await documentToken();
-    fromBackground({ kind: "websign-reply", document, id: "p1", message: error });
+    fromBackground({ kind: "signlocal-reply", document, id: "p1", message: error });
     expect(win.posted).toEqual([
       {
         targetOrigin: ORIGIN,
-        message: { source: "websign-extension", kind: "message", id: "p1", message: error },
+        message: { source: "signlocal-extension", kind: "message", id: "p1", message: error },
       },
     ]);
   });
@@ -193,7 +193,7 @@ describe("relay: replies", () => {
   it("drops a reply meant for another document of the same frame", async () => {
     await documentToken();
     fromBackground({
-      kind: "websign-reply",
+      kind: "signlocal-reply",
       document: "00000000-0000-4000-8000-000000000000",
       id: "p1",
       message: error,
@@ -203,31 +203,34 @@ describe("relay: replies", () => {
 
   it("drops messages that do not come from this extension", async () => {
     const document = await documentToken();
-    fromBackground({ kind: "websign-reply", document, id: "p1", message: error }, { id: "other" });
-    fromBackground({ kind: "websign-reply", document, id: "p1", message: error }, {});
+    fromBackground(
+      { kind: "signlocal-reply", document, id: "p1", message: error },
+      { id: "other" },
+    );
+    fromBackground({ kind: "signlocal-reply", document, id: "p1", message: error }, {});
     expect(win.posted).toEqual([]);
   });
 
   it("answers the background's top-origin question from the top frame only", () => {
     const respond = vi.fn();
     Object.assign(win, { top: win });
-    fakeBrowser.runtime.onMessage.emit({ kind: "websign-origin" }, own, respond);
+    fakeBrowser.runtime.onMessage.emit({ kind: "signlocal-origin" }, own, respond);
     expect(respond).toHaveBeenCalledWith(ORIGIN);
     respond.mockClear();
     Object.assign(win, { top: {} });
-    fakeBrowser.runtime.onMessage.emit({ kind: "websign-origin" }, own, respond);
+    fakeBrowser.runtime.onMessage.emit({ kind: "signlocal-origin" }, own, respond);
     expect(respond).not.toHaveBeenCalled();
   });
 
   it("tells the background when the document goes away, with the same token", async () => {
     const document = await documentToken();
     win.dispatch("pagehide");
-    expect(relayed().at(-1)).toEqual({ kind: "websign-gone", document });
+    expect(relayed().at(-1)).toEqual({ kind: "signlocal-gone", document });
   });
 
   it("never posts to the wildcard origin", async () => {
     const document = await documentToken();
-    fromBackground({ kind: "websign-reply", document, id: "p1", message: { type: "status" } });
+    fromBackground({ kind: "signlocal-reply", document, id: "p1", message: { type: "status" } });
     win.dispatchMessage(request({ message: "bad" }));
     await flush();
     expect(win.posted.length).toBeGreaterThan(0);

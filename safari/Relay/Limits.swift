@@ -7,7 +7,7 @@ import Foundation
 /// on either side, and from a background page that went away mid-session.
 public enum RelayLimits {
     /// Largest message in either direction: the host's frame limit
-    /// (`websign-protocol` `framing::MAX_INCOMING` and `MAX_OUTGOING`).
+    /// (`signlocal-protocol` `framing::MAX_INCOMING` and `MAX_OUTGOING`).
     public static let maxMessageBytes = 1 << 20
     /// Host output held for a background that stopped polling. Past it the
     /// session ends: a queue nobody drains must not grow without bound.
@@ -29,6 +29,6 @@ public enum RelayLimits {
     /// normal shutdown: cancel open requests, close the window) before it is
     /// terminated, and again before it is killed.
     public static let exitGrace: TimeInterval = 3
-    /// `websign-protocol` `MAX_REQUEST_ID_LEN`.
+    /// `signlocal-protocol` `MAX_REQUEST_ID_LEN`.
     public static let maxRequestIdBytes = 64
 }

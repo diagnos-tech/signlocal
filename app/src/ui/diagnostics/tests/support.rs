@@ -9,9 +9,9 @@ use std::rc::Rc;
 
 use egui_kittest::{Harness, SnapshotError, SnapshotOptions};
 use jiff::tz::TimeZone;
-use websign_host::store::{MemoryStores, Stores};
-use websign_i18n::{Catalog, Locale};
-use websign_protocol::messages::DiagnosticsTab;
+use signlocal_host::store::{MemoryStores, Stores};
+use signlocal_i18n::{Catalog, Locale};
+use signlocal_protocol::messages::DiagnosticsTab;
 
 use super::fixture;
 use crate::platform::file_picker::{FileRequest, Picked};

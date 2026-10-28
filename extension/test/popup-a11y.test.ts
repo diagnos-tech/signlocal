@@ -121,7 +121,7 @@ describe("popup: Open diagnostics", () => {
     expect(document.querySelector(".actions")?.getAttribute("aria-busy")).toBe("true");
     expect(fakeBrowser.runtime.sendMessage).toHaveBeenCalledTimes(1);
     expect(fakeBrowser.runtime.sendMessage).toHaveBeenCalledWith({
-      kind: "websign-popup",
+      kind: "signlocal-popup",
       op: "diagnostics",
     });
     opened({ ok: true, appVersion: "" });

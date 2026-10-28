@@ -31,9 +31,9 @@
 		<key>NSExtensionPrincipalClass</key>
 		<string>SafariWebExtensionHandler</string>
 	</dict>
-	<key>WebeSignHostExecutable</key>
+	<key>SignlocalHostExecutable</key>
 	<string>{{slug}}</string>
-	<key>WebeSignHostExtensionID</key>
+	<key>SignlocalHostExtensionID</key>
 	<string>{{safari_bundle_id}}</string>
 </dict>
 </plist>

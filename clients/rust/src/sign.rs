@@ -1,9 +1,9 @@
 //! `sign.begin` and the digest exchange that follows.
 
-use websign_protocol::AppMessage;
-use websign_protocol::ErrorCode;
-use websign_protocol::messages::{ClientMessage, NeedDigest, SignBegin, SignDigest, SignResult};
-use websign_protocol::types::{Base64Bytes, Certificate, HashName, SignatureAlgorithmName};
+use signlocal_protocol::AppMessage;
+use signlocal_protocol::ErrorCode;
+use signlocal_protocol::messages::{ClientMessage, NeedDigest, SignBegin, SignDigest, SignResult};
+use signlocal_protocol::types::{Base64Bytes, Certificate, HashName, SignatureAlgorithmName};
 
 use crate::client::Client;
 use crate::error::ClientError;
@@ -25,7 +25,7 @@ impl Client {
     /// ECDSA `r || s`.
     ///
     /// ```no_run
-    /// use websign_client::{Client, HashName, SignOptions, SignatureAlgorithmName};
+    /// use signlocal_client::{Client, HashName, SignOptions, SignatureAlgorithmName};
     ///
     /// # fn digest_of_signed_attributes(_der: &[u8], _algorithm: SignatureAlgorithmName) -> Result<Vec<u8>, std::io::Error> { Ok(vec![0; 32]) }
     /// let mut client = Client::connect()?;
@@ -37,7 +37,7 @@ impl Client {
     ///         .map_err(|error| error.to_string())
     /// })?;
     /// println!("{:?}", signed.algorithm);
-    /// # Ok::<(), websign_client::ClientError>(())
+    /// # Ok::<(), signlocal_client::ClientError>(())
     /// ```
     pub fn sign(
         &mut self,

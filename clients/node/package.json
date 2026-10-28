@@ -1,7 +1,7 @@
 {
-  "name": "@websign/desktop",
+  "name": "@signlocal/desktop",
   "version": "0.1.0",
-  "description": "Call the WebeSign app from Node.js, Bun or Electron: choose a certificate and sign a digest through `websign connect`. Zero runtime dependencies.",
+  "description": "Call the signlocal app from Node.js, Bun or Electron: choose a certificate and sign a digest through `signlocal connect`. Zero runtime dependencies.",
   "license": "Apache-2.0",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -39,7 +39,7 @@
   "sideEffects": false,
   "main": "./dist/index.js",
   "keywords": [
-    "websign",
+    "signlocal",
     "digital-signature",
     "smart-card",
     "pkcs11",
@@ -48,7 +48,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/diagnos-tech/web-esign.git",
+    "url": "git+https://github.com/diagnos-tech/signlocal.git",
     "directory": "clients/node"
   }
 }

@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach } from "vitest";
 
-export const FAKE = join(import.meta.dirname, "fixtures", "fake-websign.mjs");
+export const FAKE = join(import.meta.dirname, "fixtures", "fake-signlocal.mjs");
 
 export const APP = {
   version: "1.4.0",
@@ -50,7 +50,7 @@ const directories: string[] = [];
 afterEach(() => {
   for (const directory of directories.splice(0))
     rmSync(directory, { recursive: true, force: true });
-  delete process.env.WEBSIGN_FAKE_SCENARIO;
+  delete process.env.SIGNLOCAL_FAKE_SCENARIO;
 });
 
 export interface Fake {
@@ -63,9 +63,9 @@ export interface Fake {
   argv(): string[];
 }
 
-/** Installs a scenario for the next `websign connect` this process spawns. */
+/** Installs a scenario for the next `signlocal connect` this process spawns. */
 export function fake(scenario: Scenario): Fake {
-  const directory = mkdtempSync(join(tmpdir(), "websign-fake-"));
+  const directory = mkdtempSync(join(tmpdir(), "signlocal-fake-"));
   directories.push(directory);
   const log = join(directory, "log");
   const pidFile = join(directory, "pid");
@@ -73,7 +73,7 @@ export function fake(scenario: Scenario): Fake {
   const file = join(directory, "scenario.json");
   writeFileSync(log, "");
   writeFileSync(file, JSON.stringify({ ...scenario, log, pidFile, argvFile }));
-  process.env.WEBSIGN_FAKE_SCENARIO = file;
+  process.env.SIGNLOCAL_FAKE_SCENARIO = file;
   return {
     executable: FAKE,
     received: () =>

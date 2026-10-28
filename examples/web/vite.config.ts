@@ -1,7 +1,7 @@
 /**
- * One dev server for every example. `@websign/sdk` resolves to the sources in
+ * One dev server for every example. `@signlocal/sdk` resolves to the sources in
  * this repository so the examples always match the SDK they sit next to; in
- * your project, `bun add @websign/sdk` and drop the aliases.
+ * your project, `bun add @signlocal/sdk` and drop the aliases.
  */
 
 import { fileURLToPath } from "node:url";
@@ -15,9 +15,9 @@ export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: [
-      { find: /^@websign\/sdk$/, replacement: sdk("index.ts") },
-      { find: /^@websign\/sdk\/messages$/, replacement: sdk("messages.ts") },
-      { find: /^@websign\/sdk\/testing$/, replacement: sdk("testing/index.ts") },
+      { find: /^@signlocal\/sdk$/, replacement: sdk("index.ts") },
+      { find: /^@signlocal\/sdk\/messages$/, replacement: sdk("messages.ts") },
+      { find: /^@signlocal\/sdk\/testing$/, replacement: sdk("testing/index.ts") },
     ],
   },
   server: { fs: { allow: [page("../..")] } },

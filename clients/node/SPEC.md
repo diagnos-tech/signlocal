@@ -1,18 +1,18 @@
-# @websign/desktop — specification
+# @signlocal/desktop — specification
 
 Surface: [`docs/architecture/desktop-api.md`](../../docs/architecture/desktop-api.md)
-§7. Tests use a fake `websign connect` (a Node script speaking the protocol
+§7. Tests use a fake `signlocal connect` (a Node script speaking the protocol
 from a scenario file).
 
 ## 1. `findExecutable()`
 
-`WEBSIGN_EXECUTABLE` if it exists; else `websign`/`websign.exe` on `PATH`;
-else, in order: Windows `%LOCALAPPDATA%\Programs\WebeSign\websign.exe`,
-`%LOCALAPPDATA%\Microsoft\WindowsApps\websign.exe`; macOS
-`/Applications/WebeSign.app/Contents/MacOS/websign`,
-`~/Applications/WebeSign.app/Contents/MacOS/websign`, `~/.local/bin/websign`
-(the symlink the direct macOS install may create); Linux `/usr/bin/websign`,
-`~/.local/bin/websign`. `undefined` when none exists. "Exists" means a
+`SIGNLOCAL_EXECUTABLE` if it exists; else `signlocal`/`signlocal.exe` on `PATH`;
+else, in order: Windows `%LOCALAPPDATA%\Programs\signlocal\signlocal.exe`,
+`%LOCALAPPDATA%\Microsoft\WindowsApps\signlocal.exe`; macOS
+`/Applications/signlocal.app/Contents/MacOS/signlocal`,
+`~/Applications/signlocal.app/Contents/MacOS/signlocal`, `~/.local/bin/signlocal`
+(the symlink the direct macOS install may create); Linux `/usr/bin/signlocal`,
+`~/.local/bin/signlocal`. `undefined` when none exists. "Exists" means a
 regular file with the execute bit; on Windows any non-directory, because the
 `WindowsApps` MSIX alias is a reparse point that `stat` reports as a link.
 
@@ -20,7 +20,7 @@ regular file with the execute bit; on Windows any non-directory, because the
 
 - `connect()`: spawn `[exe, "connect"]` with `stdio: ["pipe","pipe","ignore"]`;
   spawn error or immediate exit → `AppMissing`. Send `hello` with
-  `client {name:"@websign/desktop", version}` and `protocols {min:1,max:1}`;
+  `client {name:"@signlocal/desktop", version}` and `protocols {min:1,max:1}`;
   wait ≤ 10 s for the `hello` reply. An `error` answering `hello` must carry the
   `v` that `hello` carried and rejects with its code (`ClientOutdated`,
   `AppOutdated`, `InvalidRequest`); an `error` at any other `v`, or any other

@@ -12,7 +12,7 @@
 - `pick.rs` — The OS file picker for "Add driver…" and the macOS `.pfx` import; answers arrive by channel.
 - `live.rs` — PC/SC device events that trigger a new scan while the window is open (§8.4).
 - `keys.rs` — Window shortcuts: Ctrl/⌘+1…4, F5 / Ctrl/⌘+R, Ctrl/⌘+Shift+C, Ctrl/⌘+W (§8.8).
-- `lights.rs` — Traffic lights per tab and overall, the opening tab, "Getting started" (via `websign-ui-model`).
+- `lights.rs` — Traffic lights per tab and overall, the opening tab, "Getting started" (via `signlocal-ui-model`).
 - `remembered.rs` — Remembered sites and programs from the consent store, named as the person saw them.
-- `report.rs` — The "Copy diagnostics" text (§8.7) from a scan; also `websign doctor`'s report input.
+- `report.rs` — The "Copy diagnostics" text (§8.7) from a scan; also `signlocal doctor`'s report input.
 - `counts.rs` — Certificate counts for the report: numbers and categories only.

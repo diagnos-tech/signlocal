@@ -16,7 +16,7 @@ import Glibc
 /// sends protocol messages into it, and polls for what the host says. All
 /// state lives on one serial queue; replies never block it.
 public final class Relay {
-    private let queue = DispatchQueue(label: "dev.websign.relay")
+    private let queue = DispatchQueue(label: "health.diagnos.signlocal.relay")
     private let command: () throws -> HostCommand
     private let idleTimeout: TimeInterval
     private let exitGrace: TimeInterval

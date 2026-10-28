@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "websign-sdk-tools",
+      "name": "signlocal-sdk-tools",
       "devDependencies": {
         "@arethetypeswrong/cli": "0.18.5",
         "publint": "0.3.24",

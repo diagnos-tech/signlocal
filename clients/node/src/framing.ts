@@ -1,6 +1,6 @@
 /** 4-byte little-endian length + UTF-8 JSON, like native messaging. */
 
-import { WebSignError } from "./errors.js";
+import { SignlocalError } from "./errors.js";
 
 /** Largest frame in either direction (1 MiB): bounds memory on both sides. */
 export const MAX_FRAME = 1024 * 1024;
@@ -12,7 +12,10 @@ const utf8 = new TextDecoder("utf-8", { fatal: true });
 export function encodeFrame(message: unknown): Uint8Array {
   const body = Buffer.from(JSON.stringify(message), "utf8");
   if (body.length > MAX_FRAME) {
-    throw new WebSignError("InvalidRequest", `message is ${body.length} bytes; the limit is 1 MiB`);
+    throw new SignlocalError(
+      "InvalidRequest",
+      `message is ${body.length} bytes; the limit is 1 MiB`,
+    );
   }
   const frame = Buffer.allocUnsafe(HEADER + body.length);
   frame.writeUInt32LE(body.length, 0);
@@ -27,7 +30,7 @@ export function encodeFrame(message: unknown): Uint8Array {
  */
 export class FrameDecoder {
   private buffered: Buffer = Buffer.alloc(0);
-  private failure: WebSignError | undefined;
+  private failure: SignlocalError | undefined;
 
   /** Feeds bytes; returns the complete messages parsed so far. */
   push(chunk: Uint8Array): unknown[] {
@@ -47,7 +50,7 @@ export class FrameDecoder {
       }
     } catch (error) {
       const reason = error instanceof Error ? error.message : "unreadable frame";
-      this.failure = new WebSignError("Internal", `malformed data from the app: ${reason}`);
+      this.failure = new SignlocalError("Internal", `malformed data from the app: ${reason}`);
       this.buffered = Buffer.alloc(0);
       throw this.failure;
     }

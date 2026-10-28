@@ -1,13 +1,13 @@
-//! "Open diagnostics" from a connection: a separate `websign diagnostics`
+//! "Open diagnostics" from a connection: a separate `signlocal diagnostics`
 //! process, so the window survives the browser closing the port (which ends
 //! this host process).
 
 use std::process::{Command, Stdio};
 
-use websign_host::ports::Launcher;
-use websign_protocol::messages::DiagnosticsTab;
+use signlocal_host::ports::Launcher;
+use signlocal_protocol::messages::DiagnosticsTab;
 
-/// Starts `websign diagnostics [--tab …]` detached from this process.
+/// Starts `signlocal diagnostics [--tab …]` detached from this process.
 #[derive(Debug)]
 pub struct ProcessLauncher;
 
@@ -33,7 +33,7 @@ impl Launcher for ProcessLauncher {
     }
 }
 
-/// The `--tab` value of `websign diagnostics`.
+/// The `--tab` value of `signlocal diagnostics`.
 pub fn tab_arg(tab: DiagnosticsTab) -> &'static str {
     match tab {
         DiagnosticsTab::Browsers => "browsers",

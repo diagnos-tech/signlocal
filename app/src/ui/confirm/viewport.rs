@@ -10,8 +10,8 @@
 //! window leaves the top level, so the dialog is not covered.
 
 use egui::{Context, ViewportBuilder, ViewportCommand, WindowLevel};
-use websign_ui_model::confirm::ConfirmState;
-use websign_ui_model::confirm::view::PinBlock;
+use signlocal_ui_model::confirm::ConfirmState;
+use signlocal_ui_model::confirm::view::PinBlock;
 
 use super::window::ConfirmWindow;
 use crate::ui::renderer::Backend;
@@ -23,8 +23,8 @@ pub fn native_options(backend: Backend) -> eframe::NativeOptions {
     eframe::NativeOptions {
         renderer: backend.eframe(),
         viewport: ViewportBuilder::default()
-            .with_title(websign_project::PRODUCT_NAME)
-            .with_app_id(websign_project::SLUG)
+            .with_title(signlocal_project::PRODUCT_NAME)
+            .with_app_id(signlocal_project::SLUG)
             .with_inner_size([width, height])
             .with_resizable(false)
             .with_minimize_button(false)

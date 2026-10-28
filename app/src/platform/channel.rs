@@ -4,7 +4,7 @@
 //! the OS (package identity, sandbox entitlement) or from where the binary
 //! lives, never from a build flag.
 
-use websign_protocol::types::Channel;
+use signlocal_protocol::types::Channel;
 
 /// How this copy of the app was installed. Diagnostics shows it; the store
 /// formats decide [`current`].

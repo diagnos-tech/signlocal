@@ -53,7 +53,7 @@ fn write_in(base: &Path, stem: &str, extension: &str, bytes: &[u8]) -> Option<Pa
 /// own that nobody else can enter (the shared `/tmp` fallback could hold a
 /// folder or symlink another user planted).
 fn private_dir(base: &Path) -> Option<PathBuf> {
-    let dir = base.join(websign_project::SLUG);
+    let dir = base.join(signlocal_project::SLUG);
     let _ = DirBuilder::new().mode(0o700).create(&dir);
     let meta = std::fs::symlink_metadata(&dir).ok()?;
     // SAFETY: `getuid` has no preconditions and cannot fail.
@@ -85,7 +85,7 @@ mod tests {
 
     fn base(test: &str) -> PathBuf {
         let dir =
-            std::env::temp_dir().join(format!("websign-private-{}-{test}", std::process::id()));
+            std::env::temp_dir().join(format!("signlocal-private-{}-{test}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         dir
@@ -108,7 +108,7 @@ mod tests {
     #[test]
     fn refuses_a_folder_others_can_enter() {
         let base = base("shared");
-        let dir = base.join(websign_project::SLUG);
+        let dir = base.join(signlocal_project::SLUG);
         std::fs::create_dir(&dir).unwrap();
         std::fs::set_permissions(&dir, std::fs::Permissions::from_mode(0o755)).unwrap();
         assert_eq!(write_in(&base, "certificate", "crt", b"der"), None);

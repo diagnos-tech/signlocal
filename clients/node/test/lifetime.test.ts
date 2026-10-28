@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { WebSign } from "../src/index";
+import { Signlocal } from "../src/index";
 import { APP, fake, helloRule, send } from "./support";
 
 /** Handles that keep Node's event loop alive (unref'd ones are not listed). */
@@ -19,12 +19,12 @@ describe("event loop", () => {
         },
       ],
     });
-    const websign = await WebSign.connect({ executable: app.executable });
+    const signlocal = await Signlocal.connect({ executable: app.executable });
     expect(holding()).toBe(before);
-    const status = websign.status();
+    const status = signlocal.status();
     expect(holding()).toBeGreaterThan(before);
     await status;
     expect(holding()).toBe(before);
-    await websign.close();
+    await signlocal.close();
   });
 });

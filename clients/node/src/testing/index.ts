@@ -1,5 +1,5 @@
 /**
- * `@websign/desktop/testing` — test your program without the WebeSign app.
+ * `@signlocal/desktop/testing` — test your program without the signlocal app.
  *
  * @packageDocumentation
  */

@@ -1,4 +1,4 @@
-//! The [`websign_host::ports::ConfirmUi`] implementation: forwards
+//! The [`signlocal_host::ports::ConfirmUi`] implementation: forwards
 //! `UiCommand`s to the UI thread and wakes egui; the window posts
 //! `UiEvent`s back into the engine's channel. Dropping the bridge (the
 //! engine ended) also wakes the window, which then closes: a hidden window
@@ -15,8 +15,8 @@
 use std::sync::mpsc::Sender;
 use std::sync::{Mutex, MutexGuard, PoisonError};
 
-use websign_host::ports::ConfirmUi;
-use websign_ui_model::confirm::UiCommand;
+use signlocal_host::ports::ConfirmUi;
+use signlocal_ui_model::confirm::UiCommand;
 
 /// What the engine thread knows about the live window.
 #[derive(Default)]

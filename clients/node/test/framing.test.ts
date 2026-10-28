@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { WebSignError } from "../src/errors";
+import { SignlocalError } from "../src/errors";
 import { encodeFrame, FrameDecoder, MAX_FRAME } from "../src/framing";
 
 const bytes = (message: unknown) => Buffer.from(encodeFrame(message));
@@ -12,7 +12,7 @@ describe("encodeFrame", () => {
   });
 
   it("refuses a message over 1 MiB", () => {
-    expect(() => encodeFrame({ pad: "x".repeat(MAX_FRAME) })).toThrow(WebSignError);
+    expect(() => encodeFrame({ pad: "x".repeat(MAX_FRAME) })).toThrow(SignlocalError);
   });
 });
 
@@ -70,8 +70,8 @@ describe("FrameDecoder", () => {
     } catch (error) {
       failure = error;
     }
-    expect(failure).toBeInstanceOf(WebSignError);
-    expect((failure as WebSignError).code).toBe("Internal");
+    expect(failure).toBeInstanceOf(SignlocalError);
+    expect((failure as SignlocalError).code).toBe("Internal");
   });
 
   it("stays failed after an error", () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { WebSign, WebSignError } from "../src/index";
+import { Signlocal, SignlocalError } from "../src/index";
 import { CERTIFICATE, eventually, fake, helloRule, isAlive, type Rule, send } from "./support";
 
 const digest32 = new Uint8Array(32).fill(7);
@@ -24,7 +24,7 @@ const result = send({
 
 async function connected(rules: Rule[]) {
   const app = fake({ rules: [helloRule(), ...rules] });
-  return { app, websign: await WebSign.connect({ executable: app.executable }) };
+  return { app, signlocal: await Signlocal.connect({ executable: app.executable }) };
 }
 
 const failure = async (promise: Promise<unknown>) => {
@@ -32,8 +32,8 @@ const failure = async (promise: Promise<unknown>) => {
     () => undefined,
     (e: unknown) => e,
   );
-  expect(error).toBeInstanceOf(WebSignError);
-  return error as WebSignError;
+  expect(error).toBeInstanceOf(SignlocalError);
+  return error as SignlocalError;
 };
 
 const happyRules: Rule[] = [
@@ -43,10 +43,10 @@ const happyRules: Rule[] = [
 
 describe("sign", () => {
   it("asks prepare for the digest of the chosen certificate and returns decoded bytes", async () => {
-    const { app, websign } = await connected(happyRules);
+    const { app, signlocal } = await connected(happyRules);
     const prepare = vi.fn(() => digest32);
-    const signed = await websign.sign({ hash: "SHA-256", prepare });
-    await websign.close();
+    const signed = await signlocal.sign({ hash: "SHA-256", prepare });
+    await signlocal.close();
 
     expect(prepare).toHaveBeenCalledTimes(1);
     expect(prepare).toHaveBeenCalledWith(
@@ -64,14 +64,14 @@ describe("sign", () => {
   });
 
   it("forwards algorithms (deduplicated) and the preselected fingerprint", async () => {
-    const { app, websign } = await connected(happyRules);
-    await websign.sign({
+    const { app, signlocal } = await connected(happyRules);
+    await signlocal.sign({
       hash: "SHA-256",
       algorithm: ["ECDSA", "RSASSA-PKCS1-v1_5", "ECDSA"],
       certificate: "ab".repeat(32),
       prepare: () => digest32,
     });
-    await websign.close();
+    await signlocal.close();
     expect(app.received()[1]).toMatchObject({
       algorithms: ["ECDSA", "RSASSA-PKCS1-v1_5"],
       certificate: "ab".repeat(32),
@@ -79,19 +79,19 @@ describe("sign", () => {
   });
 
   it("accepts a single algorithm and a Certificate object to preselect", async () => {
-    const { app, websign } = await connected([
+    const { app, signlocal } = await connected([
       { on: "choose", do: [send({ type: "choose.result", certificates: [CERTIFICATE] })] },
       ...happyRules,
     ]);
-    const [chosen] = await websign.certificates();
+    const [chosen] = await signlocal.certificates();
     if (chosen === undefined) throw new Error("no certificate");
-    await websign.sign({
+    await signlocal.sign({
       hash: "SHA-256",
       algorithm: "RSASSA-PKCS1-v1_5",
       certificate: chosen,
       prepare: () => digest32,
     });
-    await websign.close();
+    await signlocal.close();
     const begin = app.received().find((m) => m.type === "sign.begin");
     expect(begin).toEqual({
       v: 1,
@@ -104,43 +104,43 @@ describe("sign", () => {
   });
 
   it("accepts an async prepare and an ArrayBuffer result", async () => {
-    const { websign } = await connected(happyRules);
-    const signed = await websign.sign({
+    const { signlocal } = await connected(happyRules);
+    const signed = await signlocal.sign({
       hash: "SHA-256",
       prepare: async () => digest32.slice().buffer,
     });
     expect(signed.signature.length).toBe(4);
-    await websign.close();
+    await signlocal.close();
   });
 
   it.each([
     ["SHA-384", 48],
     ["SHA-512", 64],
   ] as const)("requires %s digests of %i bytes", async (hash, length) => {
-    const { app, websign } = await connected([
+    const { app, signlocal } = await connected([
       { on: "sign.begin", do: [needDigest(1, hash)] },
       { on: "sign.digest", do: [result] },
     ]);
-    await websign.sign({ hash, prepare: () => new Uint8Array(length) });
-    await websign.close();
+    await signlocal.sign({ hash, prepare: () => new Uint8Array(length) });
+    await signlocal.close();
     expect(app.received()[2]).toMatchObject({ type: "sign.digest" });
   });
 
   it("runs prepare again for a switched certificate and sends both digests", async () => {
-    const { app, websign } = await connected([
+    const { app, signlocal } = await connected([
       { on: "sign.begin", do: [needDigest(1)] },
       { on: "sign.digest", where: { seq: 1 }, do: [needDigest(2)] },
       { on: "sign.digest", where: { seq: 2 }, do: [result] },
     ]);
     const seen: string[] = [];
-    await websign.sign({
+    await signlocal.sign({
       hash: "SHA-256",
       prepare: (certificate) => {
         seen.push(certificate.fingerprint.slice(0, 1));
         return digest32;
       },
     });
-    await websign.close();
+    await signlocal.close();
     expect(seen).toEqual(["1", "2"]);
     expect(
       app
@@ -151,7 +151,7 @@ describe("sign", () => {
   });
 
   it("discards a stale digest when a newer request arrives while prepare runs", async () => {
-    const { app, websign } = await connected([
+    const { app, signlocal } = await connected([
       { on: "sign.begin", do: [needDigest(1), { delay: 20 }, needDigest(2)] },
       { on: "sign.digest", do: [result] },
     ]);
@@ -160,7 +160,7 @@ describe("sign", () => {
       release = resolve;
     });
     let calls = 0;
-    const promise = websign.sign({
+    const promise = signlocal.sign({
       hash: "SHA-256",
       prepare: async () => {
         calls += 1;
@@ -171,18 +171,18 @@ describe("sign", () => {
     await eventually(() => calls === 2);
     release();
     await promise;
-    await websign.close();
+    await signlocal.close();
     const digests = app.received().filter((m) => m.type === "sign.digest");
     expect(digests.map((m) => m.seq)).toEqual([2]);
   });
 
   it("ignores a stale prepare failure", async () => {
-    const { websign } = await connected([
+    const { signlocal } = await connected([
       { on: "sign.begin", do: [needDigest(1), { delay: 20 }, needDigest(2)] },
       { on: "sign.digest", do: [result] },
     ]);
     let calls = 0;
-    const signed = await websign.sign({
+    const signed = await signlocal.sign({
       hash: "SHA-256",
       prepare: async () => {
         calls += 1;
@@ -194,7 +194,7 @@ describe("sign", () => {
       },
     });
     expect(signed.signature.length).toBe(4);
-    await websign.close();
+    await signlocal.close();
   });
 
   it.each([
@@ -206,33 +206,33 @@ describe("sign", () => {
     "UnsupportedAlgorithm",
     "DriverFailure",
   ])("rejects with the app's %s", async (code) => {
-    const { websign } = await connected([
+    const { signlocal } = await connected([
       {
         on: "sign.begin",
         do: [send({ type: "error", code, message: "no", details: { native: "X" } })],
       },
     ]);
-    const error = await failure(websign.sign({ hash: "SHA-256", prepare: () => digest32 }));
+    const error = await failure(signlocal.sign({ hash: "SHA-256", prepare: () => digest32 }));
     expect(error.code).toBe(code);
     expect(error.details).toEqual({ native: "X" });
-    await websign.close();
+    await signlocal.close();
   });
 
   it("rejects with Internal on a malformed signature", async () => {
-    const { websign } = await connected([
+    const { signlocal } = await connected([
       { on: "sign.begin", do: [needDigest(1)] },
       { on: "sign.digest", do: [send({ ...(result.send as object), signature: "not base64!" })] },
     ]);
-    expect((await failure(websign.sign({ hash: "SHA-256", prepare: () => digest32 }))).code).toBe(
+    expect((await failure(signlocal.sign({ hash: "SHA-256", prepare: () => digest32 }))).code).toBe(
       "Internal",
     );
-    await websign.close();
+    await signlocal.close();
   });
 });
 
 describe("sign input errors", () => {
   it("rejects with InvalidRequest and sends nothing for bad options", async () => {
-    const { app, websign } = await connected([]);
+    const { app, signlocal } = await connected([]);
     const prepare = () => digest32;
     const bad = [
       { hash: "MD5", prepare },
@@ -244,32 +244,32 @@ describe("sign input errors", () => {
       { hash: "SHA-256", prepare, certificate: { fingerprint: "x" } },
     ];
     for (const options of bad) {
-      const error = await failure(websign.sign(options as never));
+      const error = await failure(signlocal.sign(options as never));
       expect(error.code).toBe("InvalidRequest");
     }
-    await websign.close();
+    await signlocal.close();
     expect(app.received()).toHaveLength(1);
   });
 
   it("cancels and rejects InvalidRequest when the digest has the wrong length", async () => {
-    const { app, websign } = await connected([
+    const { app, signlocal } = await connected([
       { on: "sign.begin", do: [needDigest(1)] },
       { on: "cancel", do: [send({ type: "error", code: "Aborted", message: "cancelled" })] },
     ]);
     const error = await failure(
-      websign.sign({ hash: "SHA-256", prepare: () => new Uint8Array(20) }),
+      signlocal.sign({ hash: "SHA-256", prepare: () => new Uint8Array(20) }),
     );
     expect(error.code).toBe("InvalidRequest");
     expect(error.message).toBe("digest is 20 bytes; SHA-256 requires 32");
-    await websign.close();
+    await signlocal.close();
     expect(app.received().map((m) => m.type)).toEqual(["hello", "sign.begin", "cancel"]);
   });
 
   it("cancels and rejects Aborted with the cause when prepare throws", async () => {
-    const { app, websign } = await connected([{ on: "sign.begin", do: [needDigest(1)] }]);
+    const { app, signlocal } = await connected([{ on: "sign.begin", do: [needDigest(1)] }]);
     const boom = new Error("disk on fire");
     const error = await failure(
-      websign.sign({
+      signlocal.sign({
         hash: "SHA-256",
         prepare: () => {
           throw boom;
@@ -278,7 +278,7 @@ describe("sign input errors", () => {
     );
     expect(error.code).toBe("Aborted");
     expect(error.cause).toBe(boom);
-    await websign.close();
+    await signlocal.close();
     expect(app.received().at(-1)).toMatchObject({ type: "cancel", id: "n2" });
   });
 
@@ -286,10 +286,10 @@ describe("sign input errors", () => {
     ["another hash", needDigest(1, "SHA-384")],
     ["an algorithm outside the requested set", needDigest(1, "SHA-256", "RSASSA-PSS")],
   ])("cancels with InvalidRequest, before prepare, when the app asks for %s", async (_, need) => {
-    const { app, websign } = await connected([{ on: "sign.begin", do: [need] }]);
+    const { app, signlocal } = await connected([{ on: "sign.begin", do: [need] }]);
     const prepare = vi.fn(() => digest32);
     const error = await failure(
-      websign.sign({
+      signlocal.sign({
         hash: "SHA-256",
         algorithm: ["RSASSA-PKCS1-v1_5", "ECDSA"],
         prepare,
@@ -298,18 +298,18 @@ describe("sign input errors", () => {
     expect(error.code).toBe("InvalidRequest");
     expect(prepare).not.toHaveBeenCalled();
     await eventually(() => app.received().some((m) => m.type === "cancel"));
-    await websign.close();
+    await signlocal.close();
     expect(app.received().map((m) => m.type)).toEqual(["hello", "sign.begin", "cancel"]);
   });
 
   it("accepts any known algorithm when none was requested", async () => {
-    const { websign } = await connected([
+    const { signlocal } = await connected([
       { on: "sign.begin", do: [needDigest(1, "SHA-256", "RSASSA-PSS")] },
       { on: "sign.digest", do: [result] },
     ]);
     const prepare = vi.fn(() => digest32);
-    await websign.sign({ hash: "SHA-256", prepare });
-    await websign.close();
+    await signlocal.sign({ hash: "SHA-256", prepare });
+    await signlocal.close();
     expect(prepare).toHaveBeenCalledWith(expect.anything(), {
       hash: "SHA-256",
       algorithm: "RSASSA-PSS",
@@ -317,34 +317,38 @@ describe("sign input errors", () => {
   });
 
   it("rejects Internal when the app's digest request is malformed", async () => {
-    const { app, websign } = await connected([
+    const { app, signlocal } = await connected([
       { on: "sign.begin", do: [send({ type: "sign.need_digest", seq: "one" })] },
     ]);
-    expect((await failure(websign.sign({ hash: "SHA-256", prepare: () => digest32 }))).code).toBe(
+    expect((await failure(signlocal.sign({ hash: "SHA-256", prepare: () => digest32 }))).code).toBe(
       "Internal",
     );
-    await websign.close();
+    await signlocal.close();
     expect(app.received().at(-1)).toMatchObject({ type: "cancel" });
   });
 });
 
 describe("AbortSignal", () => {
   it("rejects Aborted without sending anything when already aborted", async () => {
-    const { app, websign } = await connected([]);
+    const { app, signlocal } = await connected([]);
     const reason = new Error("stop");
     const error = await failure(
-      websign.sign({ hash: "SHA-256", prepare: () => digest32, signal: AbortSignal.abort(reason) }),
+      signlocal.sign({
+        hash: "SHA-256",
+        prepare: () => digest32,
+        signal: AbortSignal.abort(reason),
+      }),
     );
     expect(error.code).toBe("Aborted");
     expect(error.cause).toBe(reason);
-    await websign.close();
+    await signlocal.close();
     expect(app.received()).toHaveLength(1);
   });
 
   it("sends cancel and rejects Aborted at once when aborted mid-flight", async () => {
-    const { app, websign } = await connected([{ on: "sign.begin", do: [] }]);
+    const { app, signlocal } = await connected([{ on: "sign.begin", do: [] }]);
     const controller = new AbortController();
-    const promise = websign.sign({
+    const promise = signlocal.sign({
       hash: "SHA-256",
       prepare: () => digest32,
       signal: controller.signal,
@@ -354,18 +358,18 @@ describe("AbortSignal", () => {
     expect((await failure(promise)).code).toBe("Aborted");
     await eventually(() => app.received().some((m) => m.type === "cancel"));
     expect(app.received().at(-1)).toMatchObject({ type: "cancel", id: "n2" });
-    await websign.close();
+    await signlocal.close();
   });
 
   it("aborts while prepare is running and never sends its late digest", async () => {
-    const { app, websign } = await connected([{ on: "sign.begin", do: [needDigest(1)] }]);
+    const { app, signlocal } = await connected([{ on: "sign.begin", do: [needDigest(1)] }]);
     const controller = new AbortController();
     let release: () => void = () => {};
     const gate = new Promise<void>((resolve) => {
       release = resolve;
     });
     let started = false;
-    const promise = websign.sign({
+    const promise = signlocal.sign({
       hash: "SHA-256",
       signal: controller.signal,
       prepare: async () => {
@@ -379,50 +383,50 @@ describe("AbortSignal", () => {
     expect((await failure(promise)).code).toBe("Aborted");
     release();
     await new Promise((resolve) => setTimeout(resolve, 50));
-    await websign.close();
+    await signlocal.close();
     expect(app.received().map((m) => m.type)).toEqual(["hello", "sign.begin", "cancel"]);
   });
 
   it("is not affected by an abort after completion", async () => {
-    const { websign } = await connected(happyRules);
+    const { signlocal } = await connected(happyRules);
     const controller = new AbortController();
-    await websign.sign({ hash: "SHA-256", prepare: () => digest32, signal: controller.signal });
+    await signlocal.sign({ hash: "SHA-256", prepare: () => digest32, signal: controller.signal });
     controller.abort();
-    await websign.close();
+    await signlocal.close();
   });
 
   it("leaves no abort listener behind", async () => {
-    const { websign } = await connected(happyRules);
+    const { signlocal } = await connected(happyRules);
     const controller = new AbortController();
     const remove = vi.spyOn(controller.signal, "removeEventListener");
-    await websign.sign({ hash: "SHA-256", prepare: () => digest32, signal: controller.signal });
+    await signlocal.sign({ hash: "SHA-256", prepare: () => digest32, signal: controller.signal });
     expect(remove).toHaveBeenCalledWith("abort", expect.any(Function));
-    await websign.close();
+    await signlocal.close();
   });
 });
 
 describe("process lifetime", () => {
   it("rejects a sign in flight when the app dies, and leaves no process behind", async () => {
-    const { app, websign } = await connected([
+    const { app, signlocal } = await connected([
       { on: "sign.begin", do: [needDigest(1), { exit: 4 }] },
     ]);
-    const error = await failure(websign.sign({ hash: "SHA-256", prepare: () => digest32 }));
+    const error = await failure(signlocal.sign({ hash: "SHA-256", prepare: () => digest32 }));
     expect(error.code).toBe("Internal");
-    await websign.close();
+    await signlocal.close();
     expect(isAlive(app.pid())).toBe(false);
   });
 
   it("does not spawn a second process for concurrent signs", async () => {
-    const { app, websign } = await connected([
+    const { app, signlocal } = await connected([
       { on: "sign.begin", repeat: true, do: [needDigest(1)] },
       { on: "sign.digest", repeat: true, do: [result] },
     ]);
     const both = await Promise.all([
-      websign.sign({ hash: "SHA-256", prepare: () => digest32 }),
-      websign.sign({ hash: "SHA-256", prepare: () => digest32 }),
+      signlocal.sign({ hash: "SHA-256", prepare: () => digest32 }),
+      signlocal.sign({ hash: "SHA-256", prepare: () => digest32 }),
     ]);
     expect(both).toHaveLength(2);
-    await websign.close();
+    await signlocal.close();
     expect(
       app
         .received()

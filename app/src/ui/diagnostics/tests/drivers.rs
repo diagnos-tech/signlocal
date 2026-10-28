@@ -6,7 +6,7 @@ use std::path::PathBuf;
 
 use egui::accesskit::Role;
 use egui_kittest::kittest::Queryable as _;
-use websign_protocol::messages::DiagnosticsTab;
+use signlocal_protocol::messages::DiagnosticsTab;
 
 use super::support::{Setup, Window, open};
 use crate::platform::file_picker::Picked;

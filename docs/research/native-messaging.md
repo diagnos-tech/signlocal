@@ -15,7 +15,7 @@ uses no manifest), and extension pre-registration.
 | **K** | KeePassXC, `NativeMessageInstaller.cpp` (same) |
 | **W** | web-eid-app (`CMakeLists.txt`, `web-eid.wxs`, manifest templates) |
 | **T** | traced here: the real browser build started with a probe extension and manifests in every candidate folder, recording which one it launched (§3.6) |
-| **E** | proven end to end in CI: `websign register --browser <name>`, then the extension signs through the app in that browser (`e2e/browsers/`, [compatibility](../compatibility.md)) |
+| **E** | proven end to end in CI: `signlocal register --browser <name>`, then the extension signs through the app in that browser (`e2e/browsers/`, [compatibility](../compatibility.md)) |
 | **?** | not confirmed in a primary source: treat as a hypothesis until proven |
 
 Nothing here was copied: the three codebases were read only to check paths.
@@ -65,7 +65,7 @@ Nothing here was copied: the three codebases were read only to check paths.
   MV3 extension is a service worker, so the handle does not arrive. The `probe` treats `0` as absent
   (`nm/launch.rs`).
 - The host's working directory is the executable's folder (C, `LaunchContext`).
-- The environment is the browser's (confirmed in the e2e: `WEBSIGN_PROBE_PIN` and `SOFTHSM2_CONF` exported before
+- The environment is the browser's (confirmed in the e2e: `SIGNLOCAL_PROBE_PIN` and `SOFTHSM2_CONF` exported before
   Chromium reach the host). Exception: hosts started by the Firefox Snap portal (§3.4).
 
 ### Protocol (the same in both directions)
@@ -90,7 +90,7 @@ The `probe` rejects replies above 1 MiB and accepts at most 1 MiB of input (the 
   on the next request.
 - The host's `stderr`: Firefox redirects it to the Browser Console (D). Chrome does not show it in any
   interface (on POSIX systems the host inherits the browser process's `stderr`, visible only if it was opened
-  from a terminal; C, `launch_context_posix.cc`). That is why the `probe` writes `<temp>/websign-probe-host.log`.
+  from a terminal; C, `launch_context_posix.cc`). That is why the `probe` writes `<temp>/signlocal-probe-host.log`.
 
 ### Typical error messages (for diagnostics)
 
@@ -107,7 +107,7 @@ The `probe` rejects replies above 1 MiB and accepts at most 1 MiB of input (the 
 
 ## 3. Registration matrix
 
-`<host>` = `dev.websign.host` (`project.toml`, `[ids].native_host`; Chrome only accepts `[a-z0-9_.]`).
+`<host>` = `health.diagnos.signlocal` (`project.toml`, `[ids].native_host`; Chrome only accepts `[a-z0-9_.]`).
 
 ### 3.1 Windows
 
@@ -244,7 +244,7 @@ Sources: Firefox design doc and Bugzilla 1955255 (links at the end). Consequence
    it installs the system manifest with an absolute `path` and lets the portal do the rest. It is the same bet
    we are making.
 3. **The portal starts the host, not Firefox**: the environment (variables, `DISPLAY`/`WAYLAND_DISPLAY`,
-   `XDG_*`) is that of the session's `xdg-desktop-portal` service. `WEBSIGN_PROBE_PIN` does not arrive by this route, and an
+   `XDG_*`) is that of the session's `xdg-desktop-portal` service. `SIGNLOCAL_PROBE_PIN` does not arrive by this route, and an
    egui window depends on the portal having the graphical environment. Both are **proof 4** points.
 4. On the first connection the user sees a portal dialog ("allow <extension> to start <application>"):
    it goes into the popup's help text.
@@ -274,7 +274,7 @@ There is no manifest, registry key, `allowed_origins`, or child process. Apple (
 
 Method (scripts kept out of the repository; reproducible in a minute): each browser's `.deb` from its vendor's
 repository, extracted and started under `xvfb-run` with a throwaway `HOME`/`XDG_CONFIG_HOME`, a two-line MV3 probe
-extension that calls `runtime.sendNativeMessage("dev.websign.probe")` every second (loaded with
+extension that calls `runtime.sendNativeMessage("health.diagnos.signlocal.probe")` every second (loaded with
 `--load-extension`), and a manifest in **every** candidate folder, each pointing to a script that records its own
 folder. The folder recorded is the one the browser read first. System folders were tested one at a time.
 
@@ -327,16 +327,16 @@ Chrome ignores `HKCU` and the user folders, and only reads the system location).
 
 ## 5. What the kit implements
 
-- `websign-probe register [--browser <all|chrome|chromium|edge|brave|vivaldi|opera|firefox>]... [--uninstall]
+- `signlocal-probe register [--browser <all|chrome|chromium|edge|brave|vivaldi|opera|firefox>]... [--uninstall]
   [--user-data-dir DIR] [--dry-run] [--extension-id ID]... [--manifest-dir DIR]` writes the manifests from the
   tables above (`probe/src/nm/register/`). `allowed_origins` = development ID + non-empty store IDs +
   `--extension-id`. Firefox: `allowed_extensions` = `firefox_id`.
 - `--user-data-dir DIR` writes only `DIR/NativeMessagingHosts/<host>.json`, which Chromium reads with
   `--user-data-dir=DIR` on Linux and macOS; this is what `nm-e2e` uses.
 - The host (`probe/src/nm/`) recognizes the launch by the arguments in §2, speaks the `"v": 1` protocol, and logs
-  to `<temp>/websign-probe-host.log` only: time, pid, family, extension ID, message type and size,
+  to `<temp>/signlocal-probe-host.log` only: time, pid, family, extension ID, message type and size,
   result. Never a PIN, digest, signature, name, certificate, thumbprint, or site.
-- Test-only variables: `WEBSIGN_PROBE_PIN` (PKCS#11 PIN) and `WEBSIGN_PROBE_MODULES` (extra modules, a list
+- Test-only variables: `SIGNLOCAL_PROBE_PIN` (PKCS#11 PIN) and `SIGNLOCAL_PROBE_MODULES` (extra modules, a list
   in `PATH` format), because the browser does not pass arguments.
 
 ### What remains unproven

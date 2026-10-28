@@ -3,11 +3,11 @@
 
 use std::sync::mpsc::Receiver;
 
-use websign_host::EngineEvent;
-use websign_host::runtime::EventSender;
-use websign_protocol::ErrorCode;
-use websign_ui_model::confirm::port::RequestKey;
-use websign_ui_model::confirm::{UiCommand, UiEvent};
+use signlocal_host::EngineEvent;
+use signlocal_host::runtime::EventSender;
+use signlocal_protocol::ErrorCode;
+use signlocal_ui_model::confirm::port::RequestKey;
+use signlocal_ui_model::confirm::{UiCommand, UiEvent};
 
 use crate::ui::renderer;
 

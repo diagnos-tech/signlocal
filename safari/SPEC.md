@@ -3,9 +3,9 @@
 Role: the native side of the Safari web extension. Safari starts no native
 messaging host and gives the extension no stdio connection; it delivers each
 `browser.runtime.sendNativeMessage()` of the extension's background to the
-app extension (`.appex`) inside `WebeSign.app`, one message in, one reply
+app extension (`.appex`) inside `signlocal.app`, one message in, one reply
 out, and never lets the appex speak first. The relay here turns that into
-what every other browser gets: one `websign` host process per connection,
+what every other browser gets: one `signlocal` host process per connection,
 speaking the unchanged protocol ([`protocol.md`](../docs/architecture/protocol.md))
 on its stdio.
 
@@ -14,7 +14,7 @@ page ─SDK─▶ content script ─▶ background (Safari) ──sendNativeMess
                                    ▲    open / send / poll / close          │ spawns, per session
                                    └──────── replies (host output) ─────────┤
                                                                             ▼
-                               <appex>/Contents/MacOS/websign  (native messaging on stdio)
+                               <appex>/Contents/MacOS/signlocal  (native messaging on stdio)
 ```
 
 ## 1. Relay messages (background → appex)
@@ -52,7 +52,7 @@ content is validated by the host, as for every browser.
 | `BadRequest` | not a relay message of this version | `Internal` (a bug on our side) |
 | `NoSession` | unknown, ended, or another Safari profile's session | the port closed (`closedCode(heard)`, as elsewhere) |
 | `TooManySessions` | 4 hosts already run in this appex | `Internal` |
-| `HostMissing` | the bundled `websign` is missing or would not start | `AppMissing` |
+| `HostMissing` | the bundled `signlocal` is missing or would not start | `AppMissing` |
 
 A newer request on a session answers a parked `poll` at once with no
 messages, so a background never holds two polls.
@@ -78,11 +78,11 @@ the payload (§2.3 there); the appex adds nothing and trusts nothing.
 
 ## 4. Host launch
 
-The appex starts `<appex>/Contents/MacOS/<WebeSignHostExecutable>` with the
-arguments `[--safari-web-extension, <WebeSignHostExtensionID>]`, both keys
+The appex starts `<appex>/Contents/MacOS/<SignlocalHostExecutable>` with the
+arguments `[--safari-web-extension, <SignlocalHostExtensionID>]`, both keys
 read from the appex's `Info.plist` (rendered from `project.toml` by `cargo
 xtask package`; the ID is `[ids] safari_extension_bundle_id`). This is the
-host's Safari launch shape (`websign-host` `launch`, `BrowserFamily::Safari`):
+host's Safari launch shape (`signlocal-host` `launch`, `BrowserFamily::Safari`):
 the host accepts it only when its own executable is
 `<name>.appex/Contents/MacOS/<binary>` on macOS, and only for the bundle ID in
 `project.toml`; anywhere else the same words are a command line (usage

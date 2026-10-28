@@ -3,11 +3,11 @@
 use super::*;
 
 /// Our development extension's ID (`project.toml`).
-const ID: &str = websign_project::EXTENSION_DEV_ID;
+const ID: &str = signlocal_project::EXTENSION_DEV_ID;
 /// A well-formed ID of somebody else's extension.
 const FOREIGN_ID: &str = "abcdefghijklmnopabcdefghijklmnop";
-const FIREFOX_ID: &str = websign_project::FIREFOX_ID;
-const SAFARI_ID: &str = websign_project::SAFARI_EXTENSION_BUNDLE_ID;
+const FIREFOX_ID: &str = signlocal_project::FIREFOX_ID;
+const SAFARI_ID: &str = signlocal_project::SAFARI_EXTENSION_BUNDLE_ID;
 
 fn args(list: &[&str]) -> Vec<String> {
     list.iter().map(|s| (*s).to_owned()).collect()
@@ -47,9 +47,9 @@ fn chrome_and_edge_on_windows_add_the_parent_window() {
 #[test]
 fn firefox_passes_the_manifest_path_and_the_extension_id() {
     for manifest in [
-        "/home/u/.mozilla/native-messaging-hosts/dev.websign.host.json",
-        r"C:\Users\u\AppData\Local\websign\NativeMessagingHosts\dev.websign.host.json",
-        "/Users/u/Library/Application Support/Mozilla/NativeMessagingHosts/dev.websign.host.json",
+        "/home/u/.mozilla/native-messaging-hosts/health.diagnos.signlocal.json",
+        r"C:\Users\u\AppData\Local\signlocal\NativeMessagingHosts\health.diagnos.signlocal.json",
+        "/Users/u/Library/Application Support/Mozilla/NativeMessagingHosts/health.diagnos.signlocal.json",
     ] {
         let launch = browser(&[manifest, FIREFOX_ID]);
         assert_eq!(launch.family, BrowserFamily::Firefox);
@@ -59,20 +59,20 @@ fn firefox_passes_the_manifest_path_and_the_extension_id() {
 
 #[test]
 fn the_safari_app_extension_passes_its_flag_and_bundle_id() {
-    let launch = browser_at(true, &[websign_host::SAFARI_FLAG, SAFARI_ID]);
+    let launch = browser_at(true, &[signlocal_host::SAFARI_FLAG, SAFARI_ID]);
     assert_eq!(launch.family, BrowserFamily::Safari);
     assert_eq!(launch.extension_id, SAFARI_ID);
 }
 
 #[test]
 fn the_safari_shape_outside_the_appex_is_a_command_line() {
-    let list = args(&[websign_host::SAFARI_FLAG, SAFARI_ID]);
+    let list = args(&[signlocal_host::SAFARI_FLAG, SAFARI_ID]);
     assert_eq!(classify(false, &list), Launch::Command);
 }
 
 #[test]
 fn another_bundle_id_never_starts_host_mode_from_the_appex() {
-    let list = args(&[websign_host::SAFARI_FLAG, "org.example.other.extension"]);
+    let list = args(&[signlocal_host::SAFARI_FLAG, "org.example.other.extension"]);
     assert_eq!(classify(true, &list), Launch::Command);
     // Chromium and Firefox launches still work from the appex's copy.
     let launch = browser_at(true, &[&format!("chrome-extension://{ID}/")]);
@@ -88,7 +88,7 @@ fn other_extensions_never_start_host_mode() {
             "--parent-window=1".to_owned(),
         ],
         vec![
-            "/home/u/.mozilla/native-messaging-hosts/dev.websign.host.json".to_owned(),
+            "/home/u/.mozilla/native-messaging-hosts/health.diagnos.signlocal.json".to_owned(),
             "other@example.org".to_owned(),
         ],
         vec!["./notes.json".to_owned(), "id".to_owned()],
@@ -104,12 +104,12 @@ fn connect_and_no_arguments_are_their_own_launches() {
 }
 
 #[test]
-fn websign_urls_name_only_the_documented_actions() {
+fn signlocal_urls_name_only_the_documented_actions() {
     for url in [
-        "websign:activate",
-        "WEBSIGN:Activate",
-        "websign://activate/",
-        "websign:activate/",
+        "signlocal:activate",
+        "SIGNLOCAL:Activate",
+        "signlocal://activate/",
+        "signlocal:activate/",
     ] {
         assert_eq!(
             classify(false, &args(&[url])),
@@ -118,11 +118,11 @@ fn websign_urls_name_only_the_documented_actions() {
         );
     }
     for url in [
-        "websign:",
-        "websign:sign?digest=00",
-        "websign://activate?x=1",
-        "websign:activate/../../etc",
-        &format!("websign:{}", "a".repeat(300)),
+        "signlocal:",
+        "signlocal:sign?digest=00",
+        "signlocal://activate?x=1",
+        "signlocal:activate/../../etc",
+        &format!("signlocal:{}", "a".repeat(300)),
     ] {
         assert_eq!(
             classify(false, &args(&[url])),
@@ -138,12 +138,12 @@ fn everything_else_is_a_command_line() {
         &["sign", "--hash", "SHA-256"][..],
         &["connect", "--verbose"],
         &["version"],
-        &["websignactivate"],
+        &["signlocalactivate"],
         &["chrome-extension://short/"],
         &["notes.json", "id"],
         &["--help"],
         &["web:activate"],
-        &["websign:activate", "extra"],
+        &["signlocal:activate", "extra"],
     ] {
         assert_eq!(classify(false, &args(list)), Launch::Command, "{list:?}");
     }

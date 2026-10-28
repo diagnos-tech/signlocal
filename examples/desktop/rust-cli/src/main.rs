@@ -1,14 +1,14 @@
 //! Signs the SHA-256 of a file with the person's certificate.
 //!
 //! `cargo run -- <file>` uses the fake app (runs anywhere, CI included);
-//! `cargo run -- <file> --app` uses the installed WebeSign app.
+//! `cargo run -- <file> --app` uses the installed signlocal app.
 
 use std::process::ExitCode;
 use std::{env, fs};
 
 use sha2::{Digest, Sha256};
-use websign_client::testing::FakeApp;
-use websign_client::{Client, ClientError, ErrorCode, HashName, SignOptions};
+use signlocal_client::testing::FakeApp;
+use signlocal_client::{Client, ClientError, ErrorCode, HashName, SignOptions};
 
 fn main() -> ExitCode {
     let args: Vec<String> = env::args().skip(1).collect();
@@ -16,7 +16,7 @@ fn main() -> ExitCode {
         [path] => (path, false),
         [path, flag] if flag == "--app" => (path, true),
         _ => {
-            eprintln!("usage: websign-rust-cli-example <file> [--app]");
+            eprintln!("usage: signlocal-rust-cli-example <file> [--app]");
             return ExitCode::from(2);
         }
     };

@@ -1,4 +1,4 @@
-//! The Safari web extension inside `WebeSign.app` (`safari/SPEC.md`): the
+//! The Safari web extension inside `signlocal.app` (`safari/SPEC.md`): the
 //! appex compiled from `safari/`, the WXT safari build as its resources, and
 //! a copy of the host binary it starts, each signed inside out.
 
@@ -26,7 +26,7 @@ const SWIFT_TARGETS: [(&str, &str); 2] = [
 ];
 
 /// Builds `Contents/PlugIns/<Name>Extension.appex` around `host` (the
-/// universal `websign`) and returns its path.
+/// universal `signlocal`) and returns its path.
 pub fn embed(context: &Context, contents: &Path, host: &Path) -> Result<PathBuf, String> {
     let web = web_build(&context.root)?;
     let executable = appex_executable(&context.project);
@@ -61,7 +61,7 @@ fn web_build(root: &Path) -> Result<PathBuf, String> {
     } else {
         Err(format!(
             "{WEB_BUILD} is missing: in extension/, run \
-             `WEBSIGN_CHANNEL=direct bunx wxt build -b safari` first"
+             `SIGNLOCAL_CHANNEL=direct bunx wxt build -b safari` first"
         ))
     }
 }
@@ -115,7 +115,7 @@ fn swiftc_args(target: &str, out: &Path, sources: &[PathBuf]) -> Vec<OsString> {
         "-target",
         target,
         "-module-name",
-        "WebeSignExtension",
+        "SignlocalExtension",
         "-swift-version",
         "5",
         "-O",

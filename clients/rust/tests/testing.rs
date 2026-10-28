@@ -2,19 +2,19 @@
 
 #![cfg(feature = "testing")]
 
-use websign_client::testing::{FakeApp, sample_certificate};
-use websign_client::{
+use signlocal_client::testing::{FakeApp, sample_certificate};
+use signlocal_client::{
     ClientError, ErrorCode, HashName, SignOptions, SignatureAlgorithmName,
     SignatureAlgorithmName as Alg,
 };
-use websign_protocol::ClientMessage;
-use websign_protocol::types::{FingerprintHex, KeyDescription};
+use signlocal_protocol::ClientMessage;
+use signlocal_protocol::types::{FingerprintHex, KeyDescription};
 
 fn digest(len: usize) -> Result<Vec<u8>, String> {
     Ok(vec![9; len])
 }
 
-fn rsa() -> websign_protocol::types::Certificate {
+fn rsa() -> signlocal_protocol::types::Certificate {
     let mut certificate = sample_certificate();
     certificate.fingerprint = FingerprintHex::new("cd".repeat(32)).unwrap();
     certificate.key = KeyDescription::Rsa { bits: 2048 };

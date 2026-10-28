@@ -7,7 +7,7 @@ import type {
 
 /**
  * A hash the digest was computed with: `"SHA-256"`, `"SHA-384"` or `"SHA-512"`.
- * Same union as `@websign/sdk`.
+ * Same union as `@signlocal/sdk`.
  *
  * @example
  * ```ts
@@ -18,7 +18,7 @@ export type HashAlgorithm = HashName;
 
 /**
  * A signature scheme. RSASSA-PSS uses MGF1 with the same hash and a salt as
- * long as the digest. Same union as `@websign/sdk`.
+ * long as the digest. Same union as `@signlocal/sdk`.
  *
  * @example
  * ```ts
@@ -32,15 +32,15 @@ export type SignatureAlgorithm = SignatureAlgorithmName;
  *
  * @example
  * ```ts
- * await WebSign.connect({ executable: "/opt/websign/websign", clientName: "my-app" });
+ * await Signlocal.connect({ executable: "/opt/signlocal/signlocal", clientName: "my-app" });
  * ```
  */
 export interface ConnectOptions {
-  /** Path of `websign`; default {@link findExecutable}. */
+  /** Path of `signlocal`; default {@link findExecutable}. */
   readonly executable?: string;
   /**
    * Arguments placed before `connect`, for starting the app through an
-   * interpreter or wrapper (the `@websign/desktop/testing` fake uses it to
+   * interpreter or wrapper (the `@signlocal/desktop/testing` fake uses it to
    * run under `node`). The installed app never needs it.
    */
   readonly executableArgs?: readonly string[];
@@ -51,13 +51,13 @@ export interface ConnectOptions {
 }
 
 /**
- * A certificate the person chose, shaped like `@websign/sdk`'s so code that
+ * A certificate the person chose, shaped like `@signlocal/sdk`'s so code that
  * builds signature formats serves both: `der` and `chain` are bytes (what
  * CMS/PAdES code consumes) and the validity bounds are `Date`s.
  *
  * @example
  * ```ts
- * const [certificate] = await websign.certificates();
+ * const [certificate] = await signlocal.certificates();
  * const expires = certificate.notAfter.toISOString();
  * const leaf = certificate.der; // Uint8Array, feed it to your CMS builder
  * ```
@@ -134,7 +134,7 @@ export interface SignOptions {
  *
  * @example
  * ```ts
- * await websign.certificates({ algorithm: ["ECDSA", "RSASSA-PSS"], signal: AbortSignal.timeout(60_000) });
+ * await signlocal.certificates({ algorithm: ["ECDSA", "RSASSA-PSS"], signal: AbortSignal.timeout(60_000) });
  * ```
  */
 export interface CertificateOptions {
@@ -149,7 +149,7 @@ export interface CertificateOptions {
  *
  * @example
  * ```ts
- * const result = await websign.sign({ hash: "SHA-256", prepare });
+ * const result = await signlocal.sign({ hash: "SHA-256", prepare });
  * await writeFile("contract.sig", result.signature);
  * console.log(result.algorithm, result.certificate.displayName);
  * ```

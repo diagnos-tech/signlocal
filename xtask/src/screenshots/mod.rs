@@ -45,7 +45,7 @@ fn publish(root: &Path, from: &Path, os: &str) -> Result<usize, String> {
     find_pngs(from, &mut sources)?;
     if sources.is_empty() {
         return Err(format!(
-            "no PNG files under {}; run the e2e suite with WEBSIGN_E2E_SCREENSHOTS pointing there",
+            "no PNG files under {}; run the e2e suite with SIGNLOCAL_E2E_SCREENSHOTS pointing there",
             from.display()
         ));
     }

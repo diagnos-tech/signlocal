@@ -10,7 +10,7 @@ changed:
 | Part | License |
 |---|---|
 | `app/`, `crates/` (except the two below), `extension/`, `safari/`, `packaging/`, `scripts/`, `e2e/`, `xtask/`, `site/`, `docs/`, `i18n/README.md` | GPL-3.0-or-later **with the app-store additional permission** (section 7, in [`LICENSE`](LICENSE)) |
-| `sdk/`, `clients/node/`, `clients/rust/`, `crates/websign-protocol/`, `crates/websign-project/` | Apache-2.0 (each has its own `LICENSE`) |
+| `sdk/`, `clients/node/`, `clients/rust/`, `crates/signlocal-protocol/`, `crates/signlocal-project/` | Apache-2.0 (each has its own `LICENSE`) |
 | `project.toml`, `i18n/*.toml` | GPL-3.0-or-later **or** Apache-2.0, at your option: the Apache-2.0 parts generate code from them ([`i18n/README.md`](i18n/README.md#license)) |
 | `devices.json`, `devices.schema.json` | CC0-1.0 |
 
@@ -20,8 +20,8 @@ Microsoft Store. Contributions that do not accept it cannot be merged.
 New dependencies must be GPL-3.0-compatible (MIT, Apache-2.0, BSD, ISC, Zlib,
 MPL-2.0; `cargo deny check` enforces it). Apache-2.0 parts must not depend on
 GPL parts. The SDK and the Node client have **zero runtime dependencies**; the
-Rust client depends only on the Apache-2.0 `websign-protocol` and
-`websign-project` crates (plus `thiserror`).
+Rust client depends only on the Apache-2.0 `signlocal-protocol` and
+`signlocal-project` crates (plus `thiserror`).
 
 ## Commits
 
@@ -57,6 +57,9 @@ Platform code is proven by contract test suites instead
 - Small files (ideally < 200 lines), one concept per file, folders by concept.
 - Names that explain; comments explain **why**, never the obvious.
 - Everything in English: code, comments, docs, commit messages.
+- The product is written `signlocal`, in lowercase, also at the start of a
+  sentence (`Signlocal` only inside a TypeScript identifier such as the
+  `Signlocal` class).
 - Every folder has a `SUMMARY.md`; every component root a `README.md`
   ([format](docs/architecture/repository-layout.md#summarymd)).
 - Pending maintainer decisions as `TODO(gustavo)`; no references to plans or

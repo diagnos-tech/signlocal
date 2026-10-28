@@ -9,7 +9,7 @@ import { chromium } from "playwright-core";
  * was registered in) with the extension at `extensionDir`.
  *
  * The environment is passed explicitly: Chromium hands it on to the native
- * host, and tests rely on variables such as WEBSIGN_PROBE_PIN reaching it.
+ * host, and tests rely on variables such as SIGNLOCAL_PROBE_PIN reaching it.
  */
 export async function launchWithExtension({ executablePath, userDataDir, extensionDir, headed }) {
   const exe = executablePath ?? chromium.executablePath();

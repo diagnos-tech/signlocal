@@ -3,7 +3,7 @@
 
 use std::sync::mpsc::{Receiver, channel};
 
-use websign_devices::monitor::{self, DeviceEvent, MonitorHandle};
+use signlocal_devices::monitor::{self, DeviceEvent, MonitorHandle};
 
 /// A running device monitor.
 #[derive(Debug)]

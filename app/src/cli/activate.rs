@@ -1,6 +1,6 @@
-//! `websign:activate` from the website's `/activate` page: register with
+//! `signlocal:activate` from the website's `/activate` page: register with
 //! every browser (stores run no install scripts), then open diagnostics with
-//! "Getting started". Any other `websign:` URL repairs the registrations
+//! "Getting started". Any other `signlocal:` URL repairs the registrations
 //! that exist, then opens diagnostics.
 //!
 //! A web page can open this URL without asking, so the worst it may cause
@@ -9,20 +9,20 @@
 
 use std::process::ExitCode;
 
-use websign_host::ports::Launcher;
+use signlocal_host::ports::Launcher;
 
 use crate::host_process::launcher::ProcessLauncher;
 use crate::launch::UrlAction;
 
 /// Handles the URL action the OS passed.
 pub fn run(action: UrlAction) -> ExitCode {
-    log::info!("started for a websign: URL ({action:?})");
+    log::info!("started for a signlocal: URL ({action:?})");
     register(action);
     // Diagnostics shows "Getting started" while anything is left to do.
     super::diagnostics::open(None)
 }
 
-/// A `websign:` URL delivered to this running process as an event (macOS,
+/// A `signlocal:` URL delivered to this running process as an event (macOS,
 /// [`crate::platform::url_events`]). Runs on the main thread inside the
 /// event loop, so the work goes to a thread: the same registration as
 /// [`run`], then a diagnostics window unless this process already shows
@@ -32,7 +32,7 @@ pub fn on_url_event(url: &str) {
         log::warn!("ignored a URL event of another scheme");
         return;
     };
-    log::info!("received a websign: URL event ({action:?})");
+    log::info!("received a signlocal: URL event ({action:?})");
     let open_window = !super::diagnostics::is_open();
     let worker = std::thread::Builder::new()
         .name("url-event".to_owned())

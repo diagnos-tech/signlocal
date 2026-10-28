@@ -3,7 +3,7 @@
 //! Several processes may log at once (two browsers, a desktop client), so
 //! the file is opened for appending and each line is one `write` call.
 //! After another process rotated, this one's handle points at the renamed
-//! `websign.log.1`: every write first compares the handle's size with the
+//! `signlocal.log.1`: every write first compares the handle's size with the
 //! file under the name, reopens the name when they differ, and decides on
 //! rotation from the file under the name. Otherwise the second process
 //! would keep growing the old file and then rotate again, deleting the
@@ -13,11 +13,11 @@ use std::fs::{File, OpenOptions};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
-/// Size at which `websign.log` becomes `websign.log.1`, replacing the older
+/// Size at which `signlocal.log` becomes `signlocal.log.1`, replacing the older
 /// one: at most twice this on disk.
 pub const MAX_BYTES: u64 = 1024 * 1024;
 
-const FILE_NAME: &str = "websign.log";
+const FILE_NAME: &str = "signlocal.log";
 
 /// An open log file.
 #[derive(Debug)]
@@ -96,7 +96,7 @@ mod tests {
             sink.write_line(&line);
         }
         let current = std::fs::metadata(dir.path().join(FILE_NAME)).unwrap().len();
-        let old = std::fs::metadata(dir.path().join("websign.log.1"))
+        let old = std::fs::metadata(dir.path().join("signlocal.log.1"))
             .unwrap()
             .len();
         assert!(current <= MAX_BYTES && old <= MAX_BYTES, "{current} {old}");
@@ -117,7 +117,7 @@ mod tests {
         first.write_line(&line);
         second.write_line("written by the second\n");
         let current = std::fs::read_to_string(dir.path().join(FILE_NAME)).unwrap();
-        let old = std::fs::read_to_string(dir.path().join("websign.log.1")).unwrap();
+        let old = std::fs::read_to_string(dir.path().join("signlocal.log.1")).unwrap();
         assert_eq!(old.len() as u64, lines * 1000);
         assert_eq!(current, line + "written by the second\n");
     }

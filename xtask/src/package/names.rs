@@ -35,28 +35,28 @@ mod tests {
     #[test]
     fn names_match_the_release_table() {
         assert_eq!(
-            deb("websign", "0.1.0", Arch::X64),
-            "websign_0.1.0_amd64.deb"
+            deb("signlocal", "0.1.0", Arch::X64),
+            "signlocal_0.1.0_amd64.deb"
         );
         assert_eq!(
-            rpm("websign", "0.1.0", Arch::Arm64),
-            "websign-0.1.0-1.aarch64.rpm"
+            rpm("signlocal", "0.1.0", Arch::Arm64),
+            "signlocal-0.1.0-1.aarch64.rpm"
         );
         assert_eq!(
-            tarball("websign", "0.1.0", Arch::X64),
-            "websign-0.1.0-linux-x64.tar.gz"
+            tarball("signlocal", "0.1.0", Arch::X64),
+            "signlocal-0.1.0-linux-x64.tar.gz"
         );
         assert_eq!(
-            windows_zip("websign", "0.1.0", Arch::Arm64),
-            "websign-0.1.0-windows-arm64.zip"
+            windows_zip("signlocal", "0.1.0", Arch::Arm64),
+            "signlocal-0.1.0-windows-arm64.zip"
         );
         assert_eq!(
-            macos_zip("websign", "0.1.0"),
-            "websign-0.1.0-macos-universal.zip"
+            macos_zip("signlocal", "0.1.0"),
+            "signlocal-0.1.0-macos-universal.zip"
         );
         assert_eq!(
-            extension_zip("websign", "0.1.0", "chromium"),
-            "websign-extension-0.1.0-chromium.zip"
+            extension_zip("signlocal", "0.1.0", "chromium"),
+            "signlocal-extension-0.1.0-chromium.zip"
         );
     }
 }

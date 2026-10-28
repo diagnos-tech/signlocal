@@ -15,7 +15,7 @@ use std::process::ExitCode;
 
 use serde::Serialize;
 
-/// Arguments of `websign-probe devices`.
+/// Arguments of `signlocal-probe devices`.
 #[derive(Debug, clap::Args)]
 pub struct Args {
     /// Print JSON instead of a table.
@@ -54,7 +54,7 @@ pub fn run(args: &Args) -> anyhow::Result<ExitCode> {
 }
 
 /// A Markdown section (starting at `###`) describing every device found, for
-/// `websign-probe report`. Must not contain serial numbers or card contents.
+/// `signlocal-probe report`. Must not contain serial numbers or card contents.
 pub fn markdown_section() -> String {
     format::markdown(&Snapshot::scan(false))
 }

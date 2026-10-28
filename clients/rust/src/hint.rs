@@ -1,31 +1,31 @@
 //! What a developer can do about each error code.
 
-use websign_protocol::ErrorCode;
+use signlocal_protocol::ErrorCode;
 
 /// The code's section on the project site (a stable anchor, shared with the
-/// web SDK and `@websign/desktop`).
+/// web SDK and `@signlocal/desktop`).
 pub(crate) fn docs_url(code: ErrorCode) -> String {
-    format!("https://diagnos-tech.github.io/web-esign/developers.html#error-{code:?}")
+    format!("https://signlocal.diagnos.health/developers.html#error-{code:?}")
 }
 
 /// Advice for `code`. A `match` without a wildcard: the compiler fails when
-/// the protocol gains a code. Kept in step with `@websign/desktop`'s hints.
+/// the protocol gains a code. Kept in step with `@signlocal/desktop`'s hints.
 pub(crate) fn hint(code: ErrorCode) -> &'static str {
     match code {
         ErrorCode::ExtensionMissing => {
             "This code is for web pages; desktop programs do not use the browser extension."
         }
         ErrorCode::AppMissing => {
-            "Install the WebeSign app, or point `ConnectOptions::executable` (or WEBSIGN_EXECUTABLE) at it. To test without the app, enable the `testing` feature and use `websign_client::testing::FakeApp`."
+            "Install the signlocal app, or point `ConnectOptions::executable` (or SIGNLOCAL_EXECUTABLE) at it. To test without the app, enable the `testing` feature and use `signlocal_client::testing::FakeApp`."
         }
         ErrorCode::AppOutdated => {
-            "The installed app is too old for this request: ask the user to update WebeSign."
+            "The installed app is too old for this request: ask the user to update signlocal."
         }
         ErrorCode::ExtensionOutdated => {
             "This code is for web pages; update the app and the browser extension together."
         }
         ErrorCode::ClientOutdated => {
-            "The app speaks a newer protocol than this crate: upgrade `websign-client`."
+            "The app speaks a newer protocol than this crate: upgrade `signlocal-client`."
         }
         ErrorCode::InsecureOrigin => {
             "This code is for web pages; desktop programs are never refused for their origin."

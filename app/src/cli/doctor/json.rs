@@ -1,9 +1,9 @@
-//! `websign doctor --json`: the report's input as a stable JSON document
+//! `signlocal doctor --json`: the report's input as a stable JSON document
 //! (keys never renamed; new keys may be added). Same data as the text,
 //! so it carries no personal data either.
 
 use serde_json::{Value, json};
-use websign_ui_model::diagnostics::report::{
+use signlocal_ui_model::diagnostics::report::{
     BrowserLine, CertificateCounts, DeviceLine, ErrorLine, ModuleLine, ReportInput,
 };
 
@@ -57,7 +57,7 @@ fn device(line: &DeviceLine) -> Value {
             "name": name,
             "hint": hint_id,
             "atr": if hint_id.is_none() {
-                atr.as_deref().map(websign_ui_model::diagnostics::atr_mask::mask_atr)
+                atr.as_deref().map(signlocal_ui_model::diagnostics::atr_mask::mask_atr)
             } else {
                 None
             },

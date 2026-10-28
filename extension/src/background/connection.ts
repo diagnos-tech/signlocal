@@ -181,7 +181,7 @@ function open(reason: HelloReason, forget: () => void): Promise<Connection> {
         v: PROTOCOL_VERSION,
         id: HELLO_ID,
         type: "hello",
-        client: { name: "websign-extension", version: browser.runtime.getManifest().version },
+        client: { name: "signlocal-extension", version: browser.runtime.getManifest().version },
         protocols: { min: PROTOCOL_VERSION, max: PROTOCOL_VERSION },
         browser: { ...identity, reason },
       } satisfies ClientEnvelope);

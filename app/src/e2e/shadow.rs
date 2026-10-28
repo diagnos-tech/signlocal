@@ -10,10 +10,10 @@
 use std::sync::{Mutex, MutexGuard, PoisonError};
 use std::time::Instant;
 
-use websign_host::ports::ConfirmUi;
-use websign_ui_model::confirm::port::Mode;
-use websign_ui_model::confirm::view::PrimaryButton;
-use websign_ui_model::confirm::{ConfirmModel, ConfirmState, UiCommand, UserInput};
+use signlocal_host::ports::ConfirmUi;
+use signlocal_ui_model::confirm::port::Mode;
+use signlocal_ui_model::confirm::view::PrimaryButton;
+use signlocal_ui_model::confirm::{ConfirmModel, ConfirmState, UiCommand, UserInput};
 
 struct Shadow {
     model: Option<ConfirmModel>,

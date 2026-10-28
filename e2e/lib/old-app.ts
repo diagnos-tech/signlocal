@@ -26,7 +26,7 @@ export function installOldApp(profile: string): void {
   }
 }
 
-/** Manifests `websign register` wrote: in the profile (Windows) or its NativeMessagingHosts. */
+/** Manifests `signlocal register` wrote: in the profile (Windows) or its NativeMessagingHosts. */
 function manifestFiles(profile: string): string[] {
   return [profile, join(profile, "NativeMessagingHosts")]
     .filter((dir) => existsSync(dir))

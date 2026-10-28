@@ -4,14 +4,14 @@
 //! JSON shape (keys never renamed; new keys may be added):
 //! `{"command":"install","scope":"user","dryRun":false,"ok":true,
 //!   "steps":[{"kind":"manifest","target":"Google Chrome",
-//!   "location":"/home/…/dev.websign.host.json","outcome":"written"}]}`
+//!   "location":"/home/…/health.diagnos.signlocal.json","outcome":"written"}]}`
 //! with `"reason"` on `skipped` and `failed` steps. Outcomes: `written`,
 //! `removed`, `notPresent`, `skipped`, `dryRun`, `failed`.
 
 use std::process::ExitCode;
 
 use serde_json::{Value, json};
-use websign_registration::Outcome;
+use signlocal_registration::Outcome;
 
 use super::output::{FAILURE, SUCCESS, print_json};
 
@@ -20,7 +20,7 @@ use super::output::{FAILURE, SUCCESS, print_json};
 pub enum Kind {
     /// A native messaging manifest (file or registry key).
     Manifest,
-    /// The `websign:` URL handler.
+    /// The `signlocal:` URL handler.
     UrlScheme,
     /// Windows extension pre-registration.
     Extension,

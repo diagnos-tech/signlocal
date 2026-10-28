@@ -13,13 +13,13 @@ pub fn write_share(context: &Context, share: &Path) -> Result<(), String> {
     let slug = &context.project.slug;
     render_template(
         context,
-        "linux/websign.desktop.in",
+        "linux/signlocal.desktop.in",
         &share.join(format!("applications/{slug}.desktop")),
         &[],
     )?;
     render_template(
         context,
-        "linux/websign.metainfo.xml.in",
+        "linux/signlocal.metainfo.xml.in",
         &share.join(format!(
             "metainfo/{}.metainfo.xml",
             context.project.bundle_id
@@ -27,13 +27,13 @@ pub fn write_share(context: &Context, share: &Path) -> Result<(), String> {
         &[],
     )?;
     copy(
-        &context.root.join("packaging/linux/websign.svg"),
+        &context.root.join("packaging/linux/signlocal.svg"),
         &share.join(format!("icons/hicolor/scalable/apps/{slug}.svg")),
     )?;
     licenses(context, &share.join("doc").join(slug))
 }
 
-/// `websign-<v>-linux-<arch>.tar.gz`: `bin/` and `share/` under one folder,
+/// `signlocal-<v>-linux-<arch>.tar.gz`: `bin/` and `share/` under one folder,
 /// which `install.sh` copies into its prefix.
 pub fn tarball(context: &Context, target: &Target) -> Result<PathBuf, String> {
     let slug = &context.project.slug;
@@ -68,8 +68,9 @@ mod tests {
         };
         let share = out.path().join("share");
         write_share(&context, &share).unwrap();
-        let desktop = std::fs::read_to_string(share.join("applications/websign.desktop")).unwrap();
-        assert!(desktop.contains("Exec=websign\n") && !desktop.contains("{{"));
-        assert!(share.join("doc/websign/LICENSE").is_file());
+        let desktop =
+            std::fs::read_to_string(share.join("applications/signlocal.desktop")).unwrap();
+        assert!(desktop.contains("Exec=signlocal\n") && !desktop.contains("{{"));
+        assert!(share.join("doc/signlocal/LICENSE").is_file());
     }
 }

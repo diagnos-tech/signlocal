@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Proof of the macOS keychain path with software keys: websign-probe lists
+# Proof of the macOS keychain path with software keys: signlocal-probe lists
 # and signs with RSA-2048, EC P-256 and EC P-384 identities imported into a
 # throwaway keychain, and every outcome is checked against what is expected.
 #
-# Needs PROBE_EXE (the websign-probe binary). When REPORT_PATH is set, also
+# Needs PROBE_EXE (the signlocal-probe binary). When REPORT_PATH is set, also
 # writes the probe's Markdown report there. The keychain and the change to
 # the keychain search list are undone on exit, also after a failure.
 #
@@ -30,21 +30,21 @@ here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source-path=SCRIPTDIR source=lib/common.sh
 . "$here/lib/common.sh"
 
-: "${PROBE_EXE:?set PROBE_EXE to the websign-probe binary}"
+: "${PROBE_EXE:?set PROBE_EXE to the signlocal-probe binary}"
 [[ -x $PROBE_EXE ]] || {
     echo "not executable: $PROBE_EXE" >&2
     exit 1
 }
 
-readonly P12_PASSWORD=websign-ci
-readonly KEYCHAIN_NAME=websign-ci.keychain
+readonly P12_PASSWORD=signlocal-ci
+readonly KEYCHAIN_NAME=signlocal-ci.keychain
 readonly TIMEOUT_SECONDS=120
 readonly ISOLATE=(--no-known-modules --no-p11-kit)
 # name, key type, signatures expected with --hash all --pss
 readonly IDENTITIES=(
-    "WebeSign CI RSA-2048|rsa2048|6"
-    "WebeSign CI P-256|p256|3"
-    "WebeSign CI P-384|p384|3"
+    "signlocal CI RSA-2048|rsa2048|6"
+    "signlocal CI P-256|p256|3"
+    "signlocal CI P-384|p384|3"
 )
 
 work=$(mktemp -d)
@@ -66,7 +66,7 @@ fail() {
 
 # Runs the probe with a time limit; sets OUT (stdout and stderr) and STATUS.
 probe() {
-    echo "> websign-probe $*"
+    echo "> signlocal-probe $*"
     set +e
     OUT=$(with_timeout "$TIMEOUT_SECONDS" "$PROBE_EXE" "$@" 2>&1)
     STATUS=$?
@@ -74,7 +74,7 @@ probe() {
     printf '%s\n' "$OUT" | sed 's/^/  /'
     echo "  (exit code $STATUS)"
     if [[ $STATUS -eq 142 ]]; then
-        fail "websign-probe $1 timed out after ${TIMEOUT_SECONDS}s (a keychain dialog?)"
+        fail "signlocal-probe $1 timed out after ${TIMEOUT_SECONDS}s (a keychain dialog?)"
     fi
 }
 

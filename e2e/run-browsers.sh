@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Proves each installed browser in turn: the cross-browser core
-# (browsers/core.spec.ts) with WEBSIGN_E2E_BROWSER_NAME/WEBSIGN_E2E_BROWSER
+# (browsers/core.spec.ts) with SIGNLOCAL_E2E_BROWSER_NAME/SIGNLOCAL_E2E_BROWSER
 # set, so the host is registered as a person's install does.
 #
 # Usage: run-browsers.sh <list file>
@@ -9,18 +9,18 @@
 #   An empty or missing executable means the browser could not be installed
 #   on this machine: it is reported as skipped, not failed.
 #
-# Needs the variables of a normal run (WEBSIGN_E2E_APP, keys; see
-# lib/environment.ts). WEBSIGN_E2E_SCREENSHOTS gets one folder per browser.
+# Needs the variables of a normal run (SIGNLOCAL_E2E_APP, keys; see
+# lib/environment.ts). SIGNLOCAL_E2E_SCREENSHOTS gets one folder per browser.
 # Writes a Markdown table (browser, version, result) to
-# WEBSIGN_E2E_BROWSER_RESULTS (default ../target/e2e-results/browsers.md) and,
+# SIGNLOCAL_E2E_BROWSER_RESULTS (default ../target/e2e-results/browsers.md) and,
 # in GitHub Actions, to the job summary. Exits non-zero when any installed
 # browser failed.
 set -uo pipefail
 
 list=${1:?usage: run-browsers.sh <list file>}
 cd "$(dirname "$0")" || exit 1
-shots=${WEBSIGN_E2E_SCREENSHOTS:-${TMPDIR:-/tmp}/websign-e2e-screenshots}
-results=${WEBSIGN_E2E_BROWSER_RESULTS:-../target/e2e-results/browsers.md}
+shots=${SIGNLOCAL_E2E_SCREENSHOTS:-${TMPDIR:-/tmp}/signlocal-e2e-screenshots}
+results=${SIGNLOCAL_E2E_BROWSER_RESULTS:-../target/e2e-results/browsers.md}
 mkdir -p "$(dirname "$results")"
 os=${RUNNER_OS:-$(uname -s)}
 printf '| OS | Browser | Version | Result |\n|---|---|---|---|\n' > "$results"
@@ -48,8 +48,8 @@ while IFS='=' read -r label executable || [[ -n $label ]]; do
   echo "::group::$label ($executable)"
   folder="$shots/$label"
   mkdir -p "$folder" || echo "::warning::cannot create $folder"
-  if WEBSIGN_E2E_BROWSER_NAME=$name WEBSIGN_E2E_BROWSER=$executable \
-    WEBSIGN_E2E_SCREENSHOTS=$folder run_suite < /dev/null; then
+  if SIGNLOCAL_E2E_BROWSER_NAME=$name SIGNLOCAL_E2E_BROWSER=$executable \
+    SIGNLOCAL_E2E_SCREENSHOTS=$folder run_suite < /dev/null; then
     result=passed
   else
     result=FAILED

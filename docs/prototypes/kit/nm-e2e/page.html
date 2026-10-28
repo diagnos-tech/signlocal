@@ -33,7 +33,7 @@
     window.addEventListener("message", (event) => {
       if (event.source !== window || event.origin !== location.origin) return;
       const data = event.data;
-      if (!data || data.source !== "websign-extension") return;
+      if (!data || data.source !== "signlocal-extension") return;
       if (data.type === "announce") {
         result.announce = { version: data.version };
         announced?.();
@@ -43,7 +43,7 @@
     });
 
     const post = (message) =>
-      window.postMessage({ source: "websign-page", ...message }, location.origin);
+      window.postMessage({ source: "signlocal-page", ...message }, location.origin);
 
     function waitForAnnounce() {
       return new Promise((resolve, reject) => {

@@ -4,7 +4,7 @@
 //! Machine-facing commands (`sign`, `choose`, `connect`, and anything with
 //! `--json`) write exactly one JSON document to stdout and nothing else;
 //! people-facing text goes to stderr. Exit codes are stable
-//! ([`websign_protocol::ErrorCode::exit_code`]; 2 for a usage error, which
+//! ([`signlocal_protocol::ErrorCode::exit_code`]; 2 for a usage error, which
 //! clap reports itself).
 
 pub mod activate;
@@ -31,7 +31,7 @@ use clap::{Parser, Subcommand};
 /// Sign with your certificate for any website or desktop program.
 #[derive(Debug, Parser)]
 #[command(
-    name = "websign",
+    name = "signlocal",
     version,
     about,
     disable_help_subcommand = true,
@@ -45,7 +45,7 @@ pub struct Cli {
 /// Every command. No command = open diagnostics.
 #[derive(Debug, Subcommand)]
 pub enum Command {
-    /// Register with every browser, the websign: URL scheme and the app menu.
+    /// Register with every browser, the signlocal: URL scheme and the app menu.
     Install(install::InstallArgs),
     /// Undo `install` (settings are kept unless --purge).
     Uninstall(install::UninstallArgs),

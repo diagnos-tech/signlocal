@@ -20,7 +20,7 @@ describe("announce", () => {
     const [posted] = win.posted;
     expect(posted?.targetOrigin).toBe("https://app.example.com");
     expect(posted?.message).toMatchObject({
-      source: "websign-extension",
+      source: "signlocal-extension",
       kind: "announce",
       extension: { version: "1.4.2" },
       protocols: { min: 1, max: 1 },

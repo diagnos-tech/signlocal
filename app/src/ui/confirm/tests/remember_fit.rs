@@ -7,9 +7,9 @@
 use egui::Rect;
 use egui::accesskit::Role;
 use egui_kittest::kittest::Queryable as _;
-use websign_protocol::types::BrowserName;
-use websign_ui_model::certs::CertCandidate;
-use websign_ui_model::confirm::port::{CallerView, Mode};
+use signlocal_protocol::types::BrowserName;
+use signlocal_ui_model::certs::CertCandidate;
+use signlocal_ui_model::confirm::port::{CallerView, Mode};
 
 use super::super::view::BODY_MARGIN;
 use super::fixtures::*;

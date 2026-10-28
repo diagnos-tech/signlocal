@@ -1,4 +1,4 @@
-//! Starting `websign connect` and making sure it never outlives its caller.
+//! Starting `signlocal connect` and making sure it never outlives its caller.
 
 use std::path::Path;
 use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};

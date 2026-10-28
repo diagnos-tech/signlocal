@@ -19,7 +19,7 @@ describe("channel.send()", () => {
     await flush();
     expect(env.win.posted).toHaveLength(1);
     expect(env.win.posted[0]).toEqual({
-      data: { source: "websign-page", kind: "request", id, message: { type: "status" } },
+      data: { source: "signlocal-page", kind: "request", id, message: { type: "status" } },
       targetOrigin: env.win.origin,
     });
   });

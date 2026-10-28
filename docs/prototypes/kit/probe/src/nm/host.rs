@@ -13,7 +13,7 @@ use super::launch::BrowserLaunch;
 use super::log::{HostLog, log_path};
 use super::protocol::{ErrorCode, ProtocolError};
 
-/// Arguments of `websign-probe host`.
+/// Arguments of `signlocal-probe host`.
 ///
 /// Runs the very same loop a browser would start, but on your terminal's
 /// stdin/stdout, to exercise the host outside a browser (pipe framed

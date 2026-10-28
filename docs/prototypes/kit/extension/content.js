@@ -11,7 +11,7 @@
   const REQUEST_TYPES = new Set(["status", "ping", "list", "sign"]);
   const SIGN_FIELDS = ["fingerprint", "hash", "algorithm", "digest"];
 
-  const post = (message) => window.postMessage({ source: "websign-extension", ...message }, window.location.origin);
+  const post = (message) => window.postMessage({ source: "signlocal-extension", ...message }, window.location.origin);
   const announce = () => post({ type: "announce", version });
 
   const isRecord = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
@@ -36,7 +36,7 @@
     }
     let response;
     try {
-      response = await api.runtime.sendMessage({ kind: "websign-request", request: clean });
+      response = await api.runtime.sendMessage({ kind: "signlocal-request", request: clean });
     } catch (error) {
       response = { ok: false, error: { code: "extension_unavailable", message: String(error?.message ?? error) } };
     }
@@ -46,7 +46,7 @@
   window.addEventListener("message", (event) => {
     if (event.source !== window || event.origin !== window.location.origin) return;
     const data = event.data;
-    if (!isRecord(data) || data.source !== "websign-page") return;
+    if (!isRecord(data) || data.source !== "signlocal-page") return;
     if (data.type === "hello") return announce();
     if (data.type === "request" && typeof data.id === "string" && data.id.length <= 64) {
       void relay(data.id, data.request);

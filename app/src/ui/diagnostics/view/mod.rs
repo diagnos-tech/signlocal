@@ -24,9 +24,9 @@ mod words;
 use egui::{Rect, ScrollArea, Stroke, Ui, UiBuilder, pos2};
 use jiff::Timestamp;
 use jiff::tz::TimeZone;
-use websign_host::store::Settings;
-use websign_i18n::Catalog;
-use websign_protocol::messages::DiagnosticsTab;
+use signlocal_host::store::Settings;
+use signlocal_i18n::Catalog;
+use signlocal_protocol::messages::DiagnosticsTab;
 
 use super::facts::Facts;
 use super::lights::Lights;

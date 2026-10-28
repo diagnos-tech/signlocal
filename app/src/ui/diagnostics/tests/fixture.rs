@@ -8,15 +8,15 @@ use std::path::PathBuf;
 
 use jiff::Timestamp;
 use jiff::tz::TimeZone;
-use websign_core::{
+use signlocal_core::{
     CertInfo, DistinguishedName, Fingerprint, IcpBrasil, IcpLevel, KeyUsage, PublicKeyKind,
 };
-use websign_host::store::{ConnectionRecord, ErrorRecord};
-use websign_protocol::types::BrowserName;
-use websign_registration::Browser;
-use websign_registration::detect::BrowserPackaging;
-use websign_registration::status::RegistrationState;
-use websign_ui_model::certs::{CertCandidate, DeviceLabel, KeySource, PinMode};
+use signlocal_host::store::{ConnectionRecord, ErrorRecord};
+use signlocal_protocol::types::BrowserName;
+use signlocal_registration::Browser;
+use signlocal_registration::detect::BrowserPackaging;
+use signlocal_registration::status::RegistrationState;
+use signlocal_ui_model::certs::{CertCandidate, DeviceLabel, KeySource, PinMode};
 
 use crate::ui::diagnostics::facts::{
     BrowserFact, CardFact, CertPresence, DevicesFact, DriverFact, Facts, HintFact, ReaderFact,
@@ -166,7 +166,7 @@ fn certificates() -> Vec<CertCandidate> {
     );
     a3.device = Some(reader.clone());
     a3.hardware = Some(true);
-    a3.alternates = vec![websign_ui_model::certs::KeyPath {
+    a3.alternates = vec![signlocal_ui_model::certs::KeyPath {
         source: KeySource::Driver {
             path: "opensc-pkcs11.dll".to_owned(),
         },

@@ -62,7 +62,7 @@ function assertNoFixtureIn(dir: string): void {
 }
 
 async function open(chromium: Chromium, build: string, locale: string): Promise<Context> {
-  const profile = mkdtempSync(join(tmpdir(), "websign-popup-shots-"));
+  const profile = mkdtempSync(join(tmpdir(), "signlocal-popup-shots-"));
   const context = await chromium.launchPersistentContext(profile, {
     channel: "chromium",
     headless: true,
