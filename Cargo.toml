@@ -72,7 +72,7 @@ egui = "0.36"
 egui-phosphor = "0.14"
 egui_kittest = { version = "0.36", features = ["wgpu", "snapshot"] }
 sys-locale = "0.3"
-dirs = "6"
+dirs = "7"
 
 # Code generation and tests.
 ts-rs = "12"
