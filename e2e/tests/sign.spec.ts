@@ -65,7 +65,7 @@ test.describe("sign through the extension", () => {
   });
 
   test("the website's test page signs and verifies", async () => {
-    const page = await session.open("/site/test/index.html");
+    const page = await session.open("/site/test/index.html?lang=en");
     await expect(page.locator('#setup [data-state="ready"]')).toBeVisible();
     await page.locator("#sign").click();
     await expect(page.locator("#result-ok")).toBeVisible({ timeout: 60_000 });

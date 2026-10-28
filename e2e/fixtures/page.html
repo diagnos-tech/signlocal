@@ -5,11 +5,12 @@
     <title>signlocal e2e fixture</title>
   </head>
   <body>
-    <!-- Loads the built SDK and exposes window.signlocalE2e for Playwright:
-         plain JSON in, plain JSON out, errors as { ok: false, code }. -->
+    <!-- Loads the built SDK (sdk/dist, served at /sdk/) and exposes
+         window.signlocalE2e for Playwright: plain JSON in, plain JSON out,
+         errors as { ok: false, code }. -->
     <main id="result"></main>
     <script type="module">
-      import { certificates, sign, status } from "/site/assets/signlocal-sdk.js";
+      import { certificates, sign, status } from "/sdk/index.js";
 
       const hex = (text) => Uint8Array.from(text.match(/../g) ?? [], (h) => Number.parseInt(h, 16));
       const base64 = (bytes) => btoa(String.fromCharCode(...bytes));

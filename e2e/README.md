@@ -18,7 +18,10 @@ keys and verifying every signature with `node:crypto`.
   temporary one, removed after the run).
 - Before a run: `cargo build -p signlocal-app --features e2e`,
   `(cd extension && bunx wxt build -b chrome)` (direct channel: the ID is
-  `dev_id`), `(cd clients/node && bun run build)`.
+  `dev_id`), `(cd clients/node && bun run build)`, `(cd sdk && bun run build)`
+  (the fixture page imports it) and
+  `(cd site && SIGNLOCAL_SITE_RELEASE=fixture bun run build)` (the website's
+  test page).
 - Run: `bun run test` here (Linux: under `xvfb-run -a -s "-screen 0 1600x900x24"`);
   without keys configured, Linux and macOS make a SoftHSM2 token first.
 - Screenshots: `cargo xtask screenshots --from <dir> --os <name>`.

@@ -119,6 +119,13 @@ jobs:
             (cd e2e && retry timeout 420 bunx playwright install-deps chromium)
           fi
           (cd e2e && bunx playwright install chromium)
+      - name: Build the SDK and the website (the fixture and test pages load them)
+        timeout-minutes: 10
+        env:
+          SIGNLOCAL_SITE_RELEASE: fixture
+        run: |
+          (cd sdk && bun run build)
+          (cd site && bun install --frozen-lockfile && bun run build)
       - name: Build the desktop client
         run: (cd clients/node && bun run build)
       - name: Create the SoftHSM2 token (Linux)
@@ -407,6 +414,13 @@ jobs:
         run: |
           bun install --frozen-lockfile
           (cd extension && bunx wxt build -b chrome)
+      - name: Build the SDK and the website (the fixture and test pages load them)
+        timeout-minutes: 10
+        env:
+          SIGNLOCAL_SITE_RELEASE: fixture
+        run: |
+          (cd sdk && bun run build)
+          (cd site && bun install --frozen-lockfile && bun run build)
       - name: Build the desktop client and create the SoftHSM2 token
         timeout-minutes: 5
         run: |

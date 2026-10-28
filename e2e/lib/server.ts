@@ -1,11 +1,12 @@
 /**
  * Serves the pages under test from the repository on http://localhost: the
- * fixture page (`/`, `e2e/fixtures/`) and the built website (`/site/`, from
- * `site/dist/`: run `bun run build` in `site/` first), whose `test/index.html`
- * is the real "test your setup" page. The site's pages name their scripts,
- * styles and fonts from the root (`/_astro/…`, `/boot.js`), so those answer
- * from the same build. The extension injects itself into localhost pages, and
- * a named host (not 127.0.0.1) can be remembered.
+ * fixture page (`/`, `e2e/fixtures/`), the built SDK it imports (`/sdk/`, from
+ * `sdk/dist/`) and the built website (`/site/`, from `site/dist/`), whose
+ * `test/index.html` is the real "test your setup" page. Run `bun run build` in
+ * `sdk/` and `site/` first. The site's pages name their scripts, styles and
+ * fonts from the root (`/_astro/…`, `/boot.js`), so those answer from the same
+ * build. The extension injects itself into localhost pages, and a named host
+ * (not 127.0.0.1) can be remembered.
  *
  * Every server gets its own port, so every server is a new site to the app.
  */
@@ -30,10 +31,12 @@ const TYPES: Record<string, string> = {
 const SITE = join(REPO, "site", "dist");
 
 const ROOTS: ReadonlyArray<readonly [string, string]> = [
+  ["/sdk/", join(REPO, "sdk", "dist")],
   ["/site/", SITE],
   ["/_astro/", join(SITE, "_astro")],
   ["/boot.js", join(SITE, "boot.js")],
   ["/favicon.svg", join(SITE, "favicon.svg")],
+  ["/apple-touch-icon.png", join(SITE, "apple-touch-icon.png")],
   ["/", join(REPO, "e2e", "fixtures")],
 ];
 
