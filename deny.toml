@@ -16,6 +16,14 @@ ignore = [
   # (src/verify/rsa_verify.rs) with public keys from certificates; signing
   # happens inside the token or OS key store, never with this crate.
   { id = "RUSTSEC-2023-0071", reason = "rsa is used for public-key signature verification only; no private-key operations" },
+  # Unmaintained, not vulnerable: zvariant, zvariant_derive and zbus_names were
+  # merged into zbus 6. They reach the app only through eframe's Linux
+  # accessibility adapter (accesskit_unix → atspi → zbus 5), and even the latest
+  # accesskit_unix (0.24.1) still needs zbus ^5.19. Drop these three when
+  # accesskit moves to zbus 6.
+  { id = "RUSTSEC-2026-0370", reason = "zvariant: unmaintained (merged into zbus 6); transitive via accesskit_unix, no zbus 6 release of accesskit yet" },
+  { id = "RUSTSEC-2026-0371", reason = "zbus_names: unmaintained (merged into zbus 6); transitive via accesskit_unix, no zbus 6 release of accesskit yet" },
+  { id = "RUSTSEC-2026-0372", reason = "zvariant_derive: unmaintained (merged into zbus 6); transitive via accesskit_unix, no zbus 6 release of accesskit yet" },
 ]
 
 [licenses]
