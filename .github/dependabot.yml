@@ -19,6 +19,15 @@ updates:
       bun-minor:
         update-types: [minor, patch]
 
+  # The website (site/): Astro, Playwright and their tooling, with its own bun.lock.
+  - package-ecosystem: bun
+    directory: /site
+    schedule:
+      interval: weekly
+    groups:
+      site-minor:
+        update-types: [minor, patch]
+
   - package-ecosystem: github-actions
     directory: /
     schedule:

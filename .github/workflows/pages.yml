@@ -1,21 +1,22 @@
-# Publishes site/ to GitHub Pages: the SDK, the extension popup and the app
-# link to /download, /test and /activate, so the site must follow main.
-# The SDK bundle is rebuilt here so the deployed test page always matches
-# sdk/src, even if a commit forgot to run site/build-sdk.sh.
-# TODO(gustavo): enable Pages with "Source: GitHub Actions" in the repository
-# settings; until then the deploy job fails with "Pages not enabled".
+# Builds the website (site/, Astro) and publishes it to GitHub Pages: the SDK, the extension
+# popup and the app link to /download, /test and /activate, so the site must follow develop.
+#
+# A site build reads the repository (project.toml, the SDK, the extension manifest, examples/,
+# devices.json, e2e.yml) and the newest GitHub release, so it runs on EVERY push to develop
+# (a path filter would leave the site stale), once a day, by hand, and when the release
+# workflow has published a release. The release data must be real: a build that cannot fetch
+# and verify it fails, and the previous site stays online.
+#
+# The custom domain (signlocal.diagnos.health) is set in the repository's Pages settings;
+# site/ also writes a CNAME file for copies of the site published elsewhere.
 name: pages
 
 on:
   push:
-    branches: [main]
-    paths:
-      - "site/**"
-      - "sdk/**"
-      - "i18n/**"
-      - "project.toml"
-      - ".github/workflows/pages.yml"
+    branches: [develop]
   workflow_dispatch:
+  schedule:
+    - cron: "17 6 * * *"
 
 # One deployment at a time; a newer push supersedes a queued one but never
 # interrupts a deployment in progress.
@@ -29,29 +30,41 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.3.11"
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
       - name: Install
         timeout-minutes: 10
+        working-directory: site
         run: bun install --frozen-lockfile
-      - name: Build the SDK bundle
-        run: sh site/build-sdk.sh
-      # Only what visitors load: tests, the build script and the folder
-      # notes stay out of the published site.
-      - name: Stage the site
-        run: |
-          mkdir -p "$RUNNER_TEMP/site"
-          tar -C site --exclude=./tests --exclude=./build-sdk.sh \
-            --exclude='*/SUMMARY.md' --exclude=./SUMMARY.md --exclude=./README.md \
-            -cf - . | tar -C "$RUNNER_TEMP/site" -xf -
       - uses: actions/configure-pages@v5
+        id: pages
+      # The address Pages will serve the site at must be the homepage project.toml names:
+      # canonical URLs, the sitemap and the SDK's error links are built from it.
+      - name: The site's address is the homepage
+        run: |
+          homepage=$(sed -n 's/^homepage *= *"\(.*\)"/\1/p' project.toml)
+          [ "${{ steps.pages.outputs.base_url }}/" = "$homepage" ] \
+            || { echo "::error::Pages serves ${{ steps.pages.outputs.base_url }}/ but project.toml says $homepage"; exit 1; }
+      - name: Build (data, Astro, API reference)
+        timeout-minutes: 10
+        working-directory: site
+        env:
+          SIGNLOCAL_SITE_RELEASE: github
+          GITHUB_TOKEN: ${{ github.token }}
+        run: bun run build
+      - name: Checks (links, security policy, SEO, size, no sample data)
+        working-directory: site
+        run: bun scripts/check/run.ts --deploy
       - uses: actions/upload-pages-artifact@v4
         with:
-          path: ${{ runner.temp }}/site
+          path: site/dist
 
   deploy:
     needs: build
@@ -66,3 +79,17 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+      # Informative: the CDN may serve the old build for a minute, so this retries and,
+      # if it still does, says so without failing a deploy that already succeeded.
+      - name: The new build is live
+        continue-on-error: true
+        env:
+          SHA: ${{ github.sha }}
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if curl -fsS https://signlocal.diagnos.health/ | grep -q "name=\"signlocal:build\" content=\"$SHA\""; then
+              echo "Live: $SHA"; exit 0
+            fi
+            echo "Attempt $attempt: still serving another build"; sleep 30
+          done
+          echo "::warning::The CDN still serves another build than $SHA"; exit 1

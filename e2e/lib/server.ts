@@ -1,9 +1,11 @@
 /**
  * Serves the pages under test from the repository on http://localhost: the
- * fixture page (`/`, `e2e/fixtures/`) and the website (`/site/`, whose
- * `test/index.html` is the real "test your setup" page using the SDK
- * bundle). The extension injects itself into localhost pages, and a named
- * host (not 127.0.0.1) can be remembered.
+ * fixture page (`/`, `e2e/fixtures/`) and the built website (`/site/`, from
+ * `site/dist/`: run `bun run build` in `site/` first), whose `test/index.html`
+ * is the real "test your setup" page. The site's pages name their scripts,
+ * styles and fonts from the root (`/_astro/…`, `/boot.js`), so those answer
+ * from the same build. The extension injects itself into localhost pages, and
+ * a named host (not 127.0.0.1) can be remembered.
  *
  * Every server gets its own port, so every server is a new site to the app.
  */
@@ -21,10 +23,17 @@ const TYPES: Record<string, string> = {
   ".css": "text/css; charset=utf-8",
   ".svg": "image/svg+xml",
   ".json": "application/json",
+  ".png": "image/png",
+  ".woff2": "font/woff2",
 };
 
+const SITE = join(REPO, "site", "dist");
+
 const ROOTS: ReadonlyArray<readonly [string, string]> = [
-  ["/site/", join(REPO, "site")],
+  ["/site/", SITE],
+  ["/_astro/", join(SITE, "_astro")],
+  ["/boot.js", join(SITE, "boot.js")],
+  ["/favicon.svg", join(SITE, "favicon.svg")],
   ["/", join(REPO, "e2e", "fixtures")],
 ];
 
@@ -64,13 +73,13 @@ export async function startServer(): Promise<PageServer> {
   };
 }
 
-/** The file a URL path names, never outside its root. */
+/** The file a URL path names, never outside its root (a root may be one file). */
 function resolvePath(path: string): string | undefined {
   const wanted = path === "/" ? "/page.html" : decodeURIComponent(path);
   for (const [prefix, root] of ROOTS) {
     if (!wanted.startsWith(prefix)) continue;
     const file = normalize(join(root, wanted.slice(prefix.length)));
-    return file.startsWith(root + sep) ? file : undefined;
+    return file === root || file.startsWith(root + sep) ? file : undefined;
   }
   return undefined;
 }

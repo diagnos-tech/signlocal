@@ -259,6 +259,9 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: write
+      # Dispatching pages.yml: events made with GITHUB_TOKEN do not trigger workflows, but
+      # workflow_dispatch is allowed.
+      actions: write
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
@@ -314,3 +317,7 @@ jobs:
               --title "signlocal $VERSION" --notes-file notes.md
             gh release edit "$TAG" --draft=false
           fi
+      # The website shows this release's version, sizes and checksums, read from GitHub at
+      # build time: rebuild it now that the release is visible.
+      - name: Refresh the website
+        run: gh workflow run pages.yml --ref develop

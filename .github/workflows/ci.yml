@@ -326,17 +326,10 @@ jobs:
             (cd "$package" && bun run test)
             echo "::endgroup::"
           done
-      - name: Site tests (key extractor, verifier, locales)
-        timeout-minutes: 5
-        run: bun test site/tests
       - name: SDK build and size budget (5 KB gzip)
         working-directory: sdk
         run: bun run build && bun run size
-      # sdk/tools has its own lockfile; both scripts install it frozen.
-      - name: SDK API reference is current
-        timeout-minutes: 5
-        working-directory: sdk
-        run: bun run docs:check
+      # sdk/tools has its own lockfile; the script installs it frozen.
       - name: SDK package checks (publint, are-the-types-wrong)
         timeout-minutes: 5
         working-directory: sdk
@@ -415,7 +408,8 @@ jobs:
           workspaces: examples/desktop/rust-cli
           key: examples
           save-if: ${{ env.SAVE_CACHE }}
-      # examples/web aliases @signlocal/sdk to sdk/src but has its own lockfile.
+      # examples/web aliases @signlocal/sdk to sdk/src but has its own lockfile. Its typecheck
+      # also covers snippets/, the code samples of the website's developers page.
       - name: Web examples (typecheck, PAdES test, build)
         timeout-minutes: 10
         working-directory: examples/web
@@ -433,6 +427,61 @@ jobs:
         timeout-minutes: 15
         working-directory: examples/desktop/rust-cli
         run: cargo test --locked
+
+  site:
+    name: website
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      # The checks build against the sample release, never the live one: results must not
+      # depend on what GitHub says today. The e2e hooks (the SDK fake) are compiled in.
+      SIGNLOCAL_SITE_RELEASE: fixture
+      PUBLIC_SIGNLOCAL_TEST_HOOKS: "1"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.11"
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('site/bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+      - name: Install
+        timeout-minutes: 10
+        working-directory: site
+        run: bun install --frozen-lockfile
+      - name: Browser for the end-to-end tests
+        timeout-minutes: 10
+        working-directory: site
+        run: bunx playwright install --with-deps chromium
+      # lint, astro check, unit tests, build (data, Astro, TypeDoc), post-build checks, e2e + axe
+      - name: Check
+        timeout-minutes: 15
+        working-directory: site
+        run: bun run check
+      - name: Lighthouse (95+ in every category)
+        timeout-minutes: 10
+        working-directory: site
+        run: bun run lighthouse
+      # With no release published the install page must say so and offer no broken download.
+      - name: No-release build
+        timeout-minutes: 10
+        working-directory: site
+        env:
+          SIGNLOCAL_SITE_RELEASE: none
+        run: |
+          bun run build
+          bunx playwright test tests/e2e/no-release.spec.ts
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: site-screenshots
+          path: site/test-results/screenshots/
+          if-no-files-found: ignore
 
   installers:
     name: installer self-test (${{ matrix.os }})
