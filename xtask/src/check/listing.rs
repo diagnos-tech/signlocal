@@ -73,13 +73,13 @@ pub fn group<'a>(files: impl Iterator<Item = &'a str>) -> Tree {
 }
 
 /// Whether `folder` is exempt from the `SUMMARY.md` rules: the frozen kit,
-/// `generated/` folders, whose summary the generator writes, and the TypeDoc
-/// output under `site/api/`, which TypeDoc rewrites from scratch (its parent
-/// `site/SUMMARY.md` still lists `api/`).
+/// `generated/` folders, whose summary the generator writes, and the route
+/// folders of the site (`site/src/pages`), where Astro would publish a
+/// Markdown note as a page; `site/src/SUMMARY.md` describes them instead.
 pub fn is_unchecked(folder: &str) -> bool {
     let kit = folder == UNCHECKED_PREFIX || folder.starts_with("docs/prototypes/kit/");
-    let api_docs = folder == "site/api" || folder.starts_with("site/api/");
-    kit || api_docs || folder.rsplit('/').next() == Some("generated")
+    let routes = folder == "site/src/pages" || folder.starts_with("site/src/pages/");
+    kit || routes || folder.rsplit('/').next() == Some("generated")
 }
 
 #[cfg(test)]
@@ -107,12 +107,14 @@ mod tests {
     }
 
     #[test]
-    fn the_kit_and_generated_folders_are_unchecked() {
+    fn the_kit_the_generated_folders_and_the_site_routes_are_unchecked() {
         assert!(is_unchecked("docs/prototypes/kit/app"));
         assert!(!is_unchecked("docs/prototypes/kitchen"));
         assert!(is_unchecked("sdk/src/generated"));
-        assert!(is_unchecked("site/api/functions"));
-        assert!(!is_unchecked("site/apis"));
         assert!(!is_unchecked("sdk/src"));
+        assert!(is_unchecked("site/src/pages"));
+        assert!(is_unchecked("site/src/pages/[lang]/test"));
+        assert!(!is_unchecked("site/src/pagesx"));
+        assert!(!is_unchecked("site/src"));
     }
 }
