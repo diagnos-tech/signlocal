@@ -37,7 +37,7 @@ jiff = "0.2"
 # Crypto (pure Rust). rsa 0.10 is still a release candidate: pinned exactly so
 # a new rc cannot silently change the verifier the kit reviewed.
 sha2 = "0.11"
-rsa = { version = "=0.10.0-rc.18", features = ["sha2"] }
+rsa = { version = "=0.10.0-rc.19", features = ["sha2"] }
 p256 = { version = "0.14", features = ["ecdsa"] }
 p384 = { version = "0.14", features = ["ecdsa"] }
 p521 = { version = "0.14", features = ["ecdsa"] }
