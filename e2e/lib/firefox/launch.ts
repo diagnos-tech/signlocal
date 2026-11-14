@@ -102,23 +102,40 @@ export async function launchFirefox(
   }
 }
 
+/** How long to wait for Firefox's own first tab before opening one. */
+const OWN_TAB_TIMEOUT = 15_000;
+
 /**
- * The id of the tab Firefox opened. Firefox listens before its first window
- * has finished starting, and until then lists that tab with a null id (seen
- * on Windows runners); navigating it fails, so wait for a real id.
+ * The id of a tab to drive. Firefox listens before its first window has
+ * finished starting, and until then lists that tab with a null id (seen on
+ * Windows runners); navigating it fails, so wait for a real id. On a fresh
+ * runner that first tab sometimes never gets one: after OWN_TAB_TIMEOUT a
+ * tab is opened instead.
  */
 async function firstTab(bidi: Bidi): Promise<string> {
-  const deadline = Date.now() + START_TIMEOUT;
-  while (Date.now() < deadline) {
+  const started = Date.now();
+  let seen: unknown = "nothing";
+  while (Date.now() - started < START_TIMEOUT) {
     const tree = await bidi.send<{ contexts: ReadonlyArray<{ context: string | null }> }>(
       "browsingContext.getTree",
       { maxDepth: 0 },
     );
-    const id = tree.contexts[0]?.context;
-    if (typeof id === "string") return id;
+    seen = tree.contexts;
+    const usable = tree.contexts.find((entry) => typeof entry.context === "string");
+    if (typeof usable?.context === "string") return usable.context;
+    if (Date.now() - started >= OWN_TAB_TIMEOUT) {
+      try {
+        const created = await bidi.send<{ context: string }>("browsingContext.create", {
+          type: "tab",
+        });
+        if (typeof created.context === "string") return created.context;
+      } catch {
+        // Not ready for commands yet: keep waiting for its own tab.
+      }
+    }
     await new Promise((done) => setTimeout(done, 200));
   }
-  throw new Error("Firefox opened no usable tab");
+  throw new Error(`Firefox opened no usable tab; last tree: ${JSON.stringify(seen)}`);
 }
 
 /**
