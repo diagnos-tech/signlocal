@@ -223,7 +223,7 @@ function Install-Signlocal {
     }
     Say ''
     Say "$($Script:AppName) is installed. Last step: install the browser extension."
-    Say "Steps per browser: https://github.com/$($Script:Repo)/blob/main/docs/install.md#browser-extension"
+    Say "Steps per browser: https://github.com/$($Script:Repo)/blob/v$($Script:Version)/docs/install.md#browser-extension"
     Say "(download signlocal-extension-$($Script:Version)-chromium.zip or -firefox.zip from the same release)."
 }
 

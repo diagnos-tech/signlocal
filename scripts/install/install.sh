@@ -192,7 +192,7 @@ register() {
 next_steps() {
     say ""
     say "$APP_NAME is installed. Last step: install the browser extension."
-    say "Steps per browser: https://github.com/$REPO/blob/main/docs/install.md#browser-extension"
+    say "Steps per browser: https://github.com/$REPO/blob/v$VERSION/docs/install.md#browser-extension"
     say "(download signlocal-extension-$VERSION-chromium.zip or -firefox.zip from the same release)."
 }
 

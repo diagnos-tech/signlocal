@@ -90,10 +90,14 @@ jobs:
     steps:
       - name: Install build dependencies
         timeout-minutes: 10
-        run: >-
-          dnf install -y --setopt=install_weak_deps=False
-          gcc git tar gzip zip binutils findutils pkgconf-pkg-config
-          pcsc-lite-devel libxkbcommon-devel wayland-devel
+        # pcsc-lite-devel is only in CRB, which the image ships disabled
+        # (e2e.yml enables it the same way for its Rocky Linux job).
+        run: |
+          dnf install -y --setopt=install_weak_deps=False dnf-plugins-core
+          dnf config-manager --set-enabled crb
+          dnf install -y --setopt=install_weak_deps=False \
+            gcc git tar gzip zip binutils findutils pkgconf-pkg-config \
+            pcsc-lite-devel libxkbcommon-devel wayland-devel
       - uses: actions/checkout@v5
         with:
           ref: refs/tags/${{ env.TAG }}
@@ -311,7 +315,9 @@ jobs:
         run: |
           if gh release view "$TAG" > /dev/null 2>&1; then
             gh release upload "$TAG" dist/* --clobber
-            gh release edit "$TAG" --prerelease --notes-file notes.md
+            # Also out of draft: a run that stopped between create and
+            # edit below leaves a draft nobody can download.
+            gh release edit "$TAG" --draft=false --prerelease --notes-file notes.md
           else
             gh release create "$TAG" dist/* --draft --prerelease --verify-tag \
               --title "signlocal $VERSION" --notes-file notes.md
