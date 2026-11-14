@@ -62,7 +62,7 @@ jobs:
       - name: Checks (links, security policy, SEO, size, no sample data)
         working-directory: site
         run: bun scripts/check/run.ts --deploy
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: site/dist
 
