@@ -146,7 +146,7 @@ jobs:
         run: |
           pluginkit -a "dist/unpacked/signlocal.app/Contents/PlugIns/SignlocalExtension.appex"
           pluginkit -m -v -p com.apple.Safari.web-extension
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: signlocal-macos-with-safari
           path: dist/signlocal-*-macos-universal.zip

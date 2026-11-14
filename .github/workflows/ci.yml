@@ -343,7 +343,7 @@ jobs:
           bunx wxt zip -b firefox --mv3
           bunx wxt zip -b safari
           bun run size
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: signlocal-extension-zips
           path: extension/.output/*.zip
@@ -476,7 +476,7 @@ jobs:
         run: |
           bun run build
           bunx playwright test tests/e2e/no-release.spec.ts
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
           name: site-screenshots
